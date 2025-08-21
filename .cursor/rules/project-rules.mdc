@@ -1,0 +1,107 @@
+---
+alwaysApply: true
+---
+# 🚀 Project Rules – Source Build
+
+## 🔧 Tech Stack
+- React 19 (Vite)
+- TypeScript
+- TailwindCSS v4
+- Shadcn/UI (Radix-based components)
+- Tanstack Query (React Query)
+- Axios (with interceptors & JWT support)
+- React Router v7
+- React Hook Form + Zod (validation)
+- Framer Motion (animations)
+- ESLint + Prettier (formatting)
+- Vitest + React Testing Library (unit tests)
+- Cypress/Playwright (E2E tests)
+
+---
+
+## 📂 Project Structure
+
+src/
+│── app/ # Core app setup
+│ ├── providers/ # Context providers (query, theme, auth)
+│ ├── routes/ # Routing definitions + guards
+│ ├── layouts/ # Shared layouts (auth, dashboard, public)
+│ └── App.tsx
+│
+│── components/ # Shared UI
+│ ├── ui/ # Shadcn components
+│ ├── forms/ # Form elements
+│ ├── navigation/ # Navbars, sidebars
+│ ├── charts/ # Charts & graphs
+│ └── feedback/ # Spinners, toasts, loaders
+│
+│── features/ # Feature-based modules
+│ ├── auth/ # Login, signup, OTP, reset
+│ ├── user/ # Profile, settings, bank accounts
+│ ├── dashboard/ # Role dashboards (driver, seller)
+│ ├── vehicle/ # Vehicle management (driver)
+│ ├── orders/ # Orders & details
+│ ├── products/ # Product listings (seller)
+│ ├── reviews/ # Ratings & reviews
+│ ├── notifications/ # Notifications center
+│ └── messages/ # Messaging/chat
+│
+│── hooks/ # Custom React hooks
+│── lib/ # API + utils
+│ ├── api/ # API grouped by feature
+│ ├── axios.ts # Axios instance + interceptors
+│ ├── queryClient.ts # React Query client
+│ └── helpers.ts
+│
+│── styles/ # Tailwind + global styles
+│── types/ # TypeScript models
+│── tests/ # Unit & integration tests
+│── mocks/ # Mock API/data
+
+
+---
+
+## 📌 Rules & Best Practices
+
+### General
+- **TypeScript only** (no JS files).
+- Use **absolute imports** (`@/components`, `@/features`, etc.).
+- Stick to **feature-based foldering** (group by domain, not layer).
+- Always prefer **composition > inheritance** in React.
+
+### API & Data
+- All API requests go through `lib/axios.ts`.
+- Use **React Query hooks per feature** (`useOrders`, `useAuth`).
+- JWT handling via **Axios interceptor** (auto-refresh if needed).
+- Do not call `axios` directly inside components.
+
+### Components & Styling
+- Use **Shadcn components** + Tailwind classes for UI.
+- Create **variants** for components via `class-variance-authority`.
+- Keep components **small & reusable**.
+- No inline styles (only Tailwind or utility functions).
+
+### Forms
+- Use **React Hook Form + Zod** for form validation.
+- Define schemas close to their feature (e.g., `features/auth/schema.ts`).
+
+### Routing & Guards
+- Use **React Router v7**.
+- Protect routes with `ProtectedRoute`.
+- Role-based layouts →  
+  - `DriverLayout` for drivers  
+  - `SellerLayout` for sellers  
+
+### State Management
+- Use **React Query for server state**.
+- Use **Zustand** (if needed) for client state.
+- No Redux unless absolutely required.
+
+### Testing & Quality
+- Pre-commit hooks with Husky + Lint-Staged.
+- Unit test **hooks and components**.
+- Write E2E tests for **critical flows** (login → order → checkout).
+
+---
+
+✅ Follow these rules for **consistent, scalable, enterprise-grade code**.

@@ -1,0 +1,22 @@
+{
+    "rules": [
+      "Always follow PROJECT_RULES.md at the root.",
+      "Never create .js files, use TypeScript only.",
+      "API calls must go through lib/axios.ts.",
+      "Use TanStack Query for data fetching.",
+      "Use Tailwind v4 and Shadcn for UI components."
+    ],
+    "techStack": {
+      "framework": "React 19 + Vite",
+      "css": "Tailwind v4",
+      "ui": "Shadcn",
+      "state": "TanStack Query",
+      "forms": "React Hook Form + Zod"
+    },
+    "mcpServers": {
+      "figma": {
+        "url": "http://127.0.0.1:3845/sse"
+      }
+    }
+  }
+  
