@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 
- function NotFoundPage() {
+function NotFoundPage() {
   return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="text-center">
@@ -13,6 +13,6 @@ import { Link } from 'react-router-dom';
       </div>
     </div>
   );
-} 
+}
 
 export default NotFoundPage;

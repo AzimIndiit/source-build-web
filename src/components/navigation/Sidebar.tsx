@@ -1,13 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/helpers';
-import { 
-  LayoutDashboard, 
-  User, 
-  Settings, 
-  Bell, 
-  MessageSquare,
-  X 
-} from 'lucide-react';
+import { LayoutDashboard, User, Settings, Bell, MessageSquare, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface SidebarProps {
@@ -29,13 +22,10 @@ export function Sidebar({ open, onClose }: SidebarProps) {
   return (
     <>
       <div
-        className={cn(
-          'fixed inset-0 z-50 bg-gray-900/80 md:hidden',
-          open ? 'block' : 'hidden'
-        )}
+        className={cn('fixed inset-0 z-50 bg-gray-900/80 md:hidden', open ? 'block' : 'hidden')}
         onClick={onClose}
       />
-      
+
       <div
         className={cn(
           'fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 transform transition-transform md:relative md:translate-x-0',
@@ -44,16 +34,11 @@ export function Sidebar({ open, onClose }: SidebarProps) {
       >
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
           <span className="text-xl font-bold">Source Build</span>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden"
-            onClick={onClose}
-          >
+          <Button variant="ghost" size="icon" className="md:hidden" onClick={onClose}>
             <X className="h-5 w-5" />
           </Button>
         </div>
-        
+
         <nav className="p-4 space-y-1">
           {menuItems.map((item) => (
             <Link

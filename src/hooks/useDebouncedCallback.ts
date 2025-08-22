@@ -1,4 +1,4 @@
-import { useRef, useEffect, useCallback } from "react";
+import { useRef, useEffect, useCallback } from 'react';
 
 /**
  * Hook that returns a debounced version of the provided callback function

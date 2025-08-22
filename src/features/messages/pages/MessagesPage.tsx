@@ -1,4 +1,4 @@
- function MessagesPage() {
+function MessagesPage() {
   return <div>Messages Page</div>;
 }
 

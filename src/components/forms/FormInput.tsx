@@ -12,14 +12,14 @@ interface FormInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   leftIcon?: React.ReactNode;
 }
 
-export const FormInput: React.FC<FormInputProps> = ({ 
-  name, 
-  label, 
-  customError, 
+export const FormInput: React.FC<FormInputProps> = ({
+  name,
+  label,
+  customError,
   leftIcon,
   className,
   type,
-  ...props 
+  ...props
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   const {
@@ -30,7 +30,7 @@ export const FormInput: React.FC<FormInputProps> = ({
   const error = errors[name] || customError;
   const isPasswordField = type === 'password';
   const inputType = isPasswordField && showPassword ? 'text' : type;
-  
+
   return (
     <div className="w-full">
       <Label htmlFor={name} className={error ? 'text-red-600' : ''}>
@@ -38,9 +38,7 @@ export const FormInput: React.FC<FormInputProps> = ({
       </Label>
       <div className="relative mt-2">
         {leftIcon && (
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-            {leftIcon}
-          </div>
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">{leftIcon}</div>
         )}
         <Input
           id={name}
@@ -60,17 +58,11 @@ export const FormInput: React.FC<FormInputProps> = ({
             onClick={() => setShowPassword(!showPassword)}
             className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 outline-none focus:outline-none focus:ring-0 cursor-pointer"
           >
-            {showPassword ? (
-              <EyeOff className="w-5 h-5" />
-            ) : (
-              <Eye className="w-5 h-5" />
-            )}
+            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
           </button>
         )}
       </div>
-      {error && (
-        <p className="text-red-500 text-sm mt-1">{error.message?.toString()}</p>
-      )}
+      {error && <p className="text-red-500 text-sm mt-1">{error.message?.toString()}</p>}
     </div>
   );
 };

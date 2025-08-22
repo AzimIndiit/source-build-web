@@ -7,16 +7,19 @@ import { AuthWrapper } from '../components/AuthWrapper';
 import { loginSchema, type LoginFormData } from '../schemas/authSchemas';
 import { Button } from '@/components/ui/button';
 import { FormInput } from '@/components/forms/FormInput';
+import { useAuth } from '@/hooks/useAuth';
 
 function LoginPage() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const methods = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: 'zimmCorp@gmail.com'
-    }
+      email: 'zimmCorp@gmail.com',
+      password: 'password123', // Default password for testing
+    },
   });
 
   const { handleSubmit } = methods;
@@ -25,18 +28,22 @@ function LoginPage() {
     setIsLoading(true);
     try {
       console.log('Login data:', data);
+      console.log('Starting login process...');
+
+      // Call the actual login function from AuthProvider
+      await login(data.email, data.password);
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      console.log('Login successful, user authenticated');
+      console.log('About to navigate to /seller/dashboard');
+
       // Show success toast
-      toast.success('Login successful! Redirecting...');
-      
+      toast.success('Login successful!');
+
       // Navigate based on user role (hardcoded for now)
       setTimeout(() => {
+        console.log('Executing navigation to /seller/dashboard');
         navigate('/seller/dashboard');
       }, 500);
-      
     } catch (error) {
       console.error('Login error:', error);
       toast.error('Invalid email or password. Please try again.');
@@ -74,8 +81,8 @@ function LoginPage() {
           </Button>
 
           <div className="text-center">
-            <Link 
-              to="/auth/forgot-password" 
+            <Link
+              to="/auth/forgot-password"
               className="text-primary hover:text-primary/80 font-medium"
             >
               Forgot Password?

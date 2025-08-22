@@ -12,9 +12,9 @@ function ResetPasswordPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
-  
+
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const methods = useForm<ResetPasswordFormData>({
     resolver: zodResolver(resetPasswordSchema),
   });
@@ -25,18 +25,17 @@ function ResetPasswordPage() {
     setIsLoading(true);
     try {
       console.log('Reset password data:', { ...data, token });
-      
+
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
       // Show success toast
       toast.success('Password reset successfully! Redirecting to login...');
-      
+
       // Navigate to login after a short delay
       setTimeout(() => {
         navigate('/auth/login');
       }, 1500);
-      
     } catch (error) {
       console.error('Reset password error:', error);
       toast.error('Failed to reset password. Please try again.');
@@ -51,9 +50,7 @@ function ResetPasswordPage() {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div className="text-center space-y-2">
             <h2 className="text-2xl font-bold text-gray-900">Reset Password</h2>
-            <p className="text-gray-600">
-              Please enter your details below to reset your password
-            </p>
+            <p className="text-gray-600">Please enter your details below to reset your password</p>
           </div>
 
           <FormInput
@@ -83,10 +80,7 @@ function ResetPasswordPage() {
           <div className="text-center">
             <p className="text-gray-600">
               Back to{' '}
-              <Link 
-                to="/auth/login" 
-                className="text-primary hover:text-primary/80 font-medium"
-              >
+              <Link to="/auth/login" className="text-primary hover:text-primary/80 font-medium">
                 Login
               </Link>
             </p>

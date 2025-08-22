@@ -10,20 +10,28 @@ interface FormTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaEle
   customError?: any;
 }
 
-export const FormTextarea: React.FC<FormTextareaProps> = ({ name, label, customError, ...props }) => {
+export const FormTextarea: React.FC<FormTextareaProps> = ({
+  name,
+  label,
+  customError,
+  ...props
+}) => {
   const {
     register,
     formState: { errors },
   } = useFormContext();
 
-const error = errors[name] || customError;
+  const error = errors[name] || customError;
 
   return (
     <div className="w-full">
-      <Label htmlFor={name} className={cn(
-        'text-figma-text-primary font-helvetica font-medium text-figma-sm mb-figma-md',
-        error && 'text-red-600'
-      )}>
+      <Label
+        htmlFor={name}
+        className={cn(
+          'text-figma-text-primary font-helvetica font-medium text-figma-sm mb-figma-md',
+          error && 'text-red-600'
+        )}
+      >
         {label}
       </Label>
       <Textarea
@@ -47,4 +55,4 @@ const error = errors[name] || customError;
       )}
     </div>
   );
-}; 
+};

@@ -1,4 +1,4 @@
- function EarningsPage() {
+function EarningsPage() {
   return <div>Earnings Page</div>;
 }
 export default EarningsPage;

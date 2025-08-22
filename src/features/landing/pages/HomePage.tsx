@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Link } from 'react-router-dom';
 import { Car, Package2, Shield, Zap } from 'lucide-react';
 
- function HomePage() {
+function HomePage() {
   return (
     <div>
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-white to-gray-300 dark:from-gray-900 dark:to-gray-800">
@@ -12,8 +12,8 @@ import { Car, Package2, Shield, Zap } from 'lucide-react';
             Welcome to Source Build
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
-            The ultimate platform connecting drivers and sellers. Streamline your business, 
-            manage your fleet, and grow your sales all in one place.
+            The ultimate platform connecting drivers and sellers. Streamline your business, manage
+            your fleet, and grow your sales all in one place.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" asChild>
@@ -41,7 +41,7 @@ import { Car, Package2, Shield, Zap } from 'lucide-react';
                 </CardDescription>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader>
                 <Package2 className="h-10 w-10 text-primary mb-4" />
@@ -53,7 +53,7 @@ import { Car, Package2, Shield, Zap } from 'lucide-react';
                 </CardDescription>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader>
                 <Shield className="h-10 w-10 text-primary mb-4" />
@@ -65,7 +65,7 @@ import { Car, Package2, Shield, Zap } from 'lucide-react';
                 </CardDescription>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader>
                 <Zap className="h-10 w-10 text-primary mb-4" />
@@ -85,7 +85,8 @@ import { Car, Package2, Shield, Zap } from 'lucide-react';
         <div className="max-w-7xl mx-auto text-center">
           <h2 className="text-3xl font-bold mb-8">Ready to Get Started?</h2>
           <p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
-            Join thousands of drivers and sellers who are already growing their business with Source Build.
+            Join thousands of drivers and sellers who are already growing their business with Source
+            Build.
           </p>
           <Button size="lg" asChild>
             <Link to="/auth/signup">Create Your Account</Link>

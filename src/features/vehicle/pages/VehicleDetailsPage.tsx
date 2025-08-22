@@ -1,4 +1,4 @@
- function VehicleDetailsPage() {
+function VehicleDetailsPage() {
   return <div>Vehicle Details Page</div>;
 }
 

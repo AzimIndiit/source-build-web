@@ -16,7 +16,7 @@ function SignupPage() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [localDelivery, setLocalDelivery] = useState('no');
-  
+
   const methods = useForm({
     resolver: zodResolver(signupSchema),
     defaultValues: {
@@ -30,12 +30,15 @@ function SignupPage() {
       confirmPassword: '',
       einNumber: '',
       salesTaxId: '',
-      termsAccepted: false
-    }
+      termsAccepted: false,
+    },
   });
 
-  const { handleSubmit, formState: { errors } } = methods;
-  
+  const {
+    handleSubmit,
+    formState: { errors },
+  } = methods;
+
   // Log validation errors for debugging
   console.log('Validation errors:', errors);
 
@@ -44,16 +47,16 @@ function SignupPage() {
     try {
       const fullData = {
         ...data,
-        localDelivery
+        localDelivery,
       };
       console.log('Signup data:', fullData);
-      
+
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
       // Show success toast
       toast.success('Account created successfully! Please verify your email.');
-      
+
       // Navigate to OTP verification
       navigate('/auth/verify-otp');
     } catch (error) {
@@ -120,14 +123,22 @@ function SignupPage() {
 
           <div className="space-y-3">
             <Label className="text-base font-medium">Local Delivery Shipping</Label>
-            <RadioGroup value={localDelivery} onValueChange={setLocalDelivery} className="flex gap-8">
+            <RadioGroup
+              value={localDelivery}
+              onValueChange={setLocalDelivery}
+              className="flex gap-8"
+            >
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="yes" id="yes" />
-                <Label htmlFor="yes" className="font-normal cursor-pointer">Yes</Label>
+                <Label htmlFor="yes" className="font-normal cursor-pointer">
+                  Yes
+                </Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="no" id="no" />
-                <Label htmlFor="no" className="font-normal cursor-pointer">No</Label>
+                <Label htmlFor="no" className="font-normal cursor-pointer">
+                  No
+                </Label>
               </div>
             </RadioGroup>
           </div>

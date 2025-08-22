@@ -2,11 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { AuthWrapper } from '../components/AuthWrapper';
 import { Button } from '@/components/ui/button';
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-} from '@/components/ui/input-otp';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 
 function VerifyOtpPage() {
   const navigate = useNavigate();
@@ -15,7 +11,7 @@ function VerifyOtpPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (otp.length !== 6) {
       return;
     }
@@ -23,7 +19,7 @@ function VerifyOtpPage() {
     setIsLoading(true);
     try {
       console.log('Verifying OTP:', otp);
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 2000));
       navigate('/seller/dashboard');
     } catch (error) {
       console.error('OTP verification error:', error);
@@ -41,25 +37,19 @@ function VerifyOtpPage() {
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="text-center space-y-2">
           <h2 className="text-2xl font-bold text-gray-900">OTP Verification</h2>
-          <p className="text-gray-600">
-            Enter 6-digit OTP sent on your registered email
-          </p>
+          <p className="text-gray-600">Enter 6-digit OTP sent on your registered email</p>
           <p className="text-gray-600 font-medium">ZimmCorp@gmail.com.</p>
         </div>
 
-        <div className="flex justify-center py-4">
-          <InputOTP
-            maxLength={6}
-            value={otp}
-            onChange={(value) => setOtp(value)}
-          >
-            <InputOTPGroup className="gap-2">
-              <InputOTPSlot index={0} className="w-12 h-12 text-lg" />
-              <InputOTPSlot index={1} className="w-12 h-12 text-lg" />
-              <InputOTPSlot index={2} className="w-12 h-12 text-lg" />
-              <InputOTPSlot index={3} className="w-12 h-12 text-lg" />
-              <InputOTPSlot index={4} className="w-12 h-12 text-lg" />
-              <InputOTPSlot index={5} className="w-12 h-12 text-lg" />
+        <div className="flex justify-center py-6">
+          <InputOTP maxLength={6} value={otp} onChange={(value) => setOtp(value)}>
+            <InputOTPGroup className="gap-3">
+              <InputOTPSlot index={0} />
+              <InputOTPSlot index={1} />
+              <InputOTPSlot index={2} />
+              <InputOTPSlot index={3} />
+              <InputOTPSlot index={4} />
+              <InputOTPSlot index={5} />
             </InputOTPGroup>
           </InputOTP>
         </div>
@@ -79,7 +69,7 @@ function VerifyOtpPage() {
 
         <Button
           type="submit"
-          className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-medium text-base"
+          className="w-full  bg-blue-600 hover:bg-blue-700 text-white font-medium text-base"
           loading={isLoading}
           disabled={otp.length !== 6}
         >
@@ -89,17 +79,11 @@ function VerifyOtpPage() {
         <div className="text-center">
           <p className="text-gray-600">
             Back to{' '}
-            <Link 
-              to="/auth/signup" 
-              className="text-blue-600 hover:text-blue-700 font-medium"
-            >
+            <Link to="/auth/signup" className="text-blue-600 hover:text-blue-700 font-medium">
               Sign Up
             </Link>
             {' | '}
-            <Link 
-              to="/auth/login" 
-              className="text-blue-600 hover:text-blue-700 font-medium"
-            >
+            <Link to="/auth/login" className="text-blue-600 hover:text-blue-700 font-medium">
               Login
             </Link>
           </p>

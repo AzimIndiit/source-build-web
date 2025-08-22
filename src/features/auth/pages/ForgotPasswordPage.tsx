@@ -10,12 +10,12 @@ import { FormInput } from '@/components/forms/FormInput';
 
 function ForgotPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const methods = useForm<ForgotPasswordFormData>({
     resolver: zodResolver(forgotPasswordSchema),
     defaultValues: {
-      email: 'zimmCorp@gmail.com'
-    }
+      email: 'zimmCorp@gmail.com',
+    },
   });
 
   const { handleSubmit, reset } = methods;
@@ -24,18 +24,17 @@ function ForgotPasswordPage() {
     setIsLoading(true);
     try {
       console.log('Forgot password data:', data);
-      
+
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
       // Show success toast
       toast.success(`Password reset link sent to ${data.email}`, {
         duration: 5000,
       });
-      
+
       // Reset form
       reset();
-      
     } catch (error) {
       console.error('Forgot password error:', error);
       toast.error('Failed to send reset link. Please try again.');
@@ -74,10 +73,7 @@ function ForgotPasswordPage() {
           <div className="text-center">
             <p className="text-gray-600">
               Back to{' '}
-              <Link 
-                to="/auth/login" 
-                className="text-primary hover:text-primary/80 font-medium"
-              >
+              <Link to="/auth/login" className="text-primary hover:text-primary/80 font-medium">
                 Login
               </Link>
             </p>

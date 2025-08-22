@@ -16,7 +16,7 @@ export function Providers({ children }: ProvidersProps) {
       <ThemeProvider defaultTheme="system" storageKey="source-build-theme">
         <AuthProvider>
           {children}
-          <Toaster 
+          <Toaster
             position="top-right"
             toastOptions={{
               duration: 4000,

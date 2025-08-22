@@ -18,10 +18,10 @@ export function usePhoneFormatter(
   const [isEditing, setIsEditing] = useState(false);
   const [localValue, setLocalValue] = useState('');
   const timeoutRef = useRef<NodeJS.Timeout>(null);
-  
+
   // Watch the form value
   const formValue = watch(fieldName);
-  
+
   // Update local value when form value changes (and we're not editing)
   useEffect(() => {
     if (!isEditing && formValue) {
@@ -35,35 +35,35 @@ export function usePhoneFormatter(
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
-      
+
       setIsEditing(true);
-      
+
       const currentValue = e.target.value;
       // Extract only digits
-      let digits = currentValue.replace(/\D/g, "");
-      
+      let digits = currentValue.replace(/\D/g, '');
+
       // Limit to 10 digits
       if (digits.length > 10) {
         digits = digits.slice(0, 10);
       }
-      
+
       // Update local display with raw digits
       setLocalValue(digits);
-      setValue(fieldName, digits, { 
+      setValue(fieldName, digits, {
         shouldValidate: false,
         shouldDirty: true,
-        shouldTouch: false 
+        shouldTouch: false,
       });
-      
+
       // Set timeout to format after user stops typing
       timeoutRef.current = setTimeout(() => {
         if (digits.length > 0) {
           const formatted = formatPhoneNumber(digits);
           setLocalValue(formatted);
-          setValue(fieldName, formatted, { 
+          setValue(fieldName, formatted, {
             shouldValidate: true,
             shouldDirty: true,
-            shouldTouch: true 
+            shouldTouch: true,
           });
         }
         setIsEditing(false);
@@ -75,7 +75,7 @@ export function usePhoneFormatter(
   const handleFocus = useCallback(() => {
     setIsEditing(true);
     // Show raw digits when focusing
-    const digits = localValue.replace(/\D/g, "");
+    const digits = localValue.replace(/\D/g, '');
     if (digits !== localValue) {
       setLocalValue(digits);
     }
@@ -86,16 +86,16 @@ export function usePhoneFormatter(
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
-    
+
     // Format on blur if we have digits
-    const digits = localValue.replace(/\D/g, "");
+    const digits = localValue.replace(/\D/g, '');
     if (digits.length > 0) {
       const formatted = formatPhoneNumber(digits);
       setLocalValue(formatted);
-      setValue(fieldName, formatted, { 
+      setValue(fieldName, formatted, {
         shouldValidate: true,
         shouldDirty: true,
-        shouldTouch: true 
+        shouldTouch: true,
       });
     }
     setIsEditing(false);

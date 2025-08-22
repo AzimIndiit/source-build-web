@@ -15,12 +15,18 @@ export function Footer() {
             <h4 className="text-sm font-semibold uppercase tracking-wider mb-4">Company</h4>
             <ul className="space-y-2">
               <li>
-                <Link to="/about" className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
+                <Link
+                  to="/about"
+                  className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+                >
                   About Us
                 </Link>
               </li>
               <li>
-                <Link to="/contact" className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
+                <Link
+                  to="/contact"
+                  className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+                >
                   Contact
                 </Link>
               </li>
@@ -30,12 +36,18 @@ export function Footer() {
             <h4 className="text-sm font-semibold uppercase tracking-wider mb-4">Legal</h4>
             <ul className="space-y-2">
               <li>
-                <Link to="/privacy" className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
+                <Link
+                  to="/privacy"
+                  className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+                >
                   Privacy Policy
                 </Link>
               </li>
               <li>
-                <Link to="/terms" className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
+                <Link
+                  to="/terms"
+                  className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+                >
                   Terms of Service
                 </Link>
               </li>
@@ -45,12 +57,18 @@ export function Footer() {
             <h4 className="text-sm font-semibold uppercase tracking-wider mb-4">Connect</h4>
             <ul className="space-y-2">
               <li>
-                <a href="#" className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
+                <a
+                  href="#"
+                  className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+                >
                   Twitter
                 </a>
               </li>
               <li>
-                <a href="#" className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
+                <a
+                  href="#"
+                  className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+                >
                   LinkedIn
                 </a>
               </li>

@@ -2,13 +2,7 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useFormContext, Controller } from 'react-hook-form';
 import { Label } from '../ui/label';
 import { Input } from '../ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Badge } from '../ui/badge'; // Assuming you have a Badge component
 import { X } from 'lucide-react'; // For remove icons
 
@@ -38,14 +32,13 @@ export const FormSelect: React.FC<FormSelectProps> = ({
   placeholder,
   options,
   searchable = false,
-  searchPlaceholder = "Search options...",
+  searchPlaceholder = 'Search options...',
   optionsPerPage = 10,
   disabled = false,
   multiple = false,
   maxSelections,
   showSelectAll = false,
-  customError
-  
+  customError,
 }) => {
   const {
     control,
@@ -68,12 +61,13 @@ export const FormSelect: React.FC<FormSelectProps> = ({
     if (!searchable || !searchTerm.trim()) {
       return options;
     }
-    
-    const filtered = options.filter(option =>
-      option.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      option.value.toLowerCase().includes(searchTerm.toLowerCase())
+
+    const filtered = options.filter(
+      (option) =>
+        option.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        option.value.toLowerCase().includes(searchTerm.toLowerCase())
     );
-    
+
     return filtered;
   }, [options, searchTerm, searchable]);
 
@@ -91,28 +85,36 @@ export const FormSelect: React.FC<FormSelectProps> = ({
     setIsOpen(false);
   };
 
-  const handleMultiSelectChange = (value: string, currentValues: string[], fieldOnChange: (value: string[]) => void) => {
+  const handleMultiSelectChange = (
+    value: string,
+    currentValues: string[],
+    fieldOnChange: (value: string[]) => void
+  ) => {
     const newValues = currentValues.includes(value)
-      ? currentValues.filter(v => v !== value)
+      ? currentValues.filter((v) => v !== value)
       : maxSelections && currentValues.length >= maxSelections
         ? currentValues
         : [...currentValues, value];
-    
+
     fieldOnChange(newValues);
   };
 
-  const handleRemoveSelection = (valueToRemove: string, currentValues: string[], fieldOnChange: (value: string[]) => void) => {
-    const newValues = currentValues.filter(v => v !== valueToRemove);
+  const handleRemoveSelection = (
+    valueToRemove: string,
+    currentValues: string[],
+    fieldOnChange: (value: string[]) => void
+  ) => {
+    const newValues = currentValues.filter((v) => v !== valueToRemove);
     fieldOnChange(newValues);
   };
 
   const handleSelectAll = (currentValues: string[], fieldOnChange: (value: string[]) => void) => {
-    const allFilteredValues = filteredOptions.map(option => option.value);
-    const isAllSelected = allFilteredValues.every(value => currentValues.includes(value));
-    
+    const allFilteredValues = filteredOptions.map((option) => option.value);
+    const isAllSelected = allFilteredValues.every((value) => currentValues.includes(value));
+
     if (isAllSelected) {
       // Deselect all filtered options
-      const newValues = currentValues.filter(value => !allFilteredValues.includes(value));
+      const newValues = currentValues.filter((value) => !allFilteredValues.includes(value));
       fieldOnChange(newValues);
     } else {
       // Select all filtered options (respecting maxSelections)
@@ -137,16 +139,18 @@ export const FormSelect: React.FC<FormSelectProps> = ({
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const target = e.target as HTMLDivElement;
     const { scrollTop, scrollHeight, clientHeight } = target;
-    
+
     if (scrollHeight - scrollTop - clientHeight < 50 && hasMoreOptions) {
-      setVisibleCount(prev => Math.min(prev + optionsPerPage, filteredOptions.length));
+      setVisibleCount((prev) => Math.min(prev + optionsPerPage, filteredOptions.length));
     }
   };
 
   const getSelectedLabels = (values: string[] | string): string[] => {
     if (!multiple) return [];
     const valueArray = Array.isArray(values) ? values : [];
-    return valueArray.map(value => options.find(option => option.value === value)?.label || value);
+    return valueArray.map(
+      (value) => options.find((option) => option.value === value)?.label || value
+    );
   };
 
   const handleClearAll = (fieldOnChange: (value: string[]) => void) => {
@@ -164,37 +168,34 @@ export const FormSelect: React.FC<FormSelectProps> = ({
     return (
       <div className="flex items-center justify-between w-full">
         <div className="flex flex-wrap gap-1 flex-1 min-w-0">
-      
-              {selectedLabels.slice(0, 3).map((label, index) => (
-                <Badge
-                  key={selectedValues[index]}
-                  variant="secondary"
-                  className={`text-xs flex items-center gap-1 truncate pr-1 p-2 rounded-sm ${selectedValues.length > 3 ? ' max-w-24' : 'max-w-28'}`}
-                >
-                  <span className="truncate">{label}</span>
-                  <button
-                    type="button"
-                    className="ml-1 p-1.5 hover:bg-red-200 rounded-sm transition-colors duration-150 flex items-center justify-center"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      handleRemoveSelection(selectedValues[index], selectedValues, field.onChange);
-                    }}
-                    tabIndex={-1}
-                  >
-                    <X size={10} className="text-gray-500 hover:text-red-600" />
-                  </button>
-                </Badge>
-              ))}
-              {selectedValues.length > 3 && (
-                <Badge variant="outline" className="text-xs p-2 rounded-sm">
-                  +{selectedValues.length - 3} more
-                </Badge>
-              )}
-    
-        
+          {selectedLabels.slice(0, 3).map((label, index) => (
+            <Badge
+              key={selectedValues[index]}
+              variant="secondary"
+              className={`text-xs flex items-center gap-1 truncate pr-1 p-2 rounded-sm ${selectedValues.length > 3 ? ' max-w-24' : 'max-w-28'}`}
+            >
+              <span className="truncate">{label}</span>
+              <button
+                type="button"
+                className="ml-1 p-1.5 hover:bg-red-200 rounded-sm transition-colors duration-150 flex items-center justify-center"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleRemoveSelection(selectedValues[index], selectedValues, field.onChange);
+                }}
+                tabIndex={-1}
+              >
+                <X size={10} className="text-gray-500 hover:text-red-600" />
+              </button>
+            </Badge>
+          ))}
+          {selectedValues.length > 3 && (
+            <Badge variant="outline" className="text-xs p-2 rounded-sm">
+              +{selectedValues.length - 3} more
+            </Badge>
+          )}
         </div>
-        
+
         {/* Clear All Button */}
         {selectedValues.length > 0 && (
           <button
@@ -215,30 +216,31 @@ export const FormSelect: React.FC<FormSelectProps> = ({
     );
   };
 
-
   return (
     <div className="w-full">
-      <Label htmlFor={name} className= ''>
+      <Label htmlFor={name} className="">
         {label}
       </Label>
       <Controller
         name={name}
         control={control}
         render={({ field }) => {
-          const currentSelectedOption = multiple 
-            ? null 
-            : options.find(option => option.value === field.value);
+          const currentSelectedOption = multiple
+            ? null
+            : options.find((option) => option.value === field.value);
 
           const finalVisibleOptions = useMemo(() => {
             if (multiple) {
               return visibleOptions;
             }
-            
+
             if (!currentSelectedOption) return visibleOptions;
-            
-            const hasSelectedInVisible = visibleOptions.some(option => option.value === field.value);
+
+            const hasSelectedInVisible = visibleOptions.some(
+              (option) => option.value === field.value
+            );
             if (hasSelectedInVisible) return visibleOptions;
-            
+
             return [currentSelectedOption, ...visibleOptions];
           }, [visibleOptions, currentSelectedOption, field.value, multiple]);
 
@@ -255,11 +257,14 @@ export const FormSelect: React.FC<FormSelectProps> = ({
                 >
                   {renderMultiSelectTrigger(field)}
                 </div>
-                
+
                 {isOpen && !disabled && (
                   <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg">
                     {searchable && (
-                      <div className="p-2 border-b border-gray-200" onClick={(e) => e.stopPropagation()}>
+                      <div
+                        className="p-2 border-b border-gray-200"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <Input
                           type="text"
                           placeholder={searchPlaceholder}
@@ -272,33 +277,49 @@ export const FormSelect: React.FC<FormSelectProps> = ({
                         />
                       </div>
                     )}
-                    
+
                     {showSelectAll && filteredOptions.length > 0 && (
-                      <div 
+                      <div
                         className="p-2 border-b border-gray-200 cursor-pointer hover:bg-gray-50 text-sm font-medium"
-                        onClick={() => handleSelectAll(Array.isArray(field.value) ? field.value : [], field.onChange)}
+                        onClick={() =>
+                          handleSelectAll(
+                            Array.isArray(field.value) ? field.value : [],
+                            field.onChange
+                          )
+                        }
                       >
-                        {filteredOptions.every(option => (Array.isArray(field.value) ? field.value : []).includes(option.value))
-                          ? 'Deselect All' : 'Select All'}
+                        {filteredOptions.every((option) =>
+                          (Array.isArray(field.value) ? field.value : []).includes(option.value)
+                        )
+                          ? 'Deselect All'
+                          : 'Select All'}
                       </div>
                     )}
 
-                    <div 
+                    <div
                       ref={scrollContainerRef}
                       onScroll={handleScroll}
                       className="max-h-60 overflow-y-auto"
                     >
                       {finalVisibleOptions.length > 0 ? (
                         <>
-                          {finalVisibleOptions.map(option => {
-                            const isSelected = (Array.isArray(field.value) ? field.value : []).includes(option.value);
+                          {finalVisibleOptions.map((option) => {
+                            const isSelected = (
+                              Array.isArray(field.value) ? field.value : []
+                            ).includes(option.value);
                             return (
                               <div
                                 key={option.value}
                                 className={`p-2 cursor-pointer hover:bg-gray-50 flex items-center gap-2 ${
                                   isSelected ? 'bg-blue-50 text-blue-700' : ''
                                 }`}
-                                onClick={() => handleMultiSelectChange(option.value, Array.isArray(field.value) ? field.value : [], field.onChange)}
+                                onClick={() =>
+                                  handleMultiSelectChange(
+                                    option.value,
+                                    Array.isArray(field.value) ? field.value : [],
+                                    field.onChange
+                                  )
+                                }
                               >
                                 <input
                                   type="checkbox"
@@ -312,41 +333,43 @@ export const FormSelect: React.FC<FormSelectProps> = ({
                           })}
                           {hasMoreOptions && (
                             <div className="p-2 text-xs text-gray-400 text-center border-t">
-                              Scroll for more options... ({filteredOptions.length - visibleCount} remaining)
+                              Scroll for more options... ({filteredOptions.length - visibleCount}{' '}
+                              remaining)
                             </div>
                           )}
                         </>
                       ) : (
-                        searchable && searchTerm && (
+                        searchable &&
+                        searchTerm && (
                           <div className="p-2 text-sm text-gray-500 text-center">
                             No options found for "{searchTerm}"
                           </div>
                         )
                       )}
                     </div>
-                    
+
                     {maxSelections && (
                       <div className="p-2 border-t border-gray-200 text-xs text-gray-500 text-center">
-                        {Array.isArray(field.value) ? field.value.length : 0} of {maxSelections} selected
+                        {Array.isArray(field.value) ? field.value.length : 0} of {maxSelections}{' '}
+                        selected
                       </div>
                     )}
                   </div>
                 )}
-                
+
                 {/* Backdrop to close dropdown */}
-                {isOpen && (
-                  <div
-                    className="fixed inset-0 z-40"
-                    onClick={() => setIsOpen(false)}
-                  />
-                )}
+                {isOpen && <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />}
               </div>
             );
           }
 
           // Single select mode (original behavior)
           return (
-            <Select onValueChange={(value) => handleSingleSelectChange(value, field.onChange)} value={field.value} disabled={disabled}>
+            <Select
+              onValueChange={(value) => handleSingleSelectChange(value, field.onChange)}
+              value={field.value}
+              disabled={disabled}
+            >
               <SelectTrigger
                 id={name}
                 ref={field.ref}
@@ -357,7 +380,10 @@ export const FormSelect: React.FC<FormSelectProps> = ({
               </SelectTrigger>
               <SelectContent className="w-full bg-white">
                 {searchable && !disabled && (
-                  <div className="p-2 border-b border-gray-200" onClick={(e) => e.stopPropagation()}>
+                  <div
+                    className="p-2 border-b border-gray-200"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <Input
                       type="text"
                       placeholder={searchPlaceholder}
@@ -370,26 +396,32 @@ export const FormSelect: React.FC<FormSelectProps> = ({
                     />
                   </div>
                 )}
-                <div 
+                <div
                   ref={scrollContainerRef}
                   onScroll={handleScroll}
                   className="max-h-60 overflow-y-auto"
                 >
                   {finalVisibleOptions.length > 0 ? (
                     <>
-                      {finalVisibleOptions.map(option => (
-                        <SelectItem key={option.value} value={option.value} className='hover:bg-gray-100 cursor-pointer'>
+                      {finalVisibleOptions.map((option) => (
+                        <SelectItem
+                          key={option.value}
+                          value={option.value}
+                          className="hover:bg-gray-100 cursor-pointer"
+                        >
                           {option.label}
                         </SelectItem>
                       ))}
                       {hasMoreOptions && (
                         <div className="p-2 text-xs text-gray-400 text-center border-t">
-                          Scroll for more options... ({filteredOptions.length - visibleCount} remaining)
+                          Scroll for more options... ({filteredOptions.length - visibleCount}{' '}
+                          remaining)
                         </div>
                       )}
                     </>
                   ) : (
-                    searchable && searchTerm && (
+                    searchable &&
+                    searchTerm && (
                       <div className="p-2 text-sm text-gray-500 text-center">
                         No options found for "{searchTerm}"
                       </div>

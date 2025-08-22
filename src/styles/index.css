@@ -1,9 +1,11 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 /* Design System CSS Custom Properties */
 :root {
+  background-color: #f2f4f7;
+
   /* Colors */
-  --primary:#2b5aac !important;
+  --primary: #2b5aac !important;
   --color-primary: #2b5aac;
   --color-primary-light: #42b72a;
   --color-background: #f2f4f7;
@@ -14,12 +16,13 @@
   --color-border-primary: #2b5aac;
   --color-border-secondary: #dfdfdf;
   --color-social-button-bg: #f7f7f7;
-  
+
   /* Typography */
-  --font-family-primary: 'Helvetica Neue', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-family-primary:
+    'Helvetica Neue', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-weight-regular: 400;
   --font-weight-medium: 500;
-  
+
   /* Spacing */
   --spacing-xs: 4px;
   --spacing-sm: 5px;
@@ -34,14 +37,14 @@
   --spacing-7xl: 55px;
   --spacing-8xl: 60px;
   --spacing-9xl: 67px;
-  
+
   /* Border Radius */
   --radius-sm: 10px;
   --radius-md: 20px;
-  
+
   /* Shadows */
   --shadow-figma: 0px 0px 15.7px 0px rgba(0, 0, 0, 0.25);
-  
+
   /* Sizes */
   --height-input: 69px;
   --height-button: 69px;
@@ -52,13 +55,13 @@
   --width-form: 483px;
   --height-illustration: 330px;
   --width-illustration: 353px;
-  
+
   /* Effects */
   --backdrop-blur-figma: 17px;
   --opacity-primary: 0.8;
   --opacity-hover: 0.9;
   --opacity-disabled: 0.5;
-  
+
   /* Legacy Tailwind variables for compatibility */
   --background: 0 0% 100%;
   --foreground: 222.2 84% 4.9%;
@@ -81,29 +84,6 @@
   --ring: 222.2 84% 4.9%;
   --radius: 0.5rem;
 }
-
-.dark {
-  --background: 222.2 84% 4.9%;
-  --foreground: 210 40% 98%;
-  --card: 222.2 84% 4.9%;
-  --card-foreground: 210 40% 98%;
-  --popover: 222.2 84% 4.9%;
-  --popover-foreground: 210 40% 98%;
-  --primary: 210 40% 98%;
-  --primary-foreground: 222.2 47.4% 11.2%;
-  --secondary: 217.2 32.6% 17.5%;
-  --secondary-foreground: 210 40% 98%;
-  --muted: 217.2 32.6% 17.5%;
-  --muted-foreground: 215 20.2% 65.1%;
-  --accent: 217.2 32.6% 17.5%;
-  --accent-foreground: 210 40% 98%;
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 210 40% 98%;
-  --border: 217.2 32.6% 17.5%;
-  --input: 217.2 32.6% 17.5%;
-  --ring: 212.7 26.8% 83.9%;
-}
-
 
 
 /* Font face declarations for Helvetica Neue */
@@ -236,13 +216,32 @@
   font-display: swap;
 }
 
-
 /* Base styles */
 body {
   font-family: var(--font-family-primary);
   background-color: var(--color-background);
   color: var(--color-text-primary);
-  line-height: 1.5;
+  line-height: normal;
+}
+
+/* Fix Helvetica Neue font metrics */
+* {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Normalize line-height for better vertical alignment */
+body, button, input, textarea, select {
+  line-height: normal;
+}
+
+/* Fix Avatar text centering with Helvetica Neue */
+[data-slot="avatar-fallback"] {
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Smooth scrolling */
@@ -256,13 +255,16 @@ html {
   /* outline-offset: 2px; */
 }
 
-/* Selection styles */
-::selection {
-  background-color: var(--color-primary);
-  color: var(--color-white);
-}
 
-::-moz-selection {
-  background-color: var(--color-primary);
-  color: var(--color-white);
+/* Animations */
+@keyframes caret-blink {
+  0%,
+  70%,
+  100% {
+    opacity: 1;
+  }
+  20%,
+  50% {
+    opacity: 0;
+  }
 }
