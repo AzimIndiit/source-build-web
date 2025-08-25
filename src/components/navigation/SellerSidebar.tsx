@@ -100,7 +100,7 @@ export const SellerSidebar: React.FC<SellerSidebarProps> = ({
             size="icon"
             onClick={() => setIsCollapsed(!isCollapsed)}
             className={cn(
-              "hidden md:flex absolute -right-3 top-8 z-10 rounded-full bg-white border shadow-sm w-6 h-6 p-0",
+              "hidden md:flex absolute -right-3 top-8 z-10 rounded-full text-primary hover:text-primary bg-white border shadow-sm w-6 h-6 p-0",
               "hover:bg-gray-100"
             )}
           >

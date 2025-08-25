@@ -203,7 +203,7 @@ export const router = createBrowserRouter([
               })),
           },
           {
-            path: 'products/new',
+            path: 'products/create',
             lazy: () =>
               import('@/features/products/pages/CreateProductPage').then((module) => ({
                 Component: module.default,

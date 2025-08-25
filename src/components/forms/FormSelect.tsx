@@ -24,6 +24,10 @@ interface FormSelectProps {
   maxSelections?: number;
   showSelectAll?: boolean;
   customError?: any;
+  creatable?: boolean;
+  createPlaceholder?: string;
+  onCreateOption?: (value: string) => void;
+  className?: string;
 }
 
 export const FormSelect: React.FC<FormSelectProps> = ({
@@ -39,6 +43,10 @@ export const FormSelect: React.FC<FormSelectProps> = ({
   maxSelections,
   showSelectAll = false,
   customError,
+  creatable = false,
+  createPlaceholder = 'Create "{search}"',
+  onCreateOption,
+  className = '',
 }) => {
   const {
     control,
@@ -48,8 +56,14 @@ export const FormSelect: React.FC<FormSelectProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [visibleCount, setVisibleCount] = useState(optionsPerPage);
   const [isOpen, setIsOpen] = useState(false);
+  const [localOptions, setLocalOptions] = useState<SelectOption[]>(options);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const error = errors[name] || customError;
+
+  // Update localOptions when options prop changes
+  useEffect(() => {
+    setLocalOptions(options);
+  }, [options]);
 
   // Reset visible count when search term changes
   useEffect(() => {
@@ -59,17 +73,17 @@ export const FormSelect: React.FC<FormSelectProps> = ({
   // Filter options based on search term
   const filteredOptions = useMemo(() => {
     if (!searchable || !searchTerm.trim()) {
-      return options;
+      return localOptions;
     }
 
-    const filtered = options.filter(
+    const filtered = localOptions.filter(
       (option) =>
         option.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
         option.value.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return filtered;
-  }, [options, searchTerm, searchable]);
+  }, [localOptions, searchTerm, searchable]);
 
   // Get visible options based on current visible count
   const visibleOptions = useMemo(() => {
@@ -157,6 +171,44 @@ export const FormSelect: React.FC<FormSelectProps> = ({
     fieldOnChange([]);
   };
 
+  const handleCreateOption = (value: string, currentValues: string[] | string, fieldOnChange: (value: string[] | string) => void) => {
+    const trimmedValue = value.trim();
+    if (!trimmedValue) return;
+    
+    // Check if option already exists
+    const exists = localOptions.some(
+      opt => opt.value.toLowerCase() === trimmedValue.toLowerCase() || 
+      opt.label.toLowerCase() === trimmedValue.toLowerCase()
+    );
+    
+    if (!exists) {
+      const newOption: SelectOption = {
+        value: trimmedValue.toLowerCase().replace(/\s+/g, '-'),
+        label: trimmedValue,
+      };
+      
+      setLocalOptions(prev => [...prev, newOption]);
+      
+      // If multiple mode, add to selection
+      if (multiple) {
+        const valuesArray = Array.isArray(currentValues) ? currentValues : [];
+        fieldOnChange([...valuesArray, newOption.value]);
+      } else {
+        fieldOnChange(newOption.value);
+      }
+      
+      // Call the callback if provided
+      if (onCreateOption) {
+        onCreateOption(trimmedValue);
+      }
+      
+      setSearchTerm('');
+      if (!multiple) {
+        setIsOpen(false);
+      }
+    }
+  };
+
   const renderMultiSelectTrigger = (field: any) => {
     const selectedValues = Array.isArray(field.value) ? field.value : [];
     const selectedLabels = getSelectedLabels(selectedValues);
@@ -172,7 +224,7 @@ export const FormSelect: React.FC<FormSelectProps> = ({
             <Badge
               key={selectedValues[index]}
               variant="secondary"
-              className={`text-xs flex items-center gap-1 truncate pr-1 p-2 rounded-sm ${selectedValues.length > 3 ? ' max-w-24' : 'max-w-28'}`}
+              className={`text-xs flex items-center gap-1 truncate pr-1 p-2 rounded-full  bg-primary/10 ${selectedValues.length > 3 ? ' max-w-24' : 'max-w-28'}`}
             >
               <span className="truncate">{label}</span>
               <button
@@ -185,7 +237,7 @@ export const FormSelect: React.FC<FormSelectProps> = ({
                 }}
                 tabIndex={-1}
               >
-                <X size={10} className="text-gray-500 hover:text-red-600" />
+                <X size={10} className="text-gray-500 hover:text-red-600 cursor-pointer" />
               </button>
             </Badge>
           ))}
@@ -200,7 +252,7 @@ export const FormSelect: React.FC<FormSelectProps> = ({
         {selectedValues.length > 0 && (
           <button
             type="button"
-            className="ml-2 p-1 hover:bg-red-100 rounded-full transition-colors duration-150 flex items-center justify-center flex-shrink-0 cursor-pointer"
+            className="ml-2 p-1 hover:bg-red-100 rounded-sm transition-colors duration-150 flex items-center justify-center flex-shrink-0 cursor-pointer"
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -209,7 +261,7 @@ export const FormSelect: React.FC<FormSelectProps> = ({
             title="Clear all selections"
             tabIndex={-1}
           >
-            <X size={14} className="text-gray-400 hover:text-red-600" />
+            <X size={14} className="text-gray-400 hover:text-red-600 cursor-pointer" />
           </button>
         )}
       </div>
@@ -218,9 +270,11 @@ export const FormSelect: React.FC<FormSelectProps> = ({
 
   return (
     <div className="w-full">
-      <Label htmlFor={name} className="">
-        {label}
-      </Label>
+      {label && (
+        <Label htmlFor={name} className="">
+          {label}
+        </Label>
+      )}
       <Controller
         name={name}
         control={control}
@@ -250,16 +304,16 @@ export const FormSelect: React.FC<FormSelectProps> = ({
                 <div
                   ref={field.ref}
                   id={name}
-                  className={`mt-2 rounded-full w-full min-h-14 px-3 py-2 border cursor-pointer flex items-center ${
+                  className={`${label ? 'mt-2' : ''} rounded-sm w-full min-h-14 px-3 py-2 border cursor-pointer flex items-center ${
                     error ? 'border-red-500' : 'border-gray-300'
-                  } ${disabled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white hover:border-gray-400'}`}
+                  } ${disabled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white hover:border-gray-400'} ${className}`}
                   onClick={() => !disabled && setIsOpen(!isOpen)}
                 >
                   {renderMultiSelectTrigger(field)}
                 </div>
 
                 {isOpen && !disabled && (
-                  <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg">
+                  <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-sm shadow-lg">
                     {searchable && (
                       <div
                         className="p-2 border-b border-gray-200"
@@ -271,7 +325,7 @@ export const FormSelect: React.FC<FormSelectProps> = ({
                           value={searchTerm}
                           onChange={handleSearchChange}
                           onKeyDown={handleSearchKeyDown}
-                          className="h-8 rounded-md"
+                          className="h-8 rounded-sm"
                           autoFocus
                           autoComplete="off"
                         />
@@ -301,6 +355,16 @@ export const FormSelect: React.FC<FormSelectProps> = ({
                       onScroll={handleScroll}
                       className="max-h-60 overflow-y-auto"
                     >
+                      {creatable && searchTerm && filteredOptions.length === 0 && (
+                        <div
+                          className="p-2 cursor-pointer hover:bg-blue-50 text-blue-600 flex items-center gap-2 border-b"
+                          onClick={() => handleCreateOption(searchTerm, Array.isArray(field.value) ? field.value : [], field.onChange)}
+                        >
+                          <span className="flex-1">
+                            {createPlaceholder.replace('{search}', searchTerm)}
+                          </span>
+                        </div>
+                      )}
                       {finalVisibleOptions.length > 0 ? (
                         <>
                           {finalVisibleOptions.map((option) => {
@@ -339,6 +403,7 @@ export const FormSelect: React.FC<FormSelectProps> = ({
                           )}
                         </>
                       ) : (
+                        !creatable &&
                         searchable &&
                         searchTerm && (
                           <div className="p-2 text-sm text-gray-500 text-center">
@@ -367,16 +432,16 @@ export const FormSelect: React.FC<FormSelectProps> = ({
           return (
             <Select
               onValueChange={(value) => handleSingleSelectChange(value, field.onChange)}
-              value={field.value}
+              value={field.value || ''}
               disabled={disabled}
             >
               <SelectTrigger
                 id={name}
                 ref={field.ref}
-                className={`mt-2 rounded-sm w-full ${error ? 'border-red-500' : 'border-gray-300'}`}
+                className={`${label ? 'mt-2' : ''} rounded-sm w-full ${error ? 'border-red-500' : 'border-gray-300'} ${className}`}
                 disabled={disabled}
               >
-                <SelectValue placeholder={placeholder} />
+                <SelectValue placeholder={placeholder || 'Select an option'} />
               </SelectTrigger>
               <SelectContent className="w-full bg-white">
                 {searchable && !disabled && (
@@ -388,6 +453,7 @@ export const FormSelect: React.FC<FormSelectProps> = ({
                       type="text"
                       placeholder={searchPlaceholder}
                       value={searchTerm}
+                      
                       onChange={handleSearchChange}
                       onKeyDown={handleSearchKeyDown}
                       className="h-8 rounded-sm"

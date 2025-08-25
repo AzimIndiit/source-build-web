@@ -25,21 +25,24 @@ export const FormTextarea: React.FC<FormTextareaProps> = ({
 
   return (
     <div className="w-full">
-      <Label
-        htmlFor={name}
-        className={cn(
-          'text-figma-text-primary font-helvetica font-medium text-figma-sm mb-figma-md',
-          error && 'text-red-600'
-        )}
-      >
-        {label}
-      </Label>
+      {label && (
+        <Label
+          htmlFor={name}
+          className={cn(
+            'text-figma-text-primary font-helvetica font-medium text-figma-sm mb-figma-md mb-3',
+            error && 'text-red-600'
+          )}
+        >
+          {label}
+        </Label>
+      )}
       <Textarea
         id={name}
         {...register(name)}
         {...props}
         className={cn(
-          'mt-figma-md resize-none rounded-figma-md min-h-[160px]',
+          label ? 'mt-figma-md' : '',
+          'resize-none rounded-figma-md min-h-[160px]',
           'border border-figma-border-secondary bg-figma-white',
           'px-figma-xl py-figma-lg text-figma-sm font-helvetica',
           'placeholder:text-figma-text-secondary',
@@ -51,7 +54,7 @@ export const FormTextarea: React.FC<FormTextareaProps> = ({
         )}
       />
       {error && (
-        <p className="text-red-500 text-figma-xs mt-figma-sm">{error.message?.toString()}</p>
+        <p className="text-red-500 text-figma-xs mt-figma-sm mt-2">{error.message?.toString()}</p>
       )}
     </div>
   );

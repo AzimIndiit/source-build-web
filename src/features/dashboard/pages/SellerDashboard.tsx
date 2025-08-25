@@ -23,7 +23,7 @@ export const SellerDashboard: React.FC = () => {
   };
 
   return (
-    <div className="p-4 md:p-6 space-y-4 md:space-y-6">
+    <div className="py-4 md:p-4 space-y-4 md:space-y-6">
       {/* Dashboard Header */}
       <div>
         <h1 className="text-xl md:text-2xl font-bold text-gray-900">Dashboard</h1>

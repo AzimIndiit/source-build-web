@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { MapPin, ChevronDown, Edit2, Trash2, FilterIcon } from 'lucide-react';
+import { MapPin, ChevronDown, Edit2, Trash2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { PaginationWrapper } from '@/components/ui/pagination-wrapper';
-import { Button } from '@/components/ui/button';
+
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/Card';
+import FilterDropdown from '@/components/ui/FilterDropdown';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { DropdownMenuLabel, DropdownMenuSeparator } from '@radix-ui/react-dropdown-menu';
+
 
 interface Product {
   id: string;
@@ -23,11 +26,30 @@ interface Product {
   date: string;
   image: string;
   inStock: boolean;
+  slug: string;
 }
 
 const ProductsPage: React.FC = () => {
+  const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedLocation, setSelectedLocation] = useState('American Fork, UT');
+  const [activeFilters, setActiveFilters] = useState<any>({});
+    
+  const handleApplyFilters = (filters: any) => {
+    setActiveFilters(filters);
+    console.log('Applied filters:', filters);
+    // Here you would typically filter the products based on the selected filters
+  };
+
+  const handleClearFilters = () => {
+    setActiveFilters({});
+    console.log('Cleared all filters');
+    // Here you would typically reset the products to show all
+  };
+
+  const handleProductClick = (product: Product) => {
+    navigate(`/seller/products/${product.slug}`);
+  };
 
   // Sample product data matching the Figma design
   const products: Product[] = [
@@ -42,6 +64,7 @@ const ProductsPage: React.FC = () => {
       date: '22/01/2025',
       image: 'https://placehold.co/300x200.png',
       inStock: true,
+      slug: 'interior-essentials-appliances',
     },
     {
       id: '2',
@@ -54,6 +77,7 @@ const ProductsPage: React.FC = () => {
       date: '20/01/2025',
       image: 'https://placehold.co/300x200.png',
       inStock: true,
+      slug: 'interior-essentials-appliances',
     },
     {
       id: '3',
@@ -66,6 +90,7 @@ const ProductsPage: React.FC = () => {
       date: '17/01/2025',
       image: 'https://placehold.co/300x200.png',
       inStock: true,
+      slug: 'interior-essentials-appliances',
     },
     {
       id: '4',
@@ -78,6 +103,7 @@ const ProductsPage: React.FC = () => {
       date: '15/12/2024',
       image: 'https://placehold.co/300x200.png',
       inStock: true,
+      slug: 'interior-essentials-appliances',
     },
     {
       id: '5',
@@ -90,6 +116,7 @@ const ProductsPage: React.FC = () => {
       date: '18/12/2024',
       image: 'https://placehold.co/300x200.png',
       inStock: true,
+      slug: 'interior-essentials-appliances',
     },
     {
       id: '6',
@@ -102,6 +129,7 @@ const ProductsPage: React.FC = () => {
       date: '17/12/2024',
       image: 'https://placehold.co/300x200.png',
       inStock: true,
+      slug: 'interior-essentials-appliances',
     },
     {
       id: '7',
@@ -114,6 +142,7 @@ const ProductsPage: React.FC = () => {
       date: '16/12/2024',
       image: 'https://placehold.co/300x200.png',
       inStock: true,
+      slug: 'interior-essentials-appliances',
     },
     {
       id: '8',
@@ -126,6 +155,7 @@ const ProductsPage: React.FC = () => {
       date: '15/12/2024',
       image: 'https://placehold.co/300x200.png',
       inStock: true,
+      slug: 'interior-essentials-appliances',
     },
   ];
 
@@ -158,9 +188,7 @@ const ProductsPage: React.FC = () => {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <Button variant="ghost" size="icon" className="w-8 h-8 bg-primary/10">
-            <FilterIcon className="w-4 h-4 text-primary" />
-          </Button>
+          <FilterDropdown onApply={handleApplyFilters} onClear={handleClearFilters} />
         </div>
       </div>
 
@@ -169,7 +197,9 @@ const ProductsPage: React.FC = () => {
         {products.map((product) => (
           <Card
             key={product.id}
-            className="overflow-hidden border border-gray-200  rounded-xl  hover:shadow-md transition-shadow p-0"
+            className="overflow-hidden border border-gray-200 rounded-xl hover:shadow-md transition-shadow p-0 cursor-pointer group"
+              
+            onClick={() => handleProductClick(product)}
           >
             <div className="relative">
               <img src={product.image} alt={product.title} className="w-full h-40 object-cover" />
@@ -193,10 +223,10 @@ const ProductsPage: React.FC = () => {
               {/* Location + Date + Actions */}
               <div className="flex items-center justify-between text-[12px] text-gray-500">
                 <span>{product.location}</span>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2" onClick={(e) => e.stopPropagation()}>
                   <span className="text-primary cursor-pointer">{product.date}</span>
-                  <Edit2 className="h-4 w-4 text-primary cursor-pointer" />
-                  <Trash2 className="h-4 w-4 text-red-600 cursor-pointer" />
+                  <Edit2 className="h-4 w-4 text-primary cursor-pointer hover:text-primary/80" />
+                  <Trash2 className="h-4 w-4 text-red-600 cursor-pointer hover:text-red-700" />
                 </div>
               </div>
             </CardContent>
