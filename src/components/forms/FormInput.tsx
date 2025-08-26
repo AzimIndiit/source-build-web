@@ -25,19 +25,19 @@ export const FormInput: React.FC<FormInputProps> = ({
   const {
     register,
     formState: { errors },
-    watch
+    watch,
   } = useFormContext();
 
   // Handle nested field errors (e.g., variants.0.color)
   const getNestedError = (path: string, errors: any): any => {
     const keys = path.split('.');
     let current = errors;
-    
+
     for (const key of keys) {
       if (!current) return null;
       current = current[key];
     }
-    
+
     return current;
   };
 
@@ -80,6 +80,12 @@ export const FormInput: React.FC<FormInputProps> = ({
         )}
       </div>
       {error && <p className="text-red-500 text-sm mt-1">{error.message?.toString()}</p>}
-      {type==='color' && <div className='absolute right-5 top-3 text-sm   bg-white  w-20 justify-center flex items-center  rounded border cursor-pointer p-1'> {watchedValue}</div>}    </div>
+      {type === 'color' && (
+        <div className="absolute right-5 top-3 text-sm   bg-white  w-20 justify-center flex items-center  rounded border cursor-pointer p-1">
+          {' '}
+          {watchedValue}
+        </div>
+      )}{' '}
+    </div>
   );
 };

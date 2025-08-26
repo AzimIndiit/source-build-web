@@ -6,14 +6,14 @@
 /**
  * Get the URL for a static asset from the /src/assets directory
  * This uses Vite's static asset handling for optimal performance
- * 
+ *
  * @param path - The relative path from the assets folder (e.g., 'auth/vector.svg')
  * @returns The resolved asset URL
- * 
+ *
  * @example
  * // Direct usage in img tag:
  * import { getAssetUrl } from '@/lib/assets';
- * 
+ *
  * function MyComponent() {
  *   return <img src={getAssetUrl('auth/vector.svg')} alt="Logo" />;
  * }
@@ -21,7 +21,7 @@
 export function getAssetUrl(path: string): string {
   // Remove leading slash if present
   const cleanPath = path.startsWith('/') ? path.slice(1) : path;
-  
+
   // Use Vite's URL constructor with import.meta.url for proper asset resolution
   // This ensures assets are properly handled during build
   return new URL(`../assets/${cleanPath}`, import.meta.url).href;
@@ -30,11 +30,11 @@ export function getAssetUrl(path: string): string {
 /**
  * Type-safe asset imports with proper typing
  * Use this when you need to import assets as modules
- * 
+ *
  * @example
  * // Import SVG as React component (requires vite-plugin-svgr):
  * import VectorIcon from '@/assets/auth/vector.svg?react';
- * 
+ *
  * // Import image with metadata:
  * import logoUrl from '@/assets/logo.png';
  */
@@ -45,10 +45,10 @@ export type AssetImport = {
 
 /**
  * Helper to construct asset paths for CSS url() references
- * 
+ *
  * @param path - The relative path from the assets folder
  * @returns A CSS-compatible URL string
- * 
+ *
  * @example
  * // In CSS-in-JS:
  * const styles = {
@@ -61,10 +61,10 @@ export function getCssAssetUrl(path: string): string {
 
 /**
  * Preload an image asset for better performance
- * 
+ *
  * @param path - The relative path from the assets folder
  * @returns Promise that resolves when the image is loaded
- * 
+ *
  * @example
  * // Preload critical images:
  * useEffect(() => {
@@ -83,7 +83,7 @@ export function preloadImage(path: string): Promise<void> {
 /**
  * Get all assets from a specific directory (requires glob import)
  * This is useful for galleries or dynamic asset loading
- * 
+ *
  * @example
  * // Import all images from a directory:
  * const images = import.meta.glob('@/assets/gallery/*.{png,jpg,jpeg,svg}', { eager: true });

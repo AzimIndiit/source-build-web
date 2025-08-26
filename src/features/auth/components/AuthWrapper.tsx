@@ -14,8 +14,7 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
           <div className="mb-8">
             {/* Logo */}
             <div className="flex items-center gap-3 mb-8">
-              <img src={'/logo.svg'} alt="logo" style={{mixBlendMode: 'multiply'}} />
-              
+              <img src={'/logo.svg'} alt="logo" style={{ mixBlendMode: 'multiply' }} />
             </div>
 
             {/* Tagline */}
@@ -27,7 +26,7 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
 
           {/* Illustration - Construction Workers SVG */}
           <div className="relative mt-12">
-           <img src={workerSvg} alt='worker'/>
+            <img src={workerSvg} alt="worker" />
           </div>
         </div>
       </div>
@@ -38,7 +37,7 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
           {/* Mobile Logo */}
           <div className="lg:hidden mb-8 text-center">
             <div className="flex items-center justify-center gap-2">
-            <img src={'/logo.svg'} alt="logo" style={{mixBlendMode: 'multiply'}} />
+              <img src={'/logo.svg'} alt="logo" style={{ mixBlendMode: 'multiply' }} />
             </div>
           </div>
 

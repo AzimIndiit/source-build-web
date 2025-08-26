@@ -13,8 +13,6 @@ interface FilterOption {
   checked: boolean;
 }
 
-
-
 interface FilterModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -22,12 +20,7 @@ interface FilterModalProps {
   onClear: () => void;
 }
 
-const FilterModal: React.FC<FilterModalProps> = ({
-  isOpen,
-  onClose,
-  onApply,
-  onClear,
-}) => {
+const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose, onApply, onClear }) => {
   const [filters, setFilters] = useState<{
     popularity: FilterOption[];
     newest: FilterOption[];
@@ -65,8 +58,11 @@ const FilterModal: React.FC<FilterModalProps> = ({
     priceRange: [10, 250], // Min and Max price
   });
 
-  const handleCheckboxChange = (section: 'popularity' | 'newest' | 'availability' | 'readyTime', optionId: string) => {
-    setFilters(prev => ({
+  const handleCheckboxChange = (
+    section: 'popularity' | 'newest' | 'availability' | 'readyTime',
+    optionId: string
+  ) => {
+    setFilters((prev) => ({
       ...prev,
       [section]: prev[section].map((option: FilterOption) =>
         option.id === optionId ? { ...option, checked: !option.checked } : option
@@ -75,14 +71,14 @@ const FilterModal: React.FC<FilterModalProps> = ({
   };
 
   const handleRadioChange = (section: keyof typeof filters, value: string) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
       [section]: value,
     }));
   };
 
   const handlePriceRangeChange = (values: number[]) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
       priceRange: values,
     }));
@@ -95,10 +91,10 @@ const FilterModal: React.FC<FilterModalProps> = ({
 
   const handleClear = () => {
     const clearedFilters = {
-      popularity: filters.popularity.map(opt => ({ ...opt, checked: false })),
-      newest: filters.newest.map(opt => ({ ...opt, checked: false })),
-      availability: filters.availability.map(opt => ({ ...opt, checked: false })),
-      readyTime: filters.readyTime.map(opt => ({ ...opt, checked: false })),
+      popularity: filters.popularity.map((opt) => ({ ...opt, checked: false })),
+      newest: filters.newest.map((opt) => ({ ...opt, checked: false })),
+      availability: filters.availability.map((opt) => ({ ...opt, checked: false })),
+      readyTime: filters.readyTime.map((opt) => ({ ...opt, checked: false })),
       sorting: 'ascending',
       pricing: 'custom',
       priceRange: [10, 250],
@@ -114,16 +110,11 @@ const FilterModal: React.FC<FilterModalProps> = ({
       <Card className="w-full max-w-md max-h-[90vh] overflow-y-auto">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
           <CardTitle className="text-lg font-semibold">Filters</CardTitle>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onClose}
-            className="h-8 w-8"
-          >
+          <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8">
             <X className="h-4 w-4" />
           </Button>
         </CardHeader>
-        
+
         <CardContent className="space-y-6">
           {/* Popularity Section */}
           <div className="space-y-3">
@@ -253,7 +244,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
                 </div>
               </div>
             </RadioGroup>
-            
+
             {/* Price Range Slider */}
             {filters.pricing === 'custom' && (
               <div className="pt-4 space-y-3">
@@ -275,17 +266,10 @@ const FilterModal: React.FC<FilterModalProps> = ({
 
           {/* Action Buttons */}
           <div className="flex space-x-3 pt-4">
-            <Button
-              variant="outline"
-              onClick={handleClear}
-              className="flex-1"
-            >
+            <Button variant="outline" onClick={handleClear} className="flex-1">
               Clear All Filters
             </Button>
-            <Button
-              onClick={handleApply}
-              className="flex-1"
-            >
+            <Button onClick={handleApply} className="flex-1">
               Apply Filter
             </Button>
           </div>

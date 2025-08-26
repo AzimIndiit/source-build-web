@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { useForm, FormProvider, FieldErrors } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { X } from 'lucide-react';
+import { X, Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Button } from '@/components/ui';
@@ -28,236 +28,246 @@ const variantSchema = z.object({
     .min(1, 'Price is required')
     .regex(/^\d+(\.\d{1,2})?$/, 'Price must be a valid number')
     .refine((val) => parseFloat(val) > 0, 'Price must be greater than 0'),
-  discount: z.object({
-    discountType: z.enum(['none', 'flat', 'percentage']),
-    discountValue: z.string().optional(),
-  }).refine(
-    (data) => {
-      if (data.discountType !== 'none') {
-        return data.discountValue && data.discountValue.trim().length > 0;
+  discount: z
+    .object({
+      discountType: z.enum(['none', 'flat', 'percentage']),
+      discountValue: z.string().optional(),
+    })
+    .refine(
+      (data) => {
+        if (data.discountType !== 'none') {
+          return data.discountValue && data.discountValue.trim().length > 0;
+        }
+        return true;
+      },
+      {
+        message: 'Discount value is required when discount type is selected',
+        path: ['discountValue'],
       }
-      return true;
-    },
-    {
-      message: 'Discount value is required when discount type is selected',
-      path: ['discountValue'],
-    }
-  ).refine(
-    (data) => {
-      if (data.discountType === 'percentage' && data.discountValue) {
-        const value = parseFloat(data.discountValue);
-        return !isNaN(value) && value >= 0 && value <= 100;
+    )
+    .refine(
+      (data) => {
+        if (data.discountType === 'percentage' && data.discountValue) {
+          const value = parseFloat(data.discountValue);
+          return !isNaN(value) && value >= 0 && value <= 100;
+        }
+        return true;
+      },
+      {
+        message: 'Percentage discount must be between 0 and 100',
+        path: ['discountValue'],
       }
-      return true;
-    },
-    {
-      message: 'Percentage discount must be between 0 and 100',
-      path: ['discountValue'],
-    }
-  ).refine(
-    (data) => {
-      if (data.discountType === 'flat' && data.discountValue) {
-        const value = parseFloat(data.discountValue);
-        return !isNaN(value) && value >= 0;
+    )
+    .refine(
+      (data) => {
+        if (data.discountType === 'flat' && data.discountValue) {
+          const value = parseFloat(data.discountValue);
+          return !isNaN(value) && value >= 0;
+        }
+        return true;
+      },
+      {
+        message: 'Flat discount must be a positive number',
+        path: ['discountValue'],
       }
-      return true;
-    },
-    {
-      message: 'Flat discount must be a positive number',
-      path: ['discountValue'],
-    }
-  ),
+    ),
 });
 
-const createProductSchema = z.object({
-  title: z
-    .string()
-    .trim()
-    .min(3, 'Title must be at least 3 characters')
-    .max(100, 'Title must not exceed 100 characters'),
+const createProductSchema = z
+  .object({
+    title: z
+      .string()
+      .trim()
+      .min(3, 'Title must be at least 3 characters')
+      .max(100, 'Title must not exceed 100 characters'),
 
-  price: z
-    .string()
-    .trim()
-    .min(1, 'Price is required')
-    .regex(/^\d+(\.\d{1,2})?$/, 'Price must be a valid number with up to 2 decimal places')
-    .refine((val) => parseFloat(val) > 0, 'Price must be greater than 0')
-    .refine((val) => parseFloat(val) <= 999999.99, 'Price must not exceed 999,999.99'),
+    price: z
+      .string()
+      .trim()
+      .min(1, 'Price is required')
+      .regex(/^\d+(\.\d{1,2})?$/, 'Price must be a valid number with up to 2 decimal places')
+      .refine((val) => parseFloat(val) > 0, 'Price must be greater than 0')
+      .refine((val) => parseFloat(val) <= 999999.99, 'Price must not exceed 999,999.99'),
 
-  description: z
-    .string()
-    .trim()
-    .min(10, 'Description must be at least 10 characters')
-    .max(2000, 'Description must not exceed 2000 characters'),
+    description: z
+      .string()
+      .trim()
+      .min(10, 'Description must be at least 10 characters')
+      .max(2000, 'Description must not exceed 2000 characters'),
 
-  category: z
-    .string()
-    .trim()
-    .min(1, 'Category is required')
-    .max(50, 'Category must not exceed 50 characters'),
+    category: z
+      .string()
+      .trim()
+      .min(1, 'Category is required')
+      .max(50, 'Category must not exceed 50 characters'),
 
-  subCategory: z
-    .string()
-    .trim()
-    .min(1, 'Sub category is required')
-    .max(50, 'Sub category must not exceed 50 characters'),
+    subCategory: z
+      .string()
+      .trim()
+      .min(1, 'Sub category is required')
+      .max(50, 'Sub category must not exceed 50 characters'),
 
-  quantity: z
-    .string()
-    .trim()
-    .min(1, 'Quantity is required')
-    .regex(/^\d+$/, 'Quantity must be a whole number')
-    .refine((val) => parseInt(val) > 0, 'Quantity must be at least 1')
-    .refine((val) => parseInt(val) <= 99999, 'Quantity must not exceed 99,999'),
+    quantity: z
+      .string()
+      .trim()
+      .min(1, 'Quantity is required')
+      .regex(/^\d+$/, 'Quantity must be a whole number')
+      .refine((val) => parseInt(val) > 0, 'Quantity must be at least 1')
+      .refine((val) => parseInt(val) <= 99999, 'Quantity must not exceed 99,999'),
 
-  brand: z
-    .string()
-    .trim()
-    .min(2, 'Brand must be at least 2 characters')
-    .max(50, 'Brand must not exceed 50 characters')
-    .regex(
-      /^[a-zA-Z0-9\s\-&.]+$/,
-      'Brand can only contain letters, numbers, spaces, hyphens, ampersands, and periods'
-    ),
+    brand: z
+      .string()
+      .trim()
+      .min(2, 'Brand must be at least 2 characters')
+      .max(50, 'Brand must not exceed 50 characters')
+      .regex(
+        /^[a-zA-Z0-9\s\-&.]+$/,
+        'Brand can only contain letters, numbers, spaces, hyphens, ampersands, and periods'
+      ),
 
-  color: z
-    .string()
-    .trim()
-    .min(1, 'Color is required')
-    .regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, 'Please enter a valid HEX color code (e.g., #FF0000)'),
+    color: z
+      .string()
+      .trim()
+      .min(1, 'Color is required')
+      .regex(
+        /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/,
+        'Please enter a valid HEX color code (e.g., #FF0000)'
+      ),
 
-  locationAddress: z
-    .string()
-    .trim()
-    .min(5, 'Location must be at least 5 characters')
-    .max(200, 'Location must not exceed 200 characters'),
+    locationAddress: z
+      .string()
+      .trim()
+      .min(5, 'Location must be at least 5 characters')
+      .max(200, 'Location must not exceed 200 characters'),
 
-  productTag: z
-    .array(
-      z
-        .string()
-        .trim()
-        .min(2, 'Each tag must be at least 2 characters')
-        .max(30, 'Each tag must not exceed 30 characters')
-        .regex(
-          /^[a-zA-Z0-9\s\-#]+$/,
-          'Tags can only contain letters, numbers, spaces, hyphens, and hashtags'
-        )
-    )
-    .min(1, 'At least one product tag is required')
-    .max(10, 'Maximum 10 tags allowed'),
+    productTag: z
+      .array(
+        z
+          .string()
+          .trim()
+          .min(2, 'Each tag must be at least 2 characters')
+          .max(30, 'Each tag must not exceed 30 characters')
+          .regex(
+            /^[a-zA-Z0-9\s\-#]+$/,
+            'Tags can only contain letters, numbers, spaces, hyphens, and hashtags'
+          )
+      )
+      .min(1, 'At least one product tag is required')
+      .max(10, 'Maximum 10 tags allowed'),
 
-  variants: z.array(variantSchema).max(5, 'Maximum 5 variants allowed').optional(),
-  
-  // Marketplace fields
-  marketplaceOptions: z.object({
-    pickup: z.boolean().optional(),
-    shipping: z.boolean().optional(),
-    delivery: z.boolean().optional(),
-  }).optional(),
-  
-  pickupHours: z
-    .string()
-    .trim()
-    .max(100, 'Pickup hours must not exceed 100 characters')
-    .optional(),
-    
-  shippingPrice: z
-    .string()
-    .trim()
-    .optional(),
-    
-  readyByDate: z
-    .string()
-    .optional(),
-    
-  readyByTime: z
-    .string()
-    .optional(),
-  
-  discount: z.object({
-    discountType: z.enum(['none', 'flat', 'percentage']),
-    discountValue: z.string().optional(),
-  }).refine(
+    variants: z.array(variantSchema).max(5, 'Maximum 5 variants allowed').optional(),
+
+    // Marketplace fields
+    marketplaceOptions: z
+      .object({
+        pickup: z.boolean().optional(),
+        shipping: z.boolean().optional(),
+        delivery: z.boolean().optional(),
+      })
+      .optional(),
+
+    pickupHours: z
+      .string()
+      .trim()
+      .max(100, 'Pickup hours must not exceed 100 characters')
+      .optional(),
+
+    shippingPrice: z.string().trim().optional(),
+
+    readyByDate: z.string().optional(),
+
+    readyByTime: z.string().optional(),
+
+    discount: z
+      .object({
+        discountType: z.enum(['none', 'flat', 'percentage']),
+        discountValue: z.string().optional(),
+      })
+      .refine(
+        (data) => {
+          if (data.discountType !== 'none') {
+            return data.discountValue && data.discountValue.trim().length > 0;
+          }
+          return true;
+        },
+        {
+          message: 'Discount value is required when discount type is selected',
+          path: ['discountValue'],
+        }
+      )
+      .refine(
+        (data) => {
+          if (data.discountType === 'percentage' && data.discountValue) {
+            const value = parseFloat(data.discountValue);
+            return !isNaN(value) && value >= 0 && value <= 100;
+          }
+          return true;
+        },
+        {
+          message: 'Percentage discount must be between 0 and 100',
+          path: ['discountValue'],
+        }
+      )
+      .refine(
+        (data) => {
+          if (data.discountType === 'flat' && data.discountValue) {
+            const value = parseFloat(data.discountValue);
+            return !isNaN(value) && value >= 0;
+          }
+          return true;
+        },
+        {
+          message: 'Flat discount must be a positive number',
+          path: ['discountValue'],
+        }
+      ),
+  })
+  .refine(
     (data) => {
-      if (data.discountType !== 'none') {
-        return data.discountValue && data.discountValue.trim().length > 0;
-      }
-      return true;
-    },
-    {
-      message: 'Discount value is required when discount type is selected',
-      path: ['discountValue'],
-    }
-  ).refine(
-    (data) => {
-      if (data.discountType === 'percentage' && data.discountValue) {
-        const value = parseFloat(data.discountValue);
-        return !isNaN(value) && value >= 0 && value <= 100;
-      }
-      return true;
-    },
-    {
-      message: 'Percentage discount must be between 0 and 100',
-      path: ['discountValue'],
-    }
-  ).refine(
-    (data) => {
-      if (data.discountType === 'flat' && data.discountValue) {
-        const value = parseFloat(data.discountValue);
-        return !isNaN(value) && value >= 0;
-      }
-      return true;
-    },
-    {
-      message: 'Flat discount must be a positive number',
-      path: ['discountValue'],
-    }
-  ),
-}).refine(
-  (data) => {
-    // If pickup is selected, pickup hours must be provided
-    if (data.marketplaceOptions?.pickup && !data.pickupHours?.trim()) {
-      return false;
-    }
-    return true;
-  },
-  {
-    message: 'Pickup hours are required when pickup option is selected',
-    path: ['pickupHours'],
-  }
-).refine(
-  (data) => {
-    // If shipping is selected, shipping price must be provided
-    if (data.marketplaceOptions?.shipping && !data.shippingPrice?.trim()) {
-      return false;
-    }
-    return true;
-  },
-  {
-    message: 'Shipping price is required when shipping option is selected',
-    path: ['shippingPrice'],
-  }
-).refine(
-  (data) => {
-    // Validate shipping price format if provided
-    if (data.marketplaceOptions?.shipping && data.shippingPrice?.trim()) {
-      const regex = /^\d+(\.\d{1,2})?$/;
-      if (!regex.test(data.shippingPrice)) {
+      // If pickup is selected, pickup hours must be provided
+      if (data.marketplaceOptions?.pickup && !data.pickupHours?.trim()) {
         return false;
       }
-      const value = parseFloat(data.shippingPrice);
-      if (isNaN(value) || value < 0) {
+      return true;
+    },
+    {
+      message: 'Pickup hours are required when pickup option is selected',
+      path: ['pickupHours'],
+    }
+  )
+  .refine(
+    (data) => {
+      // If shipping is selected, shipping price must be provided
+      if (data.marketplaceOptions?.shipping && !data.shippingPrice?.trim()) {
         return false;
       }
+      return true;
+    },
+    {
+      message: 'Shipping price is required when shipping option is selected',
+      path: ['shippingPrice'],
     }
-    return true;
-  },
-  {
-    message: 'Shipping price must be a valid positive number',
-    path: ['shippingPrice'],
-  }
-);
+  )
+  .refine(
+    (data) => {
+      // Validate shipping price format if provided
+      if (data.marketplaceOptions?.shipping && data.shippingPrice?.trim()) {
+        const regex = /^\d+(\.\d{1,2})?$/;
+        if (!regex.test(data.shippingPrice)) {
+          return false;
+        }
+        const value = parseFloat(data.shippingPrice);
+        if (isNaN(value) || value < 0) {
+          return false;
+        }
+      }
+      return true;
+    },
+    {
+      message: 'Shipping price must be a valid positive number',
+      path: ['shippingPrice'],
+    }
+  );
 
 type CreateProductForm = z.infer<typeof createProductSchema>;
 
@@ -295,6 +305,7 @@ function CreateProductPage() {
   const [variants, setVariants] = useState<Array<{ id: string; images: File[] }>>([]);
   const [showVariants, setShowVariants] = useState(false);
   const [variantDragActive, setVariantDragActive] = useState<string | null>(null);
+  const [showMobilePreview, setShowMobilePreview] = useState(false);
 
   const methods = useForm<CreateProductForm>({
     resolver: zodResolver(createProductSchema),
@@ -326,7 +337,15 @@ function CreateProductPage() {
     },
   });
 
-  const { handleSubmit, watch, getValues, setValue ,setFocus,clearErrors,formState:{errors}} = methods;
+  const {
+    handleSubmit,
+    watch,
+    getValues,
+    setValue,
+    setFocus,
+    clearErrors,
+    formState: { errors },
+  } = methods;
   const formValues = watch();
 
   // Validate file before adding
@@ -481,7 +500,7 @@ function CreateProductPage() {
 
   const onError = (errors: FieldErrors<CreateProductForm>) => {
     console.log('Form errors:', errors);
-    
+
     // Check for image upload error first
     if (uploadedPhotos.length === 0) {
       setImageError(true);
@@ -489,13 +508,13 @@ function CreateProductPage() {
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
-    
+
     // Get the first field with an error and set focus on it
     const firstErrorField = Object.keys(errors)[0];
     if (firstErrorField) {
       // Set focus on the first error field
       setFocus(firstErrorField as any);
-      
+
       // Optional: Show a toast with the first error message
       const firstError = errors[firstErrorField as keyof typeof errors];
       if (firstError?.message) {
@@ -608,74 +627,117 @@ function CreateProductPage() {
   console.log('getValues', getValues());
   return (
     <FormProvider {...methods}>
-      <div className="min-h-screen bg-gray-50 absolute top-0 w-full z-99 left-0">
+      <div className="h-screen bg-gray-50 fixed top-0 w-full z-99 left-0 flex flex-col  ">
         <div className="bg-primary px-4 py-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
               <button
                 onClick={() => navigate(-1)}
                 className="text-white hover:bg-blue-700 p-1 rounded"
               >
-                <X className="h-6 w-6" />
+                <X className="h-5 w-5 sm:h-6 sm:w-6" />
               </button>
               <div>
                 <div className="text-xs text-blue-100">Marketplace</div>
-                <div className="text-white font-medium">Item for sale</div>
+                <div className="text-white text-sm sm:text-base font-medium">Item for sale</div>
               </div>
             </div>
             <Button
               type="button"
               onClick={handleSaveDraft}
               variant="ghost"
-              className="text-white hover:bg-white h-[48px] hover:text-primary"
+              className="text-white hover:bg-white h-[40px] sm:h-[48px] text-sm sm:text-base hover:text-primary px-3 sm:px-4"
             >
               Save Draft
             </Button>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit, onError)} className="flex gap-2 p-4">
-          <ProductForm 
-            methods={methods}
-            uploadedPhotos={uploadedPhotos}
-            setUploadedPhotos={setUploadedPhotos}
-            imageError={imageError}
-            setImageError={setImageError}
-            variants={variants}
-            setVariants={setVariants}
-            showVariants={showVariants}
-            setShowVariants={setShowVariants}
-            handleDrag={handleDrag}
-            handleDrop={handleDrop}
-            handleFileChange={handleFileChange}
-            removePhoto={removePhoto}
-            addVariant={addVariant}
-            removeVariant={removeVariant}
-            handleVariantImageUpload={handleVariantImageUpload}
-            removeVariantImage={removeVariantImage}
-            handleVariantDrag={handleVariantDrag}
-            handleVariantDrop={handleVariantDrop}
-            dragActive={dragActive}
-            variantDragActive={variantDragActive}
-            MAX_IMAGES={MAX_IMAGES}
-            categoryOptions={categoryOptions}
-            subCategoryOptions={subCategoryOptions}
-            tagOptions={tagOptions}
-          />
-          
-          <ProductPreview 
-            formValues={formValues}
-            uploadedPhotos={uploadedPhotos}
-            variants={variants}
-            categoryOptions={categoryOptions}
-            subCategoryOptions={subCategoryOptions}
-            tagOptions={tagOptions}
-          />
+        {/* Mobile Preview Toggle Button */}
+        <div className="lg:hidden fixed bottom-4 right-4 z-50">
+          {!showMobilePreview && (
+            <Button
+              type="button"
+              onClick={() => setShowMobilePreview(!showMobilePreview)}
+              className="bg-primary text-white  p-3 shadow-sm hover:bg-primary/90  rounded-sm flex gap-3 w-fit h-10"
+            >
+              {showMobilePreview ? (
+                <>
+                  <span>Hide Preview </span> <EyeOff className="h-6 w-6" />
+                </>
+              ) : (
+                <>
+                  <span>Show Preview </span> <Eye className="h-6 w-6" />
+                </>
+              )}
+            </Button>
+          )}
+        </div>
+
+        {/* Mobile Preview Modal */}
+        {showMobilePreview && (
+          <div className="lg:hidden fixed inset-0 z-[100] bg-white overflow-y-auto">
+            <div className="min-h-screen">
+              <ProductPreview
+                handleBackClick={() => setShowMobilePreview(false)}
+                formValues={formValues}
+                uploadedPhotos={uploadedPhotos}
+                variants={variants}
+                categoryOptions={categoryOptions}
+                subCategoryOptions={subCategoryOptions}
+                tagOptions={tagOptions}
+              />
+            </div>
+          </div>
+        )}
+
+        <form
+          onSubmit={handleSubmit(onSubmit, onError)}
+          className="flex-1 flex flex-col lg:flex-row gap-4 p-4 mx-auto overflow-hidden min-h-0  w-full"
+        >
+          <div className="w-full lg:max-w-[450px] h-full">
+            <ProductForm
+              methods={methods}
+              uploadedPhotos={uploadedPhotos}
+              setUploadedPhotos={setUploadedPhotos}
+              imageError={imageError}
+              setImageError={setImageError}
+              variants={variants}
+              showVariants={showVariants}
+              setShowVariants={setShowVariants}
+              handleDrag={handleDrag}
+              handleDrop={handleDrop}
+              handleFileChange={handleFileChange}
+              removePhoto={removePhoto}
+              addVariant={addVariant}
+              removeVariant={removeVariant}
+              handleVariantImageUpload={handleVariantImageUpload}
+              removeVariantImage={removeVariantImage}
+              handleVariantDrag={handleVariantDrag}
+              handleVariantDrop={handleVariantDrop}
+              dragActive={dragActive}
+              variantDragActive={variantDragActive}
+              MAX_IMAGES={MAX_IMAGES}
+              categoryOptions={categoryOptions}
+              subCategoryOptions={subCategoryOptions}
+              tagOptions={tagOptions}
+            />
+          </div>
+
+          <div className="w-full lg:flex-1 hidden lg:block h-full">
+            <ProductPreview
+              formValues={formValues}
+              uploadedPhotos={uploadedPhotos}
+              variants={variants}
+              categoryOptions={categoryOptions}
+              subCategoryOptions={subCategoryOptions}
+              tagOptions={tagOptions}
+            />
+          </div>
         </form>
       </div>
     </FormProvider>
   );
 }
-
 
 export default CreateProductPage;

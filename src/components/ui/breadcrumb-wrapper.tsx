@@ -20,32 +20,29 @@ interface BreadcrumbWrapperProps {
   className?: string;
 }
 
-export const BreadcrumbWrapper: React.FC<BreadcrumbWrapperProps> = ({ 
-  items, 
-  className = '' 
-}) => {
+export const BreadcrumbWrapper: React.FC<BreadcrumbWrapperProps> = ({ items, className = '' }) => {
   return (
     <div className={`py-4 ${className}`}>
-        <Breadcrumb>
-          <BreadcrumbList>
-            {items.map((item, index) => (
-              <React.Fragment key={index}>
-                <BreadcrumbItem>
-                  {item.isCurrentPage ? (
-                    <BreadcrumbPage className='text-primary'>{item.label}</BreadcrumbPage>
-                  ) : item.href ? (
-                    <BreadcrumbLink asChild>
-                      <Link to={item.href}>{item.label}</Link>
-                    </BreadcrumbLink>
-                  ) : (
-                    <span className="text-gray-500">{item.label}</span>
-                  )}
-                </BreadcrumbItem>
-                {index < items.length - 1 && <BreadcrumbSeparator />}
-              </React.Fragment>
-            ))}
-          </BreadcrumbList>
-        </Breadcrumb>
+      <Breadcrumb>
+        <BreadcrumbList>
+          {items.map((item, index) => (
+            <React.Fragment key={index}>
+              <BreadcrumbItem>
+                {item.isCurrentPage ? (
+                  <BreadcrumbPage className="text-primary">{item.label}</BreadcrumbPage>
+                ) : item.href ? (
+                  <BreadcrumbLink asChild>
+                    <Link to={item.href}>{item.label}</Link>
+                  </BreadcrumbLink>
+                ) : (
+                  <span className="text-gray-500">{item.label}</span>
+                )}
+              </BreadcrumbItem>
+              {index < items.length - 1 && <BreadcrumbSeparator />}
+            </React.Fragment>
+          ))}
+        </BreadcrumbList>
+      </Breadcrumb>
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import * as React from "react"
+import * as React from 'react';
 import {
   Pagination,
   PaginationContent,
@@ -7,14 +7,14 @@ import {
   PaginationNext,
   PaginationPrevious,
   PaginationEllipsis,
-} from "@/components/ui/pagination"
+} from '@/components/ui/pagination';
 
 interface PaginationWrapperProps {
-  currentPage: number
-  totalPages: number
-  onPageChange: (page: number) => void
-  showPages?: number
-  className?: string
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+  showPages?: number;
+  className?: string;
 }
 
 export function PaginationWrapper({
@@ -25,49 +25,49 @@ export function PaginationWrapper({
   className,
 }: PaginationWrapperProps) {
   const generatePageNumbers = () => {
-    const pages: (number | string)[] = []
-    
+    const pages: (number | string)[] = [];
+
     if (totalPages <= showPages + 2) {
       for (let i = 1; i <= totalPages; i++) {
-        pages.push(i)
+        pages.push(i);
       }
     } else {
-      pages.push(1)
-      
+      pages.push(1);
+
       if (currentPage <= 3) {
         for (let i = 2; i <= Math.min(showPages, totalPages - 1); i++) {
-          pages.push(i)
+          pages.push(i);
         }
         if (totalPages > showPages) {
-          pages.push("ellipsis")
+          pages.push('ellipsis');
         }
-        pages.push(totalPages)
+        pages.push(totalPages);
       } else if (currentPage >= totalPages - 2) {
-        pages.push("ellipsis")
+        pages.push('ellipsis');
         for (let i = Math.max(totalPages - showPages + 2, 2); i <= totalPages; i++) {
-          pages.push(i)
+          pages.push(i);
         }
       } else {
-        pages.push("ellipsis")
+        pages.push('ellipsis');
         for (let i = currentPage - 1; i <= currentPage + 1; i++) {
-          pages.push(i)
+          pages.push(i);
         }
-        pages.push("ellipsis")
-        pages.push(totalPages)
+        pages.push('ellipsis');
+        pages.push(totalPages);
       }
     }
-    
-    return pages
-  }
 
-  const pageNumbers = generatePageNumbers()
+    return pages;
+  };
+
+  const pageNumbers = generatePageNumbers();
 
   const handlePageClick = (e: React.MouseEvent, page: number) => {
-    e.preventDefault()
+    e.preventDefault();
     if (page !== currentPage && page >= 1 && page <= totalPages) {
-      onPageChange(page)
+      onPageChange(page);
     }
-  }
+  };
 
   return (
     <Pagination className={className}>
@@ -76,13 +76,13 @@ export function PaginationWrapper({
           <PaginationPrevious
             href="#"
             onClick={(e) => handlePageClick(e, currentPage - 1)}
-            className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+            className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
           />
         </PaginationItem>
-        
+
         {pageNumbers.map((pageNum, index) => (
           <PaginationItem key={index}>
-            {pageNum === "ellipsis" ? (
+            {pageNum === 'ellipsis' ? (
               <PaginationEllipsis />
             ) : (
               <PaginationLink
@@ -95,15 +95,15 @@ export function PaginationWrapper({
             )}
           </PaginationItem>
         ))}
-        
+
         <PaginationItem>
           <PaginationNext
             href="#"
             onClick={(e) => handlePageClick(e, currentPage + 1)}
-            className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+            className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
           />
         </PaginationItem>
       </PaginationContent>
     </Pagination>
-  )
+  );
 }

@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { 
-  MapPin, 
-  ChevronDown, 
-  MessageCircle, 
-  Bell, 
+import {
+  MapPin,
+  ChevronDown,
+  MessageCircle,
+  Bell,
   ShoppingCart,
   User,
   Settings,
   LogOut,
   Menu,
   X,
-  Search
+  Search,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -59,9 +59,7 @@ export const Navbar: React.FC = () => {
                 <button className="bg-blue-50 flex gap-2 h-[42px] items-center px-2 md:px-3 py-2 rounded-lg hover:bg-blue-100 transition-colors outline-none">
                   <MapPin className="w-5 h-5 text-gray-700" />
                   <div className="flex flex-col text-left">
-                    <span className="text-xs text-gray-600 hidden md:block">
-                      American Fork, UT
-                    </span>
+                    <span className="text-xs text-gray-600 hidden md:block">American Fork, UT</span>
                     <span className="text-xs md:text-sm font-semibold text-gray-900 flex items-center gap-1">
                       <span className="hidden lg:inline">Update Location</span>
                       <span className="lg:hidden">Location</span>
@@ -70,20 +68,14 @@ export const Navbar: React.FC = () => {
                   </div>
                 </button>
               </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-56">
-                  <DropdownMenuLabel>Select Location</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem className="cursor-pointer">
-                    American Fork, UT
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="cursor-pointer">
-                    Provo, UT
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="cursor-pointer">
-                    Salt Lake City, UT
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <DropdownMenuContent align="start" className="w-56">
+                <DropdownMenuLabel>Select Location</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="cursor-pointer">American Fork, UT</DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer">Provo, UT</DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer">Salt Lake City, UT</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           <div className="flex gap-3 lg:gap-8 justify-end items-center ml-4 flex-1">
@@ -107,7 +99,7 @@ export const Navbar: React.FC = () => {
               <>
                 {/* User Profile */}
                 <DropdownMenu>
-                  <DropdownMenuTrigger asChild className='cursor-pointer'>
+                  <DropdownMenuTrigger asChild className="cursor-pointer">
                     <button className="bg-blue-50 flex gap-2 h-[42px] items-center px-2 lg:px-3 py-2 rounded-lg hover:bg-blue-100 transition-colors outline-none">
                       <Avatar className="w-8 h-8">
                         <AvatarFallback className="bg-gray-400 text-white font-medium top-[2px] relative">
@@ -136,8 +128,8 @@ export const Navbar: React.FC = () => {
                         <span>Manage Profile</span>
                       </Link>
                     </DropdownMenuItem>
-                    
-                    <DropdownMenuItem 
+
+                    <DropdownMenuItem
                       className="cursor-pointer text-sm"
                       onSelect={(e) => e.preventDefault()}
                     >
@@ -148,18 +140,15 @@ export const Navbar: React.FC = () => {
                           </AvatarFallback>
                         </Avatar>
                         <span className="flex-1">Switch to Buyer</span>
-                        <Switch 
+                        <Switch
                           className={`h-6 w-12 ${isBuyerMode ? 'data-[state=checked]:bg-green-500' : ''}`}
                           checked={isBuyerMode}
                           onCheckedChange={setIsBuyerMode}
                         />
                       </div>
                     </DropdownMenuItem>
-                    
-                    <DropdownMenuItem 
-                      onClick={handleLogout}
-                      className="cursor-pointer text-sm"
-                    >
+
+                    <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-sm">
                       <div className="flex gap-3 items-center">
                         <Avatar className="w-10 h-10">
                           <AvatarFallback className="bg-gray-200">
@@ -207,7 +196,7 @@ export const Navbar: React.FC = () => {
                 </Button>
               </div>
             )}
-            
+
             {/* Cart */}
             <Button
               variant="ghost"
@@ -245,10 +234,7 @@ export const Navbar: React.FC = () => {
               </Button>
 
               {/* Cart */}
-              <Button
-                variant="ghost"
-                className="relative p-2"
-              >
+              <Button variant="ghost" className="relative p-2">
                 <ShoppingCart className="w-5 h-5" />
                 <span className="absolute top-2 -right-1 bg-red-500 min-w-[16px] h-[16px] px-1 rounded-full flex items-center justify-center text-white text-[10px] font-medium">
                   2
@@ -298,7 +284,7 @@ export const Navbar: React.FC = () => {
                   {/* Switch Mode */}
                   <div className="flex items-center justify-between py-2">
                     <span className="text-sm">Switch to Buyer</span>
-                    <Switch 
+                    <Switch
                       className="h-6 w-12"
                       checked={isBuyerMode}
                       onCheckedChange={setIsBuyerMode}
@@ -344,11 +330,7 @@ export const Navbar: React.FC = () => {
       {isMobileSearchOpen && (
         <div className="fixed inset-0 bg-white z-[60] lg:hidden">
           <div className="flex items-center gap-2 p-4 border-b">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsMobileSearchOpen(false)}
-            >
+            <Button variant="ghost" size="icon" onClick={() => setIsMobileSearchOpen(false)}>
               <X className="w-5 h-5" />
             </Button>
             <div className="flex-1">

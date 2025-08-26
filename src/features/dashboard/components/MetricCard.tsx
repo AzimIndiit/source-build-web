@@ -1,13 +1,16 @@
 import React from 'react';
-import {
-  Card,
-  CardContent,
-} from '@/components/ui/Card';
+import { Card, CardContent } from '@/components/ui/Card';
 import { MetricData } from '../types';
 
 interface MetricCardProps extends MetricData {}
 
-export const MetricCard: React.FC<MetricCardProps> = ({ title, value, icon: Icon, color, bgColor }) => {
+export const MetricCard: React.FC<MetricCardProps> = ({
+  title,
+  value,
+  icon: Icon,
+  color,
+  bgColor,
+}) => {
   return (
     <Card className={`relative overflow-hidden border-0 ${color} h-[127px] rounded-4xl`}>
       <CardContent className="p-0">

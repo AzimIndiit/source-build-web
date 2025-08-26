@@ -8,12 +8,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/Card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { SalesData } from '../../types';
 import { CustomTooltip } from './CustomTooltip';
 
@@ -31,13 +26,13 @@ export const WeeklySalesChart: React.FC<WeeklySalesChartProps> = ({ data }) => {
         <ResponsiveContainer width="100%" height="100%" minHeight={250}>
           <LineChart data={data} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
             <CartesianGrid strokeDasharray="0" stroke="transparent" />
-            <XAxis 
-              dataKey="day" 
+            <XAxis
+              dataKey="day"
               tick={{ fontSize: 14, fill: '#9ca3af' }}
               tickLine={false}
               axisLine={false}
             />
-            <YAxis 
+            <YAxis
               tick={{ fontSize: 14, fill: '#9ca3af' }}
               tickLine={false}
               axisLine={false}
@@ -46,9 +41,9 @@ export const WeeklySalesChart: React.FC<WeeklySalesChartProps> = ({ data }) => {
               ticks={[0, 200, 400, 600, 800]}
             />
             <Tooltip content={<CustomTooltip />} />
-            <Line 
+            <Line
               type="monotone"
-              dataKey="sales" 
+              dataKey="sales"
               stroke="#f97316"
               strokeWidth={3}
               dot={{ fill: '#f97316', strokeWidth: 2, r: 6, stroke: '#fff' }}

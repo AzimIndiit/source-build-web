@@ -1,9 +1,5 @@
 import React, { useState } from 'react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from './dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from './dropdown-menu';
 import { Button } from './button';
 import { Checkbox } from './checkbox';
 import { RadioGroup, RadioGroupItem } from './radio-group';
@@ -22,10 +18,7 @@ interface FilterDropdownProps {
   onClear: () => void;
 }
 
-const FilterDropdown: React.FC<FilterDropdownProps> = ({
-  onApply,
-  onClear,
-}) => {
+const FilterDropdown: React.FC<FilterDropdownProps> = ({ onApply, onClear }) => {
   const [filters, setFilters] = useState<{
     popularity: FilterOption[];
     newest: FilterOption[];
@@ -120,11 +113,14 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
-        <FilterButton  className="flex items-center gap-2">
+        <FilterButton className="flex items-center gap-2">
           <Filter className="h-4 w-4 text-primary" />
         </FilterButton>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-[90vw] sm:w-[500px] md:w-[600px] max-w-[600px] max-h-[80vh] overflow-y-auto p-4 sm:p-5 md:p-6 shadow-lg border border-gray-200" align="end">
+      <DropdownMenuContent
+        className="w-[90vw] sm:w-[500px] md:w-[600px] max-w-[600px] max-h-[80vh] overflow-y-auto p-4 sm:p-5 md:p-6 shadow-lg border border-gray-200"
+        align="end"
+      >
         {/* Popularity Section */}
         <div className="space-y-3 mb-6">
           <h3 className="font-semibold text-sm text-gray-900">Popularity</h3>
@@ -227,7 +223,7 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({
           <RadioGroup value={filters.sorting} onValueChange={handleSortingChange}>
             <div className="flex gap-4">
               <label
-                  className={`flex items-center space-x-2 cursor-pointer ${
+                className={`flex items-center space-x-2 cursor-pointer ${
                   filters.sorting === 'ascending' ? 'text-primary' : 'text-gray-600'
                 }`}
               >
@@ -277,7 +273,7 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({
               </label>
             </div>
           </RadioGroup>
-          
+
           {/* Price Range Slider */}
           {filters.pricing === 'custom' && (
             <div className="space-y-3">

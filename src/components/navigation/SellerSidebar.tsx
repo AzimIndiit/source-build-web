@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { 
-  LayoutGrid, 
-  Receipt, 
-  Package, 
-  Bell, 
+import {
+  LayoutGrid,
+  Receipt,
+  Package,
+  Bell,
   MessageSquare,
   Plus,
   Menu,
   X,
-  ChevronLeft
+  ChevronLeft,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -30,16 +30,16 @@ interface SellerSidebarProps {
   onCollapsedChange?: (collapsed: boolean) => void;
 }
 
-export const SellerSidebar: React.FC<SellerSidebarProps> = ({ 
-  isOpen = true, 
+export const SellerSidebar: React.FC<SellerSidebarProps> = ({
+  isOpen = true,
   onClose,
   isMobile = false,
   isCollapsed: controlledCollapsed,
-  onCollapsedChange
+  onCollapsedChange,
 }) => {
   const location = useLocation();
   const [localCollapsed, setLocalCollapsed] = useState(false);
-  
+
   // Use controlled state if provided, otherwise use local state
   const isCollapsed = controlledCollapsed !== undefined ? controlledCollapsed : localCollapsed;
   const setIsCollapsed = onCollapsedChange || setLocalCollapsed;
@@ -65,29 +65,23 @@ export const SellerSidebar: React.FC<SellerSidebarProps> = ({
     <>
       {/* Mobile Overlay */}
       {isMobile && isOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-40 md:hidden"
-          onClick={onClose}
-        />
+        <div className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={onClose} />
       )}
 
       {/* Sidebar */}
-      <div className={cn(
-        "bg-white h-screen flex flex-col py-6 px-3 border-r border-gray-200 transition-all duration-300",
-        isMobile ? "fixed left-0 top-0 z-50" : "relative",
-        isMobile && !isOpen ? "-translate-x-full" : "translate-x-0",
-        isCollapsed && !isMobile ? "w-[80px]" : "w-[260px]"
-      )}>
+      <div
+        className={cn(
+          'bg-white h-screen flex flex-col py-6 px-3 border-r border-gray-200 transition-all duration-300',
+          isMobile ? 'fixed left-0 top-0 z-50' : 'relative',
+          isMobile && !isOpen ? '-translate-x-full' : 'translate-x-0',
+          isCollapsed && !isMobile ? 'w-[80px]' : 'w-[260px]'
+        )}
+      >
         {/* Mobile Header */}
         {isMobile && (
           <div className="flex items-center justify-between mb-6 px-3">
             <h2 className="text-lg font-semibold">Menu</h2>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onClose}
-              className="rounded-full w-8 h-8"
-            >
+            <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full w-8 h-8">
               <X className="w-5 h-5" />
             </Button>
           </div>
@@ -100,14 +94,13 @@ export const SellerSidebar: React.FC<SellerSidebarProps> = ({
             size="icon"
             onClick={() => setIsCollapsed(!isCollapsed)}
             className={cn(
-              "hidden md:flex absolute -right-3 top-8 z-10 rounded-full text-primary hover:text-primary bg-white border shadow-sm w-6 h-6 p-0",
-              "hover:bg-gray-100"
+              'hidden md:flex absolute -right-3 top-8 z-10 rounded-full text-primary hover:text-primary bg-white border shadow-sm w-6 h-6 p-0',
+              'hover:bg-gray-100'
             )}
           >
-            <ChevronLeft className={cn(
-              "w-4 h-4 transition-transform",
-              isCollapsed && "rotate-180"
-            )} />
+            <ChevronLeft
+              className={cn('w-4 h-4 transition-transform', isCollapsed && 'rotate-180')}
+            />
           </Button>
         )}
 
@@ -126,32 +119,23 @@ export const SellerSidebar: React.FC<SellerSidebarProps> = ({
                   }
                 }}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all group relative",
-                  isActive 
-                    ? "bg-blue-50 text-primary" 
-                    : "text-gray-800 hover:bg-gray-50",
-                  isCollapsed && !isMobile && "justify-center px-2"
+                  'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all group relative',
+                  isActive ? 'bg-blue-50 text-primary' : 'text-gray-800 hover:bg-gray-50',
+                  isCollapsed && !isMobile && 'justify-center px-2'
                 )}
                 title={isCollapsed ? item.name : undefined}
               >
                 <div
                   className={cn(
-                    "flex items-center justify-center rounded-full",
-                    isActive ? "bg-primary" : "bg-gray-100",
-                    isCollapsed && !isMobile ? "w-10 h-10" : "w-9 h-9"
+                    'flex items-center justify-center rounded-full',
+                    isActive ? 'bg-primary' : 'bg-gray-100',
+                    isCollapsed && !isMobile ? 'w-10 h-10' : 'w-9 h-9'
                   )}
                 >
-                  <Icon
-                    size={20}
-                    className={cn(
-                      isActive ? "text-white" : "text-gray-600"
-                    )}
-                  />
+                  <Icon size={20} className={cn(isActive ? 'text-white' : 'text-gray-600')} />
                 </div>
-                {(!isCollapsed || isMobile) && (
-                  <span>{item.name}</span>
-                )}
-                
+                {(!isCollapsed || isMobile) && <span>{item.name}</span>}
+
                 {/* Tooltip for collapsed state */}
                 {isCollapsed && !isMobile && (
                   <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50">
@@ -171,13 +155,13 @@ export const SellerSidebar: React.FC<SellerSidebarProps> = ({
               }
             }}
             className={cn(
-              "mt-4 flex items-center gap-2 px-3 py-3 rounded-lg bg-primary hover:bg-primary/80 transition-colors text-white text-sm font-medium",
-              isCollapsed && !isMobile ? "justify-center px-2" : "justify-center"
+              'mt-4 flex items-center gap-2 px-3 py-3 rounded-lg bg-primary hover:bg-primary/80 transition-colors text-white text-sm font-medium',
+              isCollapsed && !isMobile ? 'justify-center px-2' : 'justify-center'
             )}
-            title={isCollapsed ? "Add New Listing" : undefined}
+            title={isCollapsed ? 'Add New Listing' : undefined}
           >
             <Plus size={18} />
-            {(!isCollapsed || isMobile) && "Add New Listing"}
+            {(!isCollapsed || isMobile) && 'Add New Listing'}
           </Link>
         </div>
       </div>

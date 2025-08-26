@@ -1,14 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-import { 
- 
-  ChevronLeft,
-  ChevronRight
-} from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import ReadMore from '@/components/ui/ReadMore';
-import {  BreadcrumbWrapper, DeleteConfirmationModal } from '@/components/ui';
+import { BreadcrumbWrapper, DeleteConfirmationModal } from '@/components/ui';
 import { ReviewCard, type ReviewData } from '@/components/ui/ReviewCard';
 import { StarRating } from '@/components/ui/StarRating';
 
@@ -19,89 +15,109 @@ const ProductDetailsPage: React.FC = () => {
   const thumbnailContainerRef = useRef<HTMLDivElement>(null);
   const thumbnailRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
-// Sample product data - in production this would come from an API
-const product = {
-  id: '1',
-  title: '(NEW) Westinghouse Chandelier Fixture Zaro 6 Light Iron',
-  price: 15.50,
-  originalPrice: 31.00,
-  discount: 50,
-  unit: '',
-  category: 'Interior Essentials & Appliances',
-  subcategory: 'Light Fixtures',
-  marketplace: 'Marketplace',
-  isNew: true,
-  inStock: true,
-  slug: 'westinghouse-chandelier-fixture-zaro-6-light-iron',
-  description: 'Use 6 medium base (E26) bulbs with a maximum of 60 incandescent watts each. For the style pictured, use ST20 shaped LED bulbs...',
-  fullDescription: `Use 6 medium base (E26) bulbs with a maximum of 60 incandescent watts each. For the style pictured, use ST20 shaped LED bulbs. Bulbs are not included with this fixture. This chandelier features a modern design with six light points arranged in a circular pattern, perfect for dining rooms, living rooms, or entryways. The matte black finish provides a contemporary look that complements various interior styles.`,
-  images: [
-    { id: '1', url: 'https://placehold.co/600x600/2c2c2c/ffffff?text=Chandelier+1', alt: 'Main view' },
-    { id: '2', url: 'https://placehold.co/600x600/2c2c2c/ffffff?text=Chandelier+2', alt: 'Side view' },
-    { id: '3', url: 'https://placehold.co/600x600/2c2c2c/ffffff?text=Chandelier+3', alt: 'Detail view' },
-    { id: '4', url: 'https://placehold.co/600x600/2c2c2c/ffffff?text=Chandelier+4', alt: 'Installation view' },
-  ],
-  colors: [
-    { name: 'black', hex: '#000000' },
-    { name: 'silver', hex: '#C0C0C0' },
-    { name: 'bronze', hex: '#8B7355' },
-  ],
-  rating: 4.7,
-  totalReviews: 2306,
-};
+  // Sample product data - in production this would come from an API
+  const product = {
+    id: '1',
+    title: '(NEW) Westinghouse Chandelier Fixture Zaro 6 Light Iron',
+    price: 15.5,
+    originalPrice: 31.0,
+    discount: 50,
+    unit: '',
+    category: 'Interior Essentials & Appliances',
+    subcategory: 'Light Fixtures',
+    marketplace: 'Marketplace',
+    isNew: true,
+    inStock: true,
+    slug: 'westinghouse-chandelier-fixture-zaro-6-light-iron',
+    description:
+      'Use 6 medium base (E26) bulbs with a maximum of 60 incandescent watts each. For the style pictured, use ST20 shaped LED bulbs...',
+    fullDescription: `Use 6 medium base (E26) bulbs with a maximum of 60 incandescent watts each. For the style pictured, use ST20 shaped LED bulbs. Bulbs are not included with this fixture. This chandelier features a modern design with six light points arranged in a circular pattern, perfect for dining rooms, living rooms, or entryways. The matte black finish provides a contemporary look that complements various interior styles.`,
+    images: [
+      {
+        id: '1',
+        url: 'https://placehold.co/600x600/2c2c2c/ffffff?text=Chandelier+1',
+        alt: 'Main view',
+      },
+      {
+        id: '2',
+        url: 'https://placehold.co/600x600/2c2c2c/ffffff?text=Chandelier+2',
+        alt: 'Side view',
+      },
+      {
+        id: '3',
+        url: 'https://placehold.co/600x600/2c2c2c/ffffff?text=Chandelier+3',
+        alt: 'Detail view',
+      },
+      {
+        id: '4',
+        url: 'https://placehold.co/600x600/2c2c2c/ffffff?text=Chandelier+4',
+        alt: 'Installation view',
+      },
+    ],
+    colors: [
+      { name: 'black', hex: '#000000' },
+      { name: 'silver', hex: '#C0C0C0' },
+      { name: 'bronze', hex: '#8B7355' },
+    ],
+    rating: 4.7,
+    totalReviews: 2306,
+  };
 
-// Sample reviews data
-const reviews: ReviewData[] = [
-  {
-    id: 1,
-    userName: 'Aspen Siphron',
-    date: new Date('2025-05-12'),
-    rating: 4.9,
-    comment: 'The six lights provide ample brightness while adding a touch of elegance and warmth to any room. Whether you\'re redecorating or building from scratch, this chandelier is praised for its timeless appeal and reliable performance.',
-    avatar: 'https://placehold.co/50x50/FF6B6B/ffffff?text=AS'
-  },
-  {
-    id: 2,
-    userName: 'Aspen Siphron',
-    date: new Date('2025-05-12'),
-    rating: 4.9,
-    comment: 'The six lights provide ample brightness while adding a touch of elegance and warmth to any room. Whether you\'re redecorating or building from scratch, this chandelier is praised for its timeless appeal and reliable performance.',
-    avatar: 'https://placehold.co/50x50/FF6B6B/ffffff?text=AS'
-  },
-  {
-    id: 3,
-    userName: 'Aspen Siphron',
-    date: new Date('2025-05-12'),
-    rating: 4.9,
-    comment: 'The six lights provide ample brightness while adding a touch of elegance and warmth to any room. Whether you\'re redecorating or building from scratch, this chandelier is praised for its timeless appeal and reliable performance.',
-    avatar: 'https://placehold.co/50x50/FF6B6B/ffffff?text=AS'
-  },
-  {
-    id: 4,
-    userName: 'Aspen Siphron',
-    date: new Date('2025-05-12'),
-    rating: 4.9,
-    comment: 'The six lights provide ample brightness while adding a touch of elegance and warmth to any room. Whether you\'re redecorating or building from scratch, this chandelier is praised for its timeless appeal and reliable performance.',
-    avatar: 'https://placehold.co/50x50/FF6B6B/ffffff?text=AS'
-  }
-];
-
+  // Sample reviews data
+  const reviews: ReviewData[] = [
+    {
+      id: 1,
+      userName: 'Aspen Siphron',
+      date: new Date('2025-05-12'),
+      rating: 4.9,
+      comment:
+        "The six lights provide ample brightness while adding a touch of elegance and warmth to any room. Whether you're redecorating or building from scratch, this chandelier is praised for its timeless appeal and reliable performance.",
+      avatar: 'https://placehold.co/50x50/FF6B6B/ffffff?text=AS',
+    },
+    {
+      id: 2,
+      userName: 'Aspen Siphron',
+      date: new Date('2025-05-12'),
+      rating: 4.9,
+      comment:
+        "The six lights provide ample brightness while adding a touch of elegance and warmth to any room. Whether you're redecorating or building from scratch, this chandelier is praised for its timeless appeal and reliable performance.",
+      avatar: 'https://placehold.co/50x50/FF6B6B/ffffff?text=AS',
+    },
+    {
+      id: 3,
+      userName: 'Aspen Siphron',
+      date: new Date('2025-05-12'),
+      rating: 4.9,
+      comment:
+        "The six lights provide ample brightness while adding a touch of elegance and warmth to any room. Whether you're redecorating or building from scratch, this chandelier is praised for its timeless appeal and reliable performance.",
+      avatar: 'https://placehold.co/50x50/FF6B6B/ffffff?text=AS',
+    },
+    {
+      id: 4,
+      userName: 'Aspen Siphron',
+      date: new Date('2025-05-12'),
+      rating: 4.9,
+      comment:
+        "The six lights provide ample brightness while adding a touch of elegance and warmth to any room. Whether you're redecorating or building from scratch, this chandelier is praised for its timeless appeal and reliable performance.",
+      avatar: 'https://placehold.co/50x50/FF6B6B/ffffff?text=AS',
+    },
+  ];
 
   // Auto-scroll selected thumbnail into view
   useEffect(() => {
     const selectedThumbnail = thumbnailRefs.current[selectedImageIndex];
     const container = thumbnailContainerRef.current;
-    
+
     if (selectedThumbnail && container) {
       const containerRect = container.getBoundingClientRect();
       const thumbnailRect = selectedThumbnail.getBoundingClientRect();
-      
+
       // Check if thumbnail is not fully visible
       if (thumbnailRect.left < containerRect.left || thumbnailRect.right > containerRect.right) {
         selectedThumbnail.scrollIntoView({
           behavior: 'smooth',
           block: 'nearest',
-          inline: 'center'
+          inline: 'center',
         });
       }
     }
@@ -169,7 +185,7 @@ const reviews: ReviewData[] = [
               </button>
 
               {/* Thumbnails Container */}
-              <div 
+              <div
                 ref={thumbnailContainerRef}
                 className="flex gap-2 sm:gap-3 overflow-x-auto mx-10 sm:mx-12 md:mx-14 px-1 sm:px-2 scroll-smooth [&::-webkit-scrollbar]:hidden"
                 style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
@@ -187,11 +203,7 @@ const reviews: ReviewData[] = [
                         : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
-                    <img
-                      src={image.url}
-                      alt={image.alt}
-                      className="w-full h-full object-cover"
-                    />
+                    <img src={image.url} alt={image.alt} className="w-full h-full object-cover" />
                   </button>
                 ))}
               </div>
@@ -215,8 +227,8 @@ const reviews: ReviewData[] = [
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-3 sm:mb-4">
               {product.title}
             </h1>
-            
-            <div className='flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-4'>
+
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-4">
               {/* Price Section */}
               <div className="flex items-center space-x-2 sm:space-x-4">
                 <span className="text-xl sm:text-2xl font-bold text-primary">
@@ -250,7 +262,7 @@ const reviews: ReviewData[] = [
 
           {/* Description */}
           <div className="border-t border-gray-200 pt-4 sm:pt-6">
-            <ReadMore 
+            <ReadMore
               text={product.fullDescription}
               maxLength={200}
               className="text-sm sm:text-base text-gray-700 leading-relaxed"
@@ -262,7 +274,8 @@ const reviews: ReviewData[] = [
             <div className="text-xs sm:text-sm text-gray-600">
               <span className="font-medium">Categories: </span>
               <span className="text-gray-900">
-                {product.category}, {product.subcategory}, {product.marketplace}, {product.isNew ? 'New' : ''}
+                {product.category}, {product.subcategory}, {product.marketplace},{' '}
+                {product.isNew ? 'New' : ''}
               </span>
             </div>
           </div>
@@ -289,9 +302,7 @@ const reviews: ReviewData[] = [
 
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 pt-4 sm:pt-6">
-            <Button
-              className="w-full sm:flex-1 bg-primary hover:bg-primary/90 text-white font-semibold py-3 text-sm sm:text-base h-[48px] sm:h-[56px]"
-            >
+            <Button className="w-full sm:flex-1 bg-primary hover:bg-primary/90 text-white font-semibold py-3 text-sm sm:text-base h-[48px] sm:h-[56px]">
               Edit
             </Button>
             <Button
@@ -303,20 +314,22 @@ const reviews: ReviewData[] = [
             </Button>
           </div>
         </div>
-      </div> 
+      </div>
 
       {/* Reviews & Rating Section */}
       <div className="mt-8 sm:mt-12 border-t border-gray-200 pt-6 sm:pt-8">
         <div className="">
           {/* Section Header */}
           <div className="mb-6 sm:mb-8">
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">Reviews & Rating</h2>
-            
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">
+              Reviews & Rating
+            </h2>
+
             {/* Overall Rating */}
-            <StarRating 
-              rating={product.rating} 
-              showValue={true} 
-              totalReviews={product.totalReviews} 
+            <StarRating
+              rating={product.rating}
+              showValue={true}
+              totalReviews={product.totalReviews}
             />
           </div>
 
@@ -329,8 +342,8 @@ const reviews: ReviewData[] = [
 
           {/* View All Button */}
           <div className="mt-6 sm:mt-8 text-center">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="px-6 sm:px-8 py-2 text-sm sm:text-base text-primary hover:text-primary/80 underline border-none shadow-none"
             >
               View all

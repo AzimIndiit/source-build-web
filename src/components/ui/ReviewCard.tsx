@@ -26,18 +26,23 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
           <Avatar className="h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0">
             <AvatarImage src={review.avatar} alt={review.userName} />
             <AvatarFallback className="bg-orange-500 text-white text-sm sm:text-base">
-              {review.userName.split(' ').map(n => n[0]).join('')}
+              {review.userName
+                .split(' ')
+                .map((n) => n[0])
+                .join('')}
             </AvatarFallback>
           </Avatar>
-          
+
           {/* User Info and Rating for Mobile */}
           <div className="flex-1">
             <div className="flex items-start justify-between sm:block">
               <div>
-                <h3 className="font-semibold text-gray-900 text-sm sm:text-base">{review.userName}</h3>
+                <h3 className="font-semibold text-gray-900 text-sm sm:text-base">
+                  {review.userName}
+                </h3>
                 <p className="text-xs sm:text-sm text-gray-500">{formatDate(review.date)}</p>
               </div>
-              
+
               {/* Rating Badge - Mobile Position */}
               <div className="flex items-center gap-1 bg-yellow-100 px-2 py-1 sm:hidden rounded-full ml-2">
                 <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
@@ -46,19 +51,17 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
             </div>
           </div>
         </div>
-        
+
         {/* Rating Badge - Desktop Position */}
         <div className="hidden sm:flex items-center gap-1 bg-orange-100 px-3 py-2 rounded-full">
           <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
           <span className="font-semibold text-gray-900">{review.rating}</span>
         </div>
       </div>
-      
+
       {/* Review Content */}
       <div className="mt-3 sm:mt-4 sm:ml-16">
-        <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
-          {review.comment}
-        </p>
+        <p className="text-gray-700 leading-relaxed text-sm sm:text-base">{review.comment}</p>
       </div>
     </div>
   );

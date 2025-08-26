@@ -32,7 +32,7 @@ function LoginPage() {
 
       // Call the actual login function from AuthProvider
       await login(data.email, data.password);
-      
+
       console.log('Login successful, user authenticated');
       console.log('About to navigate to /seller/dashboard');
 

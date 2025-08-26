@@ -83,7 +83,7 @@ const filterOptions = [
   },
 ];
 
-<FilterButtonGroup filters={filterOptions} />
+<FilterButtonGroup filters={filterOptions} />;
 ```
 
 ## Design Features

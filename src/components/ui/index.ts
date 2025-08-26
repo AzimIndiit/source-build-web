@@ -3,7 +3,14 @@ export { Badge } from './badge';
 export { Button } from './button';
 export { Calendar } from './calendar';
 export { Card } from './Card';
-export { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent, ChartStyle } from './chart';
+export {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  ChartLegend,
+  ChartLegendContent,
+  ChartStyle,
+} from './chart';
 export { DropdownMenu } from './dropdown-menu';
 export { InputOTP } from './input-otp';
 export { Input } from './input';
@@ -21,7 +28,13 @@ export { default as FilterDropdown } from './FilterDropdown';
 export { Checkbox } from './checkbox';
 export { Slider } from './slider';
 export { default as ReadMore } from './ReadMore';
-export { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from './carousel';
+export {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from './carousel';
 export { BreadcrumbWrapper } from './breadcrumb-wrapper';
 export {
   Breadcrumb,
@@ -47,3 +60,4 @@ export {
   DialogDescription,
 } from './dialog';
 export { DeleteConfirmationModal } from './DeleteConfirmationModal';
+export { Timeline, type TimelineItem } from './Timeline';

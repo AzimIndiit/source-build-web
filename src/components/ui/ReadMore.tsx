@@ -19,20 +19,18 @@ const ReadMore: React.FC<ReadMoreProps> = ({
   showButton = true,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  
+
   const shouldTruncate = text.length > maxLength;
   const displayText = isExpanded ? text : text.slice(0, maxLength) + '...';
-  
+
   if (!shouldTruncate) {
     return <p className={cn('text-gray-700 leading-relaxed', className)}>{text}</p>;
   }
 
   return (
     <div className="space-y-2">
-      <p className={cn('text-gray-700 leading-relaxed', className)}>
-        {displayText}
-      </p>
-      
+      <p className={cn('text-gray-700 leading-relaxed', className)}>{displayText}</p>
+
       {showButton && (
         <Button
           variant="ghost"

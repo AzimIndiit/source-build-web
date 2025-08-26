@@ -8,22 +8,13 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/Card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Calendar, ChevronDownIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { RevenueData } from '../../types';
 import { CustomTooltip } from './CustomTooltip';
 
@@ -34,9 +25,7 @@ interface RevenueChartProps {
 }
 
 export const RevenueChart: React.FC<RevenueChartProps> = ({ data, selectedYear, onYearChange }) => {
-  const [date, setDate] = React.useState<Date | undefined>(
-    new Date(parseInt(selectedYear), 0, 1)
-  );
+  const [date, setDate] = React.useState<Date | undefined>(new Date(parseInt(selectedYear), 0, 1));
 
   const handleDateSelect = (newDate: Date | undefined) => {
     if (newDate) {
@@ -49,13 +38,13 @@ export const RevenueChart: React.FC<RevenueChartProps> = ({ data, selectedYear, 
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg font-semibold">Revenue</CardTitle>
-          <Popover >
-            <PopoverTrigger asChild className='border border-gray-200 rounded-md'>
+          <Popover>
+            <PopoverTrigger asChild className="border border-gray-200 rounded-md">
               <Button
                 variant="outline"
                 className={cn(
-                  "w-[120px] h-8 text-xs justify-start text-left font-normal",
-                  !date && "text-muted-foreground"
+                  'w-[120px] h-8 text-xs justify-start text-left font-normal',
+                  !date && 'text-muted-foreground'
                 )}
               >
                 <Calendar className="mr-2 h-3 w-3" />
@@ -63,7 +52,10 @@ export const RevenueChart: React.FC<RevenueChartProps> = ({ data, selectedYear, 
                 <ChevronDownIcon className="size-4 opacity-50" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 bg-white  shadow-2xl border border-gray-200" align="end">
+            <PopoverContent
+              className="w-auto p-0 bg-white  shadow-2xl border border-gray-200"
+              align="end"
+            >
               <CalendarComponent
                 mode="single"
                 selected={date}
@@ -79,29 +71,24 @@ export const RevenueChart: React.FC<RevenueChartProps> = ({ data, selectedYear, 
           <AreaChart data={data}>
             <defs>
               <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#2b5aac" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="#2b5aac" stopOpacity={0}/>
+                <stop offset="5%" stopColor="#2b5aac" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="#2b5aac" stopOpacity={0} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-            <XAxis 
-              dataKey="month" 
+            <XAxis dataKey="month" tick={{ fontSize: 12 }} tickLine={false} axisLine={false} />
+            <YAxis
               tick={{ fontSize: 12 }}
               tickLine={false}
               axisLine={false}
-            />
-            <YAxis 
-              tick={{ fontSize: 12 }}
-              tickLine={false}
-              axisLine={false}
-              tickFormatter={(value) => `$${(value / 1000)}k`}
+              tickFormatter={(value) => `$${value / 1000}k`}
             />
             <Tooltip content={<CustomTooltip />} />
-            <Area 
-              type="monotone" 
-              dataKey="revenue" 
-              stroke="#2b5aac" 
-              fillOpacity={1} 
+            <Area
+              type="monotone"
+              dataKey="revenue"
+              stroke="#2b5aac"
+              fillOpacity={1}
               fill="url(#colorRevenue)"
               strokeWidth={2}
             />

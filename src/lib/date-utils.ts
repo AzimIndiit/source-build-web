@@ -9,18 +9,18 @@
  */
 export const formatDate = (date: Date | string | number): string => {
   const dateObj = date instanceof Date ? date : new Date(date);
-  
+
   // Check if date is valid
   if (isNaN(dateObj.getTime())) {
     return 'Invalid Date';
   }
-  
+
   const options: Intl.DateTimeFormatOptions = {
     month: 'long',
     day: 'numeric',
-    year: 'numeric'
+    year: 'numeric',
   };
-  
+
   return dateObj.toLocaleDateString('en-US', options);
 };
 
@@ -32,18 +32,18 @@ export const formatDate = (date: Date | string | number): string => {
  */
 export const formatDateShort = (date: Date | string | number): string => {
   const dateObj = date instanceof Date ? date : new Date(date);
-  
+
   // Check if date is valid
   if (isNaN(dateObj.getTime())) {
     return 'Invalid Date';
   }
-  
+
   const options: Intl.DateTimeFormatOptions = {
     month: 'short',
     day: 'numeric',
-    year: 'numeric'
+    year: 'numeric',
   };
-  
+
   return dateObj.toLocaleDateString('en-US', options);
 };
 
@@ -54,12 +54,12 @@ export const formatDateShort = (date: Date | string | number): string => {
  */
 export const formatRelativeTime = (date: Date | string | number): string => {
   const dateObj = date instanceof Date ? date : new Date(date);
-  
+
   // Check if date is valid
   if (isNaN(dateObj.getTime())) {
     return 'Invalid Date';
   }
-  
+
   const now = new Date();
   const diffInMilliseconds = now.getTime() - dateObj.getTime();
   const diffInSeconds = Math.floor(diffInMilliseconds / 1000);
@@ -68,20 +68,20 @@ export const formatRelativeTime = (date: Date | string | number): string => {
   const diffInDays = Math.floor(diffInHours / 24);
   const diffInMonths = Math.floor(diffInDays / 30);
   const diffInYears = Math.floor(diffInDays / 365);
-  
+
   if (diffInSeconds < 0) {
     // Future dates
     const absDiffInSeconds = Math.abs(diffInSeconds);
     const absDiffInMinutes = Math.abs(diffInMinutes);
     const absDiffInHours = Math.abs(diffInHours);
     const absDiffInDays = Math.abs(diffInDays);
-    
+
     if (absDiffInSeconds < 60) return `in ${absDiffInSeconds} seconds`;
     if (absDiffInMinutes < 60) return `in ${absDiffInMinutes} minutes`;
     if (absDiffInHours < 24) return `in ${absDiffInHours} hours`;
     return `in ${absDiffInDays} days`;
   }
-  
+
   // Past dates
   if (diffInSeconds < 60) return 'just now';
   if (diffInMinutes < 60) return `${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''} ago`;
@@ -98,12 +98,12 @@ export const formatRelativeTime = (date: Date | string | number): string => {
  */
 export const formatDateISO = (date: Date | string | number): string => {
   const dateObj = date instanceof Date ? date : new Date(date);
-  
+
   // Check if date is valid
   if (isNaN(dateObj.getTime())) {
     return '';
   }
-  
+
   return dateObj.toISOString().split('T')[0];
 };
 

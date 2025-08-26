@@ -53,7 +53,7 @@ export const SellerLayout: React.FC = () => {
       <div className="flex pt-[60px]">
         {/* Desktop/Tablet Sidebar */}
         <div className="hidden md:block fixed left-0 z-40">
-          <SellerSidebar 
+          <SellerSidebar
             isCollapsed={isSidebarCollapsed}
             onCollapsedChange={setIsSidebarCollapsed}
           />
@@ -62,7 +62,7 @@ export const SellerLayout: React.FC = () => {
         {/* Mobile Sidebar - Only render on mobile */}
         {isMobile && (
           <>
-            <SellerSidebar 
+            <SellerSidebar
               isOpen={isMobileSidebarOpen}
               onClose={() => setIsMobileSidebarOpen(false)}
               isMobile={true}
@@ -71,22 +71,22 @@ export const SellerLayout: React.FC = () => {
           </>
         )}
 
-          {/* Content Area */}
-          <div 
-            className="flex-1 p-4 pt-8 md:px-6 md:pt-6 transition-all duration-300 min-h-[700px] md:min-h-[890px] lg:min-h-[780px] xl:min-h-[89vh]"
-            style={{ 
-              marginLeft: isMobile ? '0' : sidebarWidth 
-            }}
-          >
-            <Outlet />
-          </div>
+        {/* Content Area */}
+        <div
+          className="flex-1 p-4 pt-8 md:px-6 md:pt-6 transition-all duration-300 min-h-[700px] md:min-h-[890px] lg:min-h-[780px] xl:min-h-[89vh]"
+          style={{
+            marginLeft: isMobile ? '0' : sidebarWidth,
+          }}
+        >
+          <Outlet />
+        </div>
       </div>
 
       {/* Footer - Responsive */}
-      <div 
+      <div
         className="transition-all duration-300"
-        style={{ 
-          marginLeft: isMobile ? '0' : sidebarWidth 
+        style={{
+          marginLeft: isMobile ? '0' : sidebarWidth,
         }}
       >
         <div className="bg-[#f7f7f7] flex flex-col gap-4 min-h-[56px] items-center justify-center px-4 md:px-12 py-4">

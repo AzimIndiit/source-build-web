@@ -20,15 +20,51 @@ export interface Customer {
   name: string;
   email: string;
   avatar?: string;
+  rating?: number;
+  review?: string;  
 }
 
-export interface Order {
+export interface OrderProduct {
   id: string;
-  product: string;
-  customer: Customer;
-  date: string;
-  amount: string;
-  status: 'Delivered' | 'Processing' | 'Pending' | 'Cancelled';
+  name: string;
+  quantity?: number;
+  price?: number;
+  deliveryDate?: string;
+  image?: string;
 }
+
+export interface OrderSummary {
+  shippingAddress: {
+    name: string;
+    phone: string;
+    address: string;
+    city: string;
+    state: string;
+    country: string;
+    zip: string;
+  };
+  proofOfDelivery: string;
+  paymentMethod: {
+    type: string;
+    cardType: string;
+    cardNumber: string;
+  };
+  subTotal: number;
+  shippingFee: number;
+  marketplaceFee: number;
+  taxes: number;
+  total: number;
+}
+
+  export interface Order {
+  id: string;
+  customer: Customer;
+  driver?: Customer;
+  date: string;
+  amount: number;
+  status: 'Delivered' | 'Processing' | 'Pending' | 'Cancelled' | 'Out for Delivery' | 'In Transit';
+  products?: OrderProduct[];
+  orderSummary?: OrderSummary;
+  }
 
 export type OrderStatus = Order['status'];

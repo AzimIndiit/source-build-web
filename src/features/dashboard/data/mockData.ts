@@ -1,9 +1,4 @@
-import {
-  Package,
-  AlertTriangle,
-  ShoppingCart,
-  Clock
-} from 'lucide-react';
+import { Package, AlertTriangle, ShoppingCart, Clock } from 'lucide-react';
 import { MetricData, SalesData, RevenueData, Order } from '../types';
 
 export const metricsData: MetricData[] = [
@@ -12,29 +7,29 @@ export const metricsData: MetricData[] = [
     value: '106',
     color: 'bg-[#2b5aac]',
     icon: Package,
-    bgColor: 'bg-white/20'
+    bgColor: 'bg-white/20',
   },
   {
     title: 'Out of Stock',
     value: '24',
     color: 'bg-[#da1010]',
     icon: AlertTriangle,
-    bgColor: 'bg-white/20'
+    bgColor: 'bg-white/20',
   },
   {
     title: 'Total Orders',
     value: '1082',
     color: 'bg-[#269210]',
     icon: ShoppingCart,
-    bgColor: 'bg-white/20'
+    bgColor: 'bg-white/20',
   },
   {
     title: 'Pending Orders',
     value: '12',
     color: 'bg-[#e68814]',
     icon: Clock,
-    bgColor: 'bg-white/20'
-  }
+    bgColor: 'bg-white/20',
+  },
 ];
 
 export const weekSalesData: SalesData[] = [
@@ -64,123 +59,538 @@ export const revenueData: RevenueData[] = [
 
 export const ordersData: Order[] = [
   {
-    id: '#671256',
-    product: 'Primed 4" Baseboards 16',
-    customer: { 
-      name: 'Ethan Popa', 
+    id: '7090703',
+    customer: {
+      name: 'Ethan Popa',
       email: 'ethan12@gmail.com',
-      avatar: 'https://i.pravatar.cc/150?img=1'
+      avatar: 'https://i.pravatar.cc/150?img=1',
+      rating: 4,
+      review:
+        'To improve efficiency, pre-set quick comments enable drivers to send common updates with a single tap. Vendors receive instant notifications and can respond to driver comments, ensuring smooth coordination. All interactions are logged within the order.',
     },
-    date: 'Jan 6, 2009',
-    amount: '$887',
-    status: 'Delivered'
+    driver: {
+      name: 'Rachel Kim',
+      email: 'rachelkim56@gmail.com',
+      avatar: 'https://i.pravatar.cc/150?img=33',
+      rating: 4,
+      review:
+        'To improve efficiency, pre-set quick comments enable drivers to send common updates with a single tap. Vendors receive instant notifications and can respond to driver comments, ensuring smooth coordination. All interactions are logged within the order.',
+    },
+    date: 'Dec 10, 2024',
+    amount: 430.0,
+    status: 'Delivered',
+    products: [
+      {
+        id: '1',
+        name: '(NEW) Westinghouse Chandelier Fixture Zaro 6 Light Iron',
+        quantity: 2,
+        price: 215  ,
+        deliveryDate: '12 October 2024',
+        image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=128&h=96&fit=crop',
+      },
+      {
+        id: '2',
+        name: '(NEW) Westinghouse Chandelier Fixture Zaro 6 Light Iron',
+        quantity: 2,
+        price: 215,
+        deliveryDate: '12 October 2024',
+        image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=128&h=96&fit=crop',
+      },
+    ],
+    orderSummary: {
+      shippingAddress: {
+        name: 'Ethan Popa',
+        phone: '+91 972 234 5678',
+        address: 'SCO 50-51, Sub. City Center, 2nd Floor Sector 34A',
+        city: 'Jakarta',
+        state: 'Jakarta',
+        country: 'India',
+        zip: '160022',
+      },
+      proofOfDelivery: 'https://placehold.co/600x400',
+      paymentMethod: {
+        type: 'Credit Card',
+        cardType: 'VISA',
+        cardNumber: 'XXXX XXXX XXXX 8456',
+      },
+      subTotal: 548,
+      shippingFee: 10,
+      marketplaceFee: 54,
+      taxes: 10,
+      total: 548,
+    },
   },
   {
-    id: '#891256',
-    product: 'Primed MDF 3.25" Casing',
-    customer: { 
-      name: 'Ashley Jackson', 
+    id: '891256',
+    customer: {
+      name: 'Ashley Jackson',
       email: 'jackson89@gmail.com',
-      avatar: 'https://i.pravatar.cc/150?img=5'
+      avatar: 'https://i.pravatar.cc/150?img=5',
+      rating: 4,
+      review:
+        'To improve efficiency, pre-set quick comments enable drivers to send common updates with a single tap. Vendors receive instant notifications and can respond to driver comments, ensuring smooth coordination. All interactions are logged within the order.',
+    },
+    driver: {
+      name: 'Rachel Kim',
+      email: 'rachelkim56@gmail.com',
+      avatar: 'https://i.pravatar.cc/150?img=33',
+      rating: 4,
+      review:
+        'To improve efficiency, pre-set quick comments enable drivers to send common updates with a single tap. Vendors receive instant notifications and can respond to driver comments, ensuring smooth coordination. All interactions are logged within the order.',
     },
     date: 'Feb 13, 2013',
-    amount: '$527',
-    status: 'Processing'
-  },
-  {
-    id: '#891256',
-    product: 'Primed MDF 3.25" Casing',
-    customer: { 
-      name: 'Aya Rossi', 
-      email: 'eayariossi@gmail.com',
-      avatar: 'https://i.pravatar.cc/150?img=10'
+    amount: 527,
+    status: 'Processing',
+    products: [
+      {
+        id: '2',
+        name: 'Modern Floor Lamp with Adjustable Head',
+        quantity: 1,
+        deliveryDate: '15 December 2024',
+        image: 'https://images.unsplash.com/photo-1540932239986-30128078f3c5?w=128&h=96&fit=crop',
+      },
+      {
+        id: '3',
+        name: 'LED Desk Lamp with USB Charging',
+        quantity: 2,
+        deliveryDate: '15 December 2024',
+        image: 'https://images.unsplash.com/photo-1507494924047-60b8ee826ca9?w=128&h=96&fit=crop',
+      },
+    ],
+    orderSummary: {
+      shippingAddress: {
+        name: 'Ethan Popa',
+        phone: '+91 972 234 5678',
+        address: 'SCO 50-51, Sub. City Center, 2nd Floor Sector 34A',
+        city: 'Chandigarh',
+        state: 'Punjab',
+        country: 'India',
+        zip: '160022',
+      },
+      proofOfDelivery: 'https://placehold.co/600x400',
+      paymentMethod: {
+        type: 'Credit Card',
+        cardType: 'VISA',
+        cardNumber: 'XXXX XXXX XXXX 8456',
+      },
+      subTotal: 548,
+      shippingFee: 10,
+      marketplaceFee: 54,
+      taxes: 10,
+      total: 548,
     },
-    date: 'Jul 28, 2022',
-    amount: '$577',
-    status: 'Pending'
   },
   {
-    id: '#891256',
-    product: 'Primed MDF 3.25" Casing',
-    customer: { 
-      name: 'Mehdi Keita', 
+    id: '7845632',
+    customer: {
+      name: 'Aya Rossi',
+      email: 'eayariossi@gmail.com',
+      avatar: 'https://i.pravatar.cc/150?img=10',
+      rating: 0,
+      review:''
+    },
+   
+    date: 'Jul 28, 2022',
+    amount: 577,
+    status: 'Pending',
+    products: [
+      {
+        id: '4',
+        name: 'Vintage Table Lamp Set (2 pieces)',
+        quantity: 1,
+        deliveryDate: '20 December 2024',
+        image: 'https://images.unsplash.com/photo-1565636572781-62e93e8c5c7e?w=128&h=96&fit=crop',
+      },
+    ],
+    orderSummary: {
+      shippingAddress: {
+        name: 'Ethan Popa',
+        phone: '+91 972 234 5678',
+        address: 'SCO 50-51, Sub. City Center, 2nd Floor Sector 34A',
+        city: 'Chandigarh',
+        state: 'Jakarta',
+        country: 'India',
+        zip: '160022',
+      },
+      proofOfDelivery: 'https://placehold.co/600x400',
+      paymentMethod: {
+        type: 'Credit Card',
+        cardType: 'VISA',
+        cardNumber: 'XXXX XXXX XXXX 8456',
+      },
+      subTotal: 548,
+      shippingFee: 10,
+      marketplaceFee: 54,
+      taxes: 10,
+      total: 548,
+    },
+  },
+  {
+    id: '891256',
+    customer: {
+      name: 'Mehdi Keita',
       email: 'mehdi67@gmail.com',
-      avatar: 'https://i.pravatar.cc/150?img=8'
+      avatar: 'https://i.pravatar.cc/150?img=8',
+      rating: 4,
+      review:
+        'To improve efficiency, pre-set quick comments enable drivers to send common updates with a single tap. Vendors receive instant notifications and can respond to driver comments, ensuring smooth coordination. All interactions are logged within the order.',
+    },
+    driver: {
+      name: 'Rachel Kim',
+      email: 'rachelkim56@gmail.com',
+      avatar: 'https://i.pravatar.cc/150?img=33',
+      rating: 4,
+      review:
+        'To improve efficiency, pre-set quick comments enable drivers to send common updates with a single tap. Vendors receive instant notifications and can respond to driver comments, ensuring smooth coordination. All interactions are logged within the order.',
     },
     date: 'May 2, 2010',
-    amount: '$820',
-    status: 'Pending'
+    amount: 820,
+    status: 'Pending',
+    products: [
+      {
+        id: '4',
+        name: 'Vintage Table Lamp Set (2 pieces)',
+        quantity: 1,
+        deliveryDate: '20 December 2024',
+        image: 'https://images.unsplash.com/photo-1565636572781-62e93e8c5c7e?w=128&h=96&fit=crop',
+      },
+    ],
+    orderSummary: {
+      shippingAddress: {
+        name: 'Ethan Popa',
+        phone: '+91 972 234 5678',
+        address: 'SCO 50-51, Sub. City Center, 2nd Floor Sector 34A',
+        city: 'Chandigarh',
+        state: 'Jakarta',
+        country: 'India',
+        zip: '160022',
+      },
+      proofOfDelivery: 'https://placehold.co/600x400',
+      paymentMethod: {
+        type: 'Credit Card',
+        cardType: 'VISA',
+        cardNumber: 'XXXX XXXX XXXX 8456',
+      },
+      subTotal: 548,
+      shippingFee: 10,
+      marketplaceFee: 54,
+      taxes: 10,
+      total: 548,
+    },
   },
   {
-    id: '#891256',
-    product: 'Primed MDF 3.25" Casing',
-    customer: { 
-      name: 'Bạc Khương Đạo', 
+    id: '891256',
+    customer: {
+      name: 'Bạc Khương Đạo',
       email: 'backuh@gmail.com',
-      avatar: 'https://i.pravatar.cc/150?img=7'
+      avatar: 'https://i.pravatar.cc/150?img=7',
+      rating: 4,
+      review:
+        'To improve efficiency, pre-set quick comments enable drivers to send common updates with a single tap. Vendors receive instant notifications and can respond to driver comments, ensuring smooth coordination. All interactions are logged within the order.',
+    },
+    driver: {
+      name: 'Rachel Kim',
+      email: 'rachelkim56@gmail.com',
+      avatar: 'https://i.pravatar.cc/150?img=33',
+      rating: 4,
+      review:
+        'To improve efficiency, pre-set quick comments enable drivers to send common updates with a single tap. Vendors receive instant notifications and can respond to driver comments, ensuring smooth coordination. All interactions are logged within the order.',
     },
     date: 'Jun 16, 2021',
-    amount: '$126',
-    status: 'Delivered'
+    amount: 126,
+    status: 'Delivered',
+    products: [
+      {
+        id: '4',
+        name: 'Vintage Table Lamp Set (2 pieces)',
+        quantity: 1,
+        deliveryDate: '20 December 2024',
+        image: 'https://images.unsplash.com/photo-1565636572781-62e93e8c5c7e?w=128&h=96&fit=crop',
+      },
+    ],
+    orderSummary: {
+      shippingAddress: {
+        name: 'Ethan Popa',
+        phone: '+91 972 234 5678',
+        address: 'SCO 50-51, Sub. City Center, 2nd Floor Sector 34A',
+        city: 'Chandigarh',
+        state: 'Jakarta',
+        country: 'India',
+        zip: '160022',
+      },
+      proofOfDelivery: 'https://placehold.co/600x400',
+      paymentMethod: {
+        type: 'Credit Card',
+        cardType: 'VISA',
+        cardNumber: 'XXXX XXXX XXXX 8456',
+      },
+      subTotal: 548,
+      shippingFee: 10,
+      marketplaceFee: 54,
+      taxes: 10,
+      total: 548,
+    },
   },
   {
-    id: '#891256',
-    product: 'Primed MDF 3.25" Casing',
-    customer: { 
-      name: 'Luis López', 
+    id: '891256',
+    customer: {
+      name: 'Luis López',
       email: 'luislop@gmail.com',
-      avatar: 'https://i.pravatar.cc/150?img=11'
+      avatar: 'https://i.pravatar.cc/150?img=11',
+      rating: 4,
+      review:
+        'To improve efficiency, pre-set quick comments enable drivers to send common updates with a single tap. Vendors receive instant notifications and can respond to driver comments, ensuring smooth coordination. All interactions are logged within the order.',
+    },
+    driver: {
+      name: 'Rachel Kim',
+      email: 'rachelkim56@gmail.com',
+      avatar: 'https://i.pravatar.cc/150?img=33',
+      rating: 4,
+      review:
+        'To improve efficiency, pre-set quick comments enable drivers to send common updates with a single tap. Vendors receive instant notifications and can respond to driver comments, ensuring smooth coordination. All interactions are logged within the order.',
     },
     date: 'Jul 23, 2019',
-    amount: '$716',
-    status: 'Pending'
+    amount: 716,
+    status: 'Pending',
+    products: [
+      {
+        id: '4',
+        name: 'Vintage Table Lamp Set (2 pieces)',
+        quantity: 1,
+        deliveryDate: '20 December 2024',
+        image: 'https://images.unsplash.com/photo-1565636572781-62e93e8c5c7e?w=128&h=96&fit=crop',
+      },
+    ],
+    orderSummary: {
+      shippingAddress: {
+        name: 'Ethan Popa',
+        phone: '+91 972 234 5678',
+        address: 'SCO 50-51, Sub. City Center, 2nd Floor Sector 34A',
+        city: 'Jakarta',
+        state: 'Jakarta',
+        country: 'India',
+        zip: '160022',
+      },
+      proofOfDelivery: 'https://placehold.co/600x400',
+      paymentMethod: {
+        type: 'Credit Card',
+        cardType: 'VISA',
+        cardNumber: 'XXXX XXXX XXXX 8456',
+      },
+      subTotal: 548,
+      shippingFee: 10,
+      marketplaceFee: 54,
+      taxes: 10,
+      total: 548,
+    },
   },
   {
-    id: '#891256',
-    product: 'Primed MDF 3.25" Casing',
-    customer: { 
-      name: 'Luis González', 
+    id: '891256',
+    
+    customer: {
+      name: 'Luis González',
       email: 'gonzale77@gmail.com',
-      avatar: 'https://i.pravatar.cc/150?img=12'
+      avatar: 'https://i.pravatar.cc/150?img=12',
+      rating: 0,
+      review:''
+    },
+    driver: {
+      name: 'Rachel Kim',
+      email: 'rachelkim56@gmail.com',
+      avatar: 'https://i.pravatar.cc/150?img=33',
+      rating: 0,
+      review:''
     },
     date: 'Apr 27, 2018',
-    amount: '$207',
-    status: 'Processing'
+    amount: 207,
+    status: 'Processing',
+    products: [
+      {
+        id: '4',
+        name: 'Vintage Table Lamp Set (2 pieces)',
+        quantity: 1,
+        deliveryDate: '20 December 2024',
+        image: 'https://images.unsplash.com/photo-1565636572781-62e93e8c5c7e?w=128&h=96&fit=crop',
+      },
+    ],
+    orderSummary: {
+      shippingAddress: {
+        name: 'Ethan Popa',
+        phone: '+91 972 234 5678',
+        address: 'SCO 50-51, Sub. City Center, 2nd Floor Sector 34A',
+        city: 'Chandigarh',
+        state: 'Punjab',
+        country: 'India',
+        zip: '160022',
+      },
+      proofOfDelivery: 'https://placehold.co/600x400',
+      paymentMethod: {
+        type: 'Credit Card',
+        cardType: 'VISA',
+        cardNumber: 'XXXX XXXX XXXX 8456',
+      },
+      subTotal: 548,
+      shippingFee: 10,
+      marketplaceFee: 54,
+      taxes: 10,
+      total: 548,
+    },
   },
   {
-    id: '#891256',
-    product: 'Primed MDF 3.25" Casing',
-    customer: { 
-      name: 'Gabriela González', 
+    id: '891259',
+    products: [
+      {
+        id: '4',
+        name: 'Vintage Table Lamp Set (2 pieces)',
+        quantity: 1,
+        deliveryDate: '20 December 2024',
+        image: 'https://images.unsplash.com/photo-1565636572781-62e93e8c5c7e?w=128&h=96&fit=crop',
+      },
+    ],
+    customer: {
+      name: 'Gabriela González',
       email: 'gabriela76@gmail.com',
-      avatar: 'https://i.pravatar.cc/150?img=9'
+      avatar: 'https://i.pravatar.cc/150?img=9',
+      rating: 0,
+      review:''
+    },
+    driver: {
+      name: 'Rachel Kim',
+      email: 'rachelkim56@gmail.com',
+      avatar: 'https://i.pravatar.cc/150?img=33',
+      rating: 0,
+      review:''
     },
     date: 'Sep 22, 2015',
-    amount: '$692',
-    status: 'Delivered'
+    amount: 692,
+    status: 'Out for Delivery',
+    orderSummary: {
+      shippingAddress: {
+        name: 'Ethan Popa',
+        phone: '+91 972 234 5678',
+        address: 'SCO 50-51, Sub. City Center, 2nd Floor Sector 34A',
+        city: 'Jakarta',
+        state: 'Jakarta',
+        country: 'India',
+        zip: '160022',
+      },
+      proofOfDelivery: 'https://placehold.co/600x400',
+      paymentMethod: {
+        type: 'Credit Card',
+        cardType: 'VISA',
+        cardNumber: 'XXXX XXXX XXXX 8456',
+      },
+      subTotal: 548,
+      shippingFee: 10,
+      marketplaceFee: 54,
+      taxes: 10,
+      total: 548,
+    },
   },
   {
-    id: '#891256',
-    product: 'Primed MDF 3.25" Casing',
-    customer: { 
-      name: 'Cayadi Megantara', 
+    id: '891256',
+    products: [
+      {
+        id: '4',
+        name: 'Vintage Table Lamp Set (2 pieces)',
+        quantity: 1,
+        deliveryDate: '20 December 2024',
+        image: 'https://images.unsplash.com/photo-1565636572781-62e93e8c5c7e?w=128&h=96&fit=crop',
+      },
+    ],
+    customer: {
+      name: 'Cayadi Megantara',
       email: 'cayandi56@gmail.com',
-      avatar: 'https://i.pravatar.cc/150?img=15'
+      avatar: 'https://i.pravatar.cc/150?img=15',
+      rating: 4,
+      review:
+        'To improve efficiency, pre-set quick comments enable drivers to send common updates with a single tap. Vendors receive instant notifications and can respond to driver comments, ensuring smooth coordination. All interactions are logged within the order.',
+    },
+    driver: {
+      name: 'Rachel Kim',
+      email: 'rachelkim56@gmail.com',
+      avatar: 'https://i.pravatar.cc/150?img=33',
+      rating: 4,
+      review:
+        'To improve efficiency, pre-set quick comments enable drivers to send common updates with a single tap. Vendors receive instant notifications and can respond to driver comments, ensuring smooth coordination. All interactions are logged within the order.',
     },
     date: 'Jul 12, 2023',
-    amount: '$237',
-    status: 'Cancelled'
+    amount: 237,
+    status: 'Cancelled',
+    orderSummary: {
+      shippingAddress: {
+        name: 'Cayadi Megantara',
+        phone: '+91 972 234 5678',
+        address: 'SCO 50-51, Sub. City Center, 2nd Floor Sector 34A',
+        city: 'Chandigarh',
+        state: 'Punjab',
+        country: 'India',
+        zip: '160022',
+      },
+      proofOfDelivery: 'https://placehold.co/600x400',
+      paymentMethod: {
+        type: 'Credit Card',
+        cardType: 'VISA',
+        cardNumber: 'XXXX XXXX XXXX 8456',
+      },
+      subTotal: 548,
+      shippingFee: 10,
+      marketplaceFee: 54,
+      taxes: 10,
+      total: 548,
+    },
   },
   {
-    id: '#891256',
-    product: 'Primed MDF 3.25" Casing',
-    customer: { 
-      name: 'Sara Adimbola', 
+    id: '891256',     
+    customer: {
+      name: 'Sara Adimbola',
       email: 'saraadmen77@gmail.com',
-      avatar: 'https://i.pravatar.cc/150?img=16'
+      avatar: 'https://i.pravatar.cc/150?img=16',
+      rating: 4,
+      review:
+        'To improve efficiency, pre-set quick comments enable drivers to send common updates with a single tap. Vendors receive instant notifications and can respond to driver comments, ensuring smooth coordination. All interactions are logged within the order.',
+    },
+    driver: {
+      name: 'Rachel Kim',
+      email: 'rachelkim56@gmail.com',
+      avatar: 'https://i.pravatar.cc/150?img=33',
+      rating: 4,
+      review:
+        'To improve efficiency, pre-set quick comments enable drivers to send common updates with a single tap. Vendors receive instant notifications and can respond to driver comments, ensuring smooth coordination. All interactions are logged within the order.',
     },
     date: 'Mar 20, 2020',
-    amount: '$548',
-    status: 'Delivered'
-  }
+    amount: 548,
+    status: 'Delivered',
+    products: [
+      {
+        id: '4',
+        name: 'Vintage Table Lamp Set (2 pieces)',
+        quantity: 1,
+        deliveryDate: '20 December 2024',
+        image: 'https://images.unsplash.com/photo-1565636572781-62e93e8c5c7e?w=128&h=96&fit=crop',
+      },
+    ],
+    orderSummary: {
+      shippingAddress: {
+        name: 'Ethan Popa',
+        phone: '+91 972 234 5678',
+        address: 'SCO 50-51, Sub. City Center, 2nd Floor Sector 34A',
+        city: 'Chandigarh',
+        state: 'Punjab',
+        country: 'India',
+        zip: '160022',
+      },
+      proofOfDelivery: 'https://placehold.co/600x400',
+      paymentMethod: {
+        type: 'Credit Card',
+        cardType: 'VISA',
+        cardNumber: 'XXXX XXXX XXXX 8456',
+      },
+      subTotal: 548,
+      shippingFee: 10,
+      marketplaceFee: 54,
+      taxes: 10,
+      total: 548,
+    },
+  },
 ];

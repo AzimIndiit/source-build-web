@@ -85,7 +85,6 @@
   --radius: 0.5rem;
 }
 
-
 /* Font face declarations for Helvetica Neue */
 @font-face {
   font-family: 'Helvetica Neue';
@@ -232,12 +231,16 @@ body {
 }
 
 /* Normalize line-height for better vertical alignment */
-body, button, input, textarea, select {
+body,
+button,
+input,
+textarea,
+select {
   line-height: normal;
 }
 
 /* Fix Avatar text centering with Helvetica Neue */
-[data-slot="avatar-fallback"] {
+[data-slot='avatar-fallback'] {
   line-height: 1;
   display: flex;
   align-items: center;
@@ -254,7 +257,6 @@ html {
   outline: none;
   /* outline-offset: 2px; */
 }
-
 
 /* Animations */
 @keyframes caret-blink {

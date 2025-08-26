@@ -14,7 +14,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { DropdownMenuLabel, DropdownMenuSeparator } from '@radix-ui/react-dropdown-menu';
 
-
 interface Product {
   id: string;
   title: string;
@@ -34,7 +33,7 @@ const ProductsPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedLocation, setSelectedLocation] = useState('American Fork, UT');
   const [activeFilters, setActiveFilters] = useState<any>({});
-    
+
   const handleApplyFilters = (filters: any) => {
     setActiveFilters(filters);
     console.log('Applied filters:', filters);
@@ -198,7 +197,6 @@ const ProductsPage: React.FC = () => {
           <Card
             key={product.id}
             className="overflow-hidden border border-gray-200 rounded-xl hover:shadow-md transition-shadow p-0 cursor-pointer group"
-              
             onClick={() => handleProductClick(product)}
           >
             <div className="relative">

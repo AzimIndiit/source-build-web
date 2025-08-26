@@ -66,7 +66,7 @@ const colorMap: Record<string, string> = {
   '#F0FFF0': 'Honeydew',
   '#F5F5F5': 'White Smoke',
   '#FFF0F5': 'Lavender Blush',
-  '#FFFFF0': 'Ivory'
+  '#FFFFF0': 'Ivory',
 };
 
 /**
@@ -78,7 +78,7 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
     ? {
         r: parseInt(result[1], 16),
         g: parseInt(result[2], 16),
-        b: parseInt(result[3], 16)
+        b: parseInt(result[3], 16),
       }
     : null;
 }
@@ -86,7 +86,10 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
 /**
  * Calculate color distance using Euclidean distance formula
  */
-function colorDistance(color1: { r: number; g: number; b: number }, color2: { r: number; g: number; b: number }): number {
+function colorDistance(
+  color1: { r: number; g: number; b: number },
+  color2: { r: number; g: number; b: number }
+): number {
   const dr = color1.r - color2.r;
   const dg = color1.g - color2.g;
   const db = color1.b - color2.b;
@@ -101,21 +104,21 @@ function colorDistance(color1: { r: number; g: number; b: number }, color2: { r:
 export function getColorNameFromHex(hex: string): string {
   // Normalize the hex value
   const normalizedHex = hex.startsWith('#') ? hex.toUpperCase() : `#${hex.toUpperCase()}`;
-  
+
   // Check for exact match
   if (colorMap[normalizedHex]) {
     return colorMap[normalizedHex];
   }
-  
+
   // Find the closest color
   const inputRgb = hexToRgb(normalizedHex);
   if (!inputRgb) {
     return 'Unknown';
   }
-  
+
   let closestColor = '';
   let minDistance = Infinity;
-  
+
   for (const [hexValue, colorName] of Object.entries(colorMap)) {
     const rgb = hexToRgb(hexValue);
     if (rgb) {
@@ -126,7 +129,7 @@ export function getColorNameFromHex(hex: string): string {
       }
     }
   }
-  
+
   return closestColor || 'Custom Color';
 }
 
@@ -159,6 +162,6 @@ export function getCommonColorOptions() {
   return Object.entries(colorMap).map(([hex, name]) => ({
     value: hex,
     label: name,
-    hex: hex
+    hex: hex,
   }));
 }

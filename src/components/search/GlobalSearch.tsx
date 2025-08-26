@@ -41,7 +41,7 @@ export const GlobalSearch: React.FC = () => {
 
     const updatedSearches = [
       newSearch,
-      ...recentSearches.filter(s => s.query !== searchQuery)
+      ...recentSearches.filter((s) => s.query !== searchQuery),
     ].slice(0, 5);
 
     setRecentSearches(updatedSearches);
@@ -66,7 +66,6 @@ export const GlobalSearch: React.FC = () => {
   return (
     <div ref={searchRef} className="relative flex-1 max-w-xl">
       <div className="relative flex items-center">
-           
         <Input
           ref={inputRef}
           type="text"
@@ -79,7 +78,7 @@ export const GlobalSearch: React.FC = () => {
             }
           }}
           placeholder="Search the marketplace"
-           className="pr-10 h-[40px] border-gray-300"
+          className="pr-10 h-[40px] border-gray-300"
         />
         <Button
           onClick={() => handleSearch()}

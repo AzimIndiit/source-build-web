@@ -75,7 +75,7 @@ export function truncate(str: string, length: number): string {
 export function getAssetPath(path: string): string {
   // Remove leading slash if present
   const cleanPath = path.startsWith('/') ? path.slice(1) : path;
-  
+
   // Use Vite's URL constructor for proper asset resolution
   return new URL(`../assets/${cleanPath}`, import.meta.url).href;
 }

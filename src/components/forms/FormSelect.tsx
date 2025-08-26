@@ -171,24 +171,29 @@ export const FormSelect: React.FC<FormSelectProps> = ({
     fieldOnChange([]);
   };
 
-  const handleCreateOption = (value: string, currentValues: string[] | string, fieldOnChange: (value: string[] | string) => void) => {
+  const handleCreateOption = (
+    value: string,
+    currentValues: string[] | string,
+    fieldOnChange: (value: string[] | string) => void
+  ) => {
     const trimmedValue = value.trim();
     if (!trimmedValue) return;
-    
+
     // Check if option already exists
     const exists = localOptions.some(
-      opt => opt.value.toLowerCase() === trimmedValue.toLowerCase() || 
-      opt.label.toLowerCase() === trimmedValue.toLowerCase()
+      (opt) =>
+        opt.value.toLowerCase() === trimmedValue.toLowerCase() ||
+        opt.label.toLowerCase() === trimmedValue.toLowerCase()
     );
-    
+
     if (!exists) {
       const newOption: SelectOption = {
         value: trimmedValue.toLowerCase().replace(/\s+/g, '-'),
         label: trimmedValue,
       };
-      
-      setLocalOptions(prev => [...prev, newOption]);
-      
+
+      setLocalOptions((prev) => [...prev, newOption]);
+
       // If multiple mode, add to selection
       if (multiple) {
         const valuesArray = Array.isArray(currentValues) ? currentValues : [];
@@ -196,12 +201,12 @@ export const FormSelect: React.FC<FormSelectProps> = ({
       } else {
         fieldOnChange(newOption.value);
       }
-      
+
       // Call the callback if provided
       if (onCreateOption) {
         onCreateOption(trimmedValue);
       }
-      
+
       setSearchTerm('');
       if (!multiple) {
         setIsOpen(false);
@@ -358,7 +363,13 @@ export const FormSelect: React.FC<FormSelectProps> = ({
                       {creatable && searchTerm && filteredOptions.length === 0 && (
                         <div
                           className="p-2 cursor-pointer hover:bg-blue-50 text-blue-600 flex items-center gap-2 border-b"
-                          onClick={() => handleCreateOption(searchTerm, Array.isArray(field.value) ? field.value : [], field.onChange)}
+                          onClick={() =>
+                            handleCreateOption(
+                              searchTerm,
+                              Array.isArray(field.value) ? field.value : [],
+                              field.onChange
+                            )
+                          }
                         >
                           <span className="flex-1">
                             {createPlaceholder.replace('{search}', searchTerm)}
@@ -453,7 +464,6 @@ export const FormSelect: React.FC<FormSelectProps> = ({
                       type="text"
                       placeholder={searchPlaceholder}
                       value={searchTerm}
-                      
                       onChange={handleSearchChange}
                       onKeyDown={handleSearchKeyDown}
                       className="h-8 rounded-sm"

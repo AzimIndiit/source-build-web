@@ -62,7 +62,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           avatar: undefined,
           phone: undefined,
           isVerified: true,
-          createdAt: new Date().toISOString()
+          createdAt: new Date().toISOString(),
         };
         setUser(mockUser);
         setIsLoading(false);
@@ -83,7 +83,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const login = async (email: string, password: string) => {
     try {
       console.log('AuthProvider: Starting login process');
-      
+
       // For development/testing purposes, create a mock user
       // In production, this would call the actual API
       const mockUser: User = {
@@ -94,13 +94,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
         avatar: undefined,
         phone: undefined,
         isVerified: true,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
       };
 
       console.log('AuthProvider: Created mock user:', mockUser);
 
       // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       // Store mock tokens
       const mockAccessToken = 'mock_access_token_' + Date.now();
@@ -108,10 +108,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       localStorage.setItem('access_token', mockAccessToken);
       localStorage.setItem('refresh_token', mockRefreshToken);
-      
+
       console.log('AuthProvider: Setting user state to:', mockUser);
       setUser(mockUser);
-      
+
       console.log('AuthProvider: Login process completed');
 
       return mockUser;
