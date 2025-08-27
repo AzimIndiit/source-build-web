@@ -14,7 +14,12 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ChevronRight } from 'lucide-react';
 import { Order } from '../types';
 import { getStatusBadgeColor } from '../utils/orderUtils';
-import { SortDropdown, OrderFilterDropdown, FilterConfig, SortOption } from '@/features/orders/components';
+import {
+  SortDropdown,
+  OrderFilterDropdown,
+  FilterConfig,
+  SortOption,
+} from '@/features/orders/components';
 
 const sortOptions: SortOption[] = [
   { value: 'recent', label: 'Recent' },
@@ -33,10 +38,17 @@ interface OrdersTableProps {
   showSort?: boolean;
 }
 
-export const OrdersTable: React.FC<OrdersTableProps> = ({ orders, onViewAll, onViewDetails ,title ,showFilter=true ,showSort=true   }) => {
+export const OrdersTable: React.FC<OrdersTableProps> = ({
+  orders,
+  onViewAll,
+  onViewDetails,
+  title,
+  showFilter = true,
+  showSort = true,
+}) => {
   const [selectedSort, setSelectedSort] = useState<string>('this-week');
   const [filters, setFilters] = useState<FilterConfig>({
-    orderStatus: "",
+    orderStatus: '',
     pricing: '',
   });
 
@@ -73,10 +85,7 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({ orders, onViewAll, onV
             />
           )}
           {showFilter && (
-            <OrderFilterDropdown
-              filters={filters}
-              onFilterChange={handleFilterChange}
-            />
+            <OrderFilterDropdown filters={filters} onFilterChange={handleFilterChange} />
           )}
         </div>
       </div>
@@ -185,7 +194,9 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({ orders, onViewAll, onV
                     </span>
                   </TableCell>
                   <TableCell className="text-left">
-                    <span className="text-gray-900 text-xs lg:text-sm">{order.products?.[0]?.name}</span>
+                    <span className="text-gray-900 text-xs lg:text-sm">
+                      {order.products?.[0]?.name}
+                    </span>
                   </TableCell>
                   <TableCell className="py-3 lg:py-4">
                     <div className="flex items-center gap-2 lg:gap-3">

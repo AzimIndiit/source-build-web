@@ -1,15 +1,23 @@
+import { Suspense } from 'react';
 import { createBrowserRouter } from 'react-router-dom';
 import { ProtectedRoute } from './ProtectedRoute';
 import { AuthLayout } from '@/app/layouts/AuthLayout';
-import { DashboardLayout } from '@/app/layouts/DashboardLayout';
 import { PublicLayout } from '@/app/layouts/PublicLayout';
 import { DriverLayout } from '@/app/layouts/DriverLayout';
 import { SellerLayout } from '@/app/layouts/SellerLayout';
+import { ProfileLayout } from '@/features/profile';
+import { RouterErrorBoundary } from '@/features/error/pages/RouterErrorBoundary';
+import SuspenseLoader from '@/components/common/SuspenseLoader';
 
 export const router = createBrowserRouter([
   {
     path: '/',
-    element: <PublicLayout />,
+    element: (
+      <Suspense fallback={<SuspenseLoader fullScreen />}>
+        <PublicLayout />
+      </Suspense>
+    ),
+    errorElement: <RouterErrorBoundary />,
     children: [
       {
         index: true,
@@ -36,7 +44,12 @@ export const router = createBrowserRouter([
   },
   {
     path: '/auth',
-    element: <AuthLayout />,
+    element: (
+      <Suspense fallback={<SuspenseLoader fullScreen />}>
+        <AuthLayout />
+      </Suspense>
+    ),
+    errorElement: <RouterErrorBoundary />,
     children: [
       {
         path: 'login',
@@ -73,47 +86,63 @@ export const router = createBrowserRouter([
             Component: module.default,
           })),
       },
-    ],
+  ]
   },
   {
-    path: '/dashboard',
-    element: <ProtectedRoute redirectTo="/auth/login" />,
+    path: 'profile',
+    element: (
+      <Suspense fallback={<SuspenseLoader fullScreen />}>
+        <ProtectedRoute redirectTo="/auth/login" />
+      </Suspense>
+    ),
+    errorElement: <RouterErrorBoundary />,
     children: [
       {
-        element: <DashboardLayout />,
+        element: (
+          <Suspense fallback={<SuspenseLoader />}>
+            <ProfileLayout />
+          </Suspense>
+        ),
         children: [
           {
             index: true,
             lazy: () =>
-              import('@/features/dashboard/pages/DashboardHomePage').then((module) => ({
+              import('@/features/profile/pages/ProfilePage').then((module) => ({
                 Component: module.default,
               })),
           },
           {
-            path: 'profile',
+            path: 'my-earnings',
             lazy: () =>
-              import('@/features/user/pages/ProfilePage').then((module) => ({
+              import('@/features/profile/pages/MyEarningsPage').then((module) => ({
                 Component: module.default,
               })),
           },
           {
-            path: 'settings',
+            path: 'contact-us',
             lazy: () =>
-              import('@/features/user/pages/SettingsPage').then((module) => ({
+              import('@/features/profile/pages/ContactForm').then((module) => ({
                 Component: module.default,
               })),
           },
           {
-            path: 'notifications',
+            path: 'bank',
             lazy: () =>
-              import('@/features/notifications/pages/NotificationsPage').then((module) => ({
+              import('@/features/profile/pages/ManageBankAccountsPage').then((module) => ({
                 Component: module.default,
               })),
           },
           {
-            path: 'messages',
+            path: 'terms',
             lazy: () =>
-              import('@/features/messages/pages/MessagesPage').then((module) => ({
+              import('@/features/profile/pages/TermsAndConditionsPage').then((module) => ({
+                Component: module.default,
+              })),
+          },
+          {
+            path: 'privacy',
+            lazy: () =>
+              import('@/features/profile/pages/PrivacyPolicyPage').then((module) => ({
                 Component: module.default,
               })),
           },
@@ -123,10 +152,19 @@ export const router = createBrowserRouter([
   },
   {
     path: '/driver',
-    element: <ProtectedRoute allowedRoles={['driver']} redirectTo="/auth/login" />,
+    element: (
+      <Suspense fallback={<SuspenseLoader fullScreen />}>
+        <ProtectedRoute allowedRoles={['driver']} redirectTo="/auth/login" />
+      </Suspense>
+    ),
+    errorElement: <RouterErrorBoundary />,
     children: [
       {
-        element: <DriverLayout />,
+        element: (
+          <Suspense fallback={<SuspenseLoader />}>
+            <DriverLayout />
+          </Suspense>
+        ),
         children: [
           {
             index: true,
@@ -176,10 +214,19 @@ export const router = createBrowserRouter([
   },
   {
     path: '/seller',
-    element: <ProtectedRoute allowedRoles={['seller']} redirectTo="/auth/login" />,
+    element: (
+      <Suspense fallback={<SuspenseLoader fullScreen />}>
+        <ProtectedRoute allowedRoles={['seller']} redirectTo="/auth/login" />
+      </Suspense>
+    ),
+    errorElement: <RouterErrorBoundary />,
     children: [
       {
-        element: <SellerLayout />,
+        element: (
+          <Suspense fallback={<SuspenseLoader message='LOADING' />}>
+            <SellerLayout />
+          </Suspense>
+        ),
         children: [
           {
             index: true,
@@ -258,6 +305,27 @@ export const router = createBrowserRouter([
                 Component: module.default,
               })),
           },
+          {
+            path: 'messages/:id',
+            lazy: () =>
+              import('@/features/messages/pages/ChatPage').then((module) => ({
+                Component: module.default,
+              })),  
+          },
+          {
+            path: 'test-loader',
+            lazy: () =>
+              import('@/features/test/components/DelayedSlowLoadingPage').then((module) => ({
+                Component: module.default,
+              })),
+          },
+          {
+            path: 'test-suspense',
+            lazy: () =>
+              import('@/features/test/pages/TestSuspensePage').then((module) => ({
+                Component: module.default,
+              })),
+          },
         ],
       },
     ],
@@ -276,4 +344,6 @@ export const router = createBrowserRouter([
         Component: module.default,
       })),
   },
+  
+  
 ]);

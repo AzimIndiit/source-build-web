@@ -1,2 +1,1 @@
-export { ProfileSidebar } from './ProfileSidebar';
-export { PersonalDetailsForm } from './PersonalDetailsForm';
+export { PaymentHistoryTable } from './PaymentHistoryTable';

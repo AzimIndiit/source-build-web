@@ -21,24 +21,20 @@ const SellerOrdersPage: React.FC = () => {
     navigate(`/seller/orders/${orderId}`);
   };
 
-
-
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
 
   return (
     <div className="py-4 md:p-6 space-y-6">
- 
       {/* Orders Table */}
-        <OrdersTable
-          title='Orders'
-         
-          orders={paginatedOrders}
-          onViewDetails={handleViewOrderDetails}
-        />
-  {/* Pagination */}
-  <PaginationWrapper currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
+      <OrdersTable title="Orders" orders={paginatedOrders} onViewDetails={handleViewOrderDetails} />
+      {/* Pagination */}
+      <PaginationWrapper
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+      />
     </div>
   );
 };

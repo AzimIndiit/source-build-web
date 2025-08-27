@@ -1,5 +1,7 @@
+import ChatList from '../components/ChatList';
+
 function MessagesPage() {
-  return <div>Messages Page</div>;
+  return <ChatList />;
 }
 
 export default MessagesPage;

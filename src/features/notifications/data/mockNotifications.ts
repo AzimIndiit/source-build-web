@@ -6,17 +6,17 @@ export const mockNotifications: Notification[] = [
     userId: 'user_123',
     type: 'NEW_ORDER',
     title: 'New Order Received',
-    message: 'You\'ve received a new order! Order #789465 is awaiting confirmation.',
+    message: "You've received a new order! Order #789465 is awaiting confirmation.",
     meta: {
       orderId: '789465',
       amount: 299.99,
-      productName: 'iPhone 15 Pro'
+      productName: 'iPhone 15 Pro',
     },
     actionUrl: '/orders/789465',
     isRead: false,
     status: 'sent',
     createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
-    updatedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
+    updatedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
   },
   {
     _id: '2',
@@ -26,13 +26,13 @@ export const mockNotifications: Notification[] = [
     message: 'Order #587465 has been canceled by the customer. Check your dashboard for details.',
     meta: {
       orderId: '587465',
-      reason: 'Customer requested cancellation'
+      reason: 'Customer requested cancellation',
     },
     actionUrl: '/orders/587465',
     isRead: false,
     status: 'sent',
     createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(), // 5 hours ago
-    updatedAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString()
+    updatedAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
   },
   {
     _id: '3',
@@ -42,13 +42,13 @@ export const mockNotifications: Notification[] = [
     message: 'You have successfully confirmed Order #587465. Please prepare for fulfillment.',
     meta: {
       orderId: '587465',
-      confirmationTime: new Date().toISOString()
+      confirmationTime: new Date().toISOString(),
     },
     actionUrl: '/orders/587465',
     isRead: true,
     status: 'sent',
     createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
-    updatedAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+    updatedAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
   },
   {
     _id: '4',
@@ -59,13 +59,13 @@ export const mockNotifications: Notification[] = [
     meta: {
       orderId: '587465',
       deliveryTime: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-      driverName: 'John Smith'
+      driverName: 'John Smith',
     },
     actionUrl: '/orders/587465',
     isRead: true,
     status: 'sent',
     createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days ago
-    updatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
+    updatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
   },
   {
     _id: '5',
@@ -76,13 +76,13 @@ export const mockNotifications: Notification[] = [
     meta: {
       productName: 'Lights',
       productId: 'prod_123',
-      currentStock: 0
+      currentStock: 0,
     },
     actionUrl: '/products/prod_123',
     isRead: true,
     status: 'sent',
     createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days ago
-    updatedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
+    updatedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
   },
   {
     _id: '6',
@@ -93,13 +93,13 @@ export const mockNotifications: Notification[] = [
     meta: {
       productName: 'Lights',
       productId: 'prod_123',
-      approvalDate: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString()
+      approvalDate: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
     },
     actionUrl: '/products/prod_123',
     isRead: true,
     status: 'sent',
     createdAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(), // 4 days ago
-    updatedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString()
+    updatedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
   },
   {
     _id: '7',
@@ -111,12 +111,12 @@ export const mockNotifications: Notification[] = [
       productName: 'Lights',
       productId: 'prod_123',
       oldPrice: 29.99,
-      newPrice: 24.99
+      newPrice: 24.99,
     },
     actionUrl: '/products/prod_123',
     isRead: true,
     status: 'sent',
     createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 days ago
-    updatedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
-  }
+    updatedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+  },
 ];

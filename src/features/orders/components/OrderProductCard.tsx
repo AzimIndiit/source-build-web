@@ -15,25 +15,36 @@ interface OrderProductCardProps {
 export const OrderProductCard: React.FC<OrderProductCardProps> = ({
   order,
   onViewItem,
-  onWriteReview
+  onWriteReview,
 }) => {
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
-  
-  // Format the order ID to match the image format (408-2671656-7090703)
-  const formattedOrderId = order.id.includes('-') ? order.id : `408-2671656-${order.id.padStart(7, '0')}`;
 
-  const handleReviewSubmit = (buyerRating: number, buyerComment: string, driverRating: number, driverComment: string) => {
+  // Format the order ID to match the image format (408-2671656-7090703)
+  const formattedOrderId = order.id.includes('-')
+    ? order.id
+    : `408-2671656-${order.id.padStart(7, '0')}`;
+
+  const handleReviewSubmit = (
+    buyerRating: number,
+    buyerComment: string,
+    driverRating: number,
+    driverComment: string
+  ) => {
     console.log('Review submitted:', { buyerRating, buyerComment, driverRating, driverComment });
     onWriteReview?.();
   };
 
   // Calculate total quantity
-  const totalQuantity = order.products?.reduce((sum, product) => sum + (product.quantity || 1), 0) || 1;
-  
+  const totalQuantity =
+    order.products?.reduce((sum, product) => sum + (product.quantity || 1), 0) || 1;
+
   // Calculate total amount
-  const totalAmount = order.products?.reduce((sum, product) => {
-    return sum + (product.price || 0);
-  }, 0) || order.amount || 0;
+  const totalAmount =
+    order.products?.reduce((sum, product) => {
+      return sum + (product.price || 0);
+    }, 0) ||
+    order.amount ||
+    0;
 
   // If there are multiple products, render a single card with common header
   if (order.products && order.products.length > 0) {
@@ -58,11 +69,10 @@ export const OrderProductCard: React.FC<OrderProductCardProps> = ({
               <div className="col-span-2 sm:col-span-1 lg:col-span-1">
                 <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Status</p>
                 <Badge
-                      className={`px-2 lg:px-3 py-1 rounded-full font-medium text-xs ${getStatusBadgeColor(order.status)}`}
-                    >
-                      {order.status}
-                    </Badge>
-                
+                  className={`px-2 lg:px-3 py-1 rounded-full font-medium text-xs ${getStatusBadgeColor(order.status)}`}
+                >
+                  {order.status}
+                </Badge>
               </div>
               <div className="hidden lg:block">
                 <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Payment</p>
@@ -70,18 +80,20 @@ export const OrderProductCard: React.FC<OrderProductCardProps> = ({
               </div>
             </div>
             <div className="sm:ml-4 lg:ml-6 text-left sm:text-right space-y-1">
-              <p className="text-xs text-gray-500 uppercase tracking-wide">Order # {formattedOrderId}</p>
-               {/* Common Write Review Button - Only show on last item */}
-              
-                  <div className="flex-shrink-0 self-start">
-                    <Button
-                      type='button'
-                      onClick={() => setIsReviewModalOpen(true)}
-                      className="bg-primary  hover:bg-primary/80 text-white rounded-lg px-6 py-3 h-auto font-medium text-base whitespace-nowrap"
-                    >
-                      Write a Review
-                    </Button>
-                  </div>
+              <p className="text-xs text-gray-500 uppercase tracking-wide">
+                Order # {formattedOrderId}
+              </p>
+              {/* Common Write Review Button - Only show on last item */}
+
+              <div className="flex-shrink-0 self-start">
+                <Button
+                  type="button"
+                  onClick={() => setIsReviewModalOpen(true)}
+                  className="bg-primary  hover:bg-primary/80 text-white rounded-lg px-6 py-3 h-auto font-medium text-base whitespace-nowrap"
+                >
+                  Write a Review
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -94,12 +106,15 @@ export const OrderProductCard: React.FC<OrderProductCardProps> = ({
                 {/* Product Image */}
                 <div className="flex-shrink-0">
                   <img
-                    src={product.image || "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=128&h=96&fit=crop"}
+                    src={
+                      product.image ||
+                      'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=128&h=96&fit=crop'
+                    }
                     alt={product.name}
                     className="w-full sm:w-32 h-32 sm:h-24 object-cover rounded-lg"
                   />
                 </div>
-                
+
                 {/* Product Info */}
                 <div className="flex-1">
                   <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">
@@ -107,7 +122,8 @@ export const OrderProductCard: React.FC<OrderProductCardProps> = ({
                   </h3>
                   <div className="flex items-center gap-4 mb-2">
                     <p className="text-sm text-gray-600">
-                      <span className="font-medium">Price:</span> {formatCurrency(product.price || 0)}
+                      <span className="font-medium">Price:</span>{' '}
+                      {formatCurrency(product.price || 0)}
                     </p>
                     <p className="text-sm text-gray-600">
                       <span className="font-medium">Qty:</span> {product.quantity || 1}
@@ -116,33 +132,31 @@ export const OrderProductCard: React.FC<OrderProductCardProps> = ({
                   <p className="text-sm text-gray-500 mb-3 sm:mb-4">
                     Delivery on {product.deliveryDate || '12 October 2024'}
                   </p>
-                  
-                 
                 </div>
-                 {/* View Item Button */}
-               <Button
-                    variant="outline"
-                    onClick={() => {
-                      onViewItem?.();
-                      console.log('Viewing item:', product.name);
-                    }}
-                    className="border-[#3b82f6] text-[#3b82f6] hover:bg-blue-50 rounded-lg px-6 py-2 h-auto font-medium"
-                  >
-                    View your item
-                  </Button>
-
-               
+                {/* View Item Button */}
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    onViewItem?.();
+                    console.log('Viewing item:', product.name);
+                  }}
+                  className="border-[#3b82f6] text-[#3b82f6] hover:bg-blue-50 rounded-lg px-6 py-2 h-auto font-medium"
+                >
+                  View your item
+                </Button>
               </div>
             </div>
           ))}
         </div>
-        
+
         {/* Review Modal */}
-       {isReviewModalOpen && <ReviewModal
-          isOpen={isReviewModalOpen}
-          onClose={() => setIsReviewModalOpen(false)}
-          onSubmit={handleReviewSubmit}
-        />}
+        {isReviewModalOpen && (
+          <ReviewModal
+            isOpen={isReviewModalOpen}
+            onClose={() => setIsReviewModalOpen(false)}
+            onSubmit={handleReviewSubmit}
+          />
+        )}
       </div>
     );
   }

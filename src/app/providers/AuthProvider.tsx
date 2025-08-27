@@ -4,12 +4,18 @@ import axiosInstance from '@/lib/axios';
 export interface User {
   id: string;
   email: string;
-  name: string;
-  role: 'driver' | 'seller' | 'admin';
+  displayName: string;
+  role: 'driver' | 'seller' | 'admin' | 'buyer';
   avatar?: string;
   phone?: string;
   isVerified: boolean;
   createdAt: string;
+  firstName: string;
+  lastName: string;
+  company: string;
+  region: string;
+  address: string;
+  description: string;
 }
 
 interface AuthContextType {
@@ -24,7 +30,7 @@ interface AuthContextType {
 interface SignupData {
   email: string;
   password: string;
-  name: string;
+  displayName: string;
   role: 'driver' | 'seller';
   phone?: string;
 }
@@ -57,12 +63,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
         const mockUser: User = {
           id: '1',
           email: 'zimmCorp@gmail.com',
-          name: 'Smith',
+          displayName: 'Smith',
           role: 'seller',
           avatar: undefined,
           phone: undefined,
           isVerified: true,
           createdAt: new Date().toISOString(),
+          firstName: 'Smith',
+          lastName: 'Smith',
+          company: 'Smith',
+          region: 'Smith',
+          address: 'Smith',
+          description: 'Smith',
         };
         setUser(mockUser);
         setIsLoading(false);
@@ -89,7 +101,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const mockUser: User = {
         id: '1',
         email: email,
-        name: 'Smith',
+        displayName: 'Smith',
+        firstName: 'Smith',
+        lastName: 'Smith',
+        company: 'Smith',
+        region: 'Smith',
+        address: 'Smith',
+        description: 'Smith',
         role: 'seller',
         avatar: undefined,
         phone: undefined,
@@ -113,8 +131,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setUser(mockUser);
 
       console.log('AuthProvider: Login process completed');
-
-      return mockUser;
     } catch (error) {
       console.error('AuthProvider: Login error:', error);
       throw error;
@@ -132,7 +148,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const logout = async () => {
     try {
-      await axiosInstance.post('/auth/logout');
+      // await axiosInstance.post('/auth/logout');
     } catch (error) {
       console.error('Logout error:', error);
     } finally {

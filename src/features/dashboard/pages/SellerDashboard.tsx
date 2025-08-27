@@ -20,7 +20,7 @@ export const SellerDashboard: React.FC = () => {
 
   const handleViewOrderDetails = (orderId: string) => {
     // Navigate to order details page
-  navigate(`/seller/orders/${orderId}`)
+    navigate(`/seller/orders/${orderId}`);
   };
 
   return (
@@ -49,7 +49,7 @@ export const SellerDashboard: React.FC = () => {
 
       {/* Orders Table */}
       <OrdersTable
-        title='Latest Orders'
+        title="Latest Orders"
         orders={ordersData}
         showSort={false}
         onViewAll={handleViewAllOrders}

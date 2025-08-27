@@ -46,7 +46,7 @@ export {
   BreadcrumbEllipsis,
 } from './breadcrumb';
 export { ReviewCard, type ReviewData } from './ReviewCard';
-export { StarRating } from './StarRating';
+export { StarRating } from '../common/StarRating';
 export {
   Dialog,
   DialogPortal,
@@ -59,5 +59,5 @@ export {
   DialogTitle,
   DialogDescription,
 } from './dialog';
-export { DeleteConfirmationModal } from './DeleteConfirmationModal';
+export { DeleteConfirmationModal } from '../common/DeleteConfirmationModal';
 export { Timeline, type TimelineItem } from './Timeline';

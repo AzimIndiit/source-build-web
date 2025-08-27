@@ -20,47 +20,49 @@ export const getNotificationIcon = (type: NotificationType): IconConfig => {
     case 'NEW_ORDER':
       return {
         iconColor: 'text-green-600',
-        bgColor: 'bg-green-50'
+        bgColor: 'bg-green-50',
       };
     case 'ORDER_CANCELLED':
       return {
         iconColor: 'text-red-600',
-        bgColor: 'bg-red-50'
+        bgColor: 'bg-red-50',
       };
     case 'ORDER_CONFIRMED':
       return {
         iconColor: 'text-blue-600',
-        bgColor: 'bg-blue-50'
+        bgColor: 'bg-blue-50',
       };
     case 'ORDER_DELIVERED':
       return {
         iconColor: 'text-yellow-600',
-        bgColor: 'bg-yellow-50'
+        bgColor: 'bg-yellow-50',
       };
     case 'PRODUCT_OUT_OF_STOCK':
       return {
         iconColor: 'text-red-600',
-        bgColor: 'bg-red-50'
+        bgColor: 'bg-red-50',
       };
     case 'PRODUCT_APPROVED':
       return {
         iconColor: 'text-blue-600',
-        bgColor: 'bg-blue-50'
+        bgColor: 'bg-blue-50',
       };
     case 'PRODUCT_PRICE_UPDATE':
       return {
         iconColor: 'text-green-600',
-        bgColor: 'bg-green-50'
+        bgColor: 'bg-green-50',
       };
     default:
       return {
         iconColor: 'text-gray-600',
-        bgColor: 'bg-gray-50'
+        bgColor: 'bg-gray-50',
       };
   }
 };
 
-export const getNotificationIconComponent = (type: NotificationType): React.ComponentType<{ className?: string }> => {
+export const getNotificationIconComponent = (
+  type: NotificationType
+): React.ComponentType<{ className?: string }> => {
   switch (type) {
     case 'NEW_ORDER':
       return ClipboardCheck;

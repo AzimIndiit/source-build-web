@@ -1,4 +1,4 @@
-export type NotificationType = 
+export type NotificationType =
   | 'NEW_ORDER'
   | 'ORDER_CANCELLED'
   | 'ORDER_CONFIRMED'

@@ -18,7 +18,7 @@ interface TimelineProps {
 
 const getStatusIcon = (status: TimelineItem['status'], customIcon?: React.ReactNode) => {
   if (customIcon) return customIcon;
-  
+
   switch (status) {
     case 'completed':
       return <CheckCircle className="w-5 h-5 text-green-600" />;
@@ -83,47 +83,38 @@ export const Timeline: React.FC<TimelineProps> = ({ items, className = '' }) => 
     <div className={cn('relative', className)}>
       {/* Timeline line */}
       <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gray-200" />
-      
+
       <div className="space-y-6">
         {items.map((item, index) => {
           const styles = getStatusStyles(item.status);
           const isLast = index === items.length - 1;
-          
+
           return (
             <div key={item.id} className="relative flex items-start gap-4">
               {/* Icon container */}
-              <div className={cn(
-                'relative z-10 flex items-center justify-center w-12 h-12 rounded-full border-2',
-                styles.container
-              )}>
+              <div
+                className={cn(
+                  'relative z-10 flex items-center justify-center w-12 h-12 rounded-full border-2',
+                  styles.container
+                )}
+              >
                 {getStatusIcon(item.status, item.icon)}
               </div>
-              
+
               {/* Content */}
               <div className="flex-1 min-w-0 pb-6">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                  <h3 className={cn('text-sm font-medium', styles.title)}>
-                    {item.title}
-                  </h3>
-                  <span className={cn('text-xs', styles.text)}>
-                    {item.timestamp}
-                  </span>
+                  <h3 className={cn('text-sm font-medium', styles.title)}>{item.title}</h3>
+                  <span className={cn('text-xs', styles.text)}>{item.timestamp}</span>
                 </div>
-                
+
                 {item.description && (
-                  <p className={cn('text-sm mt-1', styles.description)}>
-                    {item.description}
-                  </p>
+                  <p className={cn('text-sm mt-1', styles.description)}>{item.description}</p>
                 )}
               </div>
-              
+
               {/* Timeline line connector */}
-              {!isLast && (
-                <div className={cn(
-                  'absolute left-6 top-12 w-0.5 h-6',
-                  styles.line
-                )} />
-              )}
+              {!isLast && <div className={cn('absolute left-6 top-12 w-0.5 h-6', styles.line)} />}
             </div>
           );
         })}

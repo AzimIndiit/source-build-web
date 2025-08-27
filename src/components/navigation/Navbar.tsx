@@ -12,6 +12,7 @@ import {
   Menu,
   X,
   Search,
+  LayoutDashboard,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -27,21 +28,32 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { getInitials } from '@/lib/helpers';
 import { GlobalSearch } from '@/components/search/GlobalSearch';
+import { useLogoutModal } from '@/stores/useLogoutModal';
+import { DeleteConfirmationModal } from '../ui';
 
 export const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const { openModal, isOpen, closeModal } = useLogoutModal();
   const isAuthenticated = !!user;
-  const [isBuyerMode, setIsBuyerMode] = useState(false);
+  const [isBuyerMode, setIsBuyerMode] = useState(user?.role === 'buyer');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  
+  // Mock notification counts - replace with actual data from your backend
+  const notificationCount = 12; // Example count
+  const messageCount = 5; // Example count
+  const cartCount = 2; // Example count
+
+  const handleLogoutConfirmation = () => {
+    openModal();
+    setIsMobileMenuOpen(false);
+  };
 
   const handleLogout = () => {
     logout();
     navigate('/');
-    setIsMobileMenuOpen(false);
   };
-
   return (
     <>
       <div className="bg-white w-full shadow-sm border-b border-gray-200">
@@ -103,12 +115,12 @@ export const Navbar: React.FC = () => {
                     <button className="bg-blue-50 flex gap-2 h-[42px] items-center px-2 lg:px-3 py-2 rounded-lg hover:bg-blue-100 transition-colors outline-none">
                       <Avatar className="w-8 h-8">
                         <AvatarFallback className="bg-gray-400 text-white font-medium top-[2px] relative">
-                          {getInitials(user?.name || 'Smith')}
+                          {getInitials(user?.displayName || 'Smith')}
                         </AvatarFallback>
                       </Avatar>
                       <div className="hidden md:flex flex-col text-left">
                         <span className="text-xs text-gray-600">
-                          Hello, {user?.name || 'Smith'}
+                          Hello, {user?.displayName || 'Smith'}
                         </span>
                         <span className="text-sm font-semibold text-gray-900 flex items-center gap-1">
                           Account Profile
@@ -118,6 +130,18 @@ export const Navbar: React.FC = () => {
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-60 bg-white">
+                    <DropdownMenuItem asChild className="cursor-pointer text-sm">
+                      {['seller', 'driver'].includes(user?.role) && (
+                        <Link to={`/${user?.role}/dashboard`} className="flex gap-3 items-center">
+                          <Avatar className="w-10 h-10">
+                            <AvatarFallback className="bg-gray-200">
+                              <LayoutDashboard className="w-6 h-6" />
+                            </AvatarFallback>
+                          </Avatar>
+                          <span>Dashboard</span>
+                        </Link>
+                      )}
+                    </DropdownMenuItem>
                     <DropdownMenuItem asChild className="cursor-pointer text-sm">
                       <Link to="/profile" className="flex gap-3 items-center">
                         <Avatar className="w-10 h-10">
@@ -129,26 +153,31 @@ export const Navbar: React.FC = () => {
                       </Link>
                     </DropdownMenuItem>
 
-                    <DropdownMenuItem
-                      className="cursor-pointer text-sm"
-                      onSelect={(e) => e.preventDefault()}
-                    >
-                      <div className="flex gap-3 items-center w-full">
-                        <Avatar className="w-10 h-10">
-                          <AvatarFallback className="bg-gray-200">
-                            <Settings className="w-6 h-6" />
-                          </AvatarFallback>
-                        </Avatar>
-                        <span className="flex-1">Switch to Buyer</span>
-                        <Switch
-                          className={`h-6 w-12 ${isBuyerMode ? 'data-[state=checked]:bg-green-500' : ''}`}
-                          checked={isBuyerMode}
-                          onCheckedChange={setIsBuyerMode}
-                        />
-                      </div>
-                    </DropdownMenuItem>
+                    {user?.role === 'seller' && (
+                      <DropdownMenuItem
+                        className="cursor-pointer text-sm"
+                        onSelect={(e) => e.preventDefault()}
+                      >
+                        <div className="flex gap-3 items-center w-full">
+                          <Avatar className="w-10 h-10">
+                            <AvatarFallback className="bg-gray-200">
+                              <Settings className="w-6 h-6" />
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="flex-1">Switch to Buyer</span>
+                          <Switch
+                            className={`h-6 w-12 ${isBuyerMode ? 'data-[state=checked]:bg-green-500' : ''}`}
+                            checked={isBuyerMode}
+                            onCheckedChange={setIsBuyerMode}
+                          />
+                        </div>
+                      </DropdownMenuItem>
+                    )}
 
-                    <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-sm">
+                    <DropdownMenuItem
+                      onClick={handleLogoutConfirmation}
+                      className="cursor-pointer text-sm"
+                    >
                       <div className="flex gap-3 items-center">
                         <Avatar className="w-10 h-10">
                           <AvatarFallback className="bg-gray-200">
@@ -166,23 +195,29 @@ export const Navbar: React.FC = () => {
                   variant="ghost"
                   size="icon"
                   className="hidden lg:flex relative rounded-full w-[42px] h-[42px] bg-gray-100 hover:bg-gray-200"
+                  onClick={() => navigate(`/${user?.role}/messages`)}
                 >
                   <MessageCircle className="w-5 h-5" />
-                  <span className="absolute -top-1 -right-1 bg-red-500 w-5 h-5 rounded-full flex items-center justify-center text-white text-xs">
-                    1
-                  </span>
+                  {messageCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 min-w-[20px] h-5 px-1 rounded-full flex items-center justify-center text-white text-xs">
+                      {messageCount > 9 ? '9+' : messageCount}
+                    </span>
+                  )}
                 </Button>
 
                 {/* Notifications */}
                 <Button
                   variant="ghost"
                   size="icon"
+                  onClick={() => navigate(`/${user?.role}/notifications`)}
                   className="relative rounded-full w-[42px] h-[42px] bg-gray-100 hover:bg-gray-200"
                 >
                   <Bell className="w-5 h-5" />
-                  <span className="absolute -top-1 -right-1 bg-red-500 w-5 h-5 rounded-full flex items-center justify-center text-white text-xs">
-                    2
-                  </span>
+                  {notificationCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 min-w-[20px] h-5 px-1 rounded-full flex items-center justify-center text-white text-xs">
+                      {notificationCount > 9 ? '9+' : notificationCount}
+                    </span>
+                  )}
                 </Button>
               </>
             ) : (
@@ -204,9 +239,11 @@ export const Navbar: React.FC = () => {
             >
               <div className="relative">
                 <ShoppingCart className="!w-[24px] !h-[24px]" />
-                <span className="absolute -top-2 -right-2 bg-red-500 min-w-[18px] h-[18px] px-1 rounded-full flex items-center justify-center text-white text-xs font-medium">
-                  2
-                </span>
+                {cartCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 min-w-[18px] h-[18px] px-1 rounded-full flex items-center justify-center text-white text-xs font-medium">
+                    {cartCount > 9 ? '9+' : cartCount}
+                  </span>
+                )}
               </div>
               <div className="hidden lg:block text-sm font-medium">Cart</div>
             </Button>
@@ -269,43 +306,58 @@ export const Navbar: React.FC = () => {
               {isAuthenticated ? (
                 <>
                   {/* User Profile */}
+
                   <Link to="/profile" className="flex items-center gap-3 py-2">
                     <Avatar className="w-10 h-10">
                       <AvatarFallback className="bg-gray-400 text-white">
-                        {getInitials(user?.name || 'Smith')}
+                        {getInitials(user?.displayName || 'Smith')}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 text-left">
-                      <div className="text-sm font-semibold">{user?.name || 'Smith'}</div>
+                      <div className="text-sm font-semibold">{user?.displayName || 'Smith'}</div>
                       <div className="text-xs text-gray-600">View Profile</div>
                     </div>
                   </Link>
+                  {['seller', 'driver'].includes(user?.role) && (
+                    <Link to={`/${user?.role}/dashboard`} className="flex items-center justify-start py-2">
+                       
+                      <span className="text-sm">Dashbord</span>
+                     
+                    </Link>
+                  )}
 
+           
                   {/* Switch Mode */}
-                  <div className="flex items-center justify-between py-2">
-                    <span className="text-sm">Switch to Buyer</span>
-                    <Switch
-                      className="h-6 w-12"
-                      checked={isBuyerMode}
-                      onCheckedChange={setIsBuyerMode}
-                    />
-                  </div>
+                  {user?.role === 'seller' && (
+                    <div className="flex items-center justify-between py-2">
+                      <span className="text-sm">Switch to Buyer</span>
+                      <Switch
+                         className={`h-6 w-12 ${isBuyerMode ? 'data-[state=checked]:bg-green-500' : ''}`}
+                        checked={isBuyerMode}
+                        onCheckedChange={setIsBuyerMode}
+                      />
+                    </div>
+                  )}
 
                   {/* Messages */}
-                  <Link to="/messages" className="flex items-center justify-between py-2">
+                  <Link to={`/${user?.role}/messages`} className="flex items-center justify-between py-2">
                     <span className="text-sm">Messages</span>
-                    <div className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">1</div>
+                    <div className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                      {messageCount > 9 ? '9+' : messageCount}
+                    </div>
                   </Link>
 
                   {/* Notifications */}
-                  <Link to="/notifications" className="flex items-center justify-between py-2">
+                  <Link to={`/${user?.role}/notifications`} className="flex items-center justify-between py-2">
                     <span className="text-sm">Notifications</span>
-                    <div className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">2</div>
+                    <div className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                      {notificationCount > 9 ? '9+' : notificationCount}
+                    </div>
                   </Link>
 
                   {/* Logout */}
                   <button
-                    onClick={handleLogout}
+                    onClick={handleLogoutConfirmation}
                     className="w-full text-left text-sm text-red-600 py-2"
                   >
                     Logout
@@ -338,6 +390,20 @@ export const Navbar: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Logout Confirmation Modal */}
+
+      {isOpen && (
+        <DeleteConfirmationModal
+          isOpen={isOpen}
+          onClose={closeModal}
+          onConfirm={handleLogout}
+          title="Logout?"
+          description="Are you sure, You want to logout?"
+          confirmText="Yes I'm Sure"
+          cancelText="Cancel"
+        />
       )}
     </>
   );

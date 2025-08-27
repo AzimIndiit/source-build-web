@@ -21,7 +21,7 @@ export interface Customer {
   email: string;
   avatar?: string;
   rating?: number;
-  review?: string;  
+  review?: string;
 }
 
 export interface OrderProduct {
@@ -56,7 +56,7 @@ export interface OrderSummary {
   total: number;
 }
 
-  export interface Order {
+export interface Order {
   id: string;
   customer: Customer;
   driver?: Customer;
@@ -65,6 +65,6 @@ export interface OrderSummary {
   status: 'Delivered' | 'Processing' | 'Pending' | 'Cancelled' | 'Out for Delivery' | 'In Transit';
   products?: OrderProduct[];
   orderSummary?: OrderSummary;
-  }
+}
 
 export type OrderStatus = Order['status'];

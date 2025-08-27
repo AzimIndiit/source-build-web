@@ -28,10 +28,7 @@ export const FormTextarea: React.FC<FormTextareaProps> = ({
       {label && (
         <Label
           htmlFor={name}
-          className={cn(
-            'text-figma-text-primary font-helvetica font-medium text-figma-sm mb-figma-md mb-3',
-            error && 'text-red-600'
-          )}
+          className={cn('text-gray-900 font-medium text-sm mb-3', error && 'text-red-600')}
         >
           {label}
         </Label>
@@ -41,21 +38,18 @@ export const FormTextarea: React.FC<FormTextareaProps> = ({
         {...register(name)}
         {...props}
         className={cn(
-          label ? 'mt-figma-md' : '',
-          'resize-none rounded-figma-md min-h-[160px]',
-          'border border-figma-border-secondary bg-figma-white',
-          'px-figma-xl py-figma-lg text-figma-sm font-helvetica',
-          'placeholder:text-figma-text-secondary',
-          'focus:border-figma-primary focus:ring-2 focus:ring-figma-primary/20',
-          'disabled:opacity-figma-disabled disabled:cursor-not-allowed',
+          'resize-none rounded-md min-h-[160px]',
+          'border border-gray-300 bg-white',
+          'px-4 py-3 text-sm',
+          'placeholder:text-gray-500',
+          'focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20',
+          'disabled:opacity-50 disabled:cursor-not-allowed',
           'transition-all duration-200',
           error && 'border-red-500 focus:ring-red-500',
           props.className
         )}
       />
-      {error && (
-        <p className="text-red-500 text-figma-xs mt-figma-sm mt-2">{error.message?.toString()}</p>
-      )}
+      {error && <p className="text-red-500 text-xs mt-2">{error.message?.toString()}</p>}
     </div>
   );
 };

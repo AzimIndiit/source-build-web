@@ -10,7 +10,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 
 export interface FilterConfig {
-  orderStatus?:string;
+  orderStatus?: string;
   pricing?: 'high-to-low' | 'low-to-high' | '';
 }
 
@@ -22,7 +22,7 @@ interface OrderFilterDropdownProps {
 
 export const OrderFilterDropdown: React.FC<OrderFilterDropdownProps> = ({
   filters = {
-    orderStatus:"",
+    orderStatus: '',
     pricing: '',
   },
   onFilterChange,
@@ -46,7 +46,7 @@ export const OrderFilterDropdown: React.FC<OrderFilterDropdownProps> = ({
 
   const handleClearFilters = () => {
     const clearedFilters: FilterConfig = {
-      orderStatus: "",
+      orderStatus: '',
       pricing: '',
     };
     setLocalFilters(clearedFilters);
@@ -69,14 +69,19 @@ export const OrderFilterDropdown: React.FC<OrderFilterDropdownProps> = ({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-full md:w-[600px] p-4">
-    
-
         {/* Order Status Section */}
-       
+
         <div className="space-y-3 mb-6">
-          <h3 className="font-semibold text-sm text-gray-900">   Order Status</h3>
+          <h3 className="font-semibold text-sm text-gray-900"> Order Status</h3>
           <div className="flex flex-wrap gap-3">
-            {['Pending', 'Delivered', 'Processing', 'Cancelled', 'In Transit', 'Out for Delivery  '].map((key) => (
+            {[
+              'Pending',
+              'Delivered',
+              'Processing',
+              'Cancelled',
+              'In Transit',
+              'Out for Delivery  ',
+            ].map((key) => (
               <label
                 key={key}
                 className={`inline-flex items-center gap-2 px-4 py-2 rounded-sm border border-gray-200 cursor-pointer transition-colors`}
@@ -86,7 +91,7 @@ export const OrderFilterDropdown: React.FC<OrderFilterDropdownProps> = ({
                 }}
               >
                 <Checkbox
-                    checked={localFilters.orderStatus === key}
+                  checked={localFilters.orderStatus === key}
                   onCheckedChange={() => {}}
                   className={`pointer-events-none h-4 w-4`}
                 />
@@ -96,10 +101,8 @@ export const OrderFilterDropdown: React.FC<OrderFilterDropdownProps> = ({
           </div>
         </div>
 
-
-      
-                {/* Pricing */}
-                <div className="space-y-3 mb-6">
+        {/* Pricing */}
+        <div className="space-y-3 mb-6">
           <h3 className="font-semibold text-sm text-gray-900">Pricing</h3>
           <RadioGroup value={filters.pricing} onValueChange={handlePricingChange}>
             <div className="flex gap-4 mb-4">
@@ -119,16 +122,13 @@ export const OrderFilterDropdown: React.FC<OrderFilterDropdownProps> = ({
                 <RadioGroupItem value="low-to-high" id="low-to-high" />
                 <span className="text-sm">Low to High</span>
               </label>
-             
             </div>
           </RadioGroup>
-
-                
         </div>
 
         {/* Action Buttons */}
-             {/* Action Buttons */}
-             <div className="flex gap-3 justify-end">
+        {/* Action Buttons */}
+        <div className="flex gap-3 justify-end">
           <Button
             variant="outline"
             onClick={handleClearFilters}
@@ -143,7 +143,6 @@ export const OrderFilterDropdown: React.FC<OrderFilterDropdownProps> = ({
             Apply Filter
           </Button>
         </div>
-      
       </DropdownMenuContent>
     </DropdownMenu>
   );

@@ -16,7 +16,9 @@ A comprehensive notifications system for the Source Build application.
 ## Components
 
 ### NotificationCard
+
 Displays individual notification with:
+
 - Type icon and color coding
 - Priority indicator (border color)
 - Read/unread status
@@ -25,25 +27,33 @@ Displays individual notification with:
 - Metadata display
 
 ### NotificationList
+
 Renders a list of notifications with:
+
 - Loading states
 - Empty states
 - Individual notification cards
 
 ### NotificationFilters
+
 Provides filtering options:
+
 - Type filter (Order, Payment, System, etc.)
 - Priority filter (Low, Medium, High, Urgent)
 - Read status filter (All, Read, Unread)
 
 ### NotificationActions
+
 Bulk action controls:
+
 - Mark all as read/unread
 - Delete selected notifications
 - Archive selected notifications
 
 ### EmptyState
+
 Shows appropriate empty states for:
+
 - No notifications
 - No unread notifications
 - No filtered results
@@ -54,14 +64,10 @@ Shows appropriate empty states for:
 import { NotificationsPage } from '@/features/notifications';
 
 // Use the complete page
-<NotificationsPage />
+<NotificationsPage />;
 
 // Or use individual components
-import { 
-  NotificationCard, 
-  NotificationList, 
-  NotificationFilters 
-} from '@/features/notifications';
+import { NotificationCard, NotificationList, NotificationFilters } from '@/features/notifications';
 ```
 
 ## Types
@@ -91,6 +97,7 @@ interface Notification {
 ## Hooks
 
 ### useNotifications
+
 Custom hook for managing notification state:
 
 ```tsx
@@ -100,13 +107,14 @@ const {
   markAsUnread,
   markAllAsRead,
   deleteNotification,
-  getUnreadCount
+  getUnreadCount,
 } = useNotifications(initialNotifications);
 ```
 
 ## Mock Data
 
 The feature includes comprehensive mock data for development and testing:
+
 - 10 sample notifications
 - Various types and priorities
 - Mix of read/unread status

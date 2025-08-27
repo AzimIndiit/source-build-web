@@ -84,7 +84,7 @@ export const ordersData: Order[] = [
         id: '1',
         name: '(NEW) Westinghouse Chandelier Fixture Zaro 6 Light Iron',
         quantity: 2,
-        price: 215  ,
+        price: 215,
         deliveryDate: '12 October 2024',
         image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=128&h=96&fit=crop',
       },
@@ -187,9 +187,9 @@ export const ordersData: Order[] = [
       email: 'eayariossi@gmail.com',
       avatar: 'https://i.pravatar.cc/150?img=10',
       rating: 0,
-      review:''
+      review: '',
     },
-   
+
     date: 'Jul 28, 2022',
     amount: 577,
     status: 'Pending',
@@ -386,20 +386,20 @@ export const ordersData: Order[] = [
   },
   {
     id: '891256',
-    
+
     customer: {
       name: 'Luis González',
       email: 'gonzale77@gmail.com',
       avatar: 'https://i.pravatar.cc/150?img=12',
       rating: 0,
-      review:''
+      review: '',
     },
     driver: {
       name: 'Rachel Kim',
       email: 'rachelkim56@gmail.com',
       avatar: 'https://i.pravatar.cc/150?img=33',
       rating: 0,
-      review:''
+      review: '',
     },
     date: 'Apr 27, 2018',
     amount: 207,
@@ -452,14 +452,14 @@ export const ordersData: Order[] = [
       email: 'gabriela76@gmail.com',
       avatar: 'https://i.pravatar.cc/150?img=9',
       rating: 0,
-      review:''
+      review: '',
     },
     driver: {
       name: 'Rachel Kim',
       email: 'rachelkim56@gmail.com',
       avatar: 'https://i.pravatar.cc/150?img=33',
       rating: 0,
-      review:''
+      review: '',
     },
     date: 'Sep 22, 2015',
     amount: 692,
@@ -541,7 +541,7 @@ export const ordersData: Order[] = [
     },
   },
   {
-    id: '891256',     
+    id: '891256',
     customer: {
       name: 'Sara Adimbola',
       email: 'saraadmen77@gmail.com',

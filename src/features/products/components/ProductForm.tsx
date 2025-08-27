@@ -131,7 +131,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
     <div className="w-full h-full ">
       <Card className="p-0 bg-white rounded-xl shadow-sm border-gray-200 h-full flex flex-col ">
         <div className="flex-1 overflow-y-auto min-h-0 p-4 sm:p-6">
-          {/* Step 1: Product Details */} 
+          {/* Step 1: Product Details */}
           {currentStep === 1 && (
             <div className="space-y-4">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Product Details</h2>
@@ -243,7 +243,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
               </div>
 
               {/* Form Fields */}
-              <div className=''>
+              <div className="">
                 <FormInput
                   name="title"
                   label="Title"

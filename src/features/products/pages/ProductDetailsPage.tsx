@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import ReadMore from '@/components/ui/ReadMore';
 import { BreadcrumbWrapper, DeleteConfirmationModal } from '@/components/ui';
 import { ReviewCard, type ReviewData } from '@/components/ui/ReviewCard';
-import { StarRating } from '@/components/ui/StarRating';
+import { StarRating } from '@/components/common/StarRating';
 
 const ProductDetailsPage: React.FC = () => {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
