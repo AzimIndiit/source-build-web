@@ -36,7 +36,6 @@ interface ProfileSidebarProps {
   isCollapsed?: boolean;
   isMobile?: boolean;
   onCollapsedChange?: (collapsed: boolean) => void;
-
 }
 
 export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
@@ -47,9 +46,8 @@ export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
   isMobile = false,
   isCollapsed: controlledCollapsed,
   onCollapsedChange,
-  
 }) => {
-  const {user} = useAuth();
+  const { user } = useAuth();
   const [localCollapsed, setLocalCollapsed] = useState(false);
   const isCollapsed = controlledCollapsed !== undefined ? controlledCollapsed : localCollapsed;
   const setIsCollapsed = onCollapsedChange || setLocalCollapsed;

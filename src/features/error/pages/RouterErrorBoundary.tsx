@@ -94,9 +94,7 @@ export const RouterErrorBoundary: React.FC = () => {
               <div className="mt-2 p-3 bg-gray-100 rounded text-xs font-mono text-gray-600 overflow-auto max-h-32">
                 <pre className="whitespace-pre-wrap">
                   {JSON.stringify(
-                    error instanceof Error
-                      ? { message: error.message, stack: error.stack }
-                      : error,
+                    error instanceof Error ? { message: error.message, stack: error.stack } : error,
                     null,
                     2
                   )}
@@ -106,7 +104,11 @@ export const RouterErrorBoundary: React.FC = () => {
           )}
 
           <div className="flex flex-col sm:flex-row gap-3 pt-4">
-            <Button variant="outline" onClick={handleGoBack} className="flex-1 border-gray-200 text-gray-500 hover:text-gray-500 hover:bg-gray-50   ">
+            <Button
+              variant="outline"
+              onClick={handleGoBack}
+              className="flex-1 border-gray-200 text-gray-500 hover:text-gray-500 hover:bg-gray-50   "
+            >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Go Back
             </Button>

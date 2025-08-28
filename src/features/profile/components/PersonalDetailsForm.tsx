@@ -81,23 +81,22 @@ const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({
   },
   onSave,
 }) => {
-
-  const {user} = useAuth();
+  const { user } = useAuth();
   console.log(user);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const methods = useForm<PersonalDetailsFormData>({
     resolver: zodResolver(personalDetailsSchema),
-      defaultValues: {
-        firstName: user?.firstName,
-        lastName: user?.lastName,
-        email: user?.email,
-        company: user?.company,
-        region: user?.region,
-        address: user?.address,
-        description: user?.description,
-      },
+    defaultValues: {
+      firstName: user?.firstName,
+      lastName: user?.lastName,
+      email: user?.email,
+      company: user?.company,
+      region: user?.region,
+      address: user?.address,
+      description: user?.description,
+    },
   });
 
   const {
@@ -141,9 +140,9 @@ const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    
+
     if (!file) return;
-    
+
     // Check file size (5MB limit)
     const maxSize = 5 * 1024 * 1024; // 5MB in bytes
     if (file.size > maxSize) {
@@ -151,14 +150,14 @@ const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({
       event.target.value = ''; // Reset the input
       return;
     }
-    
+
     // Check file type (accept only images)
     if (!file.type.startsWith('image/')) {
       toast.error('Please upload an image file');
       event.target.value = ''; // Reset the input
       return;
     }
-    
+
     // Create a preview URL for the image
     const reader = new FileReader();
     reader.onloadend = () => {

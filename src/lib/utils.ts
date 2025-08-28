@@ -29,3 +29,20 @@ export const formatCurrency = (value: string | number): string => {
     maximumFractionDigits: 2,
   }).format(numeric);
 };
+
+
+export function truncateFilename(filename: string, maxLength = 15): string {
+  if (!filename) return "";
+
+  const dotIndex = filename.lastIndexOf(".");
+  const ext = dotIndex !== -1 ? filename.slice(dotIndex) : "";
+  const base = dotIndex !== -1 ? filename.slice(0, dotIndex) : filename;
+
+  // If already short enough → return as is
+  if (base.length + ext.length <= maxLength) {
+    return filename;
+  }
+
+  // Truncate base and keep extension
+  return `${base.substring(0, 5)}...${ext}`;
+}

@@ -8,11 +8,10 @@ const ChatList = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const chatList = mockChatList;
-  
 
   return (
     <div className="py-4 md:p-6 space-y-6">
-      <h1 className="text-2xl font-bold mb-6">Messages</h1>
+      <h1 className="text-xl md:text-2xl font-bold text-gray-900">Messages</h1>
       <div className="space-y-3">
         {chatList?.length > 0 ? (
           chatList?.map((item) => {
@@ -21,8 +20,8 @@ const ChatList = () => {
               message?.messageType === 'text'
                 ? message.content
                 : message?.messageType === 'file' || message?.messageType === 'mix'
-                ? 'Sent a file'
-                : '';
+                  ? 'Sent a file'
+                  : '';
             const otherUser = item?.participants?.find((p) => p?.id !== user?.id);
             const time = message?.sentAt
               ? formatDistanceToNow(new Date(message.sentAt), {

@@ -29,13 +29,13 @@ export const BreadcrumbWrapper: React.FC<BreadcrumbWrapperProps> = ({ items, cla
             <React.Fragment key={index}>
               <BreadcrumbItem>
                 {item.isCurrentPage ? (
-                  <BreadcrumbPage className="text-primary">{item.label}</BreadcrumbPage>
+                  <BreadcrumbPage className="text-primary text-base">{item.label}</BreadcrumbPage>
                 ) : item.href ? (
-                  <BreadcrumbLink asChild>
+                  <BreadcrumbLink asChild className="text-base">
                     <Link to={item.href}>{item.label}</Link>
                   </BreadcrumbLink>
                 ) : (
-                  <span className="text-gray-500">{item.label}</span>
+                  <span className="text-gray-500 text-base">{item.label}</span>
                 )}
               </BreadcrumbItem>
               {index < items.length - 1 && <BreadcrumbSeparator />}

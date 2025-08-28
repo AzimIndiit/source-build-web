@@ -24,7 +24,8 @@ const NotificationsPage: React.FC = () => {
       {/* Header */}
       <div className="">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold text-gray-900">Notifications</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900">Notifications</h1>
+
           <button
             onClick={handleMarkAllAsRead}
             className="text-primary hover:text-primary/80 font-medium text-sm transition-colors"

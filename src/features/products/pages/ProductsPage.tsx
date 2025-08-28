@@ -159,9 +159,9 @@ const ProductsPage: React.FC = () => {
   ];
 
   return (
-    <div className="flex-1">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">My Listing</h1>
+    <div className="py-4 md:p-4 space-y-4 md:space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl md:text-2xl font-bold text-gray-900">My Listing</h1>
         <div className="flex items-center gap-2">
           {/* Location Selector - Visible on tablet and desktop */}
           <DropdownMenu>

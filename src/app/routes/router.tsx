@@ -86,7 +86,7 @@ export const router = createBrowserRouter([
             Component: module.default,
           })),
       },
-  ]
+    ],
   },
   {
     path: 'profile',
@@ -223,7 +223,7 @@ export const router = createBrowserRouter([
     children: [
       {
         element: (
-          <Suspense fallback={<SuspenseLoader message='LOADING' />}>
+          <Suspense fallback={<SuspenseLoader message="LOADING" />}>
             <SellerLayout />
           </Suspense>
         ),
@@ -310,7 +310,7 @@ export const router = createBrowserRouter([
             lazy: () =>
               import('@/features/messages/pages/ChatPage').then((module) => ({
                 Component: module.default,
-              })),  
+              })),
           },
           {
             path: 'test-loader',
@@ -344,6 +344,4 @@ export const router = createBrowserRouter([
         Component: module.default,
       })),
   },
-  
-  
 ]);

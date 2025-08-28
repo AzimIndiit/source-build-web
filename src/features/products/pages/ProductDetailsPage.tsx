@@ -153,9 +153,9 @@ const ProductDetailsPage: React.FC = () => {
     { label: product.title, isCurrentPage: true },
   ];
   return (
-    <div className="flex-1 px-4 sm:px-6 lg:px-8">
+    <div className="py-4 md:p-4 space-y-4 md:space-y-6">
       {/* Breadcrumb Navigation */}
-      <div className="py-2 sm:py-4">
+      <div className="">
         <BreadcrumbWrapper items={breadcrumbItems} />
       </div>
 

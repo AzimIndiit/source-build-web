@@ -58,7 +58,11 @@ const NotFoundPage: React.FC<NotFoundPageProps> = ({
           )}
 
           <div className="flex flex-col sm:flex-row gap-3">
-            <Button variant="outline" onClick={handleGoBack} className="flex-1 border-gray-200 text-gray-500 hover:text-gray-500 hover:bg-gray-50">
+            <Button
+              variant="outline"
+              onClick={handleGoBack}
+              className="flex-1 border-gray-200 text-gray-500 hover:text-gray-500 hover:bg-gray-50"
+            >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Go Back
             </Button>

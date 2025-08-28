@@ -107,7 +107,7 @@ export const mockChatList: ChatItem[] = [
       {
         id: 'user-5',
         displayName: 'Robert Wilson',
-          avatar: '/avatars/robert.jpg',
+        avatar: '/avatars/robert.jpg',
       },
     ],
     lastMessage: {

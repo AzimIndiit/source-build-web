@@ -37,8 +37,8 @@ export const BankAccountCard: React.FC<BankAccountCardProps> = ({
           </div>
 
           <div className="flex gap-2 ml-4">
-            <Button 
-              title='Edit'
+            <Button
+              title="Edit"
               variant="ghost"
               size="icon"
               onClick={onEdit}
@@ -47,7 +47,7 @@ export const BankAccountCard: React.FC<BankAccountCardProps> = ({
               <SquarePen className="w-4 h-4" />
             </Button>
             <Button
-              title='Delete'
+              title="Delete"
               variant="ghost"
               size="icon"
               onClick={onDelete}

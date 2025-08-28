@@ -2,10 +2,7 @@
  * Utility function to add delay to lazy imports for testing Suspense loaders
  * Only use this in development for testing purposes
  */
-export const withDelay = <T>(
-  importPromise: Promise<T>,
-  delayMs: number = 2000
-): Promise<T> => {
+export const withDelay = <T>(importPromise: Promise<T>, delayMs: number = 2000): Promise<T> => {
   if (process.env.NODE_ENV === 'production') {
     return importPromise;
   }
@@ -19,7 +16,7 @@ export const withDelay = <T>(
 
 /**
  * Example usage in router:
- * 
+ *
  * lazy: () => withDelay(
  *   import('@/features/dashboard/pages/SellerDashboard').then((module) => ({
  *     Component: module.default,

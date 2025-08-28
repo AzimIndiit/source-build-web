@@ -19,13 +19,13 @@ export const SuspenseLoader: React.FC<SuspenseLoaderProps> = ({
   };
 
   const containerClasses = fullScreen
-    ? 'fixed inset-0 flex items-center justify-center bg-white z-[9999]'
+    ? 'fixed inset-0 flex items-center justify-center bg-white/90 backdrop-blur-sm z-[9999] min-h-[100vh] flex justify-center items-center bg-red-500'
     : 'flex items-center justify-center min-h-[200px] w-full';
 
   return (
-    <div className={containerClasses} style={{background:"red",height:"100vh"}}>
-      <div className="flex flex-col items-center gap-4 p-8 bg-white rounded-lg shadow-2xl border border-gray-200">
-        <Loader2 className={`${sizeClasses[size]} animate-spin text-blue-600`} />
+    <div className={containerClasses}>
+      <div className="gap-4 p-8 bg-white rounded-lg shadow-2xl border border-gray-200 min-h-[100vh] w-full flex justify-center items-center">
+        <Loader2 className={`${sizeClasses[size]} animate-spin text-primary`} />
         <p className="text-lg text-gray-900 font-semibold">{message}</p>
       </div>
     </div>

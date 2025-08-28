@@ -1,10 +1,6 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-  DialogClose,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogClose } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 
 interface ImagePreviewModalProps {
@@ -39,7 +35,7 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!open) return;
-      
+
       if (e.key === 'ArrowLeft') {
         handlePrev();
       } else if (e.key === 'ArrowRight') {
@@ -57,11 +53,7 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
         <div className="relative w-full h-full flex items-center justify-center">
           {/* Close Button */}
           <DialogClose className="absolute top-4 right-4 z-50 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 p-0 text-white hover:bg-white/10"
-            >
+            <Button variant="ghost" size="icon" className="h-8 w-8 p-0 text-white hover:bg-white">
               <X className="h-5 w-5" />
               <span className="sr-only">Close</span>
             </Button>
@@ -79,7 +71,7 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
                 <ChevronLeft className="h-8 w-8" />
                 <span className="sr-only">Previous image</span>
               </Button>
-              
+
               <Button
                 variant="ghost"
                 size="icon"

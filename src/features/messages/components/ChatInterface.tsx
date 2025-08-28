@@ -2,7 +2,16 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { format, parseISO, isToday, isYesterday } from 'date-fns';
 import toast from 'react-hot-toast';
-import { Send, Paperclip, MoreVertical, Trash2, Check, CheckCheck } from 'lucide-react';
+import {
+  Send,
+  Paperclip,
+  MoreVertical,
+  Trash2,
+  Check,
+  CheckCheck,
+  X,
+  FileText,
+} from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/button';
@@ -17,7 +26,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { getInitials } from '@/lib/helpers';
-import { cn } from '@/lib/utils';
+import { cn, truncateFilename } from '@/lib/utils';
 
 // Mock data matching the image
 const mockOtherUser = {
@@ -32,17 +41,19 @@ const mockMessages = [
     id: '1',
     chatId: '123',
     senderId: '2',
-    content: 'Hi Zendaya, I just received a notification that a $500 refund has been issued for my order (#34567). Can you clarify why?',
+    content:
+      'Hi Zendaya, I just received a notification that a $500 refund has been issued for my order (#34567). Can you clarify why?',
     messageType: 'text' as const,
     attachments: [],
     status: 'read' as const,
     sentAt: '2022-07-16T06:15:00Z',
   },
   {
-    id: '2', 
+    id: '2',
     chatId: '123',
     senderId: '1',
-    content: 'Thanks for reaching out! Yes, a partial refund of $500 was processed due to [reason, e.g., an item being out of stock, a price adjustment, or a cancellation request]. I apologize for any inconvenience this may have caused.',
+    content:
+      'Thanks for reaching out! Yes, a partial refund of $500 was processed due to [reason, e.g., an item being out of stock, a price adjustment, or a cancellation request]. I apologize for any inconvenience this may have caused.',
     messageType: 'text' as const,
     attachments: [],
     status: 'read' as const,
@@ -62,7 +73,8 @@ const mockMessages = [
     id: '4',
     chatId: '123',
     senderId: '2',
-    content: 'My order included multiple items—does this refund affect the delivery of the rest of my order?',
+    content:
+      'My order included multiple items—does this refund affect the delivery of the rest of my order?',
     messageType: 'text' as const,
     attachments: [],
     status: 'read' as const,
@@ -72,7 +84,8 @@ const mockMessages = [
     id: '5',
     chatId: '123',
     senderId: '1',
-    content: 'No worries! Your remaining items in Order #34567 are still scheduled for delivery as planned.',
+    content:
+      'No worries! Your remaining items in Order #34567 are still scheduled for delivery as planned.',
     messageType: 'text' as const,
     attachments: [],
     status: 'read' as const,
@@ -82,7 +95,8 @@ const mockMessages = [
     id: '6',
     chatId: '123',
     senderId: '2',
-    content: 'Thanks for the clarification! How long will it take for the refund to reflect in my account?',
+    content:
+      'Thanks for the clarification! How long will it take for the refund to reflect in my account?',
     messageType: 'text' as const,
     attachments: [],
     status: 'read' as const,
@@ -128,7 +142,7 @@ const ChatInterface = () => {
   const [previewImages, setPreviewImages] = useState<string[]>([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  
+
   const chatBodyRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const currentUser = { id: '1', displayName: 'You' };
@@ -145,7 +159,7 @@ const ChatInterface = () => {
 
   const sendMessage = async () => {
     if (!newMessage.trim() && !attachmentFile) return;
-    
+
     const tempId = Date.now().toString();
     const newMsg: Message = {
       id: tempId,
@@ -153,14 +167,12 @@ const ChatInterface = () => {
       senderId: currentUser.id,
       content: newMessage.trim(),
       messageType: attachmentFile ? 'file' : 'text',
-      attachments: attachmentFile
-        ? [
-            {
-              originalName: attachmentFile.name,
-              mimetype: attachmentFile.type,
-              url: URL.createObjectURL(attachmentFile),
-            },
-          ]
+      attachments: attachmentFile 
+        ? [{
+            originalName: attachmentFile.name,
+            mimetype: attachmentFile.type,
+            url: URL.createObjectURL(attachmentFile),
+          }]
         : [],
       status: 'sending',
       sentAt: new Date().toISOString(),
@@ -173,9 +185,7 @@ const ChatInterface = () => {
     // Simulate message being sent
     setTimeout(() => {
       setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === tempId ? { ...msg, status: 'sent' as MessageStatus } : msg
-        )
+        prev.map((msg) => (msg.id === tempId ? { ...msg, status: 'sent' as MessageStatus } : msg))
       );
     }, 500);
 
@@ -200,13 +210,25 @@ const ChatInterface = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error('File size must be less than 10MB');
+    // Validate file size
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('File size must be less than 5MB');
       return;
     }
 
     setAttachmentFile(file);
-    toast.success(`File "${file.name}" selected`);
+    
+    // Reset input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const removeAttachment = () => {
+    setAttachmentFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   const handleDeleteChat = () => {
@@ -249,20 +271,18 @@ const ChatInterface = () => {
         return null;
     }
   };
-
+  const breadcrumbItems = [
+    { label: 'Messages', href: '/seller/messages' },
+    { label: `Chat Details`, isCurrentPage: true },
+  ];
   return (
     <div className="py-4 md:p-6 space-y-6">
       {/* Breadcrumb */}
-        <BreadcrumbWrapper
-          items={[
-            { label: 'Messages', href: '/seller/messages' },
-            { label: 'Chat Details' },
-          ]}
-        />
+      <BreadcrumbWrapper items={breadcrumbItems} />
 
-      <Card className="flex-1  flex flex-col overflow-hidden border-gray-200">
+      <Card className="h-[calc(100vh-200px)] flex flex-col overflow-hidden border-gray-200">
         {/* Chat Header */}
-        <CardHeader className="flex flex-row items-center justify-between p-4 border-b border-gray-200 bg-white">
+        <CardHeader className="flex flex-row items-center justify-between p-4 border-b border-gray-200 bg-white flex-shrink-0">
           <div className="flex items-center gap-3">
             <Avatar className="h-10 w-10">
               <AvatarImage src={otherUser.avatar} alt={otherUser.displayName} />
@@ -272,9 +292,7 @@ const ChatInterface = () => {
             </Avatar>
             <div>
               <h3 className="font-semibold text-gray-900">{otherUser.displayName}</h3>
-              <p className="text-sm text-green-500">
-                {otherUser.isOnline ? 'Online' : 'Offline'}
-              </p>
+              <p className="text-sm text-green-500">{otherUser.isOnline ? 'Online' : 'Offline'}</p>
             </div>
           </div>
 
@@ -297,21 +315,16 @@ const ChatInterface = () => {
         </CardHeader>
 
         {/* Chat Messages */}
-        <CardContent
-          ref={chatBodyRef}
-          className="flex-1 overflow-y-auto space-y-2 bg-white"
-        >
+        <CardContent ref={chatBodyRef} className="flex-1 overflow-y-auto p-4 space-y-2 bg-white">
           {/* Date Header */}
           <div className="flex items-center justify-center ">
-            <div className="text-gray-500 text-md">
-              Jul 16, 2022, 06:15 am
-            </div>
+            <div className="text-gray-500 text-md">Jul 16, 2022, 06:15 am</div>
           </div>
 
           {/* Messages */}
           {messages.map((msg) => {
             const isSentByUser = msg.senderId === currentUser.id;
-            
+
             return (
               <div key={msg.id} className="space-y-2">
                 {/* Avatar and message bubble */}
@@ -341,7 +354,7 @@ const ChatInterface = () => {
                         {otherUser.displayName}
                       </span>
                     )}
-                    
+
                     <div
                       className={cn(
                         'px-4 py-2 rounded-2xl break-words',
@@ -354,7 +367,7 @@ const ChatInterface = () => {
                       {msg.attachments.length > 0 &&
                         msg.attachments.map((att, index) => {
                           const isImage = att.mimetype?.startsWith('image/');
-                          
+
                           return (
                             <div key={index} className="mb-2">
                               {isImage ? (
@@ -362,31 +375,36 @@ const ChatInterface = () => {
                                   src={att.url}
                                   alt={att.originalName}
                                   className="rounded-lg max-w-full cursor-pointer"
-                                  style={{ maxHeight: '200px' }}
+                                  style={{ height: '200px', width: '200px' }}
                                   onClick={() => openImagePreview(att.url)}
                                 />
                               ) : (
-                                <a
-                                  href={att.url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className={cn(
-                                    'flex items-center gap-2 p-2 rounded',
-                                    isSentByUser
-                                      ? 'bg-blue-700 hover:bg-blue-800'
-                                      : 'bg-gray-100 hover:bg-gray-200'
-                                  )}
-                                >
-                                  <Paperclip className="w-4 h-4" />
-                                  <span className="text-sm">{att.originalName}</span>
-                                </a>
+                                <div className='flex items-center gap-2 flex-col justify-center h-full w-full bg-gray-100 rounded-sm cursor-pointer' style={{ height: '200px', width: '200px' }} >
+                                    <a href={att.url} target='_blank' rel='noopener noreferrer' className='flex items-center gap-2 flex-col'>
+                                        <FileText className="h-5 w-5 text-gray-500" />
+                                        <div className="">
+                                            <p className="text-xs font-medium text-gray-700 truncate" title={att.originalName}>
+                                                {truncateFilename(att.originalName,10)}
+                                            </p>
+                                        </div>
+                                    </a>
+                                
+                                 </div> 
+                               
                               )}
                             </div>
                           );
                         })}
 
                       {/* Message Text */}
-                      {msg.content && <ReadMore text={msg.content} maxLength={1000} className={` ${isSentByUser ? 'text-white hover:text-white' : 'text-gray-700'}  `} buttonClassName={`${isSentByUser ? 'text-white hover:text-white' : 'text-gray-700'} !text-sm`}/>}
+                      {msg.content && (
+                        <ReadMore
+                          text={msg.content}
+                          maxLength={1000}
+                          className={` ${isSentByUser ? 'text-white hover:text-white' : 'text-gray-700'}  `}
+                          buttonClassName={`${isSentByUser ? 'text-white hover:text-white' : 'text-gray-700'} !text-sm`}
+                        />
+                      )}
                     </div>
 
                     {/* Time and Status */}
@@ -422,17 +440,17 @@ const ChatInterface = () => {
         </CardContent>
 
         {/* Message Input */}
-        <div className="border-t bg-white p-4 border-gray-200">
-          <div className="flex items-center gap-2">
+        <div className="border-t bg-white p-4 border-gray-200 flex-shrink-0">
+          <div className="relative">
             <Input
               type="text"
               placeholder="Type a message"
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyDown={handleKeyPress}
-              className="flex-1 bg-gray-50"
+              className="w-full pr-32 bg-gray-50"
             />
-            
+
             <input
               type="file"
               ref={fileInputRef}
@@ -440,36 +458,75 @@ const ChatInterface = () => {
               accept="image/*,application/pdf,.doc,.docx"
               onChange={handleFileSelect}
             />
-            
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-10 w-10"
-              onClick={() => fileInputRef.current?.click()}
-            >
-              <Paperclip className="h-5 w-5 text-gray-600" />
-            </Button>
 
-            <Button
-              size="icon"
-              onClick={sendMessage}
-              disabled={!newMessage.trim() && !attachmentFile}
-              className="h-10 w-10 bg-primary hover:bg-blue-700"
-            >
-              <Send className="h-5 w-5" />
-            </Button>
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-12 w-16 bg-gray-100 hover:bg-gray-200"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Paperclip className="h-4 w-4 text-gray-500" />
+              </Button>
+
+              <Button
+                size="icon"
+                onClick={sendMessage}
+                disabled={!newMessage.trim() && !attachmentFile}
+                className="h-12 w-16 bg-primary hover:bg-primary/80"
+              >
+                <Send className="h-4 w-4 text-white" />
+              </Button>
+            </div>
           </div>
 
           {attachmentFile && (
-            <div className="mt-2 p-2 bg-gray-100 rounded-lg flex items-center justify-between">
-              <span className="text-sm text-gray-700">{attachmentFile.name}</span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setAttachmentFile(null)}
-              >
-                Remove
-              </Button>
+            <div className="mt-2 inline-block">
+              <div className="relative group bg-gray-100 rounded-lg inline-block">
+                {attachmentFile.type.startsWith('image/') ? (
+                  <div className="relative w-20 h-20">
+                    <img
+                      src={URL.createObjectURL(attachmentFile)}
+                      alt={attachmentFile.name}
+                      className="w-full h-full object-cover rounded-sm"
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="absolute top-[-5px] right-[-5px] h-6 w-6 bg-red-500 hover:bg-red-600 transition-opacity rounded-full"
+                      onClick={removeAttachment}
+                    >
+                      <X className="h-3 w-3 text-white" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex relative flex-col items-center gap-2 p-2 h-20 w-20">
+                    <div className="flex items-center gap-2 flex-col justify-center">
+                      <FileText className="h-5 w-5 text-gray-500" />
+                      <div className="">
+                        <p className="text-xs font-medium text-gray-700 truncate" title={attachmentFile.name}>
+                          {truncateFilename(attachmentFile.name, 10)}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {attachmentFile.size < 1024
+                            ? `${attachmentFile.size} B`
+                            : attachmentFile.size < 1024 * 1024
+                            ? `${(attachmentFile.size / 1024).toFixed(1)} KB`
+                            : `${(attachmentFile.size / (1024 * 1024)).toFixed(1)} MB`}
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="absolute top-[-5px] right-[-5px] h-6 w-6 bg-red-500 hover:bg-red-600 transition-opacity rounded-full"
+                      onClick={removeAttachment}
+                    >
+                      <X className="h-3 w-3 text-white" />
+                    </Button>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>

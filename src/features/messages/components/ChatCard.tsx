@@ -41,9 +41,7 @@ export const ChatCard: React.FC<ChatCardProps> = ({
         <Avatar className="h-16 w-16">
           <AvatarImage src={avatar || ''} alt={displayName} />
           <AvatarFallback className="bg-gray-200 text-gray-700 font-semibold text-xl">
-           <div className="mt-1">
-           {getInitials(displayName || 'U')}
-           </div>
+            <div className="mt-1">{getInitials(displayName || 'U')}</div>
           </AvatarFallback>
         </Avatar>
 

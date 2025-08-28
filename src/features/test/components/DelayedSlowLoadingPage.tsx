@@ -1,4 +1,3 @@
-import React from 'react';
 import { lazyWithDelay } from '@/lib/delay-component';
 
 // Create a delayed version of the SlowLoadingPage

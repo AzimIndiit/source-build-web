@@ -9,7 +9,7 @@ const TestSuspensePage = () => {
     const timer = setTimeout(() => {
       setLoading(false);
     }, 3000);
-    
+
     return () => clearTimeout(timer);
   }, []);
 

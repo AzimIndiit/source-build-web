@@ -39,7 +39,7 @@ export const Navbar: React.FC = () => {
   const [isBuyerMode, setIsBuyerMode] = useState(user?.role === 'buyer');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
-  
+
   // Mock notification counts - replace with actual data from your backend
   const notificationCount = 12; // Example count
   const messageCount = 5; // Example count
@@ -319,20 +319,20 @@ export const Navbar: React.FC = () => {
                     </div>
                   </Link>
                   {['seller', 'driver'].includes(user?.role) && (
-                    <Link to={`/${user?.role}/dashboard`} className="flex items-center justify-start py-2">
-                       
+                    <Link
+                      to={`/${user?.role}/dashboard`}
+                      className="flex items-center justify-start py-2"
+                    >
                       <span className="text-sm">Dashbord</span>
-                     
                     </Link>
                   )}
 
-           
                   {/* Switch Mode */}
                   {user?.role === 'seller' && (
                     <div className="flex items-center justify-between py-2">
                       <span className="text-sm">Switch to Buyer</span>
                       <Switch
-                         className={`h-6 w-12 ${isBuyerMode ? 'data-[state=checked]:bg-green-500' : ''}`}
+                        className={`h-6 w-12 ${isBuyerMode ? 'data-[state=checked]:bg-green-500' : ''}`}
                         checked={isBuyerMode}
                         onCheckedChange={setIsBuyerMode}
                       />
@@ -340,7 +340,10 @@ export const Navbar: React.FC = () => {
                   )}
 
                   {/* Messages */}
-                  <Link to={`/${user?.role}/messages`} className="flex items-center justify-between py-2">
+                  <Link
+                    to={`/${user?.role}/messages`}
+                    className="flex items-center justify-between py-2"
+                  >
                     <span className="text-sm">Messages</span>
                     <div className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
                       {messageCount > 9 ? '9+' : messageCount}
@@ -348,7 +351,10 @@ export const Navbar: React.FC = () => {
                   </Link>
 
                   {/* Notifications */}
-                  <Link to={`/${user?.role}/notifications`} className="flex items-center justify-between py-2">
+                  <Link
+                    to={`/${user?.role}/notifications`}
+                    className="flex items-center justify-between py-2"
+                  >
                     <span className="text-sm">Notifications</span>
                     <div className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
                       {notificationCount > 9 ? '9+' : notificationCount}

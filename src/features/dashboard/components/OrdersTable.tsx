@@ -66,7 +66,9 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
   return (
     <div className="w-full">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg md:text-xl font-bold">{title}</h3>
+        <div>
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900">{title}</h1>
+        </div>
         <div className="flex items-center gap-2 md:gap-4">
           {onViewAll && (
             <Button
@@ -110,7 +112,9 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
               <div className="space-y-2">
                 <div>
                   <p className="text-xs text-gray-500">Product</p>
-                  <p className="text-sm font-medium text-gray-900">{order.product}</p>
+                  <p className="text-sm font-medium text-gray-900 line-clamp-1">
+                    {order.products?.[0]?.name}
+                  </p>
                 </div>
 
                 <div className="flex items-center gap-2">
