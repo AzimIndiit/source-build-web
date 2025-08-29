@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { FormInput } from '@/components/forms/FormInput';
 
 import { FormSelect } from '@/components/forms/FormSelect';
+
 const AccountTypeOptions = [
   { label: 'Checking', value: 'checking' as const },
   { label: 'Savings', value: 'savings' as const },

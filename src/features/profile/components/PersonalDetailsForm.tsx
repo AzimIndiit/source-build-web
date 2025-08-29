@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -12,6 +12,8 @@ import { FormTextarea } from '@/components/forms/FormTextarea';
 import { ChangePasswordModal } from './ChangePasswordModal';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { useUpdateProfileMutation } from '../hooks/useProfileMutations';
+import { useUserQuery } from '@/features/auth/hooks/useUserQuery';
 
 // Zod validation schema
 const personalDetailsSchema = z.object({
@@ -68,36 +70,45 @@ interface PersonalDetailsFormProps {
   onSave?: (data: PersonalDetailsFormData) => void;
 }
 
-const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({
-  initialData = {
-    firstName: 'Yousef',
-    lastName: 'Alaoui',
-    email: 'nikolhansen11@gmail.com',
-    company: 'Johns. Pvt. Ltd.',
-    region: 'USA',
-    address: '70 Washington Square South, New York, United States',
-    description:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. In vitae tellus eu dolor tincidunt imperdiet vel ut diam. Nulla a nulla varius, volutpat velit non, ullamcorper augue. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Maecenas sodales ultricies vulputate.',
-  },
-  onSave,
-}) => {
+const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({ initialData, onSave }) => {
   const { user } = useAuth();
-  console.log(user);
+  const { data: queryUser, isLoading: isLoadingUser } = useUserQuery();
+  const updateProfileMutation = useUpdateProfileMutation();
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const methods = useForm<PersonalDetailsFormData>({
     resolver: zodResolver(personalDetailsSchema),
     defaultValues: {
-      firstName: user?.firstName,
-      lastName: user?.lastName,
-      email: user?.email,
-      company: user?.company,
-      region: user?.region,
-      address: user?.address,
-      description: user?.description,
+      firstName: '',
+      lastName: '',
+      email: '',
+      company: '',
+      region: '',
+      address: '',
+      description: '',
+      avatar: '',
     },
   });
+
+  // Update form when user data changes - prefer query data over store data
+  useEffect(() => {
+    const userData = queryUser || user;
+    if (userData) {
+      methods.reset({
+        firstName: userData.firstName || '',
+        lastName: userData.lastName || '',
+        email: userData.email || '',
+        company: userData.company || '',
+        region: userData.region || '',
+        address: userData.address || '',
+        description: userData.description || '',
+        avatar: userData.avatar || '',
+      });
+    }
+  }, [queryUser, user, methods]);
 
   const {
     handleSubmit,
@@ -105,22 +116,53 @@ const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({
     watch,
     setValue,
   } = methods;
+  
 
   const formValues = watch();
+  const userData = queryUser || user;
+  console.log('formValues', formValues, 'userData', userData);
   const fullName = `${formValues.firstName || ''} ${formValues.lastName || ''}`.trim();
 
   const onSubmit = async (data: PersonalDetailsFormData) => {
-    // Trim all string values before saving
-    const trimmedData = Object.fromEntries(
-      Object.entries(data).map(([key, value]) => [
-        key,
-        typeof value === 'string' ? value.trim() : value,
-      ])
-    ) as PersonalDetailsFormData;
+    try {
+      // Trim all string values before saving
+      const trimmedData = Object.fromEntries(
+        Object.entries(data).map(([key, value]) => [
+          key,
+          typeof value === 'string' ? value.trim() : value,
+        ])
+      ) as PersonalDetailsFormData;
 
-    onSave?.(trimmedData);
-    console.log('Personal details updated successfully', trimmedData);
-    toast.success('Personal details updated successfully');
+      // Prepare the update payload
+      const updatePayload: any = {
+        firstName: trimmedData.firstName,
+        lastName: trimmedData.lastName,
+        company: trimmedData.company,
+        region: trimmedData.region,
+        address: trimmedData.address,
+        description: trimmedData.description,
+      };
+
+      // If there's a selected file, include it
+      if (selectedFile) {
+        updatePayload.avatarFile = selectedFile;
+      } else if (trimmedData.avatar && !trimmedData.avatar.startsWith('data:')) {
+        // Keep existing avatar URL if no new file selected
+        updatePayload.avatar = trimmedData.avatar;
+      }
+
+      // Call the mutation
+      await updateProfileMutation.mutateAsync(updatePayload);
+
+      // Clear selected file after successful update
+      setSelectedFile(null);
+      setPreviewUrl(null);
+
+      // Call optional onSave callback
+      onSave?.(trimmedData);
+    } catch (error) {
+      console.error('Failed to update profile:', error);
+    }
   };
 
   const handleChangePassword = () => {
@@ -128,10 +170,9 @@ const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({
   };
 
   const handlePasswordChange = async (passwordData: any) => {
-    // Here you would typically call an API to change the password
+    // The ChangePasswordModal will handle the API call internally
+    // This prop is optional and only used if custom logic is needed
     console.log('Password change data:', passwordData);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
   };
 
   const handleAvatarClick = () => {
@@ -158,11 +199,16 @@ const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({
       return;
     }
 
+    // Store the file for upload
+    setSelectedFile(file);
+
     // Create a preview URL for the image
     const reader = new FileReader();
     reader.onloadend = () => {
-      setValue('avatar', reader.result as string);
-      toast.success('Avatar uploaded successfully');
+      const dataUrl = reader.result as string;
+      setPreviewUrl(dataUrl);
+      setValue('avatar', dataUrl);
+      toast.success('Avatar selected. Click Save to upload.');
     };
     reader.readAsDataURL(file);
   };
@@ -179,7 +225,10 @@ const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({
               <div className="mb-6 sm:mb-8 flex justify-center sm:justify-start">
                 <div className="relative inline-block">
                   <Avatar className="w-20 h-20 sm:w-24 sm:h-24">
-                    <AvatarImage src={formValues.avatar} alt={fullName} />
+                    <AvatarImage 
+                      src={previewUrl || formValues.avatar || userData?.avatar} 
+                      alt={fullName} 
+                    />
                     <AvatarFallback className="text-xl sm:text-2xl font-semibold">
                       {getInitials(fullName || 'User')}
                     </AvatarFallback>
@@ -187,7 +236,7 @@ const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({
                   <button
                     type="button"
                     onClick={handleAvatarClick}
-                    className="absolute bottom-0 right-0 w-7 h-7 sm:w-8 sm:h-8 bg-primary rounded-full flex items-center justify-center text-white hover:bg-primary/80 transition-colors"
+                    className="absolute bottom-0 right-0 w-7 h-7 sm:w-8 sm:h-8 bg-primary rounded-full flex items-center justify-center text-white transition-colors cursor-pointer"
                     aria-label="Upload avatar"
                   >
                     <Camera className="w-4 h-4" />
@@ -266,10 +315,10 @@ const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({
                   <div className="w-full sm:w-auto">
                     <Button
                       type="submit"
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || updateProfileMutation.isPending}
                       className="w-full sm:w-auto sm:min-w-[200px] md:min-w-[300px] lg:min-w-[469px] text-white px-6 sm:px-8 md:px-12 py-2.5 sm:py-3 rounded-lg font-medium text-sm sm:text-base disabled:opacity-50"
                     >
-                      {isSubmitting ? 'Saving...' : 'Save'}
+                      {(isSubmitting || updateProfileMutation.isPending) ? 'Saving...' : 'Save'}
                     </Button>
                   </div>
                 </div>

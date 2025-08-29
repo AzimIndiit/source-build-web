@@ -70,9 +70,12 @@ axiosInstance.interceptors.response.use(
       const refreshToken = localStorage.getItem('refresh_token');
 
       if (!refreshToken) {
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        window.location.href = '/login';
+        // Clear all auth-related data
+        localStorage.clear();
+        sessionStorage.clear();
+        
+        // Navigate to login
+        window.location.href = '/auth/login';
         return Promise.reject(error);
       }
 
@@ -94,9 +97,13 @@ axiosInstance.interceptors.response.use(
           })
           .catch((err) => {
             processQueue(err, null);
-            localStorage.removeItem('access_token');
-            localStorage.removeItem('refresh_token');
-            window.location.href = '/login';
+            
+            // Clear all auth-related data
+            localStorage.clear();
+            sessionStorage.clear();
+            
+            // Navigate to login
+            window.location.href = '/auth/login';
             reject(err);
           })
           .finally(() => {

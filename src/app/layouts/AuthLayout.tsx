@@ -4,8 +4,8 @@ import { useAuth } from '@/hooks/useAuth';
 export function AuthLayout() {
   const { user } = useAuth();
 
-  if (user) {
-    return <Navigate to="/dashboard" replace />;
+  if (user) { 
+    return <Navigate to={user.role !== 'buyer' ? `/${user.role}/dashboard` : '/'} replace />;
   }
 
   return (

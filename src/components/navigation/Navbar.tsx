@@ -17,7 +17,7 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -50,9 +50,16 @@ export const Navbar: React.FC = () => {
     setIsMobileMenuOpen(false);
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate('/');
+  const handleLogout = async () => {
+    try {
+      await logout();
+      closeModal(); // Close the modal after logout
+      navigate('/');
+    } catch (error) {
+      // Even if logout fails, close modal and navigate
+      closeModal();
+      navigate('/');
+    }
   };
   return (
     <>
@@ -113,8 +120,12 @@ export const Navbar: React.FC = () => {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild className="cursor-pointer">
                     <button className="bg-blue-50 flex gap-2 h-[42px] items-center px-2 lg:px-3 py-2 rounded-lg hover:bg-blue-100 transition-colors outline-none">
-                      <Avatar className="w-8 h-8">
-                        <AvatarFallback className="bg-gray-400 text-white font-medium top-[2px] relative">
+                      <Avatar  className="w-8 h-8">
+                      <AvatarImage 
+                      src={user?.avatar} 
+                      alt={user?.displayName} 
+                    />
+                        <AvatarFallback className="bg-gray-400 text-gray-500 font-medium top-[2px] relative">
                           {getInitials(user?.displayName || 'Smith')}
                         </AvatarFallback>
                       </Avatar>
@@ -309,6 +320,10 @@ export const Navbar: React.FC = () => {
 
                   <Link to="/profile" className="flex items-center gap-3 py-2">
                     <Avatar className="w-10 h-10">
+                    <AvatarImage 
+                      src={user?.avatar} 
+                      alt={user?.displayName} 
+                    />
                       <AvatarFallback className="bg-gray-400 text-white">
                         {getInitials(user?.displayName || 'Smith')}
                       </AvatarFallback>

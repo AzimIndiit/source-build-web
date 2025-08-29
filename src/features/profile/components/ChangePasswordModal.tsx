@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { FormInput } from '@/components/forms/FormInput';
 import { EyeOff } from 'lucide-react';
+import { useChangePasswordMutation } from '../hooks/useChangePasswordMutation';
 import toast from 'react-hot-toast';
 
 // Zod validation schema
@@ -47,6 +48,8 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
   onClose,
   onSubmit,
 }) => {
+  const changePasswordMutation = useChangePasswordMutation();
+  
   const methods = useForm<ChangePasswordFormData>({
     resolver: zodResolver(changePasswordSchema),
     defaultValues: {
@@ -69,18 +72,19 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
 
   const handleFormSubmit = async (data: ChangePasswordFormData) => {
     try {
-      if (onSubmit) {
-        await onSubmit(data);
-        toast.success('Password updated successfully');
-        handleClose();
-      } else {
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        toast.success('Password updated successfully');
-        handleClose();
-      }
+     
+        // Use the mutation to call the API
+       const response:any=  await changePasswordMutation.mutateAsync({
+          oldPassword: data.oldPassword,
+          newPassword: data.newPassword,
+        });
+        if(response.status==='success'){
+          handleClose();
+        }
+      
     } catch (error) {
-      toast.error('Failed to update password. Please try again.');
+      // Error handling is done by the mutation hook
+      console.error('Password change error:', error);
     }
   };
 
@@ -132,10 +136,10 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
                 </Button>
                 <Button
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || changePasswordMutation.isPending}
                   className="flex-1  bg-primary hover:bg-primary/90 text-white"
                 >
-                  {isSubmitting ? 'Updating...' : 'Update'}
+                  {(isSubmitting || changePasswordMutation.isPending) ? 'Updating...' : 'Update'}
                 </Button>
               </div>
             </form>

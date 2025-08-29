@@ -9,8 +9,8 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
   return (
     <div className="min-h-screen flex">
       {/* Left Panel - Illustration and Text */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-gray-100 to-gray-100 items-center justify-center p-12">
-        <div className="max-w-xl">
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-gray-100 to-gray-100 items-start justify-center p-12 sticky top-0 h-screen">
+        <div className="max-w-xl mt-20">
           <div className="mb-8">
             {/* Logo */}
             <div className="flex items-center gap-3 mb-8">
@@ -32,17 +32,19 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
       </div>
 
       {/* Right Panel - Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center bg-gray-100 p-6 lg:p-16">
-        <div className="w-full max-w-lg">
-          {/* Mobile Logo */}
-          <div className="lg:hidden mb-8 text-center">
-            <div className="flex items-center justify-center gap-2">
-              <img src={'/logo.svg'} alt="logo" style={{ mixBlendMode: 'multiply' }} />
+      <div className="w-full lg:w-1/2 bg-gray-100 overflow-y-auto">
+        <div className="min-h-screen flex items-center justify-center p-6 lg:p-16">
+          <div className="w-full max-w-lg">
+            {/* Mobile Logo */}
+            <div className="lg:hidden mb-8 text-center">
+              <div className="flex items-center justify-center gap-2">
+                <img src={'/logo.svg'} alt="logo" style={{ mixBlendMode: 'multiply' }} />
+              </div>
             </div>
-          </div>
 
-          {/* Form Card */}
-          <div className="bg-white rounded-2xl shadow-lg p-10">{children}</div>
+            {/* Form Card */}
+            <div className="bg-white rounded-2xl shadow-lg p-10">{children}</div>
+          </div>
         </div>
       </div>
     </div>

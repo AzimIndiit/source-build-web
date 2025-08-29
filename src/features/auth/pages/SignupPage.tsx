@@ -2,9 +2,9 @@ import { useNavigate } from 'react-router-dom';
 import { useForm, FormProvider, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
-import toast from 'react-hot-toast';
 import { AuthWrapper } from '../components/AuthWrapper';
 import { signupSchema, type SignupFormData } from '../schemas/authSchemas';
+import { useSignupMutation } from '../hooks/useAuthMutations';
 import { Button } from '@/components/ui/button';
 import { FormInput } from '@/components/forms/FormInput';
 import { FormPhoneInput } from '@/components/forms/FormPhoneInput';
@@ -14,17 +14,19 @@ import { Label } from '@/components/ui/label';
 
 function SignupPage() {
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
   const [localDelivery, setLocalDelivery] = useState('no');
+  const signupMutation = useSignupMutation();
 
   const methods = useForm({
     resolver: zodResolver(signupSchema),
     defaultValues: {
       accountType: 'seller',
+      firstName: '',
+      lastName: '',
       phone: '',
       cellPhone: '',
       businessName: '',
-      fullName: '',
+      businessAddress: '',
       email: '',
       password: '',
       confirmPassword: '',
@@ -42,29 +44,14 @@ function SignupPage() {
   // Log validation errors for debugging
   console.log('Validation errors:', errors);
 
-  const onSubmit = async (data: any) => {
-    setIsLoading(true);
-    try {
-      const fullData = {
-        ...data,
-        localDelivery,
-      };
-      console.log('Signup data:', fullData);
+  const onSubmit = async (data: SignupFormData) => {
+    const fullData = {
+      ...data,
+      localDelivery,
+    };
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      // Show success toast
-      toast.success('Account created successfully! Please verify your email.');
-
-      // Navigate to OTP verification
-      navigate('/auth/verify-otp');
-    } catch (error) {
-      console.error('Signup error:', error);
-      toast.error('Failed to create account. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
+    // Use the mutation to handle the API call
+    signupMutation.mutate(fullData);
   };
 
   return (
@@ -74,6 +61,7 @@ function SignupPage() {
           <FormSelect
             name="accountType"
             label="Account Type"
+            disabled={signupMutation.isPending}
             placeholder="Select account type"
             options={[
               // { value: 'buyer', label: 'Buyer' },
@@ -81,19 +69,40 @@ function SignupPage() {
               // { value: 'driver', label: 'Driver' }
             ]}
           />
+          <div className="grid grid-cols-2 gap-4">
 
+          <FormInput
+            name="firstName"
+            label="First Name"
+            type="text"
+            disabled={signupMutation.isPending}
+            placeholder="First Name"
+            className="text-base px-4 border-gray-300"
+          />
+          <FormInput
+            name="lastName"
+            label="Last Name"
+            type="text"
+            disabled={signupMutation.isPending}
+            placeholder="Last Name"
+            className="text-base px-4 border-gray-300"
+          />
+          </div>
+      
           <FormInput
             name="businessName"
             label="Business Name"
             type="text"
+            disabled={signupMutation.isPending}
             placeholder="Business Name"
             className="text-base px-4 border-gray-300"
           />
 
           <FormInput
-            name="fullName"
+            name="businessAddress"
             label="Address"
             type="text"
+            disabled={signupMutation.isPending}
             placeholder="Address of sales for materials"
             className="text-base px-4 border-gray-300"
           />
@@ -101,6 +110,7 @@ function SignupPage() {
           <FormPhoneInput
             name="phone"
             label="Business Phone"
+            disabled={signupMutation.isPending}
             placeholder="(123) 456-7890"
             className="text-base px-4 border-gray-300"
           />
@@ -109,6 +119,7 @@ function SignupPage() {
             <FormPhoneInput
               name="cellPhone"
               label="Cell Phone"
+              disabled={signupMutation.isPending}
               placeholder="(123) 456-7890"
               className="text-base px-4 border-gray-300"
             />
@@ -116,6 +127,7 @@ function SignupPage() {
               name="einNumber"
               label="EIN Number"
               type="text"
+              disabled={signupMutation.isPending}
               placeholder="EIN number"
               className="text-base px-4 border-gray-300"
             />
@@ -147,6 +159,7 @@ function SignupPage() {
             name="salesTaxId"
             label="Sales Tax ID"
             type="text"
+            disabled={signupMutation.isPending}
             placeholder="Sales Tax ID/Resale Certificates"
             className="text-base px-4 border-gray-300"
           />
@@ -155,6 +168,7 @@ function SignupPage() {
             name="email"
             label="Email"
             type="email"
+            disabled={signupMutation.isPending}
             placeholder="Enter your email"
             className="text-base px-4 border-gray-300"
           />
@@ -163,6 +177,7 @@ function SignupPage() {
             name="password"
             label="Password"
             type="password"
+            disabled={signupMutation.isPending}
             placeholder="Create a password"
             className="text-base px-4 border-gray-300"
           />
@@ -171,25 +186,34 @@ function SignupPage() {
             name="confirmPassword"
             label="Confirm Password"
             type="password"
+            disabled={signupMutation.isPending}
             placeholder="Confirm your password"
             className="text-base px-4 border-gray-300"
           />
 
           <Controller
             name="termsAccepted"
+            disabled={signupMutation.isPending}
             control={methods.control}
             render={({ field }) => (
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="terms"
-                  checked={field.value}
-                  onChange={field.onChange}
-                  className="rounded border-gray-300"
-                />
-                <Label htmlFor="terms" className="text-sm font-normal cursor-pointer">
-                  I agree to the Terms and Conditions
-                </Label>
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="terms"
+                    checked={field.value}
+                    onChange={field.onChange}
+                    className="rounded border-gray-300"
+                  />
+                  <Label htmlFor="terms" className="text-sm font-normal cursor-pointer">
+                    I agree to the Terms and Conditions
+                  </Label>
+                </div>
+                {methods.formState.errors.termsAccepted && (
+                  <p className="text-sm text-red-600">
+                    {methods.formState.errors.termsAccepted.message}
+                  </p>
+                )}
               </div>
             )}
           />
@@ -198,7 +222,8 @@ function SignupPage() {
             <Button
               type="submit"
               className="w-full bg-primary hover:bg-primary/80 text-white font-medium text-base"
-              loading={isLoading}
+              loading={signupMutation.isPending}
+              disabled={signupMutation.isPending}
             >
               Sign Up
             </Button>

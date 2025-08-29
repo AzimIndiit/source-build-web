@@ -17,8 +17,8 @@ function LoginPage() {
   const methods = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: 'zimmCorp@gmail.com',
-      password: 'password123', // Default password for testing
+      email: 'vugodid@mailinator.com',
+      password: 'Password@123', // Default password for testing
     },
   });
 
@@ -33,17 +33,9 @@ function LoginPage() {
       // Call the actual login function from AuthProvider
       await login(data.email, data.password);
 
-      console.log('Login successful, user authenticated');
-      console.log('About to navigate to /seller/dashboard');
-
       // Show success toast
       toast.success('Login successful!');
 
-      // Navigate based on user role (hardcoded for now)
-      setTimeout(() => {
-        console.log('Executing navigation to /seller/dashboard');
-        navigate('/seller/dashboard');
-      }, 500);
     } catch (error) {
       console.error('Login error:', error);
       toast.error('Invalid email or password. Please try again.');

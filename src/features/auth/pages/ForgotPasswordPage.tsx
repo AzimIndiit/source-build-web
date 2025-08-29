@@ -7,6 +7,7 @@ import { AuthWrapper } from '../components/AuthWrapper';
 import { forgotPasswordSchema, type ForgotPasswordFormData } from '../schemas/authSchemas';
 import { Button } from '@/components/ui/button';
 import { FormInput } from '@/components/forms/FormInput';
+import { authService } from '../services/authService';
 
 function ForgotPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -23,21 +24,20 @@ function ForgotPasswordPage() {
   const onSubmit = async (data: ForgotPasswordFormData) => {
     setIsLoading(true);
     try {
-      console.log('Forgot password data:', data);
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      // Show success toast
-      toast.success(`Password reset link sent to ${data.email}`, {
-        duration: 5000,
-      });
-
-      // Reset form
-      reset();
-    } catch (error) {
+      const response :any = await authService.forgotPassword(data.email);
+      
+      if (response.status==='success') {
+        toast.success( `Password reset link sent to ${data.email}`, {
+          duration: 5000,
+        });
+        reset();
+      } else {
+        toast.error( 'Failed to send reset link. Please try again.');
+      }
+    } catch (error: any) {
       console.error('Forgot password error:', error);
-      toast.error('Failed to send reset link. Please try again.');
+      const errorMessage = error?.response?.data?.message || error?.message || 'Failed to send reset link. Please try again.';
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
