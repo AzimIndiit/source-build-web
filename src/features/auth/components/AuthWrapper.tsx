@@ -13,7 +13,7 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
         <div className="max-w-xl mt-20">
           <div className="mb-8">
             {/* Logo */}
-            <div className="flex items-center gap-3 mb-8">
+            <div className="flex items-center gap-3 mb-8 " >
               <img src={'/logo.svg'} alt="logo" style={{ mixBlendMode: 'multiply' }} />
             </div>
 

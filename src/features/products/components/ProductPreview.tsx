@@ -12,6 +12,7 @@ import { X } from 'lucide-react';
 interface ProductPreviewProps {
   formValues: any;
   uploadedPhotos: File[];
+  locations?: Array<{ id: string; data: any }>;
   variants: Array<{ id: string; images: File[] }>;
   categoryOptions: Array<{ value: string; label: string }>;
   subCategoryOptions: Array<{ value: string; label: string }>;
@@ -22,6 +23,7 @@ interface ProductPreviewProps {
 export const ProductPreview: React.FC<ProductPreviewProps> = ({
   formValues,
   uploadedPhotos,
+  locations,
   variants,
   categoryOptions,
   subCategoryOptions,
@@ -306,15 +308,36 @@ export const ProductPreview: React.FC<ProductPreviewProps> = ({
               </div>
             )}
 
-            {/* Location */}
-            {formValues.locationAddress && (
+            {/* Locations */}
+            {formValues.locations && formValues.locations.length > 0 && (
               <div className="py-4 border-b border-gray-200">
                 <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">
-                  Location
+                  {formValues.locations.length > 1 ? 'Locations' : 'Location'}
                 </h3>
-                <p className="text-xs sm:text-sm md:text-base text-gray-600">
-                  {formValues.locationAddress}
-                </p>
+                <div className="space-y-3">
+                  {formValues.locations.map((location: any, index: number) => (
+                    <div key={index} className="text-xs sm:text-sm md:text-base text-gray-600">
+                      {location.isDefault && (
+                        <span className="inline-block bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded mb-1">
+                          Default Location
+                        </span>
+                      )}
+                      <p className="font-medium">{location.address}</p>
+                      {(location.city || location.state || location.country || location.postalCode) && (
+                        <p className="text-gray-500 mt-1">
+                          {[location.city, location.state, location.postalCode, location.country]
+                            .filter(Boolean)
+                            .join(', ')}
+                        </p>
+                      )}
+                      {location.availabilityRadius && (
+                        <p className="text-gray-500 mt-1">
+                          Delivery within {location.availabilityRadius} km
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 

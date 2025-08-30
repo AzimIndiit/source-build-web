@@ -3,80 +3,48 @@ import { Button } from '@/components/ui/button';
 import { BankAccountCard } from '../components/BankAccountCard';
 import { AddBankAccountModal } from '../components/AddBankAccountModal';
 import { DeleteConfirmationModal } from '@/components/common/DeleteConfirmationModal';
-import { Plus } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { Plus, CreditCard } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/Card';
-
-interface BankAccount {
-  id: string;
-  accountHolderName: string;
-  bankName: string;
-  accountNumber: string;
-  routingNumber: string;
-  swiftCode: string;
-  accountType: 'savings' | 'checking' | 'current';
-}
-
-const mockBankAccounts: BankAccount[] = [
-  {
-    id: '1',
-    accountHolderName: 'Yousef Alaoui',
-    bankName: 'Royal Bank of Scotland',
-    accountNumber: 'XXXX XXXX XXXX 7890',
-    routingNumber: '123456789',
-    swiftCode: 'RBSSGB2L',
-    accountType: 'checking',
-  },
-  {
-    id: '2',
-    accountHolderName: 'Yousef Alaoui',
-    bankName: 'Nationwide Building Society',
-    accountNumber: 'XXXX XXXX XXXX 7576',
-    routingNumber: '987654321',
-    swiftCode: 'NAIAGB21',
-    accountType: 'savings',
-  },
-  {
-    id: '3',
-    accountHolderName: 'Yousef Alaoui',
-    bankName: 'HSBC',
-    accountNumber: 'XXXX XXXX XXXX 7576',
-    routingNumber: '456789123',
-    swiftCode: 'HBUKGB4B',
-    accountType: 'current',
-  },
-];
+import { BankAccount, CreateBankAccountPayload } from '../services/bankAccountService';
+import {
+  useBankAccountsQuery,
+  useCreateBankAccountMutation,
+  useUpdateBankAccountMutation,
+  useDeleteBankAccountMutation,
+  useSetDefaultBankAccountMutation,
+} from '../hooks/useBankAccountMutations';
 
 const ManageBankAccountsPage: React.FC = () => {
-  const [accounts, setAccounts] = useState<BankAccount[]>(mockBankAccounts);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAccount, setEditingAccount] = useState<BankAccount | null>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [accountToDelete, setAccountToDelete] = useState<BankAccount | null>(null);
 
-  const handleAddAccount = async (data: Omit<BankAccount, 'id'>) => {
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+  // Queries
+  const { data: accountsData, isLoading, error } = useBankAccountsQuery();
 
-    if (editingAccount) {
-      // Update existing account
-      setAccounts(
-        accounts.map((acc) => (acc.id === editingAccount.id ? { ...acc, ...data } : acc))
-      );
-      toast.success('Bank account updated successfully');
-    } else {
-      // Add new account
-      const newAccount: BankAccount = {
-        ...data,
-        id: Date.now().toString(),
-        // Mask account number for display
-        accountNumber: `XXXX XXXX XXXX ${data.accountNumber.slice(-4)}`,
-      };
-      setAccounts([...accounts, newAccount]);
-      toast.success('Bank account added successfully');
+  // Mutations
+  const createMutation = useCreateBankAccountMutation();
+  const updateMutation = useUpdateBankAccountMutation();
+  const deleteMutation = useDeleteBankAccountMutation();
+
+  const accounts = accountsData?.data || [];
+
+  const handleAddAccount = async (data: CreateBankAccountPayload) => {
+    try {
+      if (editingAccount) {
+        await updateMutation.mutateAsync({ id: editingAccount.id, data });
+      } else {
+        await createMutation.mutateAsync(data);
+      }
+      // Only close modal on success
+      setIsModalOpen(false);
+      setEditingAccount(null);
+    } catch (error) {
+      // Error is handled by the mutation's onError callback
+      // Modal stays open so user can retry or fix the issue
+      console.error('Failed to save bank account:', error);
     }
-
-    setEditingAccount(null);
   };
 
   const handleEditAccount = (account: BankAccount) => {
@@ -91,10 +59,12 @@ const ManageBankAccountsPage: React.FC = () => {
 
   const confirmDelete = () => {
     if (accountToDelete) {
-      setAccounts(accounts.filter((acc) => acc.id !== accountToDelete.id));
-      toast.success('Bank account deleted successfully');
-      setDeleteModalOpen(false);
-      setAccountToDelete(null);
+      deleteMutation.mutate(accountToDelete.id, {
+        onSuccess: () => {
+          setDeleteModalOpen(false);
+          setAccountToDelete(null);
+        },
+      });
     }
   };
 
@@ -108,9 +78,32 @@ const ManageBankAccountsPage: React.FC = () => {
     setEditingAccount(null);
   };
 
+
+  if (isLoading) {
+    return (
+      <Card className="bg-white border-gray-200 shadow-none h-[calc(100vh-200px)] justify-center items-center">
+        <CardContent className="px-4 sm:px-6">
+          <div className="text-center py-12">Loading bank accounts...</div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="bg-white border-gray-200 shadow-none h-[calc(100vh-200px)] justify-center items-center">
+        <CardContent className="px-4 sm:px-6">
+          <div className="text-center py-12 text-red-500">
+            Failed to load bank accounts. Please try again.
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
-    <Card className="bg-white border-gray-200 shadow-none">
-      <CardContent className="px-4 sm:px-6">
+    <Card className="bg-white border-gray-200 shadow-none h-[calc(100vh-200px)] flex flex-col">
+      <CardContent className="px-4 sm:px-6 flex flex-col flex-1">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
           <h2 className="text-xl sm:text-2xl font-semibold">Manage Bank Accounts</h2>
 
@@ -124,52 +117,50 @@ const ManageBankAccountsPage: React.FC = () => {
         </div>
 
         {/* Bank Account Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 flex-1">
           {accounts.length > 0 ? (
             accounts.map((account) => (
               <BankAccountCard
                 key={account.id}
                 accountHolder={account.accountHolderName}
-                accountNumber={account.accountNumber}
+                accountNumber={`XXXX XXXX XXXX ${account.accountNumber.slice(-4)}`}
                 bankName={account.bankName}
                 onEdit={() => handleEditAccount(account)}
                 onDelete={() => handleDeleteAccount(account)}
+                isDefault={account.isDefault}
               />
             ))
           ) : (
-            <div className="col-span-full text-center py-12">
+            <div className="col-span-full flex flex-col items-center justify-center min-h-[400px]">
+              <CreditCard className="h-12 w-12 mb-4 text-gray-300" />
               <p className="text-gray-500 mb-4">No bank accounts added yet</p>
-              <Button
-                onClick={() => setIsModalOpen(true)}
-                className="bg-primary hover:bg-primary/90 text-white"
-              >
-                Add Your First Account
-              </Button>
+             
             </div>
           )}
         </div>
 
         {/* Add/Edit Bank Account Modal */}
-        {isModalOpen && (
-          <AddBankAccountModal
-            isOpen={isModalOpen}
-            onClose={handleCloseModal}
-            onSubmit={handleAddAccount}
-            initialData={
-              editingAccount
-                ? {
-                    accountHolderName: editingAccount.accountHolderName,
-                    bankName: editingAccount.bankName,
-                    accountNumber: editingAccount.accountNumber.replace(/[X\s]/g, ''),
-                    routingNumber: editingAccount.routingNumber,
-                    swiftCode: editingAccount.swiftCode,
-                    accountType: editingAccount.accountType,
-                  }
-                : undefined
-            }
-            isEdit={!!editingAccount}
-          />
-        )}
+        <AddBankAccountModal
+          isOpen={isModalOpen}
+          isSubmitting={createMutation.isPending || updateMutation?.isPending}
+          onClose={handleCloseModal}
+          onSubmit={handleAddAccount}
+          totalBankAccount={accounts.length>0 ? true :false}
+          initialData={
+            editingAccount
+              ? {
+                  accountHolderName: editingAccount.accountHolderName,
+                  bankName: editingAccount.bankName,
+                  isDefault: editingAccount.isDefault,
+                  accountNumber:  editingAccount.accountNumber,
+                  routingNumber: editingAccount.routingNumber,
+                  swiftCode: editingAccount.swiftCode,
+                  accountType: editingAccount.accountType,
+                }
+              : undefined
+          }
+          isEdit={!!editingAccount}
+        />
 
         {/* Delete Confirmation Modal */}
         {deleteModalOpen && (
@@ -181,6 +172,7 @@ const ManageBankAccountsPage: React.FC = () => {
             description={`Are you sure you want to delete the bank account ending in ${accountToDelete?.accountNumber.slice(-4)}? This action cannot be undone.`}
             confirmText="Yes, I'm Sure"
             cancelText="Cancel"
+            isLoading={deleteMutation.isPending}
           />
         )}
       </CardContent>

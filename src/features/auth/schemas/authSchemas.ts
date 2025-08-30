@@ -7,7 +7,7 @@ export const loginSchema = z.object({
 });
 
 // Helper to validate required phone numbers (accepts formatted or unformatted)
-const phoneValidation = z
+export const phoneValidation = z
   .string()
   .min(1, 'Phone number is required')
   .transform((val) => {

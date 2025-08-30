@@ -133,6 +133,13 @@ export const router = createBrowserRouter([
               })),
           },
           {
+            path: 'address',
+            lazy: () =>
+              import('@/features/profile/pages/ManageSavedAddressPage').then((module) => ({
+                Component: module.default,
+              })),
+          },
+          {
             path: 'terms',
             lazy: () =>
               import('@/features/profile/pages/TermsAndConditionsPage').then((module) => ({

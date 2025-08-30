@@ -208,7 +208,6 @@ const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({ initialData, 
       const dataUrl = reader.result as string;
       setPreviewUrl(dataUrl);
       setValue('avatar', dataUrl);
-      toast.success('Avatar selected. Click Save to upload.');
     };
     reader.readAsDataURL(file);
   };

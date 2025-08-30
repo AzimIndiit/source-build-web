@@ -21,6 +21,17 @@ export interface User {
   description: string;
 }
 
+export interface LocationData {
+  address: string;
+  city: string;
+  state: string;
+  country: string;
+  zipCode?: string;
+  lat: number;
+  lng: number;
+  formattedAddress: string;
+}
+
 interface SignupData {
   email: string;
   password: string;
@@ -33,11 +44,13 @@ interface AuthState {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  currentLocation: LocationData | null;
   
   // Actions
   setUser: (user: User | null) => void;
   setIsAuthenticated: (isAuthenticated: boolean) => void;
   setLoading: (loading: boolean) => void;
+  setCurrentLocation: (location: LocationData | null) => void;
   checkAuth: () => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   signup: (data: SignupData) => Promise<void>;
@@ -52,6 +65,7 @@ const useAuthStore = create<AuthState>()(
       user: null,
       isLoading: true,
       isAuthenticated: false,
+      currentLocation: null,
 
       setUser: (user) => {
         set({ 
@@ -70,6 +84,8 @@ const useAuthStore = create<AuthState>()(
       setIsAuthenticated: (isAuthenticated) => set({ isAuthenticated }),
 
       setLoading: (loading) => set({ isLoading: loading }),
+
+      setCurrentLocation: (location) => set({ currentLocation: location }),
 
       checkAuth: async () => {
         try {
@@ -290,9 +306,10 @@ const useAuthStore = create<AuthState>()(
       name: 'auth-storage', // unique name for localStorage key
       storage: createJSONStorage(() => localStorage), // use localStorage
       partialize: (state) => ({ 
-        // Only persist user and isAuthenticated, not isLoading
+        // Only persist user, isAuthenticated, and currentLocation, not isLoading
         user: state.user,
         isAuthenticated: state.isAuthenticated,
+        currentLocation: state.currentLocation,
       }),
       onRehydrateStorage: () => (state) => {
         // After rehydration, check if the stored auth is still valid

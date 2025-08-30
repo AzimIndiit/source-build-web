@@ -15,6 +15,11 @@ interface ProductFormProps {
   setUploadedPhotos: React.Dispatch<React.SetStateAction<File[]>>;
   imageError: boolean;
   setImageError: React.Dispatch<React.SetStateAction<boolean>>;
+  locations?: Array<{ id: string; data: any }>;
+  addLocation?: () => void;
+  removeLocation?: (index: number) => void;
+  setDefaultLocation?: (index: number) => void;
+  geocodeAddress?: (address: string, city?: string, state?: string, country?: string) => Promise<any>;
   variants: Array<{ id: string; images: File[] }>;
   showVariants: boolean;
   setCurrentStep?: React.Dispatch<React.SetStateAction<number>>;
@@ -42,6 +47,11 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   uploadedPhotos,
   imageError,
   setImageError,
+  locations,
+  addLocation,
+  removeLocation,
+  setDefaultLocation,
+  geocodeAddress,
   variants,
   showVariants,
   handleDrag,
@@ -91,7 +101,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       'quantity',
       'brand',
       'color',
-      'locationAddress',
+      'locations',
       'productTag',
     ];
 
@@ -373,13 +383,110 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                 </div>
               </div>
 
-              <div>
-                <FormInput
-                  name="locationAddress"
-                  label="Location Address"
-                  placeholder="123 High Street London, W1A 1AA UK"
-                  className="border-gray-300 h-[53px]"
-                />
+              {/* Locations Section */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-medium text-gray-900">
+                    Locations <span className="text-red-500">*</span>
+                  </h3>
+                  {locations && locations.length < 10 && (
+                    <Button
+                      type="button"
+                      onClick={addLocation}
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center gap-1"
+                    >
+                      <Plus className="h-4 w-4" /> Add Location
+                    </Button>
+                  )}
+                </div>
+                
+                {formValues.locations?.map((location: any, index: number) => (
+                  <div key={index} className="border border-gray-200 rounded-lg p-4 space-y-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium">Location {index + 1}</span>
+                        {location.isDefault && (
+                          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">
+                            Default
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {!location.isDefault && setDefaultLocation && (
+                          <Button
+                            type="button"
+                            onClick={() => setDefaultLocation(index)}
+                            variant="ghost"
+                            size="sm"
+                            className="text-xs"
+                          >
+                            Set as Default
+                          </Button>
+                        )}
+                        {locations && locations.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => removeLocation && removeLocation(index)}
+                            className="text-red-500 hover:text-red-700"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <FormInput
+                      name={`locations.${index}.address`}
+                      label="Address"
+                      placeholder="123 High Street London, W1A 1AA UK"
+                      className="border-gray-300 h-[53px]"
+                    />
+                    
+                    <div className="grid grid-cols-2 gap-3">
+                      <FormInput
+                        name={`locations.${index}.city`}
+                        label="City"
+                        placeholder="London"
+                        className="border-gray-300 h-[53px]"
+                      />
+                      <FormInput
+                        name={`locations.${index}.state`}
+                        label="State/Province"
+                        placeholder="England"
+                        className="border-gray-300 h-[53px]"
+                      />
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-3">
+                      <FormInput
+                        name={`locations.${index}.country`}
+                        label="Country"
+                        placeholder="United Kingdom"
+                        className="border-gray-300 h-[53px]"
+                      />
+                      <FormInput
+                        name={`locations.${index}.postalCode`}
+                        label="Postal Code"
+                        placeholder="W1A 1AA"
+                        className="border-gray-300 h-[53px]"
+                      />
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-3">
+                      <FormInput
+                        name={`locations.${index}.availabilityRadius`}
+                        label="Delivery Radius (km)"
+                        placeholder="10"
+                        type="number"
+                        min="0"
+                        max="100"
+                        className="border-gray-300 h-[53px]"
+                      />
+                    </div>
+                  </div>
+                ))}
               </div>
 
               {/* Product Dimensions */}

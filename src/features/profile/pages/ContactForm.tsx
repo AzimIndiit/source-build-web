@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { FormInput } from '@/components/forms/FormInput';
 import { FormTextarea } from '@/components/forms/FormTextarea';
 import toast from 'react-hot-toast';
+import { contactService } from '../services/contactService';
+import { useMutation } from '@tanstack/react-query';
 
 // Zod validation schema
 const personalDetailsSchema = z.object({
@@ -47,11 +49,10 @@ interface ContactFormPageProps {
 
 const ContactFormPage: React.FC<ContactFormPageProps> = ({
   initialData = {
-    firstName: 'Yousef',
-    lastName: 'Alaoui',
-    email: 'nikolhansen11@gmail.com',
-    message:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. In vitae tellus eu dolor tincidunt imperdiet vel ut diam. Nulla a nulla varius, volutpat velit non, ullamcorper augue. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Maecenas sodales ultricies vulputate.',
+    firstName: '',
+    lastName: '',
+    email: '',
+    message: '',
   },
   onSave,
 }) => {
@@ -62,9 +63,22 @@ const ContactFormPage: React.FC<ContactFormPageProps> = ({
 
   const {
     handleSubmit,
-    formState: { isSubmitting },
-    watch,
+    formState: { errors },
+    reset,
   } = methods;
+
+  const mutation = useMutation({
+    mutationFn: contactService.submitContactForm,
+    onSuccess: (response) => {
+      toast.success(response.message || 'Contact form submitted successfully');
+      reset();
+      onSave?.(response.data as ContactFormPageData);
+    },
+    onError: (error: any) => {
+      const errorMessage = error.response?.data?.message || 'Failed to submit contact form';
+      toast.error(errorMessage);
+    },
+  });
 
   const onSubmit = async (data: ContactFormPageData) => {
     // Trim all string values before saving
@@ -75,9 +89,7 @@ const ContactFormPage: React.FC<ContactFormPageProps> = ({
       ])
     ) as ContactFormPageData;
 
-    onSave?.(trimmedData);
-    console.log('Contact form submitted', trimmedData);
-    toast.success('Contact form submitted successfully');
+    mutation.mutate(trimmedData);
   };
 
   return (
@@ -112,7 +124,6 @@ const ContactFormPage: React.FC<ContactFormPageProps> = ({
                     name="email"
                     label="Email"
                     type="email"
-                    disabled
                     placeholder="Enter your email address"
                   />
                 </div>
@@ -130,10 +141,10 @@ const ContactFormPage: React.FC<ContactFormPageProps> = ({
                   <div className="w-full sm:w-auto">
                     <Button
                       type="submit"
-                      disabled={isSubmitting}
+                      disabled={mutation.isPending}
                       className="w-full sm:w-auto sm:min-w-[200px] md:min-w-[300px] lg:min-w-[469px] text-white px-6 sm:px-8 md:px-12 py-2.5 sm:py-3 rounded-lg font-medium text-sm sm:text-base disabled:opacity-50"
                     >
-                      {isSubmitting ? 'Saving...' : 'Save'}
+                      {mutation.isPending ? 'Submitting...' : 'Submit'}
                     </Button>
                   </div>
                 </div>

@@ -10,6 +10,7 @@ interface FormInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string;
   customError?: any;
   leftIcon?: React.ReactNode;
+  [key: string]: any;
 }
 
 export const FormInput: React.FC<FormInputProps> = ({

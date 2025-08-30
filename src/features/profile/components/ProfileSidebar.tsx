@@ -14,6 +14,7 @@ import {
   ChevronLeft,
   Menu,
   X,
+  MapPin,
 } from 'lucide-react';
 import { cn, getInitials } from '@/lib/helpers';
 import { Link } from 'react-router';
@@ -67,6 +68,11 @@ export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
       id: 'bank',
       label: 'Manage Bank Acccounts',
       icon: <Building2 className="w-5 h-5" />,
+    },
+    {
+      id: 'address',
+      label: 'Saved Addresses',
+      icon: <MapPin className="w-5 h-5" />,
     },
     {
       id: 'terms',

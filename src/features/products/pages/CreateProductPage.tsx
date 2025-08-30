@@ -9,6 +9,26 @@ import { Button } from '@/components/ui';
 import { ProductForm } from '../components/ProductForm';
 import { ProductPreview } from '../components/ProductPreview';
 
+// Location schema
+const locationSchema = z.object({
+  address: z
+    .string()
+    .trim()
+    .min(5, 'Location must be at least 5 characters')
+    .max(200, 'Location must not exceed 200 characters'),
+  city: z.string().trim().max(100, 'City must not exceed 100 characters').optional(),
+  state: z.string().trim().max(100, 'State must not exceed 100 characters').optional(),
+  country: z.string().trim().max(100, 'Country must not exceed 100 characters').optional(),
+  postalCode: z.string().trim().max(20, 'Postal code must not exceed 20 characters').optional(),
+  isDefault: z.boolean().default(false).optional(),
+  availabilityRadius: z
+    .number()
+    .min(0, 'Availability radius must be positive')
+    .max(100, 'Availability radius must not exceed 100 km')
+    .default(10)
+    .optional(),
+});
+
 // Variant schema
 const variantSchema = z.object({
   color: z
@@ -134,11 +154,10 @@ const createProductSchema = z
         'Please enter a valid HEX color code (e.g., #FF0000)'
       ),
 
-    locationAddress: z
-      .string()
-      .trim()
-      .min(5, 'Location must be at least 5 characters')
-      .max(200, 'Location must not exceed 200 characters'),
+    locations: z
+      .array(locationSchema)
+      .min(1, 'At least one location is required')
+      .max(10, 'Maximum 10 locations allowed'),
 
     productTag: z
       .array(
@@ -306,6 +325,9 @@ function CreateProductPage() {
   const [showVariants, setShowVariants] = useState(false);
   const [variantDragActive, setVariantDragActive] = useState<string | null>(null);
   const [showMobilePreview, setShowMobilePreview] = useState(false);
+  const [locations, setLocations] = useState<Array<{ id: string; data: any }>>([
+    { id: Date.now().toString(), data: { isDefault: true, availabilityRadius: 10 } }
+  ]);
 
   const methods = useForm<CreateProductForm>({
     resolver: zodResolver(createProductSchema),
@@ -318,7 +340,15 @@ function CreateProductPage() {
       quantity: '',
       brand: '',
       color: '#000000',
-      locationAddress: '',
+      locations: [{
+        address: '',
+        city: '',
+        state: '',
+        country: '',
+        postalCode: '',
+        isDefault: true,
+        availabilityRadius: 10
+      }],
       productTag: [],
       variants: [],
       marketplaceOptions: {
@@ -523,6 +553,72 @@ function CreateProductPage() {
     }
   };
 
+  // Location management functions
+  const addLocation = () => {
+    if (locations.length >= 10) {
+      toast.error('Maximum 10 locations allowed');
+      return;
+    }
+    const newLocation = {
+      id: Date.now().toString(),
+      data: { isDefault: false, availabilityRadius: 10 }
+    };
+    setLocations([...locations, newLocation]);
+    
+    // Set default values for the new location
+    const locationIndex = locations.length;
+    setValue(`locations.${locationIndex}.address`, '');
+    setValue(`locations.${locationIndex}.city`, '');
+    setValue(`locations.${locationIndex}.state`, '');
+    setValue(`locations.${locationIndex}.country`, '');
+    setValue(`locations.${locationIndex}.postalCode`, '');
+    setValue(`locations.${locationIndex}.isDefault`, false);
+    setValue(`locations.${locationIndex}.availabilityRadius`, 10);
+  };
+
+  const removeLocation = (index: number) => {
+    if (locations.length <= 1) {
+      toast.error('At least one location is required');
+      return;
+    }
+    
+    const newLocations = locations.filter((_, i) => i !== index);
+    setLocations(newLocations);
+    
+    // Update form values
+    const currentValues = getValues('locations');
+    const updatedValues = currentValues.filter((_: any, i: number) => i !== index);
+    
+    // Ensure at least one location is default
+    if (updatedValues.length > 0 && !updatedValues.some((loc: any) => loc.isDefault)) {
+      updatedValues[0].isDefault = true;
+    }
+    
+    setValue('locations', updatedValues);
+  };
+
+  const setDefaultLocation = (index: number) => {
+    const currentLocations = getValues('locations');
+    const updatedLocations = currentLocations.map((loc: any, i: number) => ({
+      ...loc,
+      isDefault: i === index
+    }));
+    setValue('locations', updatedLocations);
+  };
+
+  // Get coordinates from address (you can integrate with a geocoding API)
+  const geocodeAddress = async (address: string, city?: string, state?: string, country?: string) => {
+    // This is a placeholder - you should integrate with a real geocoding service
+    // like Google Maps Geocoding API or Mapbox Geocoding API
+    console.log('Geocoding address:', { address, city, state, country });
+    
+    // For now, return mock coordinates
+    return {
+      type: 'Point' as const,
+      coordinates: [-74.0060, 40.7128] // New York coordinates as example
+    };
+  };
+
   // Variant management functions
   const addVariant = () => {
     if (variants.length >= 5) {
@@ -682,6 +778,7 @@ function CreateProductPage() {
                 handleBackClick={() => setShowMobilePreview(false)}
                 formValues={formValues}
                 uploadedPhotos={uploadedPhotos}
+                locations={locations}
                 variants={variants}
                 categoryOptions={categoryOptions}
                 subCategoryOptions={subCategoryOptions}
@@ -702,6 +799,11 @@ function CreateProductPage() {
               setUploadedPhotos={setUploadedPhotos}
               imageError={imageError}
               setImageError={setImageError}
+              locations={locations}
+              addLocation={addLocation}
+              removeLocation={removeLocation}
+              setDefaultLocation={setDefaultLocation}
+              geocodeAddress={geocodeAddress}
               variants={variants}
               showVariants={showVariants}
               setShowVariants={setShowVariants}
@@ -728,6 +830,7 @@ function CreateProductPage() {
             <ProductPreview
               formValues={formValues}
               uploadedPhotos={uploadedPhotos}
+              locations={locations}
               variants={variants}
               categoryOptions={categoryOptions}
               subCategoryOptions={subCategoryOptions}

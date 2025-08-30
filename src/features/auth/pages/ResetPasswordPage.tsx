@@ -35,7 +35,7 @@ function ResetPasswordPage() {
 
       try {
         const response = await authService.verifyResetToken(token);
-        if (response.success || response.valid) {
+        if (response.status === 'success' && response.data?.valid) {
           setTokenValid(true);
         } else {
           setTokenError(response.message || 'Invalid or expired reset token. Please request a new password reset link.');
@@ -62,7 +62,7 @@ function ResetPasswordPage() {
     try {
       const response = await authService.resetPassword(token, data.password);
       
-      if (response.success) {
+      if (response.status === 'success') {
         toast.success(response.message || 'Password reset successfully! Redirecting to login...');
         setTimeout(() => {
           navigate('/auth/login');

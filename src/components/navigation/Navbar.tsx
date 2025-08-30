@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  MapPin,
-  ChevronDown,
   MessageCircle,
   Bell,
   ShoppingCart,
@@ -13,6 +11,7 @@ import {
   X,
   Search,
   LayoutDashboard,
+  ChevronDown,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -30,6 +29,7 @@ import { getInitials } from '@/lib/helpers';
 import { GlobalSearch } from '@/components/search/GlobalSearch';
 import { useLogoutModal } from '@/stores/useLogoutModal';
 import { DeleteConfirmationModal } from '../ui';
+import { LocationSearch } from '@/components/location/LocationSearch';
 
 export const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
@@ -73,28 +73,7 @@ export const Navbar: React.FC = () => {
             </Link>
 
             {/* Location Selector - Visible on tablet and desktop */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="bg-blue-50 flex gap-2 h-[42px] items-center px-2 md:px-3 py-2 rounded-lg hover:bg-blue-100 transition-colors outline-none">
-                  <MapPin className="w-5 h-5 text-gray-700" />
-                  <div className="flex flex-col text-left">
-                    <span className="text-xs text-gray-600 hidden md:block">American Fork, UT</span>
-                    <span className="text-xs md:text-sm font-semibold text-gray-900 flex items-center gap-1">
-                      <span className="hidden lg:inline">Update Location</span>
-                      <span className="lg:hidden">Location</span>
-                      <ChevronDown size={12} />
-                    </span>
-                  </div>
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-56">
-                <DropdownMenuLabel>Select Location</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="cursor-pointer">American Fork, UT</DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer">Provo, UT</DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer">Salt Lake City, UT</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <LocationSearch variant="navbar" />
           </div>
 
           <div className="flex gap-3 lg:gap-8 justify-end items-center ml-4 flex-1">
@@ -305,14 +284,7 @@ export const Navbar: React.FC = () => {
           {isMobileMenuOpen && (
             <div className="border-t border-gray-200 bg-white px-4 py-4 space-y-4">
               {/* Location */}
-              <button className="w-full bg-blue-50 flex gap-2 items-center px-3 py-2 rounded-lg">
-                <MapPin className="w-5 h-5 text-gray-700" />
-                <div className="flex-1 flex flex-col text-left">
-                  <span className="text-xs text-gray-600">Current Location</span>
-                  <span className="text-sm font-semibold text-gray-900">American Fork, UT</span>
-                </div>
-                <ChevronDown className="w-4 h-4" />
-              </button>
+              <LocationSearch variant="navbar" className="w-full" />
 
               {isAuthenticated ? (
                 <>

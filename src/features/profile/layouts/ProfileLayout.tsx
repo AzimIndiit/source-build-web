@@ -89,10 +89,7 @@ export const ProfileLayout: React.FC = () => {
             onItemClick={handleSectionChange}
             isCollapsed={isSidebarCollapsed}
             onCollapsedChange={setIsSidebarCollapsed}
-            user={{
-              name: 'Yousef Alaoui',
-              email: 'yousefalaoui@gmail.com',
-            }}
+          
           />
         </div>
 

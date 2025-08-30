@@ -1,38 +1,34 @@
 import React from 'react';
+import { Edit, Trash2, MapPin, SquarePen } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/button';
-import { SquarePen, Trash2 } from 'lucide-react';
-import { cn } from '@/lib/helpers';
 
-interface BankAccountCardProps {
-  accountHolder: string;
-  accountNumber: string;
-  bankName: string;
-  onEdit?: () => void;
-  onDelete?: () => void;
-  className?: string;
+interface SavedAddressCardProps {
+  name: string;
+  phoneNumber: string;
+  formattedAddress: string;
+  
   isDefault?: boolean;
+  onEdit: () => void;
+  onDelete: () => void;
+  onSetDefault?: () => void;
 }
 
-export const BankAccountCard: React.FC<BankAccountCardProps> = ({
-  accountHolder,
-  accountNumber,
-  bankName,
+export const SavedAddressCard: React.FC<SavedAddressCardProps> = ({
+  name,
+  phoneNumber,
+  formattedAddress,
+   isDefault,
   onEdit,
   onDelete,
-  className,
-  isDefault,
 }) => {
   return (
-    <Card
-      className={cn(
-        'bg-gray-50 border-gray-200 shadow-sm hover:shadow-md transition-shadow relative h-[180px] flex flex-col ',
-        className
-      )}
-    >
+    <Card className="relative bg-gray-50 border border-gray-200 rounded-lg hover:shadow-md transition-shadow h-[180px] flex flex-col">
       <CardContent className="flex flex-col h-full">
-        <div className="flex justify-between items-start mb-3">
-          <h3 className="font-semibold text-gray-900 text-base sm:text-lg line-clamp-1">{accountHolder}</h3>
+        <div className="flex justify-between items-start mb-2">
+          <div className="flex items-start gap-2">
+            <h3 className="font-semibold text-gray-900 line-clamp-1">{name}</h3>
+          </div>
           {isDefault && (
             <span className="inline-flex items-center px-2.5 py-0.5 text-xs font-medium text-primary bg-blue-100 rounded">
               Default
@@ -40,11 +36,11 @@ export const BankAccountCard: React.FC<BankAccountCardProps> = ({
           )}
         </div>
         
-        <div className="flex-1 space-y-2">
-          <p className="text-gray-600 text-sm font-mono tracking-wider">{accountNumber}</p>
-          <p className="text-gray-700 text-sm">{bankName}</p>
+        <div className="flex-1 space-y-1 overflow-hidden">
+          <p className="text-sm text-gray-600">{phoneNumber}</p>
+          <p className="text-sm text-gray-700 line-clamp-2">{formattedAddress}</p>
+         
         </div>
-
         <div className="flex gap-2 justify-end mt-auto pt-3">
           <Button
             title="Edit"
@@ -64,7 +60,13 @@ export const BankAccountCard: React.FC<BankAccountCardProps> = ({
           >
             <Trash2 className="w-4 h-4" />
           </Button>
-        </div>
+        </div>   
+    
+       
+
+        
+ 
+        
       </CardContent>
     </Card>
   );
