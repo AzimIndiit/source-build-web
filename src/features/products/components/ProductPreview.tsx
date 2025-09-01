@@ -12,7 +12,9 @@ import { X } from 'lucide-react';
 interface ProductPreviewProps {
   formValues: any;
   uploadedPhotos: File[];
-  locations?: Array<{ id: string; data: any }>;
+  existingImages?: string[];
+  addressOptions?: Array<{ value: string; label: string }>;
+  savedAddresses?: any[];
   variants: Array<{ id: string; images: File[] }>;
   categoryOptions: Array<{ value: string; label: string }>;
   subCategoryOptions: Array<{ value: string; label: string }>;
@@ -23,7 +25,9 @@ interface ProductPreviewProps {
 export const ProductPreview: React.FC<ProductPreviewProps> = ({
   formValues,
   uploadedPhotos,
-  locations,
+  existingImages = [],
+  addressOptions = [],
+  savedAddresses = [],
   variants,
   categoryOptions,
   subCategoryOptions,
@@ -75,25 +79,38 @@ export const ProductPreview: React.FC<ProductPreviewProps> = ({
         <div className="flex-1 flex flex-col gap-4 lg:gap-0 lg:flex-row rounded-lg overflow-hidden min-h-0">
           {/* Image Carousel */}
           <div className="w-full  lg:w-3/5  lg:h-full rounded-sm overflow-hidden  lg:rounded-e-none">
-            {uploadedPhotos.length > 0 ? (
+            {existingImages.length > 0 || uploadedPhotos.length > 0 ? (
               <Carousel
                 setApi={setApi}
                 className=" min-h-[300px] min-w-[300px] rounded-sm w-full  flex-col lg:flex-row  lg:rounded-e-none lg:h-full bg-[#A9A9A9]   lg:rounded-l-lg  lg:py-20 lg:px-12 relative flex items-center "
               >
                 <CarouselContent>
-                  {uploadedPhotos.map((photo, index) => (
-                    <CarouselItem key={index}>
+                  {/* Show existing images first */}
+                  {existingImages.map((url, index) => (
+                    <CarouselItem key={`existing-${index}`}>
                       <div className="aspect-square relative  overflow-hidden border rounded-sm border-gray-400 shadow-2xl">
                         <img
-                          src={URL.createObjectURL(photo)}
+                          src={url}
                           alt={`Product ${index + 1}`}
                           className="w-full h-full object-cover"
                         />
                       </div>
                     </CarouselItem>
                   ))}
+                  {/* Then show newly uploaded photos */}
+                  {uploadedPhotos.map((photo, index) => (
+                    <CarouselItem key={`upload-${index}`}>
+                      <div className="aspect-square relative  overflow-hidden border rounded-sm border-gray-400 shadow-2xl">
+                        <img
+                          src={URL.createObjectURL(photo)}
+                          alt={`Product ${existingImages.length + index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    </CarouselItem>
+                  ))}
                 </CarouselContent>
-                {uploadedPhotos.length > 1 && (
+                {(existingImages.length + uploadedPhotos.length) > 1 && (
                   <>
                     <CarouselPrevious className="left-0 lg:left-[49px] bg-white shadow-md border-none hover:bg-gray-50 h-12 sm:h-16 md:h-20 rounded-l-sm" />
                     <CarouselNext className="right-0 lg:right-[49px] bg-white border-none shadow-md hover:bg-gray-50 h-12 sm:h-16 md:h-20 rounded-r-sm" />
@@ -102,16 +119,34 @@ export const ProductPreview: React.FC<ProductPreviewProps> = ({
 
                 <div className="absolute   bottom-10 md:bottom-20 justify-center items-center text-white z-10 left-0 flex gap-2 w-full px-2">
                   <div className="flex gap-1 sm:gap-2 m-0 overflow-x-auto max-w-full">
+                    {/* Show existing images thumbnails */}
+                    {existingImages.map((url, index) => (
+                      <div
+                        key={`existing-thumb-${index}`}
+                        className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 flex-shrink-0"
+                      >
+                        <img
+                          src={url}
+                          alt={`Product ${index + 1}`}
+                          className={`${
+                            index === currentImageIndex
+                              ? 'border-2 border-primary shadow-2xl'
+                              : 'border-2 border-transparent'
+                          } w-full h-full object-cover rounded-sm transition-all duration-200`}
+                        />
+                      </div>
+                    ))}
+                    {/* Show uploaded photos thumbnails */}
                     {uploadedPhotos.map((photo, index) => (
                       <div
-                        key={index}
+                        key={`upload-thumb-${index}`}
                         className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 flex-shrink-0"
                       >
                         <img
                           src={URL.createObjectURL(photo)}
-                          alt={`Product ${index + 1}`}
+                          alt={`Product ${existingImages.length + index + 1}`}
                           className={`${
-                            index === currentImageIndex
+                            (existingImages.length + index) === currentImageIndex
                               ? 'border-2 border-primary shadow-2xl'
                               : 'border-2 border-transparent'
                           } w-full h-full object-cover rounded-sm transition-all duration-200`}
@@ -227,14 +262,8 @@ export const ProductPreview: React.FC<ProductPreviewProps> = ({
                     className="w-6 h-6 rounded-full border border-gray-300"
                     style={{ backgroundColor: formValues.color }}
                   />
-                  <span className="text-xs sm:text-sm md:text-base text-gray-600">
-                    {formValues.color === '#0000FF'
-                      ? 'Blue'
-                      : formValues.color === '#000000'
-                        ? 'Black'
-                        : formValues.color === '#964B00'
-                          ? 'Brown'
-                          : formValues.color}
+               {formValues.color ?    <span className="text-xs sm:text-sm md:text-base text-gray-600">
+                    {formValues.color}
                     {formValues.variants &&
                       formValues.variants.length > 0 &&
                       formValues.variants.some((v: any) => v.color) &&
@@ -243,113 +272,103 @@ export const ProductPreview: React.FC<ProductPreviewProps> = ({
                       ?.map((v: any, i: number) =>
                         v.color
                           ? i === 0
-                            ? v.color === '#0000FF'
-                              ? 'Blue'
-                              : v.color === '#000000'
-                                ? 'Black'
-                                : v.color === '#964B00'
-                                  ? 'Brown'
-                                  : v.color
-                            : `, ${
-                                v.color === '#0000FF'
-                                  ? 'Blue'
-                                  : v.color === '#000000'
-                                    ? 'Black'
-                                    : v.color === '#964B00'
-                                      ? 'Brown'
-                                      : v.color
-                              }`
+                            ? v.color
+                            : 
+                                v.color
+                              
                           : null
                       )
                       .filter(Boolean)
                       .join('')}
-                  </span>
+                  </span> :"Color will appear here"}
                 </div>
               </div>
             )}
 
             {/* Product Tags */}
-            {formValues.productTag && formValues.productTag.length > 0 && (
               <div className="py-4 border-b border-gray-200">
                 <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">
                   Product Tag
                 </h3>
-                <div className="flex flex-wrap gap-2">
+            {formValues.productTag && formValues.productTag.length > 0  ? <div className="flex flex-wrap gap-2">
                   {formValues.productTag.map((tag: any, index: number) => (
                     <Badge
                       key={index}
                       variant="secondary"
-                      className="bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100"
+                      className="bg-blue-50 text-primary border border-blue-200 hover:bg-blue-100"
                     >
                       {typeof tag === 'string'
                         ? tag
                         : tagOptions.find((opt) => opt.value === tag)?.label || tag}
                     </Badge>
                   ))}
-                </div>
+                </div> : "Tags will appear here"}
               </div>
-            )}
+            
 
             {/* Product Dimensions */}
-            {(formValues.dimensions?.width ||
-              formValues.dimensions?.length ||
-              formValues.dimensions?.height) && (
+            
               <div className="py-4 border-b border-gray-200">
                 <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">
                   Dimensions
                 </h3>
-                <p className="text-xs sm:text-sm md:text-base text-gray-600">
+               {(formValues.dimensions?.width ||
+              formValues.dimensions?.length ||
+              formValues.dimensions?.height) ? <p className="text-xs sm:text-sm md:text-base text-gray-600">
                   {formValues.dimensions.width && `W: ${formValues.dimensions.width}"`}
                   {formValues.dimensions.width && formValues.dimensions.length && ' × '}
                   {formValues.dimensions.length && `L: ${formValues.dimensions.length}"`}
                   {formValues.dimensions.length && formValues.dimensions.height && ' × '}
                   {formValues.dimensions.height && `H: ${formValues.dimensions.height}"`}
-                </p>
+                </p> : "Dimensions will appear here"}
               </div>
-            )}
+            
 
             {/* Locations */}
-            {formValues.locations && formValues.locations.length > 0 && (
               <div className="py-4 border-b border-gray-200">
                 <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">
-                  {formValues.locations.length > 1 ? 'Locations' : 'Location'}
+                  {formValues.locationIds.length > 1 ? 'Locations' : 'Location'}
                 </h3>
-                <div className="space-y-3">
-                  {formValues.locations.map((location: any, index: number) => (
-                    <div key={index} className="text-xs sm:text-sm md:text-base text-gray-600">
-                      {location.isDefault && (
-                        <span className="inline-block bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded mb-1">
-                          Default Location
-                        </span>
-                      )}
-                      <p className="font-medium">{location.address}</p>
-                      {(location.city || location.state || location.country || location.postalCode) && (
-                        <p className="text-gray-500 mt-1">
-                          {[location.city, location.state, location.postalCode, location.country]
-                            .filter(Boolean)
-                            .join(', ')}
-                        </p>
-                      )}
-                      {location.availabilityRadius && (
-                        <p className="text-gray-500 mt-1">
-                          Delivery within {location.availabilityRadius} km
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
+            {formValues.locationIds && formValues.locationIds.length > 0 ?  <div className="space-y-3">
+                  {formValues.locationIds.map((locationId: string) => {
+                    const address = savedAddresses.find(
+                      (addr: any) => (addr.id || addr._id) === locationId
+                    );
+                    if (!address) {
+                      const option = addressOptions.find(opt => opt.value === locationId);
+                      return (
+                        <div key={locationId} className="text-xs sm:text-sm md:text-base text-gray-600">
+                          <p className="font-medium">{option?.label || locationId}</p>
+                        
+                        </div>
+                      );
+                    }
+                    return (
+                      <div key={locationId} className="text-xs sm:text-sm md:text-base text-gray-600">
+                  
+                        <p className="font-medium">{address.name}</p>
+                        <p className="text-gray-500 mt-1">{address.formattedAddress}</p>
+                        {formValues.availabilityRadius && (
+                          <p className="text-gray-500 mt-1">
+                            Delivery within {formValues.availabilityRadius} km
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div> : "Locations will appear here"}
               </div>
-            )}
+           
 
             {/* Marketplace Options */}
-            {(formValues.marketplaceOptions?.pickup ||
-              formValues.marketplaceOptions?.shipping ||
-              formValues.marketplaceOptions?.delivery) && (
+          
               <div className="py-4 border-b border-gray-200">
                 <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">
                   Delivery Options
                 </h3>
-                <div className="space-y-2">
+              {  (formValues.marketplaceOptions?.pickup ||
+              formValues.marketplaceOptions?.shipping ||
+              formValues.marketplaceOptions?.delivery) ?  <div className="space-y-2">
                   {formValues.marketplaceOptions?.pickup && (
                     <div className="text-xs sm:text-sm md:text-base text-gray-600">
                       <span className="font-medium">Pickup</span>
@@ -367,37 +386,37 @@ export const ProductPreview: React.FC<ProductPreviewProps> = ({
                       <span className="font-medium">Delivery Available</span>
                     </div>
                   )}
-                </div>
+                </div> : "Delivery Options will appear here"}
               </div>
-            )}
+            
 
             {/* Ready By */}
-            {(formValues.readyByDate || formValues.readyByTime) && (
+
               <div className="py-4 border-b border-gray-200">
                 <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">
                   Ready By
                 </h3>
-                <p className="text-xs sm:text-sm md:text-base text-gray-600">
+             {(formValues.readyByDate || formValues.readyByTime) ?  <p className="text-xs sm:text-sm md:text-base text-gray-600">
                   {formValues.readyByDate && new Date(formValues.readyByDate).toLocaleDateString()}
                   {formValues.readyByTime && ` at ${formValues.readyByTime}`}
-                </p>
+                </p> : "Ready By will appear here"}
               </div>
-            )}
+          
 
             {/* Description */}
-            {formValues.description && (
+          
               <div className="py-4">
                 <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">
                   Description
                 </h3>
-                <p className="text-xs sm:text-sm md:text-base text-gray-600 leading-relaxed whitespace-pre-line">
+                {formValues.description  ? <p className="text-xs sm:text-sm md:text-base text-gray-600 leading-relaxed whitespace-pre-line">
                   {formValues.description}
-                </p>
+                </p> : "Description will appear here"}
               </div>
-            )}
+          
 
             {/* Variants */}
-            {variants.length > 0 && (
+            {variants.length > 0 ? (
               <div className="border-t pt-3">
                 <h4 className="text-sm font-semibold text-gray-700 mb-3">
                   Available Variants (
@@ -512,7 +531,7 @@ export const ProductPreview: React.FC<ProductPreviewProps> = ({
                     )}
                 </div>
               </div>
-            )}
+            ) : "Variants will appear here"}
           </div>
         </div>
       </Card>

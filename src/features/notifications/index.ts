@@ -8,7 +8,8 @@ export { default as NotificationsPage } from './pages/NotificationsPage';
 export * from './types';
 
 // Hooks
-export * from './hooks/useNotifications';
+export * from './hooks/useNotificationMutations';
+export * from './hooks/useNotificationListener';
 
-// Data
-export * from './data/mockNotifications';
+// Services
+export * from './services/notificationService';

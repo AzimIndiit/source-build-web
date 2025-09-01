@@ -30,6 +30,7 @@ import { GlobalSearch } from '@/components/search/GlobalSearch';
 import { useLogoutModal } from '@/stores/useLogoutModal';
 import { DeleteConfirmationModal } from '../ui';
 import { LocationSearch } from '@/components/location/LocationSearch';
+import { useUnreadCountQuery } from '@/features/notifications/hooks/useNotificationMutations';
 
 export const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
@@ -40,8 +41,11 @@ export const Navbar: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
 
-  // Mock notification counts - replace with actual data from your backend
-  const notificationCount = 12; // Example count
+  // Get real notification count from API
+  const { data: unreadNotifications } = useUnreadCountQuery();
+  const notificationCount = unreadNotifications?.data?.count || 0;
+  
+  // Mock counts for other features - replace with actual data from your backend
   const messageCount = 5; // Example count
   const cartCount = 2; // Example count
 

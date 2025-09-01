@@ -7,7 +7,7 @@ interface CustomerDetailsSectionProps {
   title?: string;
   reviewTitle?: string;
   customerDetails?: {
-    name: string;
+    displayName: string;
     email: string;
     avatar?: string;
     rating?: number;
@@ -34,12 +34,12 @@ export const CustomerDetailsSection: React.FC<CustomerDetailsSectionProps> = ({
                 {customerDetails?.avatar ? (
                   <AvatarImage
                     src={customerDetails.avatar}
-                    alt={customerDetails.name}
+                    alt={customerDetails.displayName}
                     className="object-cover"
                   />
                 ) : null}
                 <AvatarFallback className="bg-teal-100 text-teal-700 font-medium text-lg">
-                  {customerDetails?.name?.charAt(0)}
+                  {customerDetails?.displayName?.charAt(0)}
                 </AvatarFallback>
               </Avatar>
               <div>

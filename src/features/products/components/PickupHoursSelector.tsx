@@ -28,15 +28,105 @@ export const PickupHoursSelector: React.FC<PickupHoursSelectorProps> = ({ value,
 
   const [holidays, setHolidays] = useState<string[]>([]);
 
+  // Parse formatted string like "Mon Closed, Tue 09:02–17:02, Wed–Sun 09:00–17:00"
+  const parseFormattedString = (str: string): Record<string, DayHours> | null => {
+    try {
+      const result: Record<string, DayHours> = {};
+      
+      // Initialize all days with default values
+      days.forEach(day => {
+        result[day] = { open: '09:00', close: '17:00', closed: false };
+      });
+
+      // Split by comma and process each segment
+      const segments = str.split(',').map(s => s.trim());
+      
+      segments.forEach(segment => {
+        // Skip holiday segments
+        if (segment.toLowerCase().includes('holiday')) return;
+        
+        // Check if it's a closed day/range
+        if (segment.includes('Closed')) {
+          const dayPart = segment.replace('Closed', '').trim();
+          const affectedDays = expandDayRange(dayPart);
+          affectedDays.forEach(day => {
+            result[day] = { closed: true };
+          });
+        } else {
+          // Parse day range with times (e.g., "Tue 09:02–17:02" or "Wed–Sun 09:00–17:00")
+          const match = segment.match(/^(.+?)\s+(\d{2}:\d{2})[–-](\d{2}:\d{2})$/);
+          if (match) {
+            const [, dayPart, openTime, closeTime] = match;
+            const affectedDays = expandDayRange(dayPart);
+            affectedDays.forEach(day => {
+              result[day] = { open: openTime, close: closeTime, closed: false };
+            });
+          }
+        }
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('Error parsing formatted string:', error);
+      return null;
+    }
+  };
+
+  // Expand day range like "Mon", "Tue-Thu", "Wed–Sun" into array of days
+  const expandDayRange = (range: string): string[] => {
+    const dayMap: Record<string, number> = {
+      'Mon': 0, 'Monday': 0,
+      'Tue': 1, 'Tuesday': 1,
+      'Wed': 2, 'Wednesday': 2,
+      'Thu': 3, 'Thursday': 3,
+      'Fri': 4, 'Friday': 4,
+      'Sat': 5, 'Saturday': 5,
+      'Sun': 6, 'Sunday': 6
+    };
+    
+    const result: string[] = [];
+    
+    // Handle range with dash (e.g., "Wed–Sun" or "Wed-Sun")
+    if (range.includes('–') || range.includes('-')) {
+      const parts = range.split(/[–-]/);
+      if (parts.length === 2) {
+        const startDay = parts[0].trim();
+        const endDay = parts[1].trim();
+        const startIdx = dayMap[startDay];
+        const endIdx = dayMap[endDay];
+        
+        if (startIdx !== undefined && endIdx !== undefined) {
+          for (let i = startIdx; i <= endIdx; i++) {
+            result.push(days[i]);
+          }
+        }
+      }
+    } else {
+      // Single day
+      const day = range.trim();
+      const idx = dayMap[day];
+      if (idx !== undefined) {
+        result.push(days[idx]);
+      }
+    }
+    
+    return result;
+  };
+
   // Parse initial value
   useEffect(() => {
     if (value) {
       try {
+        // First try to parse as JSON
         const parsed = JSON.parse(value);
         if (parsed.hours) setHours(parsed.hours);
         if (parsed.holidays) setHolidays(parsed.holidays);
       } catch {
-        // ignore invalid JSON
+        // If not JSON, try to parse the formatted string
+        const parsedHours = parseFormattedString(value);
+        if (parsedHours) {
+          setHours(parsedHours);
+        }
       }
     }
   }, [value]);

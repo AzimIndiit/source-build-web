@@ -288,7 +288,7 @@ export const AddSavedAddressModal: React.FC<AddSavedAddressModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-[90vw] sm:max-w-[600px] md:max-w-[700px] p-0 bg-white max-h-[90vh] overflow-y-auto ">
+      <DialogContent className="max-w-[90vw] sm:max-w-[600px] md:max-w-[700px] p-0 bg-white max-h-[90vh] overflow-y-auto z-51 ">
         <DialogHeader className="px-4 pt-4 sm:px-6 pb-0 mb-0">
           <DialogTitle className="text-lg sm:text-xl font-semibold">
             {isEdit ? 'Edit Address' : 'Add New Address'}

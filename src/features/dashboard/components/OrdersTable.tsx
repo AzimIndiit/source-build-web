@@ -113,29 +113,31 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
                 <div>
                   <p className="text-xs text-gray-500">Product</p>
                   <p className="text-sm font-medium text-gray-900 line-clamp-1">
-                    {order.products?.[0]?.name}
+                    {order.products?.[0]?.title}
                   </p>
                 </div>
 
                 <div className="flex items-center gap-2">
                   <Avatar className="w-8 h-8 border border-white shadow-sm">
-                    {order.customer.avatar ? (
+                    {order.customer?.avatar ? (
                       <AvatarImage
                         src={order.customer.avatar}
-                        alt={order.customer.name}
+                        alt={order.customer?.displayName || 'Customer'}
                         className="object-cover"
                       />
                     ) : null}
                     <AvatarFallback className="bg-gray-200 text-gray-700 text-xs font-medium">
-                      {order.customer.name
-                        .split(' ')
-                        .map((n) => n[0])
-                        .join('')}
+                      {order.customer?.displayName
+                        ? order.customer.displayName
+                            .split(' ')
+                            .map((n) => n[0])
+                            .join('')
+                        : 'NA'}
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="text-sm font-medium text-gray-900">{order.customer.name}</p>
-                    <p className="text-xs text-gray-500">{order.customer.email}</p>
+                    <p className="text-sm font-medium text-gray-900">{order.customer?.displayName || 'Unknown'}</p>
+                    <p className="text-xs text-gray-500">{order.customer?.email || 'No email'}</p>
                   </div>
                 </div>
 
@@ -199,32 +201,34 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
                   </TableCell>
                   <TableCell className="text-left">
                     <span className="text-gray-900 text-xs lg:text-sm">
-                      {order.products?.[0]?.name}
+                      {order.products?.[0]?.title}
                     </span>
                   </TableCell>
                   <TableCell className="py-3 lg:py-4">
                     <div className="flex items-center gap-2 lg:gap-3">
                       <Avatar className="w-8 h-8 lg:w-10 lg:h-10 border-2 border-white shadow-sm">
-                        {order.customer.avatar ? (
+                        {order.customer?.avatar ? (
                           <AvatarImage
                             src={order.customer.avatar}
-                            alt={order.customer.name}
+                            alt={order.customer?.displayName || 'Customer'}
                             className="object-cover"
                           />
                         ) : null}
                         <AvatarFallback className="bg-gray-200 text-gray-700 font-medium text-xs">
-                          {order.customer.name
-                            .split(' ')
-                            .map((n) => n[0])
-                            .join('')}
+                          {order.customer?.displayName
+                            ? order.customer.displayName
+                                .split(' ')
+                                .map((n) => n[0])
+                                .join('')
+                            : 'NA'}
                         </AvatarFallback>
                       </Avatar>
                       <div className="text-left">
                         <div className="font-medium text-xs lg:text-sm text-gray-900">
-                          {order.customer.name}
+                          {order.customer?.displayName || 'Unknown'}
                         </div>
                         <div className="text-xs text-gray-500 hidden xl:block">
-                          {order.customer.email}
+                          {order.customer?.email || 'No email'}
                         </div>
                       </div>
                     </div>

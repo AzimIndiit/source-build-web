@@ -1,36 +1,33 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import usePlacesAutocomplete, {
-  getGeocode,
-  getLatLng,
-} from 'use-places-autocomplete';
-import { 
-  MapPin, 
-  Home, 
-  Train, 
-  Edit2, 
-  Trash2, 
+import usePlacesAutocomplete, { getGeocode, getLatLng } from 'use-places-autocomplete';
+import {
+  MapPin,
+  Home,
+  Train,
+  Edit2,
+  Trash2,
   Loader2,
   X,
-  ChevronDown 
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import useAuthStore from '@/stores/authStore';
 import { AddSavedAddressModal } from '@/features/profile/components/AddSavedAddressModal';
 import { DeleteConfirmationModal } from '@/components/common/DeleteConfirmationModal';
-import { SavedAddress as SavedAddressType, CreateSavedAddressPayload } from '@/features/profile/services/addressService';
+import {
+  SavedAddress as SavedAddressType,
+  CreateSavedAddressPayload,
+} from '@/features/profile/services/addressService';
 import {
   useSavedAddresssQuery,
   useUpdateSavedAddressMutation,
   useDeleteSavedAddressMutation,
 } from '@/features/profile/hooks/useSavedAddressMutations';
+import { useNavigate } from 'react-router-dom';
 
 interface LocationData {
   address: string;
@@ -52,9 +49,9 @@ interface LocationSearchProps {
   variant?: 'navbar' | 'full';
 }
 
-export const LocationSearch: React.FC<LocationSearchProps> = ({ 
-  className, 
-  variant = 'navbar' 
+export const LocationSearch: React.FC<LocationSearchProps> = ({
+  className,
+  variant = 'navbar',
 }) => {
   const { currentLocation, setCurrentLocation } = useAuthStore();
   const [isOpen, setIsOpen] = useState(false);
@@ -63,52 +60,54 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
   const [editingAddress, setEditingAddress] = useState<SavedAddressType | null>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [addressToDelete, setAddressToDelete] = useState<SavedAddressType | null>(null);
-  
+  const [showAllAddresses, setShowAllAddresses] = useState(false);
+  const navigate = useNavigate();
   // Queries and Mutations
   const { data: addressesData, isLoading: addressesLoading } = useSavedAddresssQuery();
   const updateMutation = useUpdateSavedAddressMutation();
   const deleteMutation = useDeleteSavedAddressMutation();
-  
+
   // Get saved addresses from API
   const savedAddresses: SavedAddress[] = React.useMemo(() => {
     if (!addressesData?.data) return [];
     const addresses = Array.isArray(addressesData.data) ? addressesData.data : [addressesData.data];
-    return addresses.map(addr => ({
+    return addresses.map((addr) => ({
       ...addr,
       address: addr.formattedAddress || '',
-      icon: addr.type === 'home' ? <Home className="w-5 h-5" /> : <MapPin className="w-5 h-5" />
+      icon: addr.type === 'home' ? <Home className="w-5 h-5" /> : <MapPin className="w-5 h-5" />,
     }));
   }, [addressesData]);
-  
+
   // Mock saved addresses - temporarily keeping for fallback
   const [mockSavedAddresses] = useState<any[]>([
     {
       id: '1',
       type: 'home',
       label: 'Home',
-      address: '3Rd floor, Plot no 22, gali no 19 jain road dwarika mor, Toni property Block RK, Laxmi Vihar, New Delhi',
-      icon: <Home className="w-5 h-5" />
+      address:
+        '3Rd floor, Plot no 22, gali no 19 jain road dwarika mor, Toni property Block RK, Laxmi Vihar, New Delhi',
+      icon: <Home className="w-5 h-5" />,
     },
     {
       id: '2',
       type: 'home',
       label: 'Home',
       address: 'R-12, 4th Floor Jogabai Extension, Jamia Nagar, Okhla, New Delhi',
-      icon: <Home className="w-5 h-5" />
+      icon: <Home className="w-5 h-5" />,
     },
     {
       id: '3',
       type: 'other',
       label: 'Train',
       address: 'seemachal express coach A1 seat 10 platform 1 ,Anand vihar railway station',
-      icon: <Train className="w-5 h-5" />
+      icon: <Train className="w-5 h-5" />,
     },
     {
       id: '4',
       type: 'home',
       label: 'Home',
       address: 'Floor 2nd, Block J, Sector 22 Block J, Sector 22, Noida',
-      icon: <Home className="w-5 h-5" />
+      icon: <Home className="w-5 h-5" />,
     },
   ]);
 
@@ -129,7 +128,7 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
   // Detect user's current location
   const detectLocation = useCallback(() => {
     setIsDetectingLocation(true);
-    
+
     if (!navigator.geolocation) {
       alert('Geolocation is not supported by your browser');
       setIsDetectingLocation(false);
@@ -139,7 +138,7 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude } = position.coords;
-        
+
         try {
           const geocoder = new window.google.maps.Geocoder();
           const response = await geocoder.geocode({
@@ -179,7 +178,7 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
     lng?: number
   ): LocationData => {
     const addressComponents = place.address_components || [];
-    
+
     let city = '';
     let state = '';
     let country = '';
@@ -189,7 +188,7 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
 
     addressComponents.forEach((component) => {
       const types = component.types;
-      
+
       if (types.includes('locality')) {
         city = component.long_name;
       } else if (types.includes('administrative_area_level_1')) {
@@ -206,7 +205,7 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
     });
 
     const address = streetNumber && route ? `${streetNumber} ${route}` : route || '';
-    
+
     return {
       address,
       city,
@@ -225,12 +224,12 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
     clearSuggestions();
 
     try {
-      const results = await getGeocode({ 
+      const results = await getGeocode({
         address: description,
         ...(placeId && { placeId }),
       });
       const { lat, lng } = await getLatLng(results[0]);
-      
+
       const locationData = parseGooglePlace(results[0], lat, lng);
       setCurrentLocation(locationData);
       setIsOpen(false);
@@ -252,19 +251,19 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
     });
     setIsOpen(false);
   };
-  
+
   // Handle edit address
   const handleEditAddress = (address: SavedAddress) => {
     setEditingAddress(address);
     setEditModalOpen(true);
   };
-  
+
   // Handle delete address
   const handleDeleteAddress = (address: SavedAddress) => {
     setAddressToDelete(address);
     setDeleteModalOpen(true);
   };
-  
+
   // Confirm delete
   const confirmDelete = () => {
     if (addressToDelete) {
@@ -279,13 +278,13 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
       }
     }
   };
-  
+
   // Cancel delete
   const cancelDelete = () => {
     setDeleteModalOpen(false);
     setAddressToDelete(null);
   };
-  
+
   // Handle address update
   const handleUpdateAddress = async (data: CreateSavedAddressPayload) => {
     try {
@@ -301,7 +300,7 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
       console.error('Failed to update address:', error);
     }
   };
-  
+
   // Handle close edit modal
   const handleCloseEditModal = () => {
     setEditModalOpen(false);
@@ -313,12 +312,12 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
     if (!currentLocation) {
       return 'Select Location';
     }
-    
+
     // Show shortened version for navbar
     if (variant === 'navbar') {
       const parts = currentLocation.formattedAddress.split(',');
       const shortAddress = parts.slice(0, 2).join(',').trim();
-      
+
       // Apply max length with ellipsis for navbar
       const maxLength = 20;
       if (shortAddress.length > maxLength) {
@@ -326,13 +325,13 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
       }
       return shortAddress;
     }
-    
+
     // For full address display, apply max length
     const maxLength = 20;
     if (currentLocation.formattedAddress.length > maxLength) {
       return currentLocation.formattedAddress.substring(0, maxLength) + '...';
     }
-    
+
     return currentLocation.formattedAddress;
   };
 
@@ -371,10 +370,10 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
   // Navbar variant with modal
   return (
     <>
-      <button 
+      <button
         onClick={() => setIsOpen(true)}
         className={cn(
-          "bg-blue-50 flex gap-2 h-[42px] items-center px-2 md:px-3 py-2 rounded-lg hover:bg-blue-100 transition-colors outline-none",
+          'bg-blue-50 flex gap-2 h-[42px] items-center px-2 md:px-3 py-2 rounded-lg hover:bg-blue-100 transition-colors outline-none',
           className
         )}
       >
@@ -396,7 +395,7 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
 
           <div className="px-6 pb-6 space-y-6">
             {/* Search and Detect Location */}
-            <div className="flex gap-3 items-center">
+            {/* <div className="flex gap-3 items-center">
               <Button
                 onClick={detectLocation}
                 disabled={isDetectingLocation}
@@ -411,7 +410,7 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
                   'Detect my location'
                 )}
               </Button>
-              
+                            
               <span className="text-gray-400">OR</span>
               
               <div className="flex-1 relative">
@@ -423,7 +422,7 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
                   className="w-full"
                 />
               </div>
-            </div>
+            </div> */}
 
             {/* Search Results */}
             {status === 'OK' && (
@@ -444,24 +443,44 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
             {/* Saved Addresses */}
             {!value && savedAddresses.length > 0 && (
               <div className="space-y-4">
-                <h3 className="text-sm font-medium text-gray-700">Your saved addresses</h3>
-                
-                <div className="space-y-3">
-                  {savedAddresses.map((address) => (
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-medium text-gray-700">Your saved addresses</h3>
+                  <Button
+                    variant="outline"
+                    className="h-10 border-gray-500 hover:bg-gray-50 text-gray-600"
+                    onClick={() => {navigate('/profile/address')
+                      setIsOpen(false)
+                    }}
+                  >
+                    Manage Addresses
+                  </Button>
+                </div>
+                {/* Address list with show more/less functionality */}
+                <div className={cn(
+                  "space-y-3 transition-all duration-300",
+                  showAllAddresses && savedAddresses.length > 3 && "max-h-[400px] overflow-y-auto pr-2"
+                )}>
+                  {(showAllAddresses ? savedAddresses : savedAddresses.slice(0, 3)).map((address) => (
                     <div
                       key={address.id}
-                      className="flex items-start gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer"
+                      className="flex items-start gap-3 p-3 hover:bg-gray-100 rounded-lg cursor-pointer relative bg-gray-50 border border-gray-200"
                       onClick={() => handleSavedAddressSelect(address)}
                     >
+                     
                       {/* <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
                         {address.icon || <MapPin className="w-5 h-5 text-yellow-600" />}
                       </div> */}
-                      
+
                       <div className="flex-1">
-                        <h4 className="font-medium text-gray-900">{address.name}</h4>
-                        <p className="text-sm text-gray-600 mt-1">{address.address}</p>
+                       <div className='flex items-center gap-2'> <h4 className="font-medium text-gray-900">{address.name}</h4>
+                        {address.isDefault && (
+            <span className="inline-flex items-center px-2.5 py-0.5 text-xs font-medium text-primary bg-blue-100 rounded">
+              Default
+            </span>
+          )}</div>
+                        <p className="text-sm text-gray-600 mt-1">{address.formattedAddress}</p>
                       </div>
-                      
+{/* 
                       <div className="flex gap-2">
                         <button
                           onClick={(e) => {
@@ -481,16 +500,36 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
                         >
                           <Trash2 className="w-4 h-4 text-gray-500" />
                         </button>
-                      </div>
+                      </div> */}
                     </div>
                   ))}
                 </div>
+                
+                {/* Show More/Less button */}
+                {savedAddresses.length > 3 && (
+                  <button
+                    onClick={() => setShowAllAddresses(!showAllAddresses)}
+                    className="flex items-center gap-2 text-sm text-primary hover:text-primary/80 font-medium mx-auto"
+                  >
+                    {showAllAddresses ? (
+                      <>
+                        Show Less
+                        <ChevronUp className="w-4 h-4" />
+                      </>
+                    ) : (
+                      <>
+                        Show More ({savedAddresses.length - 3} more)
+                        <ChevronDown className="w-4 h-4" />
+                      </>
+                    )}
+                  </button>
+                )}
               </div>
             )}
           </div>
         </DialogContent>
       </Dialog>
-      
+
       {/* Edit Address Modal */}
       <AddSavedAddressModal
         isOpen={editModalOpen}
@@ -516,7 +555,7 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
         }
         isEdit={!!editingAddress}
       />
-      
+
       {/* Delete Confirmation Modal */}
       {deleteModalOpen && (
         <DeleteConfirmationModal

@@ -1,10 +1,7 @@
 import React, { useState } from 'react';
-import { MapPin, ChevronDown, Edit2, Trash2 } from 'lucide-react';
+import { MapPin, ChevronDown, Loader2, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { PaginationWrapper } from '@/components/ui/pagination-wrapper';
-
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/Card';
 import FilterDropdown from '@/components/ui/FilterDropdown';
 import {
   DropdownMenu,
@@ -13,150 +10,328 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { DropdownMenuLabel, DropdownMenuSeparator } from '@radix-ui/react-dropdown-menu';
+import { useProductsQuery, useDeleteProductMutation } from '../hooks/useProductMutations';
+import { ProductGrid } from '../components';
+import { DeleteConfirmationModal } from '@/components/ui';
 
-interface Product {
+interface FilterOption {
   id: string;
-  title: string;
-  price: number;
-  unit: string;
-  category: string;
-  dimensions: string;
-  location: string;
-  date: string;
-  image: string;
-  inStock: boolean;
-  slug: string;
+  label: string;
+  checked: boolean;
 }
 
 const ProductsPage: React.FC = () => {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedLocation, setSelectedLocation] = useState('American Fork, UT');
-  const [activeFilters, setActiveFilters] = useState<any>({});
+  const [activeFilters, setActiveFilters] = useState<any>({
+    sorting: 'ascending',
+  });
+  const [selectedLocation, setSelectedLocation] = useState<string>('all');
+  
+  // Store the full filter state to persist it
+  const [filterState, setFilterState] = useState<{
+    popularity: FilterOption[];
+    newest: FilterOption[];
+    availability: FilterOption[];
+    readyTime: FilterOption[];
+    sorting: string;
+    pricing: string;
+    priceRange: number[];
+  }>({
+    popularity: [
+      { id: 'best-selling', label: 'Best-Selling Products', checked: false },
+      { id: 'most-viewed', label: 'Most Viewed', checked: false },
+      { id: 'top-rated', label: 'Top-Rated', checked: false },
+      { id: 'most-reviewed', label: 'Most Reviewed', checked: false },
+      { id: 'featured', label: 'Featured Products', checked: false },
+      { id: 'trending', label: 'Trending Now', checked: false },
+    ],
+    newest: [
+      { id: 'recently-updated', label: 'Recently Updated', checked: false },
+      { id: 'featured-new', label: 'Featured New Products', checked: false },
+      { id: 'sort-by-date', label: 'Sort by Date Added', checked: false },
+      { id: 'new-arrivals', label: 'New Arrivals', checked: false },
+    ],
+    availability: [
+      { id: 'delivery', label: 'Delivery', checked: false },
+      { id: 'shipping', label: 'Shipping', checked: false },
+      { id: 'pickup', label: 'Pickup', checked: false },
+    ],
+    readyTime: [
+      { id: 'next-day', label: 'Ready Next Day', checked: false },
+      { id: 'this-week', label: 'Ready This Week', checked: false },
+    ],
+    sorting: 'ascending',
+    pricing: '',
+    priceRange: [],
+  });
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    productId: string;
+    productTitle: string;
+  }>({
+    isOpen: false,
+    productId: '',
+    productTitle: '',
+  });
+  const itemsPerPage = 10;
+
+  // Fetch products from API
+  const { data, isLoading, isError, refetch } = useProductsQuery({
+    page: currentPage,
+    limit: itemsPerPage,
+    location: selectedLocation === 'all' ? undefined : selectedLocation,
+    ...activeFilters,
+  });
+
+  const deleteProductMutation = useDeleteProductMutation();
 
   const handleApplyFilters = (filters: any) => {
-    setActiveFilters(filters);
-    console.log('Applied filters:', filters);
-    // Here you would typically filter the products based on the selected filters
+    // Save the filter state to persist it
+    setFilterState(filters);
+    
+    // Transform filters to match backend API expectations
+    const transformedFilters: any = {};
+    
+    // Popularity filters - collect checked items
+    const popularityFilters = filters.popularity
+      .filter((opt: any) => opt.checked)
+      .map((opt: any) => opt.id);
+    if (popularityFilters.length > 0) {
+      transformedFilters.popularity = popularityFilters;
+    }
+    
+    // Newest filters
+    const newestFilters = filters.newest
+      .filter((opt: any) => opt.checked)
+      .map((opt: any) => opt.id);
+    if (newestFilters.length > 0) {
+      transformedFilters.newest = newestFilters;
+    }
+    
+    // Availability filters
+    const availabilityFilters = filters.availability
+      .filter((opt: any) => opt.checked)
+      .map((opt: any) => opt.id);
+    if (availabilityFilters.length > 0) {
+      transformedFilters.availability = availabilityFilters;
+    }
+    
+    // Ready time filters
+    const readyTimeFilters = filters.readyTime
+      .filter((opt: any) => opt.checked)
+      .map((opt: any) => opt.id);
+    if (readyTimeFilters.length > 0) {
+      transformedFilters.readyTime = readyTimeFilters;
+    }
+    
+    // Sorting (A-Z)
+    if (filters.sorting !== 'ascending') {
+      transformedFilters.sorting = filters.sorting;
+    }
+    
+    // Pricing
+    if (filters.pricing !== 'custom' && filters.pricing !== '') {
+      transformedFilters.pricing = filters.pricing;
+    } else if (filters.priceRange && filters.pricing !== '') {
+      // For custom pricing, send the price range
+      transformedFilters.pricing = 'custom';
+      transformedFilters.priceRange = filters.priceRange.join(',');
+    }
+    
+    setActiveFilters(transformedFilters);
+    setCurrentPage(1); // Reset to first page when filters change
   };
 
   const handleClearFilters = () => {
     setActiveFilters({});
-    console.log('Cleared all filters');
-    // Here you would typically reset the products to show all
+    setCurrentPage(1);
+    // Reset filter state to default
+    setFilterState({
+      popularity: [
+        { id: 'best-selling', label: 'Best-Selling Products', checked: false },
+        { id: 'most-viewed', label: 'Most Viewed', checked: false },
+        { id: 'top-rated', label: 'Top-Rated', checked: false },
+        { id: 'most-reviewed', label: 'Most Reviewed', checked: false },
+        { id: 'featured', label: 'Featured Products', checked: false },
+        { id: 'trending', label: 'Trending Now', checked: false },
+      ],
+      newest: [
+        { id: 'recently-updated', label: 'Recently Updated', checked: false },
+        { id: 'featured-new', label: 'Featured New Products', checked: false },
+        { id: 'sort-by-date', label: 'Sort by Date Added', checked: false },
+        { id: 'new-arrivals', label: 'New Arrivals', checked: false },
+      ],
+      availability: [
+        { id: 'delivery', label: 'Delivery', checked: false },
+        { id: 'shipping', label: 'Shipping', checked: false },
+        { id: 'pickup', label: 'Pickup', checked: false },
+      ],
+      readyTime: [
+        { id: 'next-day', label: 'Ready Next Day', checked: false },
+        { id: 'this-week', label: 'Ready This Week', checked: false },
+      ],
+      sorting: 'ascending',
+      pricing: '',
+      priceRange: [],
+    });
   };
 
-  const handleProductClick = (product: Product) => {
-    navigate(`/seller/products/${product.slug}`);
+  const handleProductClick = (slug: string) => {
+    navigate(`/seller/products/${slug}`);
   };
 
-  // Sample product data matching the Figma design
-  const products: Product[] = [
-    {
-      id: '1',
-      title: 'Interior Essentials & Appliances',
-      price: 250,
-      unit: 'per sq ft',
-      category: 'Interior Essentials & Appliances',
-      dimensions: '% 11-1/4"x8\' Particle board for...',
-      location: 'Draper, UT',
-      date: '22/01/2025',
-      image: 'https://placehold.co/300x200.png',
-      inStock: true,
-      slug: 'interior-essentials-appliances',
-    },
-    {
-      id: '2',
-      title: 'Interior Essentials & Appliances',
-      price: 250,
-      unit: 'per sq ft',
-      category: 'Interior Essentials & Appliances',
-      dimensions: '% 11-1/4"x8\' Particle board for...',
-      location: 'Draper, UT',
-      date: '20/01/2025',
-      image: 'https://placehold.co/300x200.png',
-      inStock: true,
-      slug: 'interior-essentials-appliances',
-    },
-    {
-      id: '3',
-      title: 'Interior Essentials & Appliances',
-      price: 250,
-      unit: 'per sq ft',
-      category: 'Interior Essentials & Appliances',
-      dimensions: '% 11-1/4"x8\' Particle board for...',
-      location: 'Draper, UT',
-      date: '17/01/2025',
-      image: 'https://placehold.co/300x200.png',
-      inStock: true,
-      slug: 'interior-essentials-appliances',
-    },
-    {
-      id: '4',
-      title: 'Interior Essentials & Appliances',
-      price: 250,
-      unit: 'per sq ft',
-      category: 'Interior Essentials & Appliances',
-      dimensions: '% 11-1/4"x8\' Particle board for...',
-      location: 'Draper, UT',
-      date: '15/12/2024',
-      image: 'https://placehold.co/300x200.png',
-      inStock: true,
-      slug: 'interior-essentials-appliances',
-    },
-    {
-      id: '5',
-      title: 'Interior Essentials & Appliances',
-      price: 250,
-      unit: 'per sq ft',
-      category: 'Interior Essentials & Appliances',
-      dimensions: '% 11-1/4"x8\' Particle board for...',
-      location: 'Draper, UT',
-      date: '18/12/2024',
-      image: 'https://placehold.co/300x200.png',
-      inStock: true,
-      slug: 'interior-essentials-appliances',
-    },
-    {
-      id: '6',
-      title: 'Interior Essentials & Appliances',
-      price: 50,
-      unit: 'per sq ft',
-      category: 'Interior Essentials & Appliances',
-      dimensions: '% 11-1/4"x8\' Particle board for...',
-      location: 'Draper, UT',
-      date: '17/12/2024',
-      image: 'https://placehold.co/300x200.png',
-      inStock: true,
-      slug: 'interior-essentials-appliances',
-    },
-    {
-      id: '7',
-      title: 'Interior Essentials & Appliances',
-      price: 250,
-      unit: 'per sq ft',
-      category: 'Interior Essentials & Appliances',
-      dimensions: '% 11-1/4"x8\' Particle board for...',
-      location: 'Draper, UT',
-      date: '16/12/2024',
-      image: 'https://placehold.co/300x200.png',
-      inStock: true,
-      slug: 'interior-essentials-appliances',
-    },
-    {
-      id: '8',
-      title: 'Interior Essentials & Appliances',
-      price: 250,
-      unit: 'per sq ft',
-      category: 'Interior Essentials & Appliances',
-      dimensions: '% 11-1/4"x8\' Particle board for...',
-      location: 'Draper, UT',
-      date: '15/12/2024',
-      image: 'https://placehold.co/300x200.png',
-      inStock: true,
-      slug: 'interior-essentials-appliances',
-    },
-  ];
+  const handleEditProduct = (e: React.MouseEvent, productId: string) => {
+    e.stopPropagation();
+    navigate(`/seller/products/${productId}/edit`);
+  };
+
+  const handleDeleteProduct = (
+    e: React.MouseEvent,
+    productId: string,
+    productTitle: string
+  ) => {
+    e.stopPropagation();
+    setDeleteModal({
+      isOpen: true,
+      productId,
+      productTitle,
+    });
+  };
+
+  const confirmDelete = async () => {
+    try {
+      await deleteProductMutation.mutateAsync(deleteModal.productId);
+      setDeleteModal({ isOpen: false, productId: '', productTitle: '' });
+      refetch();
+    } catch (error) {
+      console.error('Failed to delete product:', error);
+    }
+  };
+
+  const cancelDelete = () => {
+    setDeleteModal({ isOpen: false, productId: '', productTitle: '' });
+  };
+
+
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="py-4 md:p-4 space-y-4 md:space-y-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900">My Listing</h1>
+          <FilterDropdown 
+            onApply={handleApplyFilters} 
+            onClear={handleClearFilters}
+            initialFilters={filterState}
+          />
+        </div>
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (isError) {
+    return (
+      <div className="py-4 md:p-4 space-y-4 md:space-y-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900">My Listing</h1>
+          <FilterDropdown 
+            onApply={handleApplyFilters} 
+            onClear={handleClearFilters}
+            initialFilters={filterState}
+          />
+        </div>
+        <div className="flex flex-col items-center justify-center h-64 space-y-4">
+          <AlertCircle className="h-12 w-12 text-red-500" />
+          <p className="text-gray-600">Failed to load products</p>
+          <button
+            onClick={() => refetch()}
+            className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Handle both old and new API response structures
+  const responseData: any = data?.data;
+  const products = Array.isArray(responseData) ? responseData : responseData?.products || [];
+  const availableLocations = Array.isArray(responseData) ? [] : responseData?.availableLocations || [];
+  const totalPages = data?.pagination?.totalPages || 1;
+
+  // Empty state
+  if (products.length === 0) {
+    return (
+      <div className="py-4 md:p-4 space-y-4 md:space-y-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900">My Listing</h1>
+          <div className="flex items-center gap-2">
+          {/* Location Selector - Visible on tablet and desktop */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="bg-blue-50 flex gap-2 h-[42px] items-center px-2 md:px-3 py-2 rounded-lg hover:bg-blue-100 transition-colors outline-none cursor-pointer">
+                <MapPin className="w-5 h-5 text-gray-700" />
+                <div className="flex flex-col text-left">
+                  <span className="text-xs text-gray-600 hidden md:block">Location</span>
+                  <span className="text-xs md:text-sm font-semibold text-gray-900 flex items-center gap-1">
+                    {selectedLocation === 'all' ? (
+                      <>
+                        <span className="hidden lg:inline">All Locations</span>
+                        <span className="lg:hidden">All</span>
+                      </>
+                    ) : (
+                      <>
+                        {availableLocations.find((loc: any) => loc._id === selectedLocation)?.displayName || 
+                         availableLocations.find((loc: any) => loc._id === selectedLocation)?.city || 
+                         'Select Location'}
+                      </>
+                    )}
+                    <ChevronDown size={12} />
+                  </span>
+                </div>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-56">
+              <DropdownMenuSeparator />
+              <DropdownMenuItem 
+                className="cursor-pointer"
+                onClick={() => setSelectedLocation('all')}
+              >
+                All Locations
+              </DropdownMenuItem>
+              {availableLocations.map((location: any) => (
+                <DropdownMenuItem 
+                  key={location._id}
+                  className="cursor-pointer"
+                  onClick={() => setSelectedLocation(location._id)}
+                >
+                  {location.displayName || `${location.city}, ${location.state}`}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <FilterDropdown 
+            onApply={handleApplyFilters} 
+            onClear={handleClearFilters}
+            initialFilters={filterState}
+          />
+        </div>
+        </div>
+        <div className="flex flex-col items-center justify-center h-64 space-y-4">
+          <p className="text-gray-600">No products found</p>
+        
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="py-4 md:p-4 space-y-4 md:space-y-6">
@@ -166,74 +341,87 @@ const ProductsPage: React.FC = () => {
           {/* Location Selector - Visible on tablet and desktop */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="bg-blue-50 flex gap-2 h-[42px] items-center px-2 md:px-3 py-2 rounded-lg hover:bg-blue-100 transition-colors outline-none">
+              <button className="bg-blue-50 flex gap-2 h-[42px] items-center px-2 md:px-3 py-2 rounded-lg hover:bg-blue-100 transition-colors outline-none cursor-pointer">
                 <MapPin className="w-5 h-5 text-gray-700" />
                 <div className="flex flex-col text-left">
-                  <span className="text-xs text-gray-600 hidden md:block">American Fork, UT</span>
+                  <span className="text-xs text-gray-600 hidden md:block">Location</span>
                   <span className="text-xs md:text-sm font-semibold text-gray-900 flex items-center gap-1">
-                    <span className="hidden lg:inline">Update Location</span>
-                    <span className="lg:hidden">Location</span>
+                    {selectedLocation === 'all' ? (
+                      <>
+                        <span className="hidden lg:inline">All Locations</span>
+                        <span className="lg:hidden">All</span>
+                      </>
+                    ) : (
+                      <>
+                        {availableLocations.find((loc: any) => loc._id === selectedLocation)?.displayName || 
+                         availableLocations.find((loc: any) => loc._id === selectedLocation)?.city || 
+                         'Select Location'}
+                      </>
+                    )}
                     <ChevronDown size={12} />
                   </span>
                 </div>
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-56">
-              <DropdownMenuLabel>Select Location</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="cursor-pointer">American Fork, UT</DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer">Provo, UT</DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer">Salt Lake City, UT</DropdownMenuItem>
+              <DropdownMenuItem 
+                className="cursor-pointer"
+                onClick={() => setSelectedLocation('all')}
+              >
+                All Locations
+              </DropdownMenuItem>
+              {availableLocations.map((location: any) => (
+                <DropdownMenuItem 
+                  key={location._id}
+                  className="cursor-pointer"
+                  onClick={() => setSelectedLocation(location._id)}
+                >
+                  {location.displayName || `${location.city}, ${location.state}`}
+                </DropdownMenuItem>
+              ))}
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <FilterDropdown onApply={handleApplyFilters} onClear={handleClearFilters} />
+          <FilterDropdown 
+            onApply={handleApplyFilters} 
+            onClear={handleClearFilters}
+            initialFilters={filterState}
+          />
         </div>
       </div>
 
       {/* Product Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {products.map((product) => (
-          <Card
-            key={product.id}
-            className="overflow-hidden border border-gray-200 rounded-xl hover:shadow-md transition-shadow p-0 cursor-pointer group"
-            onClick={() => handleProductClick(product)}
-          >
-            <div className="relative">
-              <img src={product.image} alt={product.title} className="w-full h-40 object-cover" />
-              {product.inStock && (
-                <Badge className="absolute bottom-2 left-2 bg-primary text-white rounded-sm px-2 py-0.5 text-[11px]">
-                  In Stock
-                </Badge>
-              )}
-            </div>
-            <CardContent className="p-3">
-              {/* Price */}
-              <div className="text-[15px] font-semibold mb-1">
-                ${product.price} {product.unit}
-              </div>
-
-              {/* Title + Dimensions */}
-              <p className="text-[13px] text-gray-700 leading-snug line-clamp-2 mb-1">
-                {product.title} {product.dimensions}
-              </p>
-
-              {/* Location + Date + Actions */}
-              <div className="flex items-center justify-between text-[12px] text-gray-500">
-                <span>{product.location}</span>
-                <div className="flex items-center space-x-2" onClick={(e) => e.stopPropagation()}>
-                  <span className="text-primary cursor-pointer">{product.date}</span>
-                  <Edit2 className="h-4 w-4 text-primary cursor-pointer hover:text-primary/80" />
-                  <Trash2 className="h-4 w-4 text-red-600 cursor-pointer hover:text-red-700" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        {products.map((product: any) => (
+          <ProductGrid
+            key={product.id || product._id}
+            product={product}
+            onProductClick={handleProductClick}
+            onEditProduct={handleEditProduct}
+            onDeleteProduct={handleDeleteProduct}
+          />
         ))}
       </div>
 
       {/* Pagination */}
-      <PaginationWrapper currentPage={currentPage} totalPages={10} onPageChange={setCurrentPage} />
+      {totalPages > 1 && <PaginationWrapper
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />}
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={deleteModal.isOpen}
+        onClose={cancelDelete}
+        onConfirm={confirmDelete}
+        title="Delete Product"
+        description={`Are you sure you want to delete "${deleteModal.productTitle}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        isLoading={deleteProductMutation.isPending}
+      />
     </div>
   );
 };

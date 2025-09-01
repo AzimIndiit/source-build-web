@@ -7,20 +7,19 @@ import { FormSelect } from '@/components/forms/FormSelect';
 import { PickupHoursSelector } from './PickupHoursSelector';
 import { UseFormReturn } from 'react-hook-form';
 import toast from 'react-hot-toast';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 interface ProductFormProps {
   methods: UseFormReturn<any>;
   uploadedPhotos: File[];
   setUploadedPhotos: React.Dispatch<React.SetStateAction<File[]>>;
+  existingImages?: string[];
+  removeExistingImage?: (index: number) => void;
   imageError: boolean;
   setImageError: React.Dispatch<React.SetStateAction<boolean>>;
-  locations?: Array<{ id: string; data: any }>;
-  addLocation?: () => void;
-  removeLocation?: (index: number) => void;
-  setDefaultLocation?: (index: number) => void;
-  geocodeAddress?: (address: string, city?: string, state?: string, country?: string) => Promise<any>;
-  variants: Array<{ id: string; images: File[] }>;
+  addressOptions?: Array<{ value: string; label: string }>;
+  showAddAddressModal?: boolean;
+  setShowAddAddressModal?: React.Dispatch<React.SetStateAction<boolean>>;
+  variants: Array<{ id: string; images: File[]; existingImages?: string[] }>;
   showVariants: boolean;
   setCurrentStep?: React.Dispatch<React.SetStateAction<number>>;
   setShowVariants: React.Dispatch<React.SetStateAction<boolean>>;
@@ -32,6 +31,7 @@ interface ProductFormProps {
   removeVariant: (variantId: string) => void;
   handleVariantImageUpload: (variantId: string, files: File[]) => void;
   removeVariantImage: (variantId: string, imageIndex: number) => void;
+  removeExistingVariantImage?: (variantId: string, imageIndex: number) => void;
   handleVariantDrag: (e: React.DragEvent, variantId: string) => void;
   handleVariantDrop: (e: React.DragEvent, variantId: string) => void;
   dragActive: boolean;
@@ -40,18 +40,19 @@ interface ProductFormProps {
   categoryOptions: Array<{ value: string; label: string }>;
   subCategoryOptions: Array<{ value: string; label: string }>;
   tagOptions: Array<{ value: string; label: string }>;
+  isLoading?: boolean;
 }
 
 export const ProductForm: React.FC<ProductFormProps> = ({
   methods,
   uploadedPhotos,
+  existingImages = [],
+  removeExistingImage,
   imageError,
   setImageError,
-  locations,
-  addLocation,
-  removeLocation,
-  setDefaultLocation,
-  geocodeAddress,
+  addressOptions = [],
+  showAddAddressModal,
+  setShowAddAddressModal,
   variants,
   showVariants,
   handleDrag,
@@ -62,6 +63,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   removeVariant,
   handleVariantImageUpload,
   removeVariantImage,
+  removeExistingVariantImage,
   handleVariantDrag,
   handleVariantDrop,
   dragActive,
@@ -70,6 +72,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   categoryOptions,
   subCategoryOptions,
   tagOptions,
+  isLoading = false,
 }) => {
   const {
     watch,
@@ -83,8 +86,9 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
   // Validate Step 1 fields
   const validateStep1 = async () => {
-    // Check for images first
-    if (uploadedPhotos.length === 0) {
+    // Check for images first (existing + uploaded)
+    const totalImages = existingImages.length + uploadedPhotos.length;
+    if (totalImages === 0) {
       setImageError(true);
       toast.error('Please upload at least one product image');
       return false;
@@ -101,7 +105,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       'quantity',
       'brand',
       'color',
-      'locations',
+      'locationIds',
+      'availabilityRadius',
       'productTag',
     ];
 
@@ -148,17 +153,17 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
               {/* Photos Section */}
               <div>
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center justify-between mb-3" id={'photos'}>
                   <h3
                     className={`text-sm font-medium ${imageError ? 'text-red-600' : 'text-gray-900'}`}
                   >
-                    Photos · {uploadedPhotos.length}/{MAX_IMAGES} - You can add up to {MAX_IMAGES}{' '}
-                    photos.
+                    Photos · {existingImages.length + uploadedPhotos.length}/{MAX_IMAGES} - You can
+                    add up to {MAX_IMAGES} photos.
                     <span className="text-red-500">*</span>
                   </h3>
                 </div>
 
-                {uploadedPhotos.length === 0 ? (
+                {existingImages.length === 0 && uploadedPhotos.length === 0 ? (
                   <div
                     className={`border-2 border-dashed rounded-xl p-6 text-center ${
                       imageError ? 'bg-red-50' : 'bg-gray-50'
@@ -191,6 +196,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                         Drag & drop media or{' '}
                         <span className="text-primary underline">click here</span>
                       </span>
+                      <span className="text-xs text-red-600">Max file size is 5MB</span>
                     </label>
                   </div>
                 ) : (
@@ -221,13 +227,40 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                           Drag & drop media or{' '}
                           <span className="text-primary underline">click here</span>
                         </span>
+                     
                       </label>
+                      <div className="text-xs text-red-600">
+                        Max file size is 5MB
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-3 lg:grid-cols-5 gap-2">
+                      {/* Display existing images */}
+                      {existingImages.map((url, index) => (
+                        <div
+                          key={`existing-${index}`}
+                          className="relative group border border-gray-200 rounded-sm shadow-sm"
+                        >
+                          <img
+                            src={url}
+                            alt={`Existing ${index + 1}`}
+                            className="w-full h-20 sm:h-24 md:h-28 lg:h-16 object-cover rounded-sm"
+                          />
+                          {removeExistingImage && (
+                            <button
+                              type="button"
+                              onClick={() => removeExistingImage(index)}
+                              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5 cursor-pointer"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                      {/* Display newly uploaded photos */}
                       {uploadedPhotos.map((file, index) => (
                         <div
-                          key={index}
+                          key={`upload-${index}`}
                           className="relative group border border-gray-200 rounded-sm shadow-sm"
                         >
                           <img
@@ -299,7 +332,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                 <FormSelect
                   name="category"
                   label="Category"
-                  placeholder="Commercial Doors"
+                  placeholder="Select Category"
                   options={categoryOptions}
                   className="h-[53px]"
                 />
@@ -386,107 +419,33 @@ export const ProductForm: React.FC<ProductFormProps> = ({
               {/* Locations Section */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-medium text-gray-900">
-                    Locations <span className="text-red-500">*</span>
-                  </h3>
-                  {locations && locations.length < 10 && (
-                    <Button
-                      type="button"
-                      onClick={addLocation}
-                      variant="outline"
-                      size="sm"
-                      className="flex items-center gap-1"
-                    >
-                      <Plus className="h-4 w-4" /> Add Location
-                    </Button>
-                  )}
+                  <h3 className="text-sm font-medium text-gray-900">Locations</h3>
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      if (setShowAddAddressModal) {
+                        setShowAddAddressModal(true);
+                      }
+                    }}
+                    variant="outline"
+                    className="flex items-center gap-2 text-sm h-[48px] border border-primary text-primary hover:text-primary hover:bg-primary/10"
+                    disabled={variants.length >= 5}
+                  >
+                    <Plus className="h-4 w-4" />
+                    Add Location
+                  </Button>
                 </div>
-                
-                {formValues.locations?.map((location: any, index: number) => (
-                  <div key={index} className="border border-gray-200 rounded-lg p-4 space-y-3">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium">Location {index + 1}</span>
-                        {location.isDefault && (
-                          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">
-                            Default
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {!location.isDefault && setDefaultLocation && (
-                          <Button
-                            type="button"
-                            onClick={() => setDefaultLocation(index)}
-                            variant="ghost"
-                            size="sm"
-                            className="text-xs"
-                          >
-                            Set as Default
-                          </Button>
-                        )}
-                        {locations && locations.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => removeLocation && removeLocation(index)}
-                            className="text-red-500 hover:text-red-700"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <FormInput
-                      name={`locations.${index}.address`}
-                      label="Address"
-                      placeholder="123 High Street London, W1A 1AA UK"
-                      className="border-gray-300 h-[53px]"
-                    />
-                    
-                    <div className="grid grid-cols-2 gap-3">
-                      <FormInput
-                        name={`locations.${index}.city`}
-                        label="City"
-                        placeholder="London"
-                        className="border-gray-300 h-[53px]"
-                      />
-                      <FormInput
-                        name={`locations.${index}.state`}
-                        label="State/Province"
-                        placeholder="England"
-                        className="border-gray-300 h-[53px]"
-                      />
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-3">
-                      <FormInput
-                        name={`locations.${index}.country`}
-                        label="Country"
-                        placeholder="United Kingdom"
-                        className="border-gray-300 h-[53px]"
-                      />
-                      <FormInput
-                        name={`locations.${index}.postalCode`}
-                        label="Postal Code"
-                        placeholder="W1A 1AA"
-                        className="border-gray-300 h-[53px]"
-                      />
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-3">
-                      <FormInput
-                        name={`locations.${index}.availabilityRadius`}
-                        label="Delivery Radius (km)"
-                        placeholder="10"
-                        type="number"
-                        min="0"
-                        max="100"
-                        className="border-gray-300 h-[53px]"
-                      />
-                    </div>
-                  </div>
-                ))}
+
+                <FormSelect
+                  name="locationIds"
+                  label=""
+                  placeholder="Select locations for this product"
+                  options={addressOptions}
+                  multiple={true}
+                  searchable={true}
+                  searchPlaceholder="Search locations..."
+                  className="border-gray-300"
+                />
               </div>
 
               {/* Product Dimensions */}
@@ -674,7 +633,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                             Variant Images (Max 5)
                           </label>
 
-                          {variant.images.length === 0 ? (
+                          {variant.images.length === 0 &&
+                          (!variant.existingImages || variant.existingImages.length === 0) ? (
                             <div
                               className={`border-2 border-dashed rounded-lg p-4 text-center bg-gray-50 ${
                                 variantDragActive === variant.id
@@ -709,6 +669,9 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                                   Drag & drop media or{' '}
                                   <span className="text-primary underline">click here</span>
                                 </span>
+                                <span className="text-xs text-red-600">
+                        Max file size is 5MB
+                      </span>
                               </label>
                             </div>
                           ) : (
@@ -748,9 +711,36 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                                     <span className="text-primary underline">click here</span>
                                   </span>
                                 </label>
+                                <div className="text-xs text-red-600">Max file size is 5MB</div>
+
                               </div>
 
                               <div className="grid grid-cols-3 lg:grid-cols-5 gap-2">
+                                {/* Display existing variant images */}
+                                {variant.existingImages?.map((url, imgIndex) => (
+                                  <div
+                                    key={`existing-${imgIndex}`}
+                                    className="relative group border border-gray-200 rounded-sm shadow-sm"
+                                  >
+                                    <img
+                                      src={url}
+                                      alt={`Variant ${variantIndex + 1} Existing ${imgIndex + 1}`}
+                                      className="w-full sm:h-24 md:h-28  h-20 lg:h-16 object-cover rounded-sm"
+                                    />
+                                    {removeExistingVariantImage && (
+                                      <button
+                                        type="button"
+                                        onClick={() =>
+                                          removeExistingVariantImage(variant.id, imgIndex)
+                                        }
+                                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5 cursor-pointer"
+                                      >
+                                        <X className="h-3 w-3" />
+                                      </button>
+                                    )}
+                                  </div>
+                                ))}
+                                {/* Display new variant images */}
                                 {variant.images.map((image, imgIndex) => (
                                   <div
                                     key={imgIndex}
@@ -950,61 +940,74 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
               <div className="space-y-2 mb-4">
                 <h3 className="text-base font-medium text-gray-900">Marketplace</h3>
-                <RadioGroup
-                  value={
-                    formValues.marketplaceOptions?.pickup
-                      ? 'pickup'
-                      : formValues.marketplaceOptions?.shipping
-                        ? 'shipping'
-                        : formValues.marketplaceOptions?.delivery
-                          ? 'delivery'
-                          : ''
-                  }
-                  onValueChange={(value) => {
-                    setValue('marketplaceOptions', {
-                      pickup: value === 'pickup',
-                      shipping: value === 'shipping',
-                      delivery: value === 'delivery',
-                    });
-                  }}
-                  className=""
-                >
+                <div className="space-y-2">
                   <label
                     htmlFor="pickup"
-                    className="flex items-center space-x-3 p-2 rounded-md cursor-pointer"
+                    className="flex items-center space-x-3 p-2 rounded-md cursor-pointer hover:bg-gray-50"
                   >
-                    <RadioGroupItem
+                    <Checkbox
                       id="pickup"
-                      value="pickup"
-                      className="h-5 w-5 border-gray-300 "
+                      checked={formValues.marketplaceOptions?.pickup || false}
+                      disabled={isLoading}
+                      onCheckedChange={(checked) => {
+                        setValue('marketplaceOptions', {
+                          ...formValues.marketplaceOptions,
+                          pickup: checked as boolean,
+                        });
+                        clearErrors('marketplaceOptions');
+                      }}
+                      className="h-5 w-5 border-gray-300"
                     />
                     <span className="text-sm font-medium leading-none">Pickup</span>
                   </label>
 
                   <label
                     htmlFor="shipping"
-                    className="flex items-center space-x-3 p-2 rounded-md cursor-pointer"
+                    className="flex items-center space-x-3 p-2 rounded-md cursor-pointer hover:bg-gray-50"
                   >
-                    <RadioGroupItem
+                    <Checkbox
                       id="shipping"
-                      value="shipping"
-                      className="h-5 w-5 border-gray-300 "
+                      checked={formValues.marketplaceOptions?.shipping || false}
+                      disabled={isLoading}
+                      onCheckedChange={(checked) => {
+                        setValue('marketplaceOptions', {
+                          ...formValues.marketplaceOptions,
+                          shipping: checked as boolean,
+                        });
+                        clearErrors('marketplaceOptions');
+                      }}
+                      className="h-5 w-5 border-gray-300"
                     />
                     <span className="text-sm font-medium leading-none">Shipping</span>
                   </label>
 
                   <label
                     htmlFor="delivery"
-                    className="flex items-center space-x-3 p-2 rounded-md cursor-pointer"
+                    className="flex items-center space-x-3 p-2 rounded-md cursor-pointer hover:bg-gray-50"
                   >
-                    <RadioGroupItem
+                    <Checkbox
                       id="delivery"
-                      value="delivery"
-                      className="h-5 w-5 border-gray-300 "
+                      checked={formValues.marketplaceOptions?.delivery || false}
+                      disabled={isLoading}
+                      onCheckedChange={(checked) => {
+                        setValue('marketplaceOptions', {
+                          ...formValues.marketplaceOptions,
+                          delivery: checked as boolean,
+                        });
+                        clearErrors('marketplaceOptions');
+                      }}
+                      className="h-5 w-5 border-gray-300"
                     />
                     <span className="text-sm font-medium leading-none">Delivery</span>
                   </label>
-                </RadioGroup>
+                </div>
+                {errors.marketplaceOptions && (
+                  <p className="text-red-500">
+                    {typeof errors.marketplaceOptions === 'object' && 'message' in errors.marketplaceOptions 
+                      ? (errors.marketplaceOptions as any).message 
+                      : 'At least one marketplace option is required'}
+                  </p>
+                )}
               </div>
 
               {/* Conditional Fields based on selected options */}
@@ -1023,6 +1026,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
               {formValues.marketplaceOptions?.shipping && (
                 <div className="mb-4">
                   <FormInput
+                    disabled={isLoading}
                     name="shippingPrice"
                     label="Shipping Price ($)"
                     placeholder="$10.00"
@@ -1051,6 +1055,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                 <div>
                   <div className="relative">
                     <FormInput
+                      disabled={isLoading}
                       name="readyByDate"
                       label="Ready By Date"
                       type="date"
@@ -1066,6 +1071,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                 <div>
                   <div className="relative">
                     <FormInput
+                      disabled={isLoading}
                       name="readyByTime"
                       label="Choose Time"
                       type="time"
@@ -1105,16 +1111,18 @@ export const ProductForm: React.FC<ProductFormProps> = ({
             <div className="grid grid-cols-2 gap-2">
               <Button
                 type="button"
+                disabled={isLoading}
                 onClick={handleBackClick}
                 className="bg-gray-200 h-[48px] hover:bg-gray-300 text-gray-700 font-medium py-3 rounded-lg"
               >
                 Back
               </Button>
               <Button
+                disabled={isLoading}
                 type="submit"
                 className="bg-primary h-[48px] hover:bg-primary/80 text-white font-medium py-3 rounded-lg"
               >
-                Publish
+                {isLoading ? 'Publishing...' : 'Publish'}
               </Button>
             </div>
           )}

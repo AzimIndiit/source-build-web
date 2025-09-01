@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useForm, FormProvider, FieldErrors } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -8,26 +8,15 @@ import toast from 'react-hot-toast';
 import { Button } from '@/components/ui';
 import { ProductForm } from '../components/ProductForm';
 import { ProductPreview } from '../components/ProductPreview';
+import { AddSavedAddressModal } from '@/features/profile/components/AddSavedAddressModal';
+import { 
+  useSavedAddresssQuery,
+  useCreateSavedAddressMutation,
+} from '@/features/profile/hooks/useSavedAddressMutations';
+import { SavedAddress, CreateSavedAddressPayload } from '@/features/profile/services/addressService';
+import { useCreateProductMutation, useSaveDraftMutation } from '../hooks/useProductMutations';
 
-// Location schema
-const locationSchema = z.object({
-  address: z
-    .string()
-    .trim()
-    .min(5, 'Location must be at least 5 characters')
-    .max(200, 'Location must not exceed 200 characters'),
-  city: z.string().trim().max(100, 'City must not exceed 100 characters').optional(),
-  state: z.string().trim().max(100, 'State must not exceed 100 characters').optional(),
-  country: z.string().trim().max(100, 'Country must not exceed 100 characters').optional(),
-  postalCode: z.string().trim().max(20, 'Postal code must not exceed 20 characters').optional(),
-  isDefault: z.boolean().default(false).optional(),
-  availabilityRadius: z
-    .number()
-    .min(0, 'Availability radius must be positive')
-    .max(100, 'Availability radius must not exceed 100 km')
-    .default(10)
-    .optional(),
-});
+
 
 // Variant schema
 const variantSchema = z.object({
@@ -154,11 +143,12 @@ const createProductSchema = z
         'Please enter a valid HEX color code (e.g., #FF0000)'
       ),
 
-    locations: z
-      .array(locationSchema)
+    locationIds: z
+      .array(z.string())
       .min(1, 'At least one location is required')
       .max(10, 'Maximum 10 locations allowed'),
-
+      
+   
     productTag: z
       .array(
         z
@@ -183,7 +173,16 @@ const createProductSchema = z
         shipping: z.boolean().optional(),
         delivery: z.boolean().optional(),
       })
-      .optional(),
+      .required()
+      .refine(
+        (options) => {
+          // At least one option must be selected
+          return options.pickup || options.shipping || options.delivery;
+        },
+        {
+          message: 'At least one marketplace option (Pickup, Shipping, or Delivery) must be selected',
+        }
+      ),
 
     pickupHours: z
       .string()
@@ -193,9 +192,9 @@ const createProductSchema = z
 
     shippingPrice: z.string().trim().optional(),
 
-    readyByDate: z.string().optional(),
+    readyByDate: z.string().min(1, 'Date is required'),
 
-    readyByTime: z.string().optional(),
+    readyByTime: z.string().min(1, 'Time is required'),
 
     discount: z
       .object({
@@ -286,21 +285,61 @@ const createProductSchema = z
       message: 'Shipping price must be a valid positive number',
       path: ['shippingPrice'],
     }
-  );
+  ).superRefine((data, ctx) => {
+    if (data.marketplaceOptions?.pickup && !data.pickupHours?.trim()) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["pickupHours"],
+        message: "Pickup hours are required when pickup option is selected",
+      });
+    }
+  
+    if (data.marketplaceOptions?.shipping) {
+      if (!data.shippingPrice?.trim()) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["shippingPrice"],
+          message: "Shipping price is required when shipping option is selected",
+        });
+      } else {
+        const regex = /^\d+(\.\d{1,2})?$/;
+        if (!regex.test(data.shippingPrice)) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["shippingPrice"],
+            message: "Shipping price must be a valid number with up to 2 decimals",
+          });
+        } else if (parseFloat(data.shippingPrice) < 0) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["shippingPrice"],
+            message: "Shipping price must be greater than or equal to 0",
+          });
+        }
+      }
+    }
+  })
 
 type CreateProductForm = z.infer<typeof createProductSchema>;
 
+// Create options with lowercase values to match backend
 const categoryOptions = [
   { value: 'electronics', label: 'Electronics' },
   { value: 'clothing', label: 'Clothing' },
   { value: 'home', label: 'Home & Garden' },
   { value: 'sports', label: 'Sports & Outdoors' },
+  { value: 'accessories', label: 'Accessories' },
+  { value: 'commercial', label: 'Commercial' },
+  { value: 'commercial doors', label: 'Commercial Doors' },
 ];
 
 const subCategoryOptions = [
   { value: 'phones', label: 'Phones' },
   { value: 'laptops', label: 'Laptops' },
   { value: 'accessories', label: 'Accessories' },
+  { value: 'doors', label: 'Doors' },
+  { value: 'windows', label: 'Windows' },
+  { value: 'glass doors', label: 'Glass Doors' },
 ];
 
 const tagOptions = [
@@ -325,12 +364,30 @@ function CreateProductPage() {
   const [showVariants, setShowVariants] = useState(false);
   const [variantDragActive, setVariantDragActive] = useState<string | null>(null);
   const [showMobilePreview, setShowMobilePreview] = useState(false);
-  const [locations, setLocations] = useState<Array<{ id: string; data: any }>>([
-    { id: Date.now().toString(), data: { isDefault: true, availabilityRadius: 10 } }
-  ]);
+  const [showAddAddressModal, setShowAddAddressModal] = useState(false);
+  // Fetch saved addresses
+  const { data: addressesData, refetch: refetchAddresses } = useSavedAddresssQuery();
+  const createAddressMutation = useCreateSavedAddressMutation();
+  const createProductMutation = useCreateProductMutation();
+  const saveDraftMutation = useSaveDraftMutation();
+  
+  // Convert saved addresses to options for FormSelect
+  const savedAddresses = Array.isArray(addressesData?.data) 
+    ? addressesData.data 
+    : addressesData?.data 
+    ? [addressesData.data] 
+    : [];
+    
+  const addressOptions = savedAddresses.map((address: SavedAddress) => ({
+    value: address.id || address._id || '',
+    label: `${address.name} , ${address.formattedAddress}` || "",
+  }));
+  
 
   const methods = useForm<CreateProductForm>({
     resolver: zodResolver(createProductSchema),
+    mode: 'onChange', // Enable real-time validation
+    reValidateMode: 'onChange', // Re-validate on every change
     defaultValues: {
       title: '',
       price: '',
@@ -340,15 +397,7 @@ function CreateProductPage() {
       quantity: '',
       brand: '',
       color: '#000000',
-      locations: [{
-        address: '',
-        city: '',
-        state: '',
-        country: '',
-        postalCode: '',
-        isDefault: true,
-        availabilityRadius: 10
-      }],
+      locationIds: [],
       productTag: [],
       variants: [],
       marketplaceOptions: {
@@ -374,6 +423,7 @@ function CreateProductPage() {
     setValue,
     setFocus,
     clearErrors,
+    setError,
     formState: { errors },
   } = methods;
   const formValues = watch();
@@ -506,7 +556,7 @@ function CreateProductPage() {
     // toast.success('Image removed');
   };
 
-  const onSubmit = (data: CreateProductForm) => {
+  const onSubmit = async (data: CreateProductForm) => {
     // Check if images are uploaded
     if (uploadedPhotos.length === 0) {
       setImageError(true);
@@ -517,15 +567,193 @@ function CreateProductPage() {
     }
 
     setImageError(false);
-    console.log('Form data:', data);
-    console.log('Photos:', uploadedPhotos);
 
-    // Here you would typically send the data to your API
-    toast.success('Product created successfully!');
+    // Prepare variant files - map variant images with their IDs
+    // Include the variant index to help with matching later
+    const variantFiles = variants
+      .map((v, index) => ({ variant: v, index }))
+      .filter(({ variant }) => variant.images.length > 0)
+      .map(({ variant, index }) => ({
+        variantId: variant.id,
+        variantIndex: index,  // Store the original index
+        files: variant.images
+      }));
+    
+    // Debug: Log the variant data to understand the structure
+    console.log('Variants from form:', data.variants);
+    console.log('Variant files to upload:', variantFiles);
+
+    // Convert readyByDate to ISO datetime format if provided
+    let readyByDate: string | undefined;
+    if (data.readyByDate) {
+      // Combine date and time if both are provided, otherwise use date with default time
+      const time = data.readyByTime || '00:00';
+      readyByDate = new Date(`${data.readyByDate}T${time}:00`).toISOString();
+    }
+
+    // Prepare the mutation data
+    const mutationData = {
+      title: data.title,
+      price: parseFloat(data.price),
+      description: data.description,
+      category: data.category,
+      subCategory: data.subCategory,
+      quantity: parseInt(data.quantity),
+      brand: data.brand,
+      color: data.color,
+      locationIds: data.locationIds,
+      productTag: data.productTag,
+      marketplaceOptions: data.marketplaceOptions,
+      pickupHours: data.pickupHours,
+      shippingPrice: data.shippingPrice ? parseFloat(data.shippingPrice) : undefined,
+      readyByDate,
+      readyByTime: data.readyByTime,
+      discount: {
+        discountType: data.discount.discountType,
+        discountValue: data.discount.discountValue ? parseFloat(data.discount.discountValue) : undefined,
+      },
+      variants: data.variants?.map((v) => ({
+        color: v.color,
+        quantity: parseInt(v.quantity),
+        price: parseFloat(v.price),
+        discount: {
+          discountType: v.discount.discountType,
+          discountValue: v.discount.discountValue ? parseFloat(v.discount.discountValue) : undefined,
+        },
+      })),
+      imageFiles: uploadedPhotos,
+      variantFiles: variantFiles.length > 0 ? variantFiles : undefined,
+    };
+
+    try {
+      await createProductMutation.mutateAsync(mutationData);
+      // Navigate to products page or wherever appropriate
+      navigate('/seller/products');
+    } catch (error) {
+      console.error('Failed to create product:', error);
+      // Error is already handled by the mutation with toast
+    }
   };
 
-  const handleSaveDraft = () => {
-    console.log('Saving draft...');
+  const handleSaveDraft = async () => {
+    // Check if minimal required fields are present
+    const formData = getValues();
+    
+    // Validate minimal required fields for draft
+    if (!formData.title || formData.title.trim().length === 0) {
+      toast.error('Title is required to save as draft');
+      setFocus('title');
+      setError('title', { message: 'Title is required to save as draft' });
+      return;
+    }
+      // Validate minimal required fields for draft
+      if (!formData.category || formData.category.trim().length === 0) {
+        toast.error('Category is required to save as draft');
+        setFocus('category');
+        setError('category', { message: 'Category is required to save as draft' });
+        return;
+      }
+      if (!formData.price || formData.price.trim().length === 0) {
+        toast.error('Price is required to save as draft');
+        setFocus('price');
+        setError('price', { message: 'Price is required to save as draft' });
+        return;
+      }
+    if (uploadedPhotos.length === 0) {
+      setImageError(true);
+      toast.error('At least one image is required to save as draft');
+      // Scroll to the photo section
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+    
+    setImageError(false);
+    
+    // Prepare variant files if any
+    const variantFiles = variants
+      .map((v, index) => ({ variant: v, index }))
+      .filter(({ variant }) => variant.images.length > 0)
+      .map(({ variant, index }) => ({
+        variantId: variant.id,
+        variantIndex: index,
+        files: variant.images
+      }));
+    
+    // Convert readyByDate if provided
+    let readyByDate: string | undefined;
+    if (formData.readyByDate) {
+      const time = formData.readyByTime || '00:00';
+      readyByDate = new Date(`${formData.readyByDate}T${time}:00`).toISOString();
+    }
+    
+    // Prepare the draft data with only provided fields
+    const draftData: any = {
+      title: formData.title,
+      imageFiles: uploadedPhotos,
+    };
+    
+    // Add optional fields only if they have values
+    if (formData.price && formData.price.trim()) {
+      draftData.price = formData.price;
+    }
+    if (formData.description && formData.description.trim()) {
+      draftData.description = formData.description;
+    }
+    if (formData.category && formData.category.trim()) {
+      draftData.category = formData.category;
+    }
+    if (formData.subCategory && formData.subCategory.trim()) {
+      draftData.subCategory = formData.subCategory;
+    }
+    if (formData.quantity && formData.quantity.trim()) {
+      draftData.quantity = formData.quantity;
+    }
+    if (formData.brand && formData.brand.trim()) {
+      draftData.brand = formData.brand;
+    }
+    if (formData.color && formData.color.trim()) {
+      draftData.color = formData.color;
+    }
+    if (formData.locationIds && formData.locationIds.length > 0) {
+      draftData.locationIds = formData.locationIds;
+    }
+    if (formData.productTag && formData.productTag.length > 0) {
+      draftData.productTag = formData.productTag;
+    }
+    if (formData.marketplaceOptions && 
+        (formData.marketplaceOptions.pickup || 
+         formData.marketplaceOptions.shipping || 
+         formData.marketplaceOptions.delivery)) {
+      draftData.marketplaceOptions = formData.marketplaceOptions;
+    }
+    if (formData.pickupHours && formData.pickupHours.trim()) {
+      draftData.pickupHours = formData.pickupHours;
+    }
+    if (formData.shippingPrice && formData.shippingPrice.trim()) {
+      draftData.shippingPrice = formData.shippingPrice;
+    }
+    if (readyByDate) {
+      draftData.readyByDate = readyByDate;
+      draftData.readyByTime = formData.readyByTime;
+    }
+    if (formData.discount && formData.discount.discountType !== 'none') {
+      draftData.discount = formData.discount;
+    }
+    if (formData.variants && formData.variants.length > 0) {
+      draftData.variants = formData.variants;
+    }
+    if (variantFiles.length > 0) {
+      draftData.variantFiles = variantFiles;
+    }
+    
+    try {
+      await saveDraftMutation.mutateAsync(draftData);
+      // Navigate to products page after successful draft save
+      navigate('/seller/products');
+    } catch (error) {
+      console.error('Failed to save draft:', error);
+      // Error is already handled by the mutation with toast
+    }
   };
 
   const onError = (errors: FieldErrors<CreateProductForm>) => {
@@ -534,89 +762,73 @@ function CreateProductPage() {
     // Check for image upload error first
     if (uploadedPhotos.length === 0) {
       setImageError(true);
-      // Scroll to the photo section at the top
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      toast.error('Please upload at least one product image');
+      // Scroll to the photo section
+      setTimeout(() => {
+        const photoSection = document.getElementById('photos');
+        if (photoSection) {
+          const container = photoSection.closest('.overflow-y-auto');
+          if (container) {
+            const rect = photoSection.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
+            container.scrollTop += rect.top - containerRect.top - 100;
+          } else {
+            photoSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }
+      }, 100);
       return;
     }
 
-    // Get the first field with an error and set focus on it
+    // Get the first field with an error
     const firstErrorField = Object.keys(errors)[0];
     if (firstErrorField) {
-      // Set focus on the first error field
-      setFocus(firstErrorField as any);
-
-      // Optional: Show a toast with the first error message
+      // Show error message
       const firstError = errors[firstErrorField as keyof typeof errors];
       if (firstError?.message) {
         toast.error(firstError.message);
       }
+
+      // Scroll to the error field
+      setTimeout(() => {
+        // Try to find the form element
+        const formElement = document.querySelector(`[name="${firstErrorField}"]`) as HTMLElement;
+        if (formElement) {
+          // Find the scrollable container
+          const container = formElement.closest('.overflow-y-auto');
+          if (container) {
+            // Calculate the position and scroll within the container
+            const rect = formElement.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
+            const scrollTop = container.scrollTop + rect.top - containerRect.top - 100;
+            container.scrollTo({ top: scrollTop, behavior: 'smooth' });
+            
+            // Focus after scrolling
+            setTimeout(() => {
+              formElement.focus();
+            }, 500);
+          } else {
+            // Fallback to regular scroll
+            formElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            setTimeout(() => {
+              formElement.focus();
+            }, 500);
+          }
+        }
+      }, 100);
     }
   };
 
-  // Location management functions
-  const addLocation = () => {
-    if (locations.length >= 10) {
-      toast.error('Maximum 10 locations allowed');
-      return;
+  // Handle adding new address
+  const handleAddNewAddress = async (data: CreateSavedAddressPayload) => {
+    try {
+      await createAddressMutation.mutateAsync(data);
+      await refetchAddresses();
+      setShowAddAddressModal(false);
+    } catch (error) {
+      console.error('Failed to add address:', error);
+      toast.error('Failed to add address');
     }
-    const newLocation = {
-      id: Date.now().toString(),
-      data: { isDefault: false, availabilityRadius: 10 }
-    };
-    setLocations([...locations, newLocation]);
-    
-    // Set default values for the new location
-    const locationIndex = locations.length;
-    setValue(`locations.${locationIndex}.address`, '');
-    setValue(`locations.${locationIndex}.city`, '');
-    setValue(`locations.${locationIndex}.state`, '');
-    setValue(`locations.${locationIndex}.country`, '');
-    setValue(`locations.${locationIndex}.postalCode`, '');
-    setValue(`locations.${locationIndex}.isDefault`, false);
-    setValue(`locations.${locationIndex}.availabilityRadius`, 10);
-  };
-
-  const removeLocation = (index: number) => {
-    if (locations.length <= 1) {
-      toast.error('At least one location is required');
-      return;
-    }
-    
-    const newLocations = locations.filter((_, i) => i !== index);
-    setLocations(newLocations);
-    
-    // Update form values
-    const currentValues = getValues('locations');
-    const updatedValues = currentValues.filter((_: any, i: number) => i !== index);
-    
-    // Ensure at least one location is default
-    if (updatedValues.length > 0 && !updatedValues.some((loc: any) => loc.isDefault)) {
-      updatedValues[0].isDefault = true;
-    }
-    
-    setValue('locations', updatedValues);
-  };
-
-  const setDefaultLocation = (index: number) => {
-    const currentLocations = getValues('locations');
-    const updatedLocations = currentLocations.map((loc: any, i: number) => ({
-      ...loc,
-      isDefault: i === index
-    }));
-    setValue('locations', updatedLocations);
-  };
-
-  // Get coordinates from address (you can integrate with a geocoding API)
-  const geocodeAddress = async (address: string, city?: string, state?: string, country?: string) => {
-    // This is a placeholder - you should integrate with a real geocoding service
-    // like Google Maps Geocoding API or Mapbox Geocoding API
-    console.log('Geocoding address:', { address, city, state, country });
-    
-    // For now, return mock coordinates
-    return {
-      type: 'Point' as const,
-      coordinates: [-74.0060, 40.7128] // New York coordinates as example
-    };
   };
 
   // Variant management functions
@@ -723,13 +935,13 @@ function CreateProductPage() {
   console.log('getValues', getValues());
   return (
     <FormProvider {...methods}>
-      <div className="h-screen bg-gray-50 fixed top-0 w-full z-99 left-0 flex flex-col  ">
+      <div className="h-screen bg-gray-50 fixed top-0 w-full z-50 left-0 flex flex-col  ">
         <div className="bg-primary px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 sm:gap-4">
               <button
                 onClick={() => navigate(-1)}
-                className="text-white hover:bg-blue-700 p-1 rounded"
+                className="text-white hover:bg-white  hover:text-black p-1 rounded cursor-pointer"
               >
                 <X className="h-5 w-5 sm:h-6 sm:w-6" />
               </button>
@@ -738,14 +950,19 @@ function CreateProductPage() {
                 <div className="text-white text-sm sm:text-base font-medium">Item for sale</div>
               </div>
             </div>
-            <Button
-              type="button"
-              onClick={handleSaveDraft}
-              variant="ghost"
-              className="text-white hover:bg-white h-[40px] sm:h-[48px] text-sm sm:text-base hover:text-primary px-3 sm:px-4"
-            >
-              Save Draft
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                
+                onClick={handleSaveDraft}
+                variant="ghost"
+                className="text-white hover:bg-white h-[40px] sm:h-[48px] text-sm sm:text-base hover:text-primary px-3 sm:px-4"
+                disabled={createProductMutation.isPending || saveDraftMutation.isPending}
+              >
+                {saveDraftMutation.isPending ? 'Saving...' : 'Save Draft'}
+              </Button>
+            
+            </div>
           </div>
         </div>
 
@@ -778,7 +995,8 @@ function CreateProductPage() {
                 handleBackClick={() => setShowMobilePreview(false)}
                 formValues={formValues}
                 uploadedPhotos={uploadedPhotos}
-                locations={locations}
+                addressOptions={addressOptions}
+                savedAddresses={savedAddresses}
                 variants={variants}
                 categoryOptions={categoryOptions}
                 subCategoryOptions={subCategoryOptions}
@@ -789,6 +1007,7 @@ function CreateProductPage() {
         )}
 
         <form
+          id="product-form"
           onSubmit={handleSubmit(onSubmit, onError)}
           className="flex-1 flex flex-col lg:flex-row gap-4 p-4 mx-auto overflow-hidden min-h-0  w-full"
         >
@@ -799,11 +1018,9 @@ function CreateProductPage() {
               setUploadedPhotos={setUploadedPhotos}
               imageError={imageError}
               setImageError={setImageError}
-              locations={locations}
-              addLocation={addLocation}
-              removeLocation={removeLocation}
-              setDefaultLocation={setDefaultLocation}
-              geocodeAddress={geocodeAddress}
+              addressOptions={addressOptions}
+              showAddAddressModal={showAddAddressModal}
+              setShowAddAddressModal={setShowAddAddressModal}
               variants={variants}
               showVariants={showVariants}
               setShowVariants={setShowVariants}
@@ -823,6 +1040,7 @@ function CreateProductPage() {
               categoryOptions={categoryOptions}
               subCategoryOptions={subCategoryOptions}
               tagOptions={tagOptions}
+              isLoading={createProductMutation.isPending}
             />
           </div>
 
@@ -830,7 +1048,8 @@ function CreateProductPage() {
             <ProductPreview
               formValues={formValues}
               uploadedPhotos={uploadedPhotos}
-              locations={locations}
+              addressOptions={addressOptions}
+              savedAddresses={savedAddresses}
               variants={variants}
               categoryOptions={categoryOptions}
               subCategoryOptions={subCategoryOptions}
@@ -838,7 +1057,17 @@ function CreateProductPage() {
             />
           </div>
         </form>
+        
       </div>
+      
+      {/* Add Saved Address Modal - moved outside the main container */}
+      <AddSavedAddressModal
+        isOpen={showAddAddressModal}
+        onClose={() => setShowAddAddressModal(false)}
+        onSubmit={handleAddNewAddress}
+        isSubmitting={createAddressMutation.isPending}
+        totalAddress={savedAddresses.length !== 0}
+      />
     </FormProvider>
   );
 }

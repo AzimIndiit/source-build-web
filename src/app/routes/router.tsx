@@ -40,6 +40,20 @@ export const router = createBrowserRouter([
             Component: module.default,
           })),
       },
+      {
+        path: 'terms',
+        lazy: () =>
+          import('@/features/profile/pages/TermsAndConditionsPage').then((module) => ({
+            Component: module.default,
+          })),
+      },
+      {
+        path: 'privacy',
+        lazy: () =>
+          import('@/features/profile/pages/TermsAndConditionsPage').then((module) => ({
+            Component: module.default,
+          })),
+      },
     ],
   },
   {
@@ -264,7 +278,7 @@ export const router = createBrowserRouter([
               })),
           },
           {
-            path: 'products/:id',
+            path: 'products/:slug',
             lazy: () =>
               import('@/features/products/pages/ProductDetailsPage').then((module) => ({
                 Component: module.default,

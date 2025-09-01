@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from './dropdown-menu';
 import { Button } from './button';
 import { Checkbox } from './checkbox';
@@ -16,9 +16,47 @@ interface FilterOption {
 interface FilterDropdownProps {
   onApply: (filters: any) => void;
   onClear: () => void;
+  initialFilters?: {
+    popularity: FilterOption[];
+    newest: FilterOption[];
+    availability: FilterOption[];
+    readyTime: FilterOption[];
+    sorting: string;
+    pricing: string;
+    priceRange: number[];
+  };
 }
 
-const FilterDropdown: React.FC<FilterDropdownProps> = ({ onApply, onClear }) => {
+const FilterDropdown: React.FC<FilterDropdownProps> = ({ onApply, onClear, initialFilters }) => {
+  const defaultFilters = {
+    popularity: [
+      { id: 'best-selling', label: 'Best-Selling Products', checked: false },
+      { id: 'most-viewed', label: 'Most Viewed', checked: false },
+      { id: 'top-rated', label: 'Top-Rated', checked: false },
+      { id: 'most-reviewed', label: 'Most Reviewed', checked: false },
+      { id: 'featured', label: 'Featured Products', checked: false },
+      { id: 'trending', label: 'Trending Now', checked: false },
+    ],
+    newest: [
+      { id: 'recently-updated', label: 'Recently Updated', checked: false },
+      { id: 'featured-new', label: 'Featured New Products', checked: false },
+      { id: 'sort-by-date', label: 'Sort by Date Added', checked: false },
+      { id: 'new-arrivals', label: 'New Arrivals', checked: false },
+    ],
+    availability: [
+      { id: 'delivery', label: 'Delivery', checked: false },
+      { id: 'shipping', label: 'Shipping', checked: false },
+      { id: 'pickup', label: 'Pickup', checked: false },
+    ],
+    readyTime: [
+      { id: 'next-day', label: 'Ready Next Day', checked: false },
+      { id: 'this-week', label: 'Ready This Week', checked: false },
+    ],
+    sorting: 'ascending',
+    pricing: 'high-to-low',
+    priceRange: [],
+  };
+
   const [filters, setFilters] = useState<{
     popularity: FilterOption[];
     newest: FilterOption[];
@@ -27,36 +65,16 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({ onApply, onClear }) => 
     sorting: string;
     pricing: string;
     priceRange: number[];
-  }>({
-    popularity: [
-      { id: 'best-selling', label: 'Best-Selling Products', checked: true },
-      { id: 'most-viewed', label: 'Most Viewed', checked: false },
-      { id: 'top-rated', label: 'Top-Rated', checked: false },
-      { id: 'most-reviewed', label: 'Most Reviewed', checked: false },
-      { id: 'featured', label: 'Featured Products', checked: false },
-      { id: 'trending', label: 'Trending Now', checked: false },
-    ],
-    newest: [
-      { id: 'recently-updated', label: 'Recently Updated', checked: true },
-      { id: 'featured-new', label: 'Featured New Products', checked: false },
-      { id: 'sort-by-date', label: 'Sort by Date Added', checked: false },
-      { id: 'new-arrivals', label: 'New Arrivals', checked: false },
-    ],
-    availability: [
-      { id: 'delivery', label: 'Delivery', checked: true },
-      { id: 'shipping', label: 'Shipping', checked: false },
-      { id: 'pickup', label: 'Pickup', checked: false },
-    ],
-    readyTime: [
-      { id: 'next-day', label: 'Ready Next Day', checked: true },
-      { id: 'this-week', label: 'Ready This Week', checked: false },
-    ],
-    sorting: 'ascending',
-    pricing: 'custom',
-    priceRange: [10, 250],
-  });
+  }>(initialFilters || defaultFilters);
 
   const [open, setOpen] = useState(false);
+
+  // Update filters when initialFilters changes or when dropdown opens
+  useEffect(() => {
+    if (open && initialFilters) {
+      setFilters(initialFilters);
+    }
+  }, [open, initialFilters]);
 
   const handleCheckboxChange = (
     section: 'popularity' | 'newest' | 'availability' | 'readyTime',
@@ -97,16 +115,7 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({ onApply, onClear }) => 
   };
 
   const handleClear = () => {
-    const clearedFilters = {
-      popularity: filters.popularity.map((opt) => ({ ...opt, checked: false })),
-      newest: filters.newest.map((opt) => ({ ...opt, checked: false })),
-      availability: filters.availability.map((opt) => ({ ...opt, checked: false })),
-      readyTime: filters.readyTime.map((opt) => ({ ...opt, checked: false })),
-      sorting: 'ascending',
-      pricing: 'custom',
-      priceRange: [10, 250],
-    };
-    setFilters(clearedFilters);
+    setFilters(defaultFilters);
     onClear();
   };
 
@@ -284,7 +293,7 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({ onApply, onClear }) => 
               <Slider
                 value={filters.priceRange}
                 onValueChange={handlePriceRangeChange}
-                max={500}
+                max={100000}
                 min={0}
                 step={10}
                 className="w-full"

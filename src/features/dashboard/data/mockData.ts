@@ -61,7 +61,7 @@ export const ordersData: Order[] = [
   {
     id: '7090703',
     customer: {
-      name: 'Ethan Popa',
+      displayName: 'Ethan Popa',
       email: 'ethan12@gmail.com',
       avatar: 'https://i.pravatar.cc/150?img=1',
       rating: 4,
@@ -69,7 +69,7 @@ export const ordersData: Order[] = [
         'To improve efficiency, pre-set quick comments enable drivers to send common updates with a single tap. Vendors receive instant notifications and can respond to driver comments, ensuring smooth coordination. All interactions are logged within the order.',
     },
     driver: {
-      name: 'Rachel Kim',
+      displayName: 'Rachel Kim',
       email: 'rachelkim56@gmail.com',
       avatar: 'https://i.pravatar.cc/150?img=33',
       rating: 4,
@@ -82,7 +82,7 @@ export const ordersData: Order[] = [
     products: [
       {
         id: '1',
-        name: '(NEW) Westinghouse Chandelier Fixture Zaro 6 Light Iron',
+        title: '(NEW) Westinghouse Chandelier Fixture Zaro 6 Light Iron',
         quantity: 2,
         price: 215,
         deliveryDate: '12 October 2024',
@@ -90,7 +90,7 @@ export const ordersData: Order[] = [
       },
       {
         id: '2',
-        name: '(NEW) Westinghouse Chandelier Fixture Zaro 6 Light Iron',
+        title: '(NEW) Westinghouse Chandelier Fixture Zaro 6 Light Iron',
         quantity: 2,
         price: 215,
         deliveryDate: '12 October 2024',
@@ -123,7 +123,7 @@ export const ordersData: Order[] = [
   {
     id: '891256',
     customer: {
-      name: 'Ashley Jackson',
+      displayName: 'Ashley Jackson',
       email: 'jackson89@gmail.com',
       avatar: 'https://i.pravatar.cc/150?img=5',
       rating: 4,
@@ -131,7 +131,7 @@ export const ordersData: Order[] = [
         'To improve efficiency, pre-set quick comments enable drivers to send common updates with a single tap. Vendors receive instant notifications and can respond to driver comments, ensuring smooth coordination. All interactions are logged within the order.',
     },
     driver: {
-      name: 'Rachel Kim',
+      displayName: 'Rachel Kim',
       email: 'rachelkim56@gmail.com',
       avatar: 'https://i.pravatar.cc/150?img=33',
       rating: 4,
@@ -144,14 +144,14 @@ export const ordersData: Order[] = [
     products: [
       {
         id: '2',
-        name: 'Modern Floor Lamp with Adjustable Head',
+        title: 'Modern Floor Lamp with Adjustable Head',
         quantity: 1,
         deliveryDate: '15 December 2024',
         image: 'https://images.unsplash.com/photo-1540932239986-30128078f3c5?w=128&h=96&fit=crop',
       },
       {
         id: '3',
-        name: 'LED Desk Lamp with USB Charging',
+        title: 'LED Desk Lamp with USB Charging',
         quantity: 2,
         deliveryDate: '15 December 2024',
         image: 'https://images.unsplash.com/photo-1507494924047-60b8ee826ca9?w=128&h=96&fit=crop',
@@ -183,7 +183,7 @@ export const ordersData: Order[] = [
   {
     id: '7845632',
     customer: {
-      name: 'Aya Rossi',
+      displayName: 'Aya Rossi',
       email: 'eayariossi@gmail.com',
       avatar: 'https://i.pravatar.cc/150?img=10',
       rating: 0,
@@ -196,7 +196,7 @@ export const ordersData: Order[] = [
     products: [
       {
         id: '4',
-        name: 'Vintage Table Lamp Set (2 pieces)',
+        title: 'Vintage Table Lamp Set (2 pieces)',
         quantity: 1,
         deliveryDate: '20 December 2024',
         image: 'https://images.unsplash.com/photo-1565636572781-62e93e8c5c7e?w=128&h=96&fit=crop',
@@ -228,7 +228,7 @@ export const ordersData: Order[] = [
   {
     id: '891256',
     customer: {
-      name: 'Mehdi Keita',
+      displayName: 'Mehdi Keita',
       email: 'mehdi67@gmail.com',
       avatar: 'https://i.pravatar.cc/150?img=8',
       rating: 4,
@@ -236,7 +236,7 @@ export const ordersData: Order[] = [
         'To improve efficiency, pre-set quick comments enable drivers to send common updates with a single tap. Vendors receive instant notifications and can respond to driver comments, ensuring smooth coordination. All interactions are logged within the order.',
     },
     driver: {
-      name: 'Rachel Kim',
+      displayName: 'Rachel Kim',
       email: 'rachelkim56@gmail.com',
       avatar: 'https://i.pravatar.cc/150?img=33',
       rating: 4,
@@ -249,7 +249,7 @@ export const ordersData: Order[] = [
     products: [
       {
         id: '4',
-        name: 'Vintage Table Lamp Set (2 pieces)',
+        title: 'Vintage Table Lamp Set (2 pieces)',
         quantity: 1,
         deliveryDate: '20 December 2024',
         image: 'https://images.unsplash.com/photo-1565636572781-62e93e8c5c7e?w=128&h=96&fit=crop',
@@ -281,7 +281,7 @@ export const ordersData: Order[] = [
   {
     id: '891256',
     customer: {
-      name: 'Bạc Khương Đạo',
+      displayName: 'Bạc Khương Đạo',
       email: 'backuh@gmail.com',
       avatar: 'https://i.pravatar.cc/150?img=7',
       rating: 4,
@@ -289,7 +289,7 @@ export const ordersData: Order[] = [
         'To improve efficiency, pre-set quick comments enable drivers to send common updates with a single tap. Vendors receive instant notifications and can respond to driver comments, ensuring smooth coordination. All interactions are logged within the order.',
     },
     driver: {
-      name: 'Rachel Kim',
+      displayName: 'Rachel Kim',
       email: 'rachelkim56@gmail.com',
       avatar: 'https://i.pravatar.cc/150?img=33',
       rating: 4,
@@ -302,7 +302,7 @@ export const ordersData: Order[] = [
     products: [
       {
         id: '4',
-        name: 'Vintage Table Lamp Set (2 pieces)',
+        title: 'Vintage Table Lamp Set (2 pieces)',
         quantity: 1,
         deliveryDate: '20 December 2024',
         image: 'https://images.unsplash.com/photo-1565636572781-62e93e8c5c7e?w=128&h=96&fit=crop',
@@ -334,7 +334,7 @@ export const ordersData: Order[] = [
   {
     id: '891256',
     customer: {
-      name: 'Luis López',
+      displayName: 'Luis López',
       email: 'luislop@gmail.com',
       avatar: 'https://i.pravatar.cc/150?img=11',
       rating: 4,
@@ -342,7 +342,7 @@ export const ordersData: Order[] = [
         'To improve efficiency, pre-set quick comments enable drivers to send common updates with a single tap. Vendors receive instant notifications and can respond to driver comments, ensuring smooth coordination. All interactions are logged within the order.',
     },
     driver: {
-      name: 'Rachel Kim',
+      displayName: 'Rachel Kim',
       email: 'rachelkim56@gmail.com',
       avatar: 'https://i.pravatar.cc/150?img=33',
       rating: 4,
@@ -355,7 +355,7 @@ export const ordersData: Order[] = [
     products: [
       {
         id: '4',
-        name: 'Vintage Table Lamp Set (2 pieces)',
+        title: 'Vintage Table Lamp Set (2 pieces)',
         quantity: 1,
         deliveryDate: '20 December 2024',
         image: 'https://images.unsplash.com/photo-1565636572781-62e93e8c5c7e?w=128&h=96&fit=crop',
@@ -388,14 +388,14 @@ export const ordersData: Order[] = [
     id: '891256',
 
     customer: {
-      name: 'Luis González',
+      displayName: 'Luis González',
       email: 'gonzale77@gmail.com',
       avatar: 'https://i.pravatar.cc/150?img=12',
       rating: 0,
       review: '',
     },
     driver: {
-      name: 'Rachel Kim',
+      displayName: 'Rachel Kim',
       email: 'rachelkim56@gmail.com',
       avatar: 'https://i.pravatar.cc/150?img=33',
       rating: 0,
@@ -407,7 +407,7 @@ export const ordersData: Order[] = [
     products: [
       {
         id: '4',
-        name: 'Vintage Table Lamp Set (2 pieces)',
+        title: 'Vintage Table Lamp Set (2 pieces)',
         quantity: 1,
         deliveryDate: '20 December 2024',
         image: 'https://images.unsplash.com/photo-1565636572781-62e93e8c5c7e?w=128&h=96&fit=crop',
@@ -441,21 +441,21 @@ export const ordersData: Order[] = [
     products: [
       {
         id: '4',
-        name: 'Vintage Table Lamp Set (2 pieces)',
+        title: 'Vintage Table Lamp Set (2 pieces)',
         quantity: 1,
         deliveryDate: '20 December 2024',
         image: 'https://images.unsplash.com/photo-1565636572781-62e93e8c5c7e?w=128&h=96&fit=crop',
       },
     ],
     customer: {
-      name: 'Gabriela González',
+      displayName: 'Gabriela González',
       email: 'gabriela76@gmail.com',
       avatar: 'https://i.pravatar.cc/150?img=9',
       rating: 0,
       review: '',
     },
     driver: {
-      name: 'Rachel Kim',
+      displayName: 'Rachel Kim',
       email: 'rachelkim56@gmail.com',
       avatar: 'https://i.pravatar.cc/150?img=33',
       rating: 0,
@@ -492,14 +492,14 @@ export const ordersData: Order[] = [
     products: [
       {
         id: '4',
-        name: 'Vintage Table Lamp Set (2 pieces)',
+        title: 'Vintage Table Lamp Set (2 pieces)',
         quantity: 1,
         deliveryDate: '20 December 2024',
         image: 'https://images.unsplash.com/photo-1565636572781-62e93e8c5c7e?w=128&h=96&fit=crop',
       },
     ],
     customer: {
-      name: 'Cayadi Megantara',
+      displayName: 'Cayadi Megantara',
       email: 'cayandi56@gmail.com',
       avatar: 'https://i.pravatar.cc/150?img=15',
       rating: 4,
@@ -507,7 +507,7 @@ export const ordersData: Order[] = [
         'To improve efficiency, pre-set quick comments enable drivers to send common updates with a single tap. Vendors receive instant notifications and can respond to driver comments, ensuring smooth coordination. All interactions are logged within the order.',
     },
     driver: {
-      name: 'Rachel Kim',
+              displayName: 'Rachel Kim',
       email: 'rachelkim56@gmail.com',
       avatar: 'https://i.pravatar.cc/150?img=33',
       rating: 4,
@@ -543,7 +543,7 @@ export const ordersData: Order[] = [
   {
     id: '891256',
     customer: {
-      name: 'Sara Adimbola',
+      displayName: 'Sara Adimbola',
       email: 'saraadmen77@gmail.com',
       avatar: 'https://i.pravatar.cc/150?img=16',
       rating: 4,
@@ -551,7 +551,7 @@ export const ordersData: Order[] = [
         'To improve efficiency, pre-set quick comments enable drivers to send common updates with a single tap. Vendors receive instant notifications and can respond to driver comments, ensuring smooth coordination. All interactions are logged within the order.',
     },
     driver: {
-      name: 'Rachel Kim',
+      displayName: 'Rachel Kim',
       email: 'rachelkim56@gmail.com',
       avatar: 'https://i.pravatar.cc/150?img=33',
       rating: 4,
@@ -564,7 +564,7 @@ export const ordersData: Order[] = [
     products: [
       {
         id: '4',
-        name: 'Vintage Table Lamp Set (2 pieces)',
+        title: 'Vintage Table Lamp Set (2 pieces)',
         quantity: 1,
         deliveryDate: '20 December 2024',
         image: 'https://images.unsplash.com/photo-1565636572781-62e93e8c5c7e?w=128&h=96&fit=crop',

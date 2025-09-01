@@ -17,7 +17,7 @@ export interface RevenueData {
 }
 
 export interface Customer {
-  name: string;
+  displayName: string;
   email: string;
   avatar?: string;
   rating?: number;
@@ -26,7 +26,7 @@ export interface Customer {
 
 export interface OrderProduct {
   id: string;
-  name: string;
+  title: string;
   quantity?: number;
   price?: number;
   deliveryDate?: string;

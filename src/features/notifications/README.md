@@ -1,17 +1,18 @@
 # Notifications Feature
 
-A comprehensive notifications system for the Source Build application.
+A comprehensive notifications system for the Source Build application with full API integration.
 
 ## Features
 
-- **Notification Types**: Order, Payment, System, Promotion, Security
-- **Priority Levels**: Low, Medium, High, Urgent
-- **Read/Unread Status**: Track notification status
-- **Filtering**: Filter by type, priority, and read status
-- **Search**: Search through notification titles and messages
-- **Bulk Actions**: Mark all as read/unread, delete, archive
-- **Real-time Updates**: Mark individual notifications as read/unread
-- **Action Buttons**: Navigate to relevant pages from notifications
+- **Real-time Notifications**: WebSocket integration for instant updates
+- **API Integration**: Full backend API integration
+- **Infinite Scrolling**: Load more notifications as you scroll
+- **Read/Unread Status**: Track and update notification status
+- **Bulk Actions**: Mark all as read with single action
+- **Unread Count Badge**: Display unread count in navigation
+- **Toast Notifications**: Show new notifications as toasts
+- **Action URLs**: Navigate directly from notifications
+- **Auto-refresh**: Polling fallback when WebSocket unavailable
 
 ## Components
 

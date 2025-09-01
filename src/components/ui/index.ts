@@ -60,4 +60,5 @@ export {
   DialogDescription,
 } from './dialog';
 export { DeleteConfirmationModal } from '../common/DeleteConfirmationModal';
+export { ConfirmationModal } from './ConfirmationModal';
 export { Timeline, type TimelineItem } from './Timeline';
