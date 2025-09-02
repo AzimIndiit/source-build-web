@@ -227,11 +227,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                           Drag & drop media or{' '}
                           <span className="text-primary underline">click here</span>
                         </span>
-                     
                       </label>
-                      <div className="text-xs text-red-600">
-                        Max file size is 5MB
-                      </div>
+                      <div className="text-xs text-red-600">Max file size is 5MB</div>
                     </div>
 
                     <div className="grid grid-cols-3 lg:grid-cols-5 gap-2">
@@ -669,9 +666,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                                   Drag & drop media or{' '}
                                   <span className="text-primary underline">click here</span>
                                 </span>
-                                <span className="text-xs text-red-600">
-                        Max file size is 5MB
-                      </span>
+                                <span className="text-xs text-red-600">Max file size is 5MB</span>
                               </label>
                             </div>
                           ) : (
@@ -712,7 +707,6 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                                   </span>
                                 </label>
                                 <div className="text-xs text-red-600">Max file size is 5MB</div>
-
                               </div>
 
                               <div className="grid grid-cols-3 lg:grid-cols-5 gap-2">
@@ -1003,8 +997,9 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                 </div>
                 {errors.marketplaceOptions && (
                   <p className="text-red-500">
-                    {typeof errors.marketplaceOptions === 'object' && 'message' in errors.marketplaceOptions 
-                      ? (errors.marketplaceOptions as any).message 
+                    {typeof errors.marketplaceOptions === 'object' &&
+                    'message' in errors.marketplaceOptions
+                      ? (errors.marketplaceOptions as any).message
                       : 'At least one marketplace option is required'}
                   </p>
                 )}

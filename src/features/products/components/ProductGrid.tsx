@@ -82,75 +82,78 @@ const ProductGrid: React.FC<ProductGridProps> = ({
       className="overflow-hidden border border-gray-200 rounded-xl hover:shadow-md transition-shadow p-0 cursor-pointer group gap-0"
       onClick={() => onProductClick(product.slug)}
     >
-          <div className="relative">
-            <img
-              src={getImageUrl(product)}
-              alt={product.title}
-              className="w-full h-40 object-cover"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = 'https://placehold.co/300x200.png';
-              }}
-            />
-            {product.quantity > 0 && (
-              <Badge className="absolute bottom-2 left-2 bg-primary text-white rounded px-2 py-1 text-[11px]">
-                In Stock ({product.quantity})
-              </Badge>
-            )}
-            {product.quantity === 0 && (
-              <Badge className="absolute bottom-2 left-2 bg-gray-500 text-white rounded px-2 py-1 text-[11px]">
-                Out of Stock
-              </Badge>
-            )}
- 
-              <Badge className={cn("absolute bottom-2 right-2 rounded px-2 py-1 text-[11px] capitalize", getStatusBadgeColor(product.status))}>
-               {product.status}
-              </Badge>
-          </div>
-          <CardContent className="p-3 space-y-2">
-            <div className="flex justify-between items-center gap-2">
-              {/* Price */}
-              <div className="text-[16px] font-semibold mb-1">
-                {formatPrice(product.price)} per sq ft
-              </div>
-              <div className="flex gap-2 justify-end">
-                <Button
-                  title="Edit"
-                  variant="ghost"
-                  size="icon"
-                  onClick={(e) => onEditProduct(e, product.id || product._id || '')}
-                  className="w-8 h-8 hover:bg-gray-200 text-gray-600 hover:text-gray-900 rounded-md"
-                >
-                  <SquarePen className="w-4 h-4" />
-                </Button>
-                <Button
-                  title="Delete"
-                  variant="ghost"
-                  size="icon"
-                  onClick={(e) =>
-                    onDeleteProduct(e, product.id || product._id || '', product.title)
-                  }
-                  className="w-8 h-8 hover:bg-red-50 text-red-600 hover:text-red-700 rounded-md"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-            {/* Title + Description */}
-            <p className="text-[12px] text-gray-500 line-clamp-1 capitalize">{product.category}</p>
-            <p className="text-[14px] text-gray-700 leading-snug line-clamp-1 mb-1 capitalize">
-              {product.dimensions
-                ? `${product.dimensions.length} x ${product.dimensions.width} x ${product.dimensions.height} - `
-                : ''}{' '}
-              {product.title}
-            </p>
+      <div className="relative">
+        <img
+          src={getImageUrl(product)}
+          alt={product.title}
+          className="w-full h-40 object-cover"
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = 'https://placehold.co/300x200.png';
+          }}
+        />
+        {product.quantity > 0 && (
+          <Badge className="absolute bottom-2 left-2 bg-primary text-white rounded px-2 py-1 text-[11px]">
+            In Stock ({product.quantity})
+          </Badge>
+        )}
+        {product.quantity === 0 && (
+          <Badge className="absolute bottom-2 left-2 bg-gray-500 text-white rounded px-2 py-1 text-[11px]">
+            Out of Stock
+          </Badge>
+        )}
 
-            {/* Location + Date + Actions */}
-            <div className="flex justify-between text-[12px] text-gray-500">
-              <span className='capitalize'>{getLocationDisplay(product)}</span>
-              <span className="text-primary capitalize">{formatDate(product.createdAt)}</span>
-            </div>
-          </CardContent>
-        </Card>
+        <Badge
+          className={cn(
+            'absolute bottom-2 right-2 rounded px-2 py-1 text-[11px] capitalize',
+            getStatusBadgeColor(product.status)
+          )}
+        >
+          {product.status}
+        </Badge>
+      </div>
+      <CardContent className="p-3 space-y-2">
+        <div className="flex justify-between items-center gap-2">
+          {/* Price */}
+          <div className="text-[16px] font-semibold mb-1">
+            {formatPrice(product.price)} per sq ft
+          </div>
+          <div className="flex gap-2 justify-end">
+            <Button
+              title="Edit"
+              variant="ghost"
+              size="icon"
+              onClick={(e) => onEditProduct(e, product.id || product._id || '')}
+              className="w-8 h-8 hover:bg-gray-200 text-gray-600 hover:text-gray-900 rounded-md"
+            >
+              <SquarePen className="w-4 h-4" />
+            </Button>
+            <Button
+              title="Delete"
+              variant="ghost"
+              size="icon"
+              onClick={(e) => onDeleteProduct(e, product.id || product._id || '', product.title)}
+              className="w-8 h-8 hover:bg-red-50 text-red-600 hover:text-red-700 rounded-md"
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+        {/* Title + Description */}
+        <p className="text-[12px] text-gray-500 line-clamp-1 capitalize">{product.category}</p>
+        <p className="text-[14px] text-gray-700 leading-snug line-clamp-1 mb-1 capitalize">
+          {product.dimensions
+            ? `${product.dimensions.length} x ${product.dimensions.width} x ${product.dimensions.height} - `
+            : ''}{' '}
+          {product.title}
+        </p>
+
+        {/* Location + Date + Actions */}
+        <div className="flex justify-between text-[12px] text-gray-500">
+          <span className="capitalize">{getLocationDisplay(product)}</span>
+          <span className="text-primary capitalize">{formatDate(product.createdAt)}</span>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

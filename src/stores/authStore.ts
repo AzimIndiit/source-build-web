@@ -2,7 +2,11 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import axiosInstance from '@/lib/axios';
 import socketService from '@/lib/socketService';
-import { USER_QUERY_KEY, transformApiUserToUser, type ApiUser } from '@/features/auth/hooks/useUserQuery';
+import {
+  USER_QUERY_KEY,
+  transformApiUserToUser,
+  type ApiUser,
+} from '@/features/auth/hooks/useUserQuery';
 
 export interface User {
   id: string;
@@ -45,7 +49,7 @@ interface AuthState {
   isLoading: boolean;
   isAuthenticated: boolean;
   currentLocation: LocationData | null;
-  
+
   // Actions
   setUser: (user: User | null) => void;
   setIsAuthenticated: (isAuthenticated: boolean) => void;
@@ -68,11 +72,11 @@ const useAuthStore = create<AuthState>()(
       currentLocation: null,
 
       setUser: (user) => {
-        set({ 
-          user, 
-          isAuthenticated: !!user 
+        set({
+          user,
+          isAuthenticated: !!user,
         });
-        
+
         // Handle socket connection
         if (user) {
           socketService.connect(user.id);
@@ -114,7 +118,7 @@ const useAuthStore = create<AuthState>()(
               address: 'Smith',
               description: 'Smith',
             };
-            
+
             get().setUser(mockUser);
             set({ isLoading: false });
             return;
@@ -122,19 +126,19 @@ const useAuthStore = create<AuthState>()(
 
           // Use the query client to fetch user data
           const { queryClient } = await import('@/lib/queryClient');
-          
+
           try {
             // Fetch user data using the query client
             const user = await queryClient.fetchQuery({
               queryKey: USER_QUERY_KEY,
               queryFn: async () => {
                 const response = await axiosInstance.get('/auth/me');
-                
+
                 if (response.data && response.data.data && response.data.data.user) {
                   const apiUser = response.data.data.user as ApiUser;
                   return transformApiUserToUser(apiUser);
                 }
-                
+
                 throw new Error('Invalid user data from API');
               },
             });
@@ -161,42 +165,42 @@ const useAuthStore = create<AuthState>()(
       login: async (email: string, password: string) => {
         try {
           console.log('AuthStore: Starting login process');
-          
+
           // Call the actual API
-          const response = await axiosInstance.post('/auth/login', { 
-            email, 
-            password 
+          const response = await axiosInstance.post('/auth/login', {
+            email,
+            password,
           });
-          
+
           console.log('AuthStore: API response received', response);
-          
+
           // Extract tokens from response
           const { tokens } = response.data.data;
-          
+
           // Store tokens - handle both naming conventions
           const accessToken = tokens.access_token || tokens.accessToken;
           const refreshToken = tokens.refresh_token || tokens.refreshToken;
-          
+
           if (accessToken && refreshToken) {
             localStorage.setItem('access_token', accessToken);
             localStorage.setItem('refresh_token', refreshToken);
           }
-          
+
           // Now fetch the complete user profile from /me endpoint
           console.log('AuthStore: Fetching user profile from /me');
           const { queryClient } = await import('@/lib/queryClient');
-          
+
           try {
             const user = await queryClient.fetchQuery({
               queryKey: USER_QUERY_KEY,
               queryFn: async () => {
                 const meResponse = await axiosInstance.get('/auth/me');
-                
+
                 if (meResponse.data && meResponse.data.data && meResponse.data.data.user) {
                   const apiUser = meResponse.data.data.user as ApiUser;
                   return transformApiUserToUser(apiUser);
                 }
-                
+
                 throw new Error('Invalid user data from /me API');
               },
             });
@@ -208,7 +212,10 @@ const useAuthStore = create<AuthState>()(
               throw new Error('No user data received from /me');
             }
           } catch (meError) {
-            console.error('AuthStore: Failed to fetch user from /me, using login response', meError);
+            console.error(
+              'AuthStore: Failed to fetch user from /me, using login response',
+              meError
+            );
             // Fallback to using the user from login response if /me fails
             if (response.data.data.user) {
               const transformedUser = transformApiUserToUser(response.data.data.user as ApiUser);
@@ -217,7 +224,7 @@ const useAuthStore = create<AuthState>()(
               throw meError;
             }
           }
-          
+
           console.log('AuthStore: Login process completed');
         } catch (error) {
           console.error('AuthStore: Login error:', error);
@@ -232,7 +239,7 @@ const useAuthStore = create<AuthState>()(
 
           localStorage.setItem('access_token', access_token);
           localStorage.setItem('refresh_token', refresh_token);
-          
+
           get().setUser(user);
         } catch (error) {
           console.error('Signup error:', error);
@@ -250,18 +257,18 @@ const useAuthStore = create<AuthState>()(
         } finally {
           // Clear all auth-related state
           get().clearAuth();
-          
+
           // Clear query cache
           const { queryClient } = await import('@/lib/queryClient');
           queryClient.clear();
           queryClient.removeQueries({ queryKey: USER_QUERY_KEY });
-          
+
           // Clear all localStorage items
           localStorage.clear();
-          
+
           // Clear all sessionStorage items
           sessionStorage.clear();
-          
+
           // Optionally, keep only non-auth related items if needed
           // For example, theme preferences:
           // const theme = localStorage.getItem('source-build-theme');
@@ -279,33 +286,33 @@ const useAuthStore = create<AuthState>()(
       clearAuth: () => {
         // Disconnect socket
         socketService.disconnect();
-        
+
         // Clear tokens
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
-        
+
         // Clear user data from localStorage
         localStorage.removeItem('user');
-        
+
         // Clear auth storage (Zustand persist)
         localStorage.removeItem('auth-storage');
-        
+
         // Clear any session storage items
         sessionStorage.removeItem('signup_email');
         sessionStorage.removeItem('otp_resend_timestamp');
-        
+
         // Clear state
-        set({ 
-          user: null, 
+        set({
+          user: null,
           isAuthenticated: false,
-          isLoading: false 
+          isLoading: false,
         });
       },
     }),
     {
       name: 'auth-storage', // unique name for localStorage key
       storage: createJSONStorage(() => localStorage), // use localStorage
-      partialize: (state) => ({ 
+      partialize: (state) => ({
         // Only persist user, isAuthenticated, and currentLocation, not isLoading
         user: state.user,
         isAuthenticated: state.isAuthenticated,

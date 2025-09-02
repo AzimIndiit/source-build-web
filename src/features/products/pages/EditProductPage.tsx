@@ -2,21 +2,28 @@ import { useState, useCallback, useEffect } from 'react';
 import { useForm, FormProvider, FieldErrors } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { X, Loader2 } from 'lucide-react';
+import { X } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 import { ProductForm } from '../components/ProductForm';
 import { ProductPreview } from '../components/ProductPreview';
+import { EditProductPageSkeleton } from '../components/EditProductPageSkeleton';
 import { AddSavedAddressModal } from '@/features/profile/components/AddSavedAddressModal';
-import { 
+import {
   useSavedAddresssQuery,
   useCreateSavedAddressMutation,
 } from '@/features/profile/hooks/useSavedAddressMutations';
-import { SavedAddress, CreateSavedAddressPayload } from '@/features/profile/services/addressService';
-import { useUpdateProductMutation, useProductByIdQuery, useSaveDraftMutation } from '../hooks/useProductMutations';
+import {
+  SavedAddress,
+  CreateSavedAddressPayload,
+} from '@/features/profile/services/addressService';
+import {
+  useUpdateProductMutation,
+  useProductByIdQuery,
+  useSaveDraftMutation,
+} from '../hooks/useProductMutations';
 import { format } from 'date-fns';
-
 
 // Variant schema
 const variantSchema = z.object({
@@ -147,8 +154,7 @@ const editProductSchema = z
       .array(z.string())
       .min(1, 'At least one location is required')
       .max(10, 'Maximum 10 locations allowed'),
-      
-   
+
     productTag: z
       .array(
         z
@@ -180,7 +186,8 @@ const editProductSchema = z
           return options.pickup || options.shipping || options.delivery;
         },
         {
-          message: 'At least one marketplace option (Pickup, Shipping, or Delivery) must be selected',
+          message:
+            'At least one marketplace option (Pickup, Shipping, or Delivery) must be selected',
         }
       ),
 
@@ -285,40 +292,41 @@ const editProductSchema = z
       message: 'Shipping price must be a valid positive number',
       path: ['shippingPrice'],
     }
-  ).superRefine((data, ctx) => {
+  )
+  .superRefine((data, ctx) => {
     if (data.marketplaceOptions?.pickup && !data.pickupHours?.trim()) {
       ctx.addIssue({
-        code: "custom",
-        path: ["pickupHours"],
-        message: "Pickup hours are required when pickup option is selected",
+        code: 'custom',
+        path: ['pickupHours'],
+        message: 'Pickup hours are required when pickup option is selected',
       });
     }
-  
+
     if (data.marketplaceOptions?.shipping) {
       if (!data.shippingPrice?.trim()) {
         ctx.addIssue({
-          code: "custom",
-          path: ["shippingPrice"],
-          message: "Shipping price is required when shipping option is selected",
+          code: 'custom',
+          path: ['shippingPrice'],
+          message: 'Shipping price is required when shipping option is selected',
         });
       } else {
         const regex = /^\d+(\.\d{1,2})?$/;
         if (!regex.test(data.shippingPrice)) {
           ctx.addIssue({
-            code: "custom",
-            path: ["shippingPrice"],
-            message: "Shipping price must be a valid number with up to 2 decimals",
+            code: 'custom',
+            path: ['shippingPrice'],
+            message: 'Shipping price must be a valid number with up to 2 decimals',
           });
         } else if (parseFloat(data.shippingPrice) < 0) {
           ctx.addIssue({
-            code: "custom",
-            path: ["shippingPrice"],
-            message: "Shipping price must be greater than or equal to 0",
+            code: 'custom',
+            path: ['shippingPrice'],
+            message: 'Shipping price must be greater than or equal to 0',
           });
         }
       }
     }
-  })
+  });
 
 type EditProductForm = z.infer<typeof editProductSchema>;
 
@@ -361,27 +369,28 @@ function EditProductPage() {
   const [existingImages, setExistingImages] = useState<string[]>([]);
   const [dragActive, setDragActive] = useState(false);
   const [imageError, setImageError] = useState(false);
-  const [variants, setVariants] = useState<Array<{ id: string; images: File[]; existingImages?: string[] }>>([]);
+  const [variants, setVariants] = useState<
+    Array<{ id: string; images: File[]; existingImages?: string[] }>
+  >([]);
   const [showVariants, setShowVariants] = useState(false);
   const [variantDragActive, setVariantDragActive] = useState<string | null>(null);
 
   const [showAddAddressModal, setShowAddAddressModal] = useState(false);
-  
+
   const { data: productData, isLoading: isLoadingProduct } = useProductByIdQuery(id || '');
   const { data: addressesData, refetch: refetchAddresses } = useSavedAddresssQuery();
   const createAddressMutation = useCreateSavedAddressMutation();
   const updateProductMutation = useUpdateProductMutation();
 
-  
-  const savedAddresses = Array.isArray(addressesData?.data) 
-    ? addressesData.data 
-    : addressesData?.data 
-    ? [addressesData.data] 
-    : [];
-    
+  const savedAddresses = Array.isArray(addressesData?.data)
+    ? addressesData.data
+    : addressesData?.data
+      ? [addressesData.data]
+      : [];
+
   const addressOptions = savedAddresses.map((address: SavedAddress) => ({
     value: address.id || address._id || '',
-    label: `${address.name} , ${address.formattedAddress}` || "",
+    label: `${address.name} , ${address.formattedAddress}` || '',
   }));
 
   const methods = useForm<EditProductForm>({
@@ -416,21 +425,17 @@ function EditProductPage() {
     },
   });
 
-  const {
-    handleSubmit,
-    watch,
-    reset,
-  } = methods;
+  const { handleSubmit, watch, reset } = methods;
   const formValues = watch();
   useEffect(() => {
     if (productData?.data) {
       const product = productData.data;
-      
+
       // Debug logging (can be removed in production)
       console.log('Product data:', product);
       console.log('Product category:', product.category);
       console.log('Product subCategory:', product.subCategory);
-      
+
       if (product.images && product.images.length > 0) {
         setExistingImages(product.images);
       }
@@ -448,45 +453,49 @@ function EditProductPage() {
       }
 
       // Check if category exists in options
-      const categoryExists = categoryOptions.some(opt => opt.value === product.category);
-      const subCategoryExists = subCategoryOptions.some(opt => opt.value === product.subCategory);
-      
+      const categoryExists = categoryOptions.some((opt) => opt.value === product.category);
+      const subCategoryExists = subCategoryOptions.some((opt) => opt.value === product.subCategory);
+
       console.log('Category exists in options:', categoryExists);
       console.log('SubCategory exists in options:', subCategoryExists);
-      
+
       // Handle category/subcategory values - ensure they exist in options or use fallback
       let categoryValue = product.category || '';
       let subCategoryValue = product.subCategory || '';
-      
+
       // If the stored value doesn't exist in options, try to find a close match or use the first option
       if (categoryValue && !categoryExists) {
         // Try to find a case-insensitive match
-        const caseInsensitiveMatch = categoryOptions.find(opt => 
-          opt.value.toLowerCase() === categoryValue.toLowerCase()
+        const caseInsensitiveMatch = categoryOptions.find(
+          (opt) => opt.value.toLowerCase() === categoryValue.toLowerCase()
         );
         if (caseInsensitiveMatch) {
           categoryValue = caseInsensitiveMatch.value;
         } else {
           // If no match found, use the first option as fallback
           categoryValue = categoryOptions[0]?.value || '';
-          console.warn(`Category "${product.category}" not found in options, using fallback: "${categoryValue}"`);
+          console.warn(
+            `Category "${product.category}" not found in options, using fallback: "${categoryValue}"`
+          );
         }
       }
-      
+
       if (subCategoryValue && !subCategoryExists) {
         // Try to find a case-insensitive match
-        const caseInsensitiveMatch = subCategoryOptions.find(opt => 
-          opt.value.toLowerCase() === subCategoryValue.toLowerCase()
+        const caseInsensitiveMatch = subCategoryOptions.find(
+          (opt) => opt.value.toLowerCase() === subCategoryValue.toLowerCase()
         );
         if (caseInsensitiveMatch) {
           subCategoryValue = caseInsensitiveMatch.value;
         } else {
           // If no match found, use the first option as fallback
           subCategoryValue = subCategoryOptions[0]?.value || '';
-          console.warn(`SubCategory "${product.subCategory}" not found in options, using fallback: "${subCategoryValue}"`);
+          console.warn(
+            `SubCategory "${product.subCategory}" not found in options, using fallback: "${subCategoryValue}"`
+          );
         }
       }
-      
+
       // Reset form with all values
       const formData = {
         title: product.title || '',
@@ -497,19 +506,21 @@ function EditProductPage() {
         quantity: product.quantity?.toString() || '',
         brand: product.brand || '',
         color: product.color || '#000000',
-        locationIds: product.locationIds?.map((loc: any) => 
-          typeof loc === 'string' ? loc : (loc._id || loc.id)
-        ) || [],
+        locationIds:
+          product.locationIds?.map((loc: any) =>
+            typeof loc === 'string' ? loc : loc._id || loc.id
+          ) || [],
         productTag: product.productTag || [],
-        variants: product.variants?.map((v: any) => ({
-          color: v.color,
-          quantity: v.quantity?.toString() || '',
-          price: v.price?.toString() || '',
-          discount: {
-            discountType: v.discount?.discountType || 'none',
-            discountValue: v.discount?.discountValue?.toString() || '',
-          },
-        })) || [],
+        variants:
+          product.variants?.map((v: any) => ({
+            color: v.color,
+            quantity: v.quantity?.toString() || '',
+            price: v.price?.toString() || '',
+            discount: {
+              discountType: v.discount?.discountType || 'none',
+              discountValue: v.discount?.discountValue?.toString() || '',
+            },
+          })) || [],
         marketplaceOptions: {
           pickup: product.marketplaceOptions?.pickup || false,
           shipping: product.marketplaceOptions?.shipping || false,
@@ -524,10 +535,10 @@ function EditProductPage() {
           discountValue: product.discount?.discountValue?.toString() || '',
         },
       };
-      
+
       console.log('Form data being set:', formData);
       reset(formData);
-      
+
       // Force a re-render of the form fields by setting values again after a small delay
       setTimeout(() => {
         methods.setValue('category', categoryValue);
@@ -539,13 +550,15 @@ function EditProductPage() {
 
       if (product.variants && product.variants.length > 0) {
         setShowVariants(true);
-        setVariants(product.variants.map((v: any, index: number) => ({
-          id: v.id || v._id || `variant-${index}-${Date.now()}`,
-          images: [], // New images to upload
-          existingImages: v.images || [] // Store existing variant images separately
-        })));
+        setVariants(
+          product.variants.map((v: any, index: number) => ({
+            id: v.id || v._id || `variant-${index}-${Date.now()}`,
+            images: [], // New images to upload
+            existingImages: v.images || [], // Store existing variant images separately
+          }))
+        );
       }
-      
+
       // Clear form errors and revalidate after reset
       setTimeout(() => {
         methods.clearErrors();
@@ -607,7 +620,9 @@ function EditProductPage() {
         }
 
         if (files.length > remainingSlots) {
-          errors.push(`Only ${remainingSlots} more image(s) can be added (max ${MAX_IMAGES} total)`);
+          errors.push(
+            `Only ${remainingSlots} more image(s) can be added (max ${MAX_IMAGES} total)`
+          );
         }
 
         if (validFiles.length > 0) {
@@ -677,11 +692,11 @@ function EditProductPage() {
     setImageError(false);
 
     const variantFiles = variants
-      .filter(v => v.images.length > 0)
+      .filter((v) => v.images.length > 0)
       .map((v, index) => ({
         variantId: v.id,
         variantIndex: index,
-        files: v.images
+        files: v.images,
       }));
 
     let readyByDate: string | undefined;
@@ -708,7 +723,9 @@ function EditProductPage() {
       readyByTime: data.readyByTime,
       discount: {
         discountType: data.discount.discountType,
-        discountValue: data.discount.discountValue ? parseFloat(data.discount.discountValue) : undefined,
+        discountValue: data.discount.discountValue
+          ? parseFloat(data.discount.discountValue)
+          : undefined,
       },
       variants: data.variants?.map((v, index) => {
         const variant = variants[index];
@@ -718,7 +735,9 @@ function EditProductPage() {
           price: parseFloat(v.price),
           discount: {
             discountType: v.discount.discountType,
-            discountValue: v.discount.discountValue ? parseFloat(v.discount.discountValue) : undefined,
+            discountValue: v.discount.discountValue
+              ? parseFloat(v.discount.discountValue)
+              : undefined,
           },
           images: variant?.existingImages || [],
         };
@@ -782,7 +801,7 @@ function EditProductPage() {
             const containerRect = container.getBoundingClientRect();
             const scrollTop = container.scrollTop + rect.top - containerRect.top - 100;
             container.scrollTo({ top: scrollTop, behavior: 'smooth' });
-            
+
             // Focus after scrolling
             setTimeout(() => {
               formElement.focus();
@@ -864,7 +883,9 @@ function EditProductPage() {
     }
 
     if (files.length > remainingSlots) {
-      errors.push(`Only ${remainingSlots} more image(s) can be added (max ${maxImages} per variant)`);
+      errors.push(
+        `Only ${remainingSlots} more image(s) can be added (max ${maxImages} per variant)`
+      );
     }
 
     if (validFiles.length > 0) {
@@ -889,7 +910,9 @@ function EditProductPage() {
   const removeExistingVariantImage = (variantId: string, imageIndex: number) => {
     setVariants(
       variants.map((v) =>
-        v.id === variantId ? { ...v, existingImages: v.existingImages?.filter((_, i) => i !== imageIndex) || [] } : v
+        v.id === variantId
+          ? { ...v, existingImages: v.existingImages?.filter((_, i) => i !== imageIndex) || [] }
+          : v
       )
     );
   };
@@ -916,14 +939,7 @@ function EditProductPage() {
   }, []);
 
   if (isLoadingProduct) {
-    return (
-      <div className="h-screen bg-gray-50 fixed top-0 w-full z-50 left-0 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-gray-600">Loading product...</p>
-        </div>
-      </div>
-    );
+    return <EditProductPageSkeleton />;
   }
 
   return (
@@ -932,7 +948,7 @@ function EditProductPage() {
         <div className="bg-primary px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 sm:gap-4">
-            <button
+              <button
                 onClick={() => navigate(-1)}
                 className="text-white hover:bg-white  hover:text-black p-1 rounded cursor-pointer"
               >
@@ -943,7 +959,6 @@ function EditProductPage() {
                 <div className="text-white text-sm sm:text-base font-medium">Edit Product</div>
               </div>
             </div>
-         
           </div>
         </div>
 

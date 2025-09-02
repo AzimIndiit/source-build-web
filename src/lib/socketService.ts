@@ -36,9 +36,21 @@ class SocketService {
   }
 
   connect(userId: string): void {
-    // Prevent multiple connections
-    if (this.socket?.connected) {
-      console.log('Socket already connected');
+    // Prevent multiple connections with same or different userId
+    if (this.socket?.connected || this.socket?.active) {
+      console.log('Socket already connected or connecting');
+      // If userId changed, disconnect and reconnect
+      if (this.userId !== userId) {
+        console.log('UserId changed, reconnecting...');
+        this.disconnect();
+      } else {
+        return;
+      }
+    }
+
+    // Prevent connection if already in process
+    if (this.socket && !this.socket.connected && this.socket.active) {
+      console.log('Socket connection already in progress');
       return;
     }
 
@@ -47,8 +59,11 @@ class SocketService {
 
     // Connect to the WebSocket endpoint
     const wsUrl = socketConfig.socketUrl;
-    
-    this.socket = io(`${wsUrl}?userId=${userId}`, socketConfig.connectionOptions) as Socket<ServerToClientEvents, ClientToServerEvents>;
+
+    this.socket = io(wsUrl, {
+      ...socketConfig.connectionOptions,
+      query: { userId },
+    }) as Socket<ServerToClientEvents, ClientToServerEvents>;
 
     // Set up event listeners
     this.setupEventListeners();
@@ -94,7 +109,7 @@ class SocketService {
   // Unsubscribe from an event
   off(event: string, callback?: SocketEventCallback): void {
     if (!this.socket) return;
-    
+
     if (callback) {
       this.socket.off(event as keyof ServerToClientEvents, callback as any);
     } else {

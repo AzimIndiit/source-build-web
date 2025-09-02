@@ -61,7 +61,10 @@ class ProfileService {
   }
 
   async changePassword(data: ChangePasswordPayload): Promise<ChangePasswordResponse> {
-    const response = await axiosInstance.post<ChangePasswordResponse>('/auth/change-password', data);
+    const response = await axiosInstance.post<ChangePasswordResponse>(
+      '/auth/change-password',
+      data
+    );
     return response.data;
   }
 }

@@ -4,6 +4,7 @@ import { BankAccountCard } from '../components/BankAccountCard';
 import { AddBankAccountModal } from '../components/AddBankAccountModal';
 import { DeleteConfirmationModal } from '@/components/common/DeleteConfirmationModal';
 import { Plus, CreditCard } from 'lucide-react';
+import ManageBankAccountsSkeleton from '../components/ManageBankAccountsSkeleton';
 import { Card, CardContent } from '@/components/ui/Card';
 import { BankAccount, CreateBankAccountPayload } from '../services/bankAccountService';
 import {
@@ -78,15 +79,8 @@ const ManageBankAccountsPage: React.FC = () => {
     setEditingAccount(null);
   };
 
-
   if (isLoading) {
-    return (
-      <Card className="bg-white border-gray-200 shadow-none h-[calc(100vh-200px)] justify-center items-center">
-        <CardContent className="px-4 sm:px-6">
-          <div className="text-center py-12">Loading bank accounts...</div>
-        </CardContent>
-      </Card>
-    );
+    return <ManageBankAccountsSkeleton />;
   }
 
   if (error) {
@@ -134,7 +128,6 @@ const ManageBankAccountsPage: React.FC = () => {
             <div className="col-span-full flex flex-col items-center justify-center min-h-[400px]">
               <CreditCard className="h-12 w-12 mb-4 text-gray-300" />
               <p className="text-gray-500 mb-4">No bank accounts added yet</p>
-             
             </div>
           )}
         </div>
@@ -145,14 +138,14 @@ const ManageBankAccountsPage: React.FC = () => {
           isSubmitting={createMutation.isPending || updateMutation?.isPending}
           onClose={handleCloseModal}
           onSubmit={handleAddAccount}
-          totalBankAccount={accounts.length>0 ? true :false}
+          totalBankAccount={accounts.length > 0 ? true : false}
           initialData={
             editingAccount
               ? {
                   accountHolderName: editingAccount.accountHolderName,
                   bankName: editingAccount.bankName,
                   isDefault: editingAccount.isDefault,
-                  accountNumber:  editingAccount.accountNumber,
+                  accountNumber: editingAccount.accountNumber,
                   routingNumber: editingAccount.routingNumber,
                   swiftCode: editingAccount.swiftCode,
                   accountType: editingAccount.accountType,

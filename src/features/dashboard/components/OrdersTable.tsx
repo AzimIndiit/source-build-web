@@ -20,6 +20,8 @@ import {
   FilterConfig,
   SortOption,
 } from '@/features/orders/components';
+import { formatCurrency } from '@/lib/utils';
+import { formatDate } from '@/lib/date-utils';
 
 const sortOptions: SortOption[] = [
   { value: 'recent', label: 'Recent' },
@@ -63,6 +65,8 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
     // TODO: Implement filtering logic
     console.log('Filters applied:', newFilters);
   };
+
+  console.log('orders', orders);
   return (
     <div className="w-full">
       <div className="flex items-center justify-between mb-4">
@@ -73,7 +77,7 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
           {onViewAll && (
             <Button
               variant="link"
-              className="text-[#2b5aac] font-semibold text-xs md:text-sm p-0 underline"
+              className="text-primary font-semibold text-xs md:text-sm p-0 underline"
               onClick={onViewAll}
             >
               View All Orders
@@ -100,7 +104,7 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
               <div className="flex items-start justify-between mb-3">
                 <div>
                   <p className="text-xs text-gray-500">Order ID</p>
-                  <p className="text-sm font-medium text-[#2b5aac]">{order.id}</p>
+                  <p className="text-sm font-medium text-primary">#{order.id}</p>
                 </div>
                 <Badge
                   className={`px-2 py-1 rounded-full font-medium text-xs ${getStatusBadgeColor(order.status)}`}
@@ -113,7 +117,7 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
                 <div>
                   <p className="text-xs text-gray-500">Product</p>
                   <p className="text-sm font-medium text-gray-900 line-clamp-1">
-                    {order.products?.[0]?.title}
+                    {order.products?.map((product) => product.title).join(', ')}
                   </p>
                 </div>
 
@@ -136,20 +140,24 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="text-sm font-medium text-gray-900">{order.customer?.displayName || 'Unknown'}</p>
+                    <p className="text-sm font-medium text-gray-900">
+                      {order.customer?.displayName || 'Unknown'}
+                    </p>
                     <p className="text-xs text-gray-500">{order.customer?.email || 'No email'}</p>
                   </div>
                 </div>
 
                 <div className="flex justify-between items-center pt-2 border-t">
                   <div>
-                    <p className="text-xs text-gray-500">{order.date}</p>
-                    <p className="text-sm font-semibold text-gray-900">{order.amount}</p>
+                    <p className="text-xs text-gray-500">{formatDate(order.date)}</p>
+                    <p className="text-sm font-semibold text-gray-900">
+                      {formatCurrency(order.amount)}
+                    </p>
                   </div>
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-[#2b5aac] font-semibold text-xs"
+                    className="text-primary font-semibold text-xs"
                     onClick={() => onViewDetails?.(order.id)}
                   >
                     Details
@@ -195,13 +203,11 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
               {orders.map((order, index) => (
                 <TableRow key={`${order.id}-${index}`} className="hover:bg-gray-50/30 border-b">
                   <TableCell className="text-center">
-                    <span className="text-[#2b5aac] font-medium text-xs lg:text-sm">
-                      {order.id}
-                    </span>
+                    <span className="text-primary font-medium text-xs lg:text-sm">#{order.id}</span>
                   </TableCell>
-                  <TableCell className="text-left">
+                  <TableCell className="text-left   max-w-[200px] truncate">
                     <span className="text-gray-900 text-xs lg:text-sm">
-                      {order.products?.[0]?.title}
+                      {order.products?.map((product) => product.title).join(', ')}
                     </span>
                   </TableCell>
                   <TableCell className="py-3 lg:py-4">
@@ -214,7 +220,7 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
                             className="object-cover"
                           />
                         ) : null}
-                        <AvatarFallback className="bg-gray-200 text-gray-700 font-medium text-xs">
+                        <AvatarFallback className="bg-gray-200 text-gray-700 font-medium text-xs uppercase">
                           {order.customer?.displayName
                             ? order.customer.displayName
                                 .split(' ')
@@ -234,10 +240,14 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
                     </div>
                   </TableCell>
                   <TableCell className="text-center hidden lg:table-cell">
-                    <span className="text-gray-700 text-xs lg:text-sm">{order.date}</span>
+                    <span className="text-gray-700 text-xs lg:text-sm">
+                      {formatDate(order.date)}
+                    </span>
                   </TableCell>
                   <TableCell className="text-center font-semibold">
-                    <span className="text-gray-900 text-xs lg:text-sm">{order.amount}</span>
+                    <span className="text-gray-900 text-xs lg:text-sm">
+                      {formatCurrency(order.amount)}
+                    </span>
                   </TableCell>
                   <TableCell className="text-center">
                     <Badge
@@ -249,7 +259,7 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
                   <TableCell className="text-center">
                     <Button
                       variant="link"
-                      className="text-[#2b5aac] font-semibold text-xs lg:text-sm p-0 underline"
+                      className="text-primary font-semibold text-xs lg:text-sm p-0 underline"
                       onClick={() => onViewDetails?.(order.id)}
                     >
                       See Details

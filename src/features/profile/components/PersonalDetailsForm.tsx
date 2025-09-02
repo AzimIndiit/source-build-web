@@ -10,6 +10,7 @@ import { getInitials } from '@/lib/helpers';
 import { FormInput } from '@/components/forms/FormInput';
 import { FormTextarea } from '@/components/forms/FormTextarea';
 import { ChangePasswordModal } from './ChangePasswordModal';
+import { PersonalDetailsFormSkeleton } from './PersonalDetailsFormSkeleton';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useUpdateProfileMutation } from '../hooks/useProfileMutations';
@@ -116,7 +117,6 @@ const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({ initialData, 
     watch,
     setValue,
   } = methods;
-  
 
   const formValues = watch();
   const userData = queryUser || user;
@@ -212,6 +212,11 @@ const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({ initialData, 
     reader.readAsDataURL(file);
   };
 
+  // Show skeleton while loading user data
+  if (isLoadingUser) {
+    return <PersonalDetailsFormSkeleton />;
+  }
+
   return (
     <>
       <Card className="bg-white border-gray-200 shadow-none">
@@ -224,9 +229,9 @@ const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({ initialData, 
               <div className="mb-6 sm:mb-8 flex justify-center sm:justify-start">
                 <div className="relative inline-block">
                   <Avatar className="w-20 h-20 sm:w-24 sm:h-24">
-                    <AvatarImage 
-                      src={previewUrl || formValues.avatar || userData?.avatar} 
-                      alt={fullName} 
+                    <AvatarImage
+                      src={previewUrl || formValues.avatar || userData?.avatar}
+                      alt={fullName}
                     />
                     <AvatarFallback className="text-xl sm:text-2xl font-semibold">
                       {getInitials(fullName || 'User')}
@@ -317,7 +322,7 @@ const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({ initialData, 
                       disabled={isSubmitting || updateProfileMutation.isPending}
                       className="w-full sm:w-auto sm:min-w-[200px] md:min-w-[300px] lg:min-w-[469px] text-white px-6 sm:px-8 md:px-12 py-2.5 sm:py-3 rounded-lg font-medium text-sm sm:text-base disabled:opacity-50"
                     >
-                      {(isSubmitting || updateProfileMutation.isPending) ? 'Saving...' : 'Save'}
+                      {isSubmitting || updateProfileMutation.isPending ? 'Saving...' : 'Save'}
                     </Button>
                   </div>
                 </div>

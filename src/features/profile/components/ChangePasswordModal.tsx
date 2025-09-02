@@ -49,7 +49,7 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
   onSubmit,
 }) => {
   const changePasswordMutation = useChangePasswordMutation();
-  
+
   const methods = useForm<ChangePasswordFormData>({
     resolver: zodResolver(changePasswordSchema),
     defaultValues: {
@@ -72,16 +72,14 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
 
   const handleFormSubmit = async (data: ChangePasswordFormData) => {
     try {
-     
-        // Use the mutation to call the API
-       const response:any=  await changePasswordMutation.mutateAsync({
-          oldPassword: data.oldPassword,
-          newPassword: data.newPassword,
-        });
-        if(response.status==='success'){
-          handleClose();
-        }
-      
+      // Use the mutation to call the API
+      const response: any = await changePasswordMutation.mutateAsync({
+        oldPassword: data.oldPassword,
+        newPassword: data.newPassword,
+      });
+      if (response.status === 'success') {
+        handleClose();
+      }
     } catch (error) {
       // Error handling is done by the mutation hook
       console.error('Password change error:', error);
@@ -139,7 +137,7 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
                   disabled={isSubmitting || changePasswordMutation.isPending}
                   className="flex-1  bg-primary hover:bg-primary/90 text-white"
                 >
-                  {(isSubmitting || changePasswordMutation.isPending) ? 'Updating...' : 'Update'}
+                  {isSubmitting || changePasswordMutation.isPending ? 'Updating...' : 'Update'}
                 </Button>
               </div>
             </form>

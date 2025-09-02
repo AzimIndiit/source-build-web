@@ -184,7 +184,7 @@ class ProductService {
   }
 
   async getProductBySlug(slug: string): Promise<ProductResponse> {
-    console.log('slug', slug)
+    console.log('slug', slug);
     const response = await axiosInstance.get<ProductResponse>(`/products/${slug}`);
     return response.data;
   }
@@ -195,14 +195,16 @@ class ProductService {
   }
 
   async deleteProduct(id: string): Promise<{ success: boolean; message: string }> {
-    const response = await axiosInstance.delete<{ success: boolean; message: string }>(`/products/${id}`);
+    const response = await axiosInstance.delete<{ success: boolean; message: string }>(
+      `/products/${id}`
+    );
     return response.data;
   }
 
   async uploadProductImages(files: File[]): Promise<string[]> {
-    const uploadPromises = files.map(file => fileService.uploadFile(file));
+    const uploadPromises = files.map((file) => fileService.uploadFile(file));
     const responses = await Promise.all(uploadPromises);
-    return responses.map(response => response.data.url);
+    return responses.map((response) => response.data.url);
   }
 }
 

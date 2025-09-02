@@ -38,11 +38,16 @@ function ResetPasswordPage() {
         if (response.status === 'success' && response.data?.valid) {
           setTokenValid(true);
         } else {
-          setTokenError(response.message || 'Invalid or expired reset token. Please request a new password reset link.');
+          setTokenError(
+            response.message ||
+              'Invalid or expired reset token. Please request a new password reset link.'
+          );
         }
       } catch (error: any) {
         console.error('Token verification error:', error);
-        const errorMessage = error?.response?.data?.message || 'Invalid or expired reset token. Please request a new password reset link.';
+        const errorMessage =
+          error?.response?.data?.message ||
+          'Invalid or expired reset token. Please request a new password reset link.';
         setTokenError(errorMessage);
       } finally {
         setIsVerifying(false);
@@ -61,7 +66,7 @@ function ResetPasswordPage() {
     setIsLoading(true);
     try {
       const response = await authService.resetPassword(token, data.password);
-      
+
       if (response.status === 'success') {
         toast.success(response.message || 'Password reset successfully! Redirecting to login...');
         setTimeout(() => {
@@ -72,7 +77,10 @@ function ResetPasswordPage() {
       }
     } catch (error: any) {
       console.error('Reset password error:', error);
-      const errorMessage = error?.response?.data?.message || error?.message || 'Failed to reset password. Please try again.';
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        'Failed to reset password. Please try again.';
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);
@@ -100,10 +108,7 @@ function ResetPasswordPage() {
             >
               Request New Reset Link
             </Link>
-            <Link
-              to="/auth/login"
-              className="block text-primary hover:text-primary/80 font-medium"
-            >
+            <Link to="/auth/login" className="block text-primary hover:text-primary/80 font-medium">
               Back to Login
             </Link>
           </div>
@@ -113,7 +118,9 @@ function ResetPasswordPage() {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div className="text-center space-y-2">
               <h2 className="text-2xl font-bold text-gray-900">Reset Password</h2>
-              <p className="text-gray-600">Please enter your details below to reset your password</p>
+              <p className="text-gray-600">
+                Please enter your details below to reset your password
+              </p>
             </div>
 
             <FormInput

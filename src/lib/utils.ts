@@ -30,12 +30,11 @@ export const formatCurrency = (value: string | number): string => {
   }).format(numeric);
 };
 
-
 export function truncateFilename(filename: string, maxLength = 15): string {
-  if (!filename) return "";
+  if (!filename) return '';
 
-  const dotIndex = filename.lastIndexOf(".");
-  const ext = dotIndex !== -1 ? filename.slice(dotIndex) : "";
+  const dotIndex = filename.lastIndexOf('.');
+  const ext = dotIndex !== -1 ? filename.slice(dotIndex) : '';
   const base = dotIndex !== -1 ? filename.slice(0, dotIndex) : filename;
 
   // If already short enough → return as is

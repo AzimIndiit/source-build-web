@@ -1,8 +1,8 @@
 // Socket configuration
 const socketConfig = {
   // Use environment variable or fallback to localhost
-  socketUrl: import.meta.env.VITE_SOCKET_URL || 'http://localhost:8081',
-  
+  socketUrl: import.meta.env.VITE_SOCKET_URL || 'http://localhost:5001',
+
   // Socket.io connection options
   connectionOptions: {
     transports: ['websocket'],

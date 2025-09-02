@@ -1,6 +1,6 @@
-import socketService from "@/lib/socketService";
-import { useEffect, useCallback } from "react";
-import { useAuth } from "./useAuth";
+import socketService from '@/lib/socketService';
+import { useEffect, useCallback } from 'react';
+import { useAuth } from './useAuth';
 
 // Define types for socket events and data
 type SocketEventCallback = (...args: any[]) => void;
@@ -10,17 +10,19 @@ interface UseSocketReturn {
   connect: (userId: string) => void;
   disconnect: () => void;
   emit: (event: string, data: SocketEventData) => void;
-  on: (event: string, callback: SocketEventCallback) => (() => void);
+  on: (event: string, callback: SocketEventCallback) => () => void;
   off: (event: string, callback: SocketEventCallback) => void;
   isConnected: () => boolean;
 }
 
 export const useSocket = (): UseSocketReturn => {
   const { user } = useAuth();
-  const userId: string = user?.id || "";
+  const userId: string = user?.id || '';
 
   const connect = useCallback((userId: string): void => {
-    socketService.connect(userId);
+    if (userId && !socketService.getIsConnected()) {
+      socketService.connect(userId);
+    }
   }, []);
 
   const disconnect = useCallback((): void => {
@@ -46,9 +48,9 @@ export const useSocket = (): UseSocketReturn => {
   }, []);
 
   useEffect(() => {
-    if (userId) {
+    if (userId && !socketService.getIsConnected()) {
       connect(userId);
-    } else {
+    } else if (!userId && socketService.getIsConnected()) {
       disconnect();
     }
   }, [userId, connect, disconnect]);

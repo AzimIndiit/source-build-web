@@ -17,6 +17,7 @@ export interface RevenueData {
 }
 
 export interface Customer {
+  id: string;
   displayName: string;
   email: string;
   avatar?: string;
@@ -31,6 +32,9 @@ export interface OrderProduct {
   price?: number;
   deliveryDate?: string;
   image?: string;
+  productRef?: {
+    slug: string;
+  };
 }
 
 export interface OrderSummary {

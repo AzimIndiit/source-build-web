@@ -507,7 +507,7 @@ export const ordersData: Order[] = [
         'To improve efficiency, pre-set quick comments enable drivers to send common updates with a single tap. Vendors receive instant notifications and can respond to driver comments, ensuring smooth coordination. All interactions are logged within the order.',
     },
     driver: {
-              displayName: 'Rachel Kim',
+      displayName: 'Rachel Kim',
       email: 'rachelkim56@gmail.com',
       avatar: 'https://i.pravatar.cc/150?img=33',
       rating: 4,

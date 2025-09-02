@@ -4,6 +4,7 @@ import { SavedAddressCard } from '../components/SavedAddressCard';
 import { AddSavedAddressModal } from '../components/AddSavedAddressModal';
 import { DeleteConfirmationModal } from '@/components/common/DeleteConfirmationModal';
 import { Plus, MapPin } from 'lucide-react';
+import ManageSavedAddressSkeleton from '../components/ManageSavedAddressSkeleton';
 import { Card, CardContent } from '@/components/ui/Card';
 import { SavedAddress, CreateSavedAddressPayload } from '../services/addressService';
 import {
@@ -29,11 +30,11 @@ const ManageSavedAddressPage: React.FC = () => {
   const deleteMutation = useDeleteSavedAddressMutation();
   const setDefaultMutation = useSetDefaultSavedAddressMutation();
 
-  const addresses = Array.isArray(addressesData?.data) 
-    ? addressesData.data 
-    : addressesData?.data 
-    ? [addressesData.data] 
-    : [];
+  const addresses = Array.isArray(addressesData?.data)
+    ? addressesData.data
+    : addressesData?.data
+      ? [addressesData.data]
+      : [];
 
   const handleAddAddress = async (data: CreateSavedAddressPayload) => {
     try {
@@ -99,13 +100,7 @@ const ManageSavedAddressPage: React.FC = () => {
   };
 
   if (isLoading) {
-    return (
-      <Card className="bg-white border-gray-200 shadow-none h-[calc(100vh-200px)] justify-center items-center">
-        <CardContent className="px-4 sm:px-6">
-          <div className="text-center py-12">Loading addresses...</div>
-        </CardContent>
-      </Card>
-    );
+    return <ManageSavedAddressSkeleton />;
   }
 
   if (error) {
@@ -158,7 +153,6 @@ const ManageSavedAddressPage: React.FC = () => {
             <div className="col-span-full flex flex-col items-center justify-center min-h-[400px]">
               <MapPin className="h-12 w-12 mb-4 text-gray-300" />
               <p className="text-gray-500 mb-4">No addresses added yet</p>
-    
             </div>
           )}
         </div>
@@ -182,7 +176,7 @@ const ManageSavedAddressPage: React.FC = () => {
                   latitude: editingAddress.latitude,
                   longitude: editingAddress.longitude,
                   location: editingAddress.location,
-                  formattedAddress:editingAddress.formattedAddress,
+                  formattedAddress: editingAddress.formattedAddress,
                   isDefault: editingAddress.isDefault,
                   type: editingAddress.type,
                 }

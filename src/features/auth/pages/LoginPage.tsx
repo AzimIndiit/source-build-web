@@ -35,7 +35,6 @@ function LoginPage() {
 
       // Show success toast
       toast.success('Login successful!');
-
     } catch (error) {
       console.error('Login error:', error);
       toast.error('Invalid email or password. Please try again.');
@@ -90,7 +89,7 @@ function LoginPage() {
             </div>
           </div>
 
-          <Button
+          {/* <Button
             type="button"
             variant="outline"
             className="w-full  flex justify-center items-center  border-gray-300 font-medium text-base"
@@ -115,7 +114,7 @@ function LoginPage() {
               />
             </svg>
             Continue With Google
-          </Button>
+          </Button> */}
 
           <Button
             type="button"

@@ -7,6 +7,7 @@ import ReadMore from '@/components/ui/ReadMore';
 import { BreadcrumbWrapper, DeleteConfirmationModal } from '@/components/ui';
 import { ReviewCard, type ReviewData } from '@/components/ui/ReviewCard';
 import { StarRating } from '@/components/common/StarRating';
+import { ProductDetailsPageSkeleton } from '../components/ProductDetailsPageSkeleton';
 import { useProductQuery, useDeleteProductMutation } from '../hooks/useProductMutations';
 import toast from 'react-hot-toast';
 
@@ -75,6 +76,8 @@ const ProductDetailsPage: React.FC = () => {
     },
   ];
 
+  const reviewst: ReviewData[] = [];
+
   // Auto-scroll selected thumbnail into view
   useEffect(() => {
     const selectedThumbnail = thumbnailRefs.current[selectedImageIndex];
@@ -134,14 +137,7 @@ const ProductDetailsPage: React.FC = () => {
 
   // Handle loading state
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading product...</p>
-        </div>
-      </div>
-    );
+    return <ProductDetailsPageSkeleton />;
   }
 
   // Handle error state
@@ -368,19 +364,16 @@ const ProductDetailsPage: React.FC = () => {
               {product.variants &&
                 product.variants.length > 0 &&
                 product.variants.map((variant: any, index: number) => (
-
                   <div
-                  key={index}
-                  onClick={() => setSelectedVariant(variant)}
-                  className={`w-12 h-12 rounded-full border-2transition-all cursor-pointer ${
-                    selectedVariant === variant
-                    ? 'border-black bg-primary/5 border-3'
-                    : 'border-gray-300 hover:border-gray-400'
-                  }`}
-                  style={{ backgroundColor: variant.color }}
-                />
-
-                 
+                    key={index}
+                    onClick={() => setSelectedVariant(variant)}
+                    className={`w-12 h-12 rounded-full border-2transition-all cursor-pointer ${
+                      selectedVariant === variant
+                        ? 'border-black bg-primary/5 border-3'
+                        : 'border-gray-300 hover:border-gray-400'
+                    }`}
+                    style={{ backgroundColor: variant.color }}
+                  />
                 ))}
             </div>
           </div>
@@ -488,13 +481,17 @@ const ProductDetailsPage: React.FC = () => {
 
           {/* Reviews List */}
           <div className="space-y-4 sm:space-y-6">
-            {reviews.map((review) => (
-              <ReviewCard key={review.id} review={review} />
-            ))}
+            {reviewst.length > 0 ? (
+              reviewst.map((review) => <ReviewCard key={review.id} review={review} />)
+            ) : (
+              <div className="text-gray-500 w-full text-center text-lg flex justify-center items-center min-h-[400px]">
+                No reviews yet!
+              </div>
+            )}
           </div>
 
           {/* View All Button */}
-          {reviews.length > 10 && (
+          {reviewst.length > 10 && (
             <div className="mt-6 sm:mt-8 text-center">
               <Button
                 variant="outline"

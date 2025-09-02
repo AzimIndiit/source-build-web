@@ -56,7 +56,6 @@ const createBankAccountSchema = z.object({
 
 // Schema for updating bank account (account number is optional)
 const updateBankAccountSchema = z.object({
-  
   isDefault: z.boolean().optional(),
 });
 
@@ -68,8 +67,8 @@ interface AddBankAccountModalProps {
   onSubmit: (data: BankAccountFormData) => Promise<void>;
   initialData?: Partial<BankAccountFormData>;
   isEdit?: boolean;
-  totalBankAccount?:boolean;
-  isSubmitting?:boolean
+  totalBankAccount?: boolean;
+  isSubmitting?: boolean;
 }
 
 export const AddBankAccountModal: React.FC<AddBankAccountModalProps> = ({
@@ -79,11 +78,11 @@ export const AddBankAccountModal: React.FC<AddBankAccountModalProps> = ({
   initialData,
   isEdit = false,
   totalBankAccount,
-  isSubmitting =false
+  isSubmitting = false,
 }) => {
   const methods = useForm<BankAccountFormData>({
     resolver: zodResolver(isEdit ? updateBankAccountSchema : createBankAccountSchema),
-    defaultValues: initialData 
+    defaultValues: initialData
       ? {
           accountHolderName: initialData.accountHolderName || '',
           bankName: initialData.bankName || '',
@@ -135,7 +134,7 @@ export const AddBankAccountModal: React.FC<AddBankAccountModalProps> = ({
 
   const {
     handleSubmit,
-    formState: { },
+    formState: {},
     reset,
     control,
   } = methods;
@@ -173,52 +172,69 @@ export const AddBankAccountModal: React.FC<AddBankAccountModalProps> = ({
                 label="Account Holder Name"
                 placeholder="Enter Account Holder Name"
               />
-              <FormInput name="bankName" label="Bank Name"     disabled={isEdit || isSubmitting} placeholder="Enter Bank Name" />
+              <FormInput
+                name="bankName"
+                label="Bank Name"
+                disabled={isEdit || isSubmitting}
+                placeholder="Enter Bank Name"
+              />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-              <FormInput  
+              <FormInput
                 disabled={isEdit || isSubmitting}
                 name="accountNumber"
-                label={ "Bank Account Number"}
-                placeholder={ "Enter Bank Account Number"}
+                label={'Bank Account Number'}
+                placeholder={'Enter Bank Account Number'}
               />
               <FormInput
                 disabled={isEdit || isSubmitting}
-                  name="routingNumber"
+                name="routingNumber"
                 label="Routing Number"
                 placeholder="Enter Routing Number"
               />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-              <FormInput     disabled={isEdit || isSubmitting} name="swiftCode" label="SWIFT/BIC Code" placeholder="Enter SWIFT Code" />
+              <FormInput
+                disabled={isEdit || isSubmitting}
+                name="swiftCode"
+                label="SWIFT/BIC Code"
+                placeholder="Enter SWIFT Code"
+              />
 
-              <FormSelect     disabled={isEdit || isSubmitting} name="accountType" label="Account Type" options={AccountTypeOptions} />
+              <FormSelect
+                disabled={isEdit || isSubmitting}
+                name="accountType"
+                label="Account Type"
+                options={AccountTypeOptions}
+              />
             </div>
 
-                    {/* Save as default checkbox */}
-      {   totalBankAccount  &&      <Controller
+            {/* Save as default checkbox */}
+            {totalBankAccount && (
+              <Controller
                 name="isDefault"
                 control={control}
                 render={({ field }) => (
                   <div className="flex items-center gap-2 pt-2">
-                    <Checkbox 
+                    <Checkbox
                       id="isDefault"
                       checked={field.value}
                       disabled={isSubmitting}
                       onCheckedChange={field.onChange}
                       className="border-gray-300"
                     />
-                    <Label 
-                      htmlFor="isDefault" 
+                    <Label
+                      htmlFor="isDefault"
                       className="text-sm font-normal text-gray-600 cursor-pointer"
                     >
                       Save as default
                     </Label>
                   </div>
                 )}
-              />}
+              />
+            )}
 
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-3 sm:pt-4 sm:justify-end">
               <Button

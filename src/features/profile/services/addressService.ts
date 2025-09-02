@@ -112,8 +112,8 @@ export const addressService = {
 
   // Get default address
   async getDefaultAddress(type?: AddressType): Promise<AddressResponse> {
-    const response = await api.get('/addresses/default', { 
-      params: type ? { type } : undefined 
+    const response = await api.get('/addresses/default', {
+      params: type ? { type } : undefined,
     });
     return response.data;
   },

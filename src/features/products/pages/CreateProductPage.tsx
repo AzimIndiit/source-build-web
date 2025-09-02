@@ -9,14 +9,15 @@ import { Button } from '@/components/ui';
 import { ProductForm } from '../components/ProductForm';
 import { ProductPreview } from '../components/ProductPreview';
 import { AddSavedAddressModal } from '@/features/profile/components/AddSavedAddressModal';
-import { 
+import {
   useSavedAddresssQuery,
   useCreateSavedAddressMutation,
 } from '@/features/profile/hooks/useSavedAddressMutations';
-import { SavedAddress, CreateSavedAddressPayload } from '@/features/profile/services/addressService';
+import {
+  SavedAddress,
+  CreateSavedAddressPayload,
+} from '@/features/profile/services/addressService';
 import { useCreateProductMutation, useSaveDraftMutation } from '../hooks/useProductMutations';
-
-
 
 // Variant schema
 const variantSchema = z.object({
@@ -147,8 +148,7 @@ const createProductSchema = z
       .array(z.string())
       .min(1, 'At least one location is required')
       .max(10, 'Maximum 10 locations allowed'),
-      
-   
+
     productTag: z
       .array(
         z
@@ -180,7 +180,8 @@ const createProductSchema = z
           return options.pickup || options.shipping || options.delivery;
         },
         {
-          message: 'At least one marketplace option (Pickup, Shipping, or Delivery) must be selected',
+          message:
+            'At least one marketplace option (Pickup, Shipping, or Delivery) must be selected',
         }
       ),
 
@@ -285,40 +286,41 @@ const createProductSchema = z
       message: 'Shipping price must be a valid positive number',
       path: ['shippingPrice'],
     }
-  ).superRefine((data, ctx) => {
+  )
+  .superRefine((data, ctx) => {
     if (data.marketplaceOptions?.pickup && !data.pickupHours?.trim()) {
       ctx.addIssue({
-        code: "custom",
-        path: ["pickupHours"],
-        message: "Pickup hours are required when pickup option is selected",
+        code: 'custom',
+        path: ['pickupHours'],
+        message: 'Pickup hours are required when pickup option is selected',
       });
     }
-  
+
     if (data.marketplaceOptions?.shipping) {
       if (!data.shippingPrice?.trim()) {
         ctx.addIssue({
-          code: "custom",
-          path: ["shippingPrice"],
-          message: "Shipping price is required when shipping option is selected",
+          code: 'custom',
+          path: ['shippingPrice'],
+          message: 'Shipping price is required when shipping option is selected',
         });
       } else {
         const regex = /^\d+(\.\d{1,2})?$/;
         if (!regex.test(data.shippingPrice)) {
           ctx.addIssue({
-            code: "custom",
-            path: ["shippingPrice"],
-            message: "Shipping price must be a valid number with up to 2 decimals",
+            code: 'custom',
+            path: ['shippingPrice'],
+            message: 'Shipping price must be a valid number with up to 2 decimals',
           });
         } else if (parseFloat(data.shippingPrice) < 0) {
           ctx.addIssue({
-            code: "custom",
-            path: ["shippingPrice"],
-            message: "Shipping price must be greater than or equal to 0",
+            code: 'custom',
+            path: ['shippingPrice'],
+            message: 'Shipping price must be greater than or equal to 0',
           });
         }
       }
     }
-  })
+  });
 
 type CreateProductForm = z.infer<typeof createProductSchema>;
 
@@ -370,19 +372,18 @@ function CreateProductPage() {
   const createAddressMutation = useCreateSavedAddressMutation();
   const createProductMutation = useCreateProductMutation();
   const saveDraftMutation = useSaveDraftMutation();
-  
+
   // Convert saved addresses to options for FormSelect
-  const savedAddresses = Array.isArray(addressesData?.data) 
-    ? addressesData.data 
-    : addressesData?.data 
-    ? [addressesData.data] 
-    : [];
-    
+  const savedAddresses = Array.isArray(addressesData?.data)
+    ? addressesData.data
+    : addressesData?.data
+      ? [addressesData.data]
+      : [];
+
   const addressOptions = savedAddresses.map((address: SavedAddress) => ({
     value: address.id || address._id || '',
-    label: `${address.name} , ${address.formattedAddress}` || "",
+    label: `${address.name} , ${address.formattedAddress}` || '',
   }));
-  
 
   const methods = useForm<CreateProductForm>({
     resolver: zodResolver(createProductSchema),
@@ -575,10 +576,10 @@ function CreateProductPage() {
       .filter(({ variant }) => variant.images.length > 0)
       .map(({ variant, index }) => ({
         variantId: variant.id,
-        variantIndex: index,  // Store the original index
-        files: variant.images
+        variantIndex: index, // Store the original index
+        files: variant.images,
       }));
-    
+
     // Debug: Log the variant data to understand the structure
     console.log('Variants from form:', data.variants);
     console.log('Variant files to upload:', variantFiles);
@@ -610,7 +611,9 @@ function CreateProductPage() {
       readyByTime: data.readyByTime,
       discount: {
         discountType: data.discount.discountType,
-        discountValue: data.discount.discountValue ? parseFloat(data.discount.discountValue) : undefined,
+        discountValue: data.discount.discountValue
+          ? parseFloat(data.discount.discountValue)
+          : undefined,
       },
       variants: data.variants?.map((v) => ({
         color: v.color,
@@ -618,7 +621,9 @@ function CreateProductPage() {
         price: parseFloat(v.price),
         discount: {
           discountType: v.discount.discountType,
-          discountValue: v.discount.discountValue ? parseFloat(v.discount.discountValue) : undefined,
+          discountValue: v.discount.discountValue
+            ? parseFloat(v.discount.discountValue)
+            : undefined,
         },
       })),
       imageFiles: uploadedPhotos,
@@ -638,7 +643,7 @@ function CreateProductPage() {
   const handleSaveDraft = async () => {
     // Check if minimal required fields are present
     const formData = getValues();
-    
+
     // Validate minimal required fields for draft
     if (!formData.title || formData.title.trim().length === 0) {
       toast.error('Title is required to save as draft');
@@ -646,19 +651,19 @@ function CreateProductPage() {
       setError('title', { message: 'Title is required to save as draft' });
       return;
     }
-      // Validate minimal required fields for draft
-      if (!formData.category || formData.category.trim().length === 0) {
-        toast.error('Category is required to save as draft');
-        setFocus('category');
-        setError('category', { message: 'Category is required to save as draft' });
-        return;
-      }
-      if (!formData.price || formData.price.trim().length === 0) {
-        toast.error('Price is required to save as draft');
-        setFocus('price');
-        setError('price', { message: 'Price is required to save as draft' });
-        return;
-      }
+    // Validate minimal required fields for draft
+    if (!formData.category || formData.category.trim().length === 0) {
+      toast.error('Category is required to save as draft');
+      setFocus('category');
+      setError('category', { message: 'Category is required to save as draft' });
+      return;
+    }
+    if (!formData.price || formData.price.trim().length === 0) {
+      toast.error('Price is required to save as draft');
+      setFocus('price');
+      setError('price', { message: 'Price is required to save as draft' });
+      return;
+    }
     if (uploadedPhotos.length === 0) {
       setImageError(true);
       toast.error('At least one image is required to save as draft');
@@ -666,9 +671,9 @@ function CreateProductPage() {
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
-    
+
     setImageError(false);
-    
+
     // Prepare variant files if any
     const variantFiles = variants
       .map((v, index) => ({ variant: v, index }))
@@ -676,22 +681,22 @@ function CreateProductPage() {
       .map(({ variant, index }) => ({
         variantId: variant.id,
         variantIndex: index,
-        files: variant.images
+        files: variant.images,
       }));
-    
+
     // Convert readyByDate if provided
     let readyByDate: string | undefined;
     if (formData.readyByDate) {
       const time = formData.readyByTime || '00:00';
       readyByDate = new Date(`${formData.readyByDate}T${time}:00`).toISOString();
     }
-    
+
     // Prepare the draft data with only provided fields
     const draftData: any = {
       title: formData.title,
       imageFiles: uploadedPhotos,
     };
-    
+
     // Add optional fields only if they have values
     if (formData.price && formData.price.trim()) {
       draftData.price = formData.price;
@@ -720,10 +725,12 @@ function CreateProductPage() {
     if (formData.productTag && formData.productTag.length > 0) {
       draftData.productTag = formData.productTag;
     }
-    if (formData.marketplaceOptions && 
-        (formData.marketplaceOptions.pickup || 
-         formData.marketplaceOptions.shipping || 
-         formData.marketplaceOptions.delivery)) {
+    if (
+      formData.marketplaceOptions &&
+      (formData.marketplaceOptions.pickup ||
+        formData.marketplaceOptions.shipping ||
+        formData.marketplaceOptions.delivery)
+    ) {
       draftData.marketplaceOptions = formData.marketplaceOptions;
     }
     if (formData.pickupHours && formData.pickupHours.trim()) {
@@ -745,7 +752,7 @@ function CreateProductPage() {
     if (variantFiles.length > 0) {
       draftData.variantFiles = variantFiles;
     }
-    
+
     try {
       await saveDraftMutation.mutateAsync(draftData);
       // Navigate to products page after successful draft save
@@ -802,7 +809,7 @@ function CreateProductPage() {
             const containerRect = container.getBoundingClientRect();
             const scrollTop = container.scrollTop + rect.top - containerRect.top - 100;
             container.scrollTo({ top: scrollTop, behavior: 'smooth' });
-            
+
             // Focus after scrolling
             setTimeout(() => {
               formElement.focus();
@@ -953,7 +960,6 @@ function CreateProductPage() {
             <div className="flex items-center gap-2">
               <Button
                 type="button"
-                
                 onClick={handleSaveDraft}
                 variant="ghost"
                 className="text-white hover:bg-white h-[40px] sm:h-[48px] text-sm sm:text-base hover:text-primary px-3 sm:px-4"
@@ -961,7 +967,6 @@ function CreateProductPage() {
               >
                 {saveDraftMutation.isPending ? 'Saving...' : 'Save Draft'}
               </Button>
-            
             </div>
           </div>
         </div>
@@ -1057,9 +1062,8 @@ function CreateProductPage() {
             />
           </div>
         </form>
-        
       </div>
-      
+
       {/* Add Saved Address Modal - moved outside the main container */}
       <AddSavedAddressModal
         isOpen={showAddAddressModal}

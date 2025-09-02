@@ -15,8 +15,6 @@ export function useBankAccountsQuery() {
 }
 
 export function useCreateBankAccountMutation() {
-  
-  
   return useMutation({
     mutationFn: (data: CreateBankAccountPayload) => bankAccountService.createBankAccount(data),
     onSuccess: async (response) => {
@@ -33,8 +31,6 @@ export function useCreateBankAccountMutation() {
 }
 
 export function useUpdateBankAccountMutation() {
-  
-  
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateBankAccountPayload }) =>
       bankAccountService.updateBankAccount(id, data),
@@ -52,8 +48,6 @@ export function useUpdateBankAccountMutation() {
 }
 
 export function useDeleteBankAccountMutation() {
-  
-  
   return useMutation({
     mutationFn: (id: string) => bankAccountService.deleteBankAccount(id),
     onSuccess: async (response) => {
@@ -70,8 +64,6 @@ export function useDeleteBankAccountMutation() {
 }
 
 export function useSetDefaultBankAccountMutation() {
-  
-  
   return useMutation({
     mutationFn: (id: string) => bankAccountService.setDefaultBankAccount(id),
     onSuccess: async (response) => {

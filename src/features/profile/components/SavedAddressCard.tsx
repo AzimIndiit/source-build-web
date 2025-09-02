@@ -7,7 +7,7 @@ interface SavedAddressCardProps {
   name: string;
   phoneNumber: string;
   formattedAddress: string;
-  
+
   isDefault?: boolean;
   onEdit: () => void;
   onDelete: () => void;
@@ -18,7 +18,7 @@ export const SavedAddressCard: React.FC<SavedAddressCardProps> = ({
   name,
   phoneNumber,
   formattedAddress,
-   isDefault,
+  isDefault,
   onEdit,
   onDelete,
 }) => {
@@ -35,11 +35,10 @@ export const SavedAddressCard: React.FC<SavedAddressCardProps> = ({
             </span>
           )}
         </div>
-        
+
         <div className="flex-1 space-y-1 overflow-hidden">
           <p className="text-sm text-gray-600">{phoneNumber}</p>
           <p className="text-sm text-gray-700 line-clamp-2">{formattedAddress}</p>
-         
         </div>
         <div className="flex gap-2 justify-end mt-auto pt-3">
           <Button
@@ -60,13 +59,7 @@ export const SavedAddressCard: React.FC<SavedAddressCardProps> = ({
           >
             <Trash2 className="w-4 h-4" />
           </Button>
-        </div>   
-    
-       
-
-        
- 
-        
+        </div>
       </CardContent>
     </Card>
   );

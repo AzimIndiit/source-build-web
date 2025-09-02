@@ -2,31 +2,88 @@ import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { BreadcrumbWrapper } from '@/components/ui';
-import { ordersData } from '@/features/dashboard/data/mockData';
 import { OrderProductCard } from '../components/OrderProductCard';
 import { OrderSummarySection } from '../components/OrderSummarySection';
 import { CustomerDetailsSection } from '../components/CustomerDetailsSection';
 import { BookingStatus } from '../components/BookingStatus';
-import { OrderSummary } from '@/features/dashboard/types';
+import { OrderStatusUpdater } from '../components/OrderStatusUpdater';
+import { OrderDetailsPageSkeleton } from '../components/OrderDetailsPageSkeleton';
+import { OrderSummary, Customer } from '@/features/dashboard/types';
+import { useOrderByIdQuery } from '../hooks/useOrderMutations';
 
 const OrderDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  // Find the order by ID (in real app, this would be an API call)
-  const order = ordersData.find((o) => o.id === id) || ordersData[0];
+  // Fetch order from API
+  const { data, isLoading, isError } = useOrderByIdQuery(id || '');
 
-  if (!order) {
+  // Loading state
+  if (isLoading) {
+    return <OrderDetailsPageSkeleton />;
+  }
+
+  // Error state
+  if (isError || !data?.data) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Order Not Found</h1>
           <p className="text-gray-600 mb-4">The order you're looking for doesn't exist.</p>
-          <Button onClick={() => navigate('/seller/orders')}>Back to Orders</Button>
+          <Button
+            className="text-white hover:text-white"
+            onClick={() => navigate('/seller/orders')}
+          >
+            Back to Orders
+          </Button>
         </div>
       </div>
     );
   }
+
+  // Transform API data to match expected format
+  const apiOrder = data.data;
+  const order = {
+    id: apiOrder.orderNumber || apiOrder._id,
+    customer: {
+      id: apiOrder.customer?.userRef?._id || '',
+      displayName: apiOrder.customer?.userRef?.displayName || 'Customer',
+      email: apiOrder.customer?.userRef?.email || '',
+      avatar: apiOrder.customer?.userRef?.avatar || '',
+      rating: apiOrder.customer?.reviewRef?.rating,
+      review: apiOrder.customer?.reviewRef?.review,
+    } as Customer,
+    driver: apiOrder.driver
+      ? ({
+          id: apiOrder.driver?.userRef?._id || '',
+          displayName: apiOrder.driver?.userRef?.displayName || 'Driver',
+          email: apiOrder.driver?.userRef?.email || '',
+          avatar: apiOrder.driver?.userRef?.avatar || '',
+          rating: apiOrder.driver?.reviewRef?.rating,
+          review: apiOrder.driver?.reviewRef?.review,
+        } as Customer)
+      : undefined,
+    products: apiOrder.products,
+    date: apiOrder.date,
+    amount: apiOrder.amount,
+    status: apiOrder.status as any,
+    orderSummary: apiOrder.orderSummary
+      ? ({
+          shippingAddress: apiOrder.orderSummary.shippingAddress,
+          proofOfDelivery: apiOrder.orderSummary.proofOfDelivery || '',
+          paymentMethod: {
+            type: apiOrder.orderSummary.paymentMethod.type,
+            cardType: apiOrder.orderSummary.paymentMethod.cardType || '',
+            cardNumber: apiOrder.orderSummary.paymentMethod.cardNumber || '',
+          },
+          subTotal: apiOrder.orderSummary.subTotal,
+          shippingFee: apiOrder.orderSummary.shippingFee,
+          marketplaceFee: apiOrder.orderSummary.marketplaceFee,
+          taxes: apiOrder.orderSummary.taxes,
+          total: apiOrder.orderSummary.total,
+        } as OrderSummary)
+      : undefined,
+  };
 
   const breadcrumbItems = [
     { label: 'Orders', href: '/seller/orders' },
@@ -37,8 +94,9 @@ const OrderDetailsPage: React.FC = () => {
     console.log('Writing review...');
   };
 
-  const handleViewItem = () => {
+  const handleViewItem = ({ slug }: { slug: string }) => {
     console.log('Viewing item...');
+    navigate(`/seller/products/${slug}`);
   };
 
   // Check if either customer or driver has added a review
@@ -51,7 +109,15 @@ const OrderDetailsPage: React.FC = () => {
       {/* Breadcrumb */}
       <BreadcrumbWrapper items={breadcrumbItems} />
 
-      {/* Header */}
+      {/* Header with Status Updater */}
+      {/* <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+        <h1 className="text-2xl font-bold text-gray-900">Order #{order.id}</h1>
+        <OrderStatusUpdater 
+          orderId={apiOrder._id}
+          currentStatus={apiOrder.status}
+          onStatusUpdate={() => window.location.reload()}
+        />
+      </div> */}
 
       <OrderProductCard
         order={order}

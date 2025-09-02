@@ -32,14 +32,16 @@ export const BankAccountCard: React.FC<BankAccountCardProps> = ({
     >
       <CardContent className="flex flex-col h-full">
         <div className="flex justify-between items-start mb-3">
-          <h3 className="font-semibold text-gray-900 text-base sm:text-lg line-clamp-1">{accountHolder}</h3>
+          <h3 className="font-semibold text-gray-900 text-base sm:text-lg line-clamp-1">
+            {accountHolder}
+          </h3>
           {isDefault && (
             <span className="inline-flex items-center px-2.5 py-0.5 text-xs font-medium text-primary bg-blue-100 rounded">
               Default
             </span>
           )}
         </div>
-        
+
         <div className="flex-1 space-y-2">
           <p className="text-gray-600 text-sm font-mono tracking-wider">{accountNumber}</p>
           <p className="text-gray-700 text-sm">{bankName}</p>

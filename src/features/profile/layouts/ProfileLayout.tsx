@@ -89,7 +89,6 @@ export const ProfileLayout: React.FC = () => {
             onItemClick={handleSectionChange}
             isCollapsed={isSidebarCollapsed}
             onCollapsedChange={setIsSidebarCollapsed}
-          
           />
         </div>
 

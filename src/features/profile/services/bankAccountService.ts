@@ -24,8 +24,6 @@ export interface CreateBankAccountPayload {
   isDefault?: boolean;
 }
 
- 
-
 export interface BankAccountResponse extends BaseApiResponse {
   data?: BankAccount;
 }
@@ -52,8 +50,14 @@ class BankAccountService {
     return response.data;
   }
 
-  async updateBankAccount(id: string, data: CreateBankAccountPayload): Promise<BankAccountResponse> {
-    const response = await axiosInstance.patch<BankAccountResponse>(`/bank-accounts/${id}/set-default`, data);
+  async updateBankAccount(
+    id: string,
+    data: CreateBankAccountPayload
+  ): Promise<BankAccountResponse> {
+    const response = await axiosInstance.patch<BankAccountResponse>(
+      `/bank-accounts/${id}/set-default`,
+      data
+    );
     return response.data;
   }
 
@@ -61,7 +65,6 @@ class BankAccountService {
     const response = await axiosInstance.delete<BaseApiResponse>(`/bank-accounts/${id}`);
     return response.data;
   }
-
 }
 
 export const bankAccountService = new BankAccountService();

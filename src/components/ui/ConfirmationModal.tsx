@@ -58,25 +58,13 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             <AlertTriangle className={`h-5 w-5 ${styles.icon}`} />
             <DialogTitle>{title}</DialogTitle>
           </div>
-          <DialogDescription className="pt-3">
-            {description}
-          </DialogDescription>
+          <DialogDescription className="pt-3">{description}</DialogDescription>
         </DialogHeader>
         <DialogFooter className="gap-2 sm:gap-0">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onClose}
-            disabled={isLoading}
-          >
+          <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>
             {cancelText}
           </Button>
-          <Button
-            type="button"
-            className={styles.button}
-            onClick={onConfirm}
-            disabled={isLoading}
-          >
+          <Button type="button" className={styles.button} onClick={onConfirm} disabled={isLoading}>
             {isLoading ? 'Processing...' : confirmText}
           </Button>
         </DialogFooter>

@@ -1,13 +1,52 @@
 import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
-import { mockChatList, mockUser } from '../data/mockChats';
 import { ChatCard } from './ChatCard';
+import { ChatListSkeleton } from './ChatListSkeleton';
 import { useAuth } from '@/hooks/useAuth';
+import { useSocket } from '@/hooks/useSocket';
+import { useEffect, useState } from 'react';
+import { useChatsQuery } from '../hooks/useChatQueries';
+import { Chat } from '../services/chatService';
 
 const ChatList = () => {
   const { user } = useAuth();
+  const { emit, on, isConnected, off } = useSocket();
   const navigate = useNavigate();
-  const chatList = mockChatList;
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const { data: chatsResponse, isLoading, error } = useChatsQuery({ page, limit });
+  const [chatList, setChatList] = useState<Chat[]>([]);
+
+  useEffect(() => {
+    if (chatsResponse?.data) {
+      setChatList(chatsResponse.data);
+    }
+  }, [chatsResponse]);
+
+  useEffect(() => {
+    const handleUpdateChats = (data: any) => {
+      setChatList((prev) => {
+        const index = prev.findIndex((chat) => chat.id === data.id);
+
+        if (index !== -1) {
+          const updated = [...prev];
+          updated[index] = {
+            ...updated[index],
+            ...data, // merge updated fields
+          };
+          return updated;
+        }
+
+        return prev;
+      });
+    };
+
+    const removeMessageListener = on('update_unread_count', handleUpdateChats);
+
+    return () => {
+      removeMessageListener();
+    };
+  }, [on]);
 
   return (
     <div className="py-4 md:p-6 space-y-6">
@@ -28,21 +67,27 @@ const ChatList = () => {
                   addSuffix: true,
                 })
               : '';
-            const unreadCount = item.unreadCounts[mockUser?.id];
+            const unreadCount = user?.id && item.unreadCounts ? item.unreadCounts[user.id] || 0 : 0;
 
             return (
               <ChatCard
                 key={item.id}
-                id={item.id}
+                id={item.id || ''}
                 displayName={otherUser?.displayName || 'Unknown User'}
                 avatar={otherUser?.avatar}
                 lastMessage={content}
                 timestamp={time}
                 unreadCount={unreadCount}
-                onClick={() => navigate(`/${user?.role}/messages/${item.id}`, { state: item })}
+                onClick={() => navigate(`/${user?.role}/messages/${item._id}`, { state: item })}
               />
             );
           })
+        ) : isLoading ? (
+          <ChatListSkeleton />
+        ) : error ? (
+          <div className="flex items-center justify-center h-96">
+            <p className="text-red-500">Failed to load messages. Please try again.</p>
+          </div>
         ) : (
           <div className="flex items-center justify-center h-96">
             <p className="text-gray-500">No Messages Found</p>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MapPin, ChevronDown, Loader2, AlertCircle } from 'lucide-react';
+import { MapPin, ChevronDown, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { PaginationWrapper } from '@/components/ui/pagination-wrapper';
 import FilterDropdown from '@/components/ui/FilterDropdown';
@@ -12,6 +12,7 @@ import {
 import { DropdownMenuLabel, DropdownMenuSeparator } from '@radix-ui/react-dropdown-menu';
 import { useProductsQuery, useDeleteProductMutation } from '../hooks/useProductMutations';
 import { ProductGrid } from '../components';
+import { ProductsPageSkeleton } from '../components/ProductsPageSkeleton';
 import { DeleteConfirmationModal } from '@/components/ui';
 
 interface FilterOption {
@@ -27,7 +28,7 @@ const ProductsPage: React.FC = () => {
     sorting: 'ascending',
   });
   const [selectedLocation, setSelectedLocation] = useState<string>('all');
-  
+
   // Store the full filter state to persist it
   const [filterState, setFilterState] = useState<{
     popularity: FilterOption[];
@@ -89,10 +90,10 @@ const ProductsPage: React.FC = () => {
   const handleApplyFilters = (filters: any) => {
     // Save the filter state to persist it
     setFilterState(filters);
-    
+
     // Transform filters to match backend API expectations
     const transformedFilters: any = {};
-    
+
     // Popularity filters - collect checked items
     const popularityFilters = filters.popularity
       .filter((opt: any) => opt.checked)
@@ -100,7 +101,7 @@ const ProductsPage: React.FC = () => {
     if (popularityFilters.length > 0) {
       transformedFilters.popularity = popularityFilters;
     }
-    
+
     // Newest filters
     const newestFilters = filters.newest
       .filter((opt: any) => opt.checked)
@@ -108,7 +109,7 @@ const ProductsPage: React.FC = () => {
     if (newestFilters.length > 0) {
       transformedFilters.newest = newestFilters;
     }
-    
+
     // Availability filters
     const availabilityFilters = filters.availability
       .filter((opt: any) => opt.checked)
@@ -116,7 +117,7 @@ const ProductsPage: React.FC = () => {
     if (availabilityFilters.length > 0) {
       transformedFilters.availability = availabilityFilters;
     }
-    
+
     // Ready time filters
     const readyTimeFilters = filters.readyTime
       .filter((opt: any) => opt.checked)
@@ -124,12 +125,12 @@ const ProductsPage: React.FC = () => {
     if (readyTimeFilters.length > 0) {
       transformedFilters.readyTime = readyTimeFilters;
     }
-    
+
     // Sorting (A-Z)
     if (filters.sorting !== 'ascending') {
       transformedFilters.sorting = filters.sorting;
     }
-    
+
     // Pricing
     if (filters.pricing !== 'custom' && filters.pricing !== '') {
       transformedFilters.pricing = filters.pricing;
@@ -138,7 +139,7 @@ const ProductsPage: React.FC = () => {
       transformedFilters.pricing = 'custom';
       transformedFilters.priceRange = filters.priceRange.join(',');
     }
-    
+
     setActiveFilters(transformedFilters);
     setCurrentPage(1); // Reset to first page when filters change
   };
@@ -186,11 +187,7 @@ const ProductsPage: React.FC = () => {
     navigate(`/seller/products/${productId}/edit`);
   };
 
-  const handleDeleteProduct = (
-    e: React.MouseEvent,
-    productId: string,
-    productTitle: string
-  ) => {
+  const handleDeleteProduct = (e: React.MouseEvent, productId: string, productTitle: string) => {
     e.stopPropagation();
     setDeleteModal({
       isOpen: true,
@@ -213,25 +210,9 @@ const ProductsPage: React.FC = () => {
     setDeleteModal({ isOpen: false, productId: '', productTitle: '' });
   };
 
-
-
   // Loading state
   if (isLoading) {
-    return (
-      <div className="py-4 md:p-4 space-y-4 md:space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl md:text-2xl font-bold text-gray-900">My Listing</h1>
-          <FilterDropdown 
-            onApply={handleApplyFilters} 
-            onClear={handleClearFilters}
-            initialFilters={filterState}
-          />
-        </div>
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      </div>
-    );
+    return <ProductsPageSkeleton />;
   }
 
   // Error state
@@ -240,8 +221,8 @@ const ProductsPage: React.FC = () => {
       <div className="py-4 md:p-4 space-y-4 md:space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-xl md:text-2xl font-bold text-gray-900">My Listing</h1>
-          <FilterDropdown 
-            onApply={handleApplyFilters} 
+          <FilterDropdown
+            onApply={handleApplyFilters}
             onClear={handleClearFilters}
             initialFilters={filterState}
           />
@@ -263,7 +244,9 @@ const ProductsPage: React.FC = () => {
   // Handle both old and new API response structures
   const responseData: any = data?.data;
   const products = Array.isArray(responseData) ? responseData : responseData?.products || [];
-  const availableLocations = Array.isArray(responseData) ? [] : responseData?.availableLocations || [];
+  const availableLocations = Array.isArray(responseData)
+    ? []
+    : responseData?.availableLocations || [];
   const totalPages = data?.pagination?.totalPages || 1;
 
   // Empty state
@@ -273,61 +256,62 @@ const ProductsPage: React.FC = () => {
         <div className="flex items-center justify-between">
           <h1 className="text-xl md:text-2xl font-bold text-gray-900">My Listing</h1>
           <div className="flex items-center gap-2">
-          {/* Location Selector - Visible on tablet and desktop */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="bg-blue-50 flex gap-2 h-[42px] items-center px-2 md:px-3 py-2 rounded-lg hover:bg-blue-100 transition-colors outline-none cursor-pointer">
-                <MapPin className="w-5 h-5 text-gray-700" />
-                <div className="flex flex-col text-left">
-                  <span className="text-xs text-gray-600 hidden md:block">Location</span>
-                  <span className="text-xs md:text-sm font-semibold text-gray-900 flex items-center gap-1">
-                    {selectedLocation === 'all' ? (
-                      <>
-                        <span className="hidden lg:inline">All Locations</span>
-                        <span className="lg:hidden">All</span>
-                      </>
-                    ) : (
-                      <>
-                        {availableLocations.find((loc: any) => loc._id === selectedLocation)?.displayName || 
-                         availableLocations.find((loc: any) => loc._id === selectedLocation)?.city || 
-                         'Select Location'}
-                      </>
-                    )}
-                    <ChevronDown size={12} />
-                  </span>
-                </div>
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-56">
-              <DropdownMenuSeparator />
-              <DropdownMenuItem 
-                className="cursor-pointer"
-                onClick={() => setSelectedLocation('all')}
-              >
-                All Locations
-              </DropdownMenuItem>
-              {availableLocations.map((location: any) => (
-                <DropdownMenuItem 
-                  key={location._id}
+            {/* Location Selector - Visible on tablet and desktop */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="bg-blue-50 flex gap-2 h-[42px] items-center px-2 md:px-3 py-2 rounded-lg hover:bg-blue-100 transition-colors outline-none cursor-pointer">
+                  <MapPin className="w-5 h-5 text-gray-700" />
+                  <div className="flex flex-col text-left">
+                    <span className="text-xs text-gray-600 hidden md:block">Location</span>
+                    <span className="text-xs md:text-sm font-semibold text-gray-900 flex items-center gap-1">
+                      {selectedLocation === 'all' ? (
+                        <>
+                          <span className="hidden lg:inline">All Locations</span>
+                          <span className="lg:hidden">All</span>
+                        </>
+                      ) : (
+                        <>
+                          {availableLocations.find((loc: any) => loc._id === selectedLocation)
+                            ?.displayName ||
+                            availableLocations.find((loc: any) => loc._id === selectedLocation)
+                              ?.city ||
+                            'Select Location'}
+                        </>
+                      )}
+                      <ChevronDown size={12} />
+                    </span>
+                  </div>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-56">
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
                   className="cursor-pointer"
-                  onClick={() => setSelectedLocation(location._id)}
+                  onClick={() => setSelectedLocation('all')}
                 >
-                  {location.displayName || `${location.city}, ${location.state}`}
+                  All Locations
                 </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+                {availableLocations.map((location: any) => (
+                  <DropdownMenuItem
+                    key={location._id}
+                    className="cursor-pointer"
+                    onClick={() => setSelectedLocation(location._id)}
+                  >
+                    {location.displayName || `${location.city}, ${location.state}`}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
 
-          <FilterDropdown 
-            onApply={handleApplyFilters} 
-            onClear={handleClearFilters}
-            initialFilters={filterState}
-          />
-        </div>
+            <FilterDropdown
+              onApply={handleApplyFilters}
+              onClear={handleClearFilters}
+              initialFilters={filterState}
+            />
+          </div>
         </div>
         <div className="flex flex-col items-center justify-center h-64 space-y-4">
           <p className="text-gray-600">No products found</p>
-        
         </div>
       </div>
     );
@@ -353,9 +337,11 @@ const ProductsPage: React.FC = () => {
                       </>
                     ) : (
                       <>
-                        {availableLocations.find((loc: any) => loc._id === selectedLocation)?.displayName || 
-                         availableLocations.find((loc: any) => loc._id === selectedLocation)?.city || 
-                         'Select Location'}
+                        {availableLocations.find((loc: any) => loc._id === selectedLocation)
+                          ?.displayName ||
+                          availableLocations.find((loc: any) => loc._id === selectedLocation)
+                            ?.city ||
+                          'Select Location'}
                       </>
                     )}
                     <ChevronDown size={12} />
@@ -365,14 +351,14 @@ const ProductsPage: React.FC = () => {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-56">
               <DropdownMenuSeparator />
-              <DropdownMenuItem 
+              <DropdownMenuItem
                 className="cursor-pointer"
                 onClick={() => setSelectedLocation('all')}
               >
                 All Locations
               </DropdownMenuItem>
               {availableLocations.map((location: any) => (
-                <DropdownMenuItem 
+                <DropdownMenuItem
                   key={location._id}
                   className="cursor-pointer"
                   onClick={() => setSelectedLocation(location._id)}
@@ -383,8 +369,8 @@ const ProductsPage: React.FC = () => {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <FilterDropdown 
-            onApply={handleApplyFilters} 
+          <FilterDropdown
+            onApply={handleApplyFilters}
             onClear={handleClearFilters}
             initialFilters={filterState}
           />
@@ -405,11 +391,13 @@ const ProductsPage: React.FC = () => {
       </div>
 
       {/* Pagination */}
-      {totalPages > 1 && <PaginationWrapper
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
-      />}
+      {totalPages > 1 && (
+        <PaginationWrapper
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
+      )}
 
       {/* Delete Confirmation Modal */}
       <DeleteConfirmationModal

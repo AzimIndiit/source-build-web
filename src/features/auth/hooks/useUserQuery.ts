@@ -34,8 +34,15 @@ export const transformApiUserToUser = (apiUser: ApiUser): User => {
     id: apiUser.id || apiUser._id || '',
     email: apiUser.email,
     avatar: apiUser.avatar,
-    displayName: apiUser.displayName || `${apiUser.firstName || ''} ${apiUser.lastName || ''}`.trim() || apiUser.email,
-    role: (apiUser.role || apiUser.accountType || 'seller') as 'driver' | 'seller' | 'admin' | 'buyer',
+    displayName:
+      apiUser.displayName ||
+      `${apiUser.firstName || ''} ${apiUser.lastName || ''}`.trim() ||
+      apiUser.email,
+    role: (apiUser.role || apiUser.accountType || 'seller') as
+      | 'driver'
+      | 'seller'
+      | 'admin'
+      | 'buyer',
     isVerified: apiUser.isVerified || false,
     firstName: apiUser.firstName || '',
     lastName: apiUser.lastName || '',
@@ -53,7 +60,7 @@ export const useUserQuery = () => {
     queryKey: USER_QUERY_KEY,
     queryFn: async () => {
       const token = localStorage.getItem('access_token');
-      
+
       if (!token) {
         return null;
       }
@@ -82,11 +89,11 @@ export const useUserQuery = () => {
 
       try {
         const response = await authService.getProfile();
-        
+
         if (response.data && response.data.user) {
           return transformApiUserToUser(response.data.user as ApiUser);
         }
-        
+
         return null;
       } catch (error) {
         console.error('Failed to fetch user profile:', error);

@@ -19,21 +19,21 @@ export const GoogleMapsLoader: React.FC<GoogleMapsLoaderProps> = ({ children }) 
     }
   }, [loadError]);
 
-  if (!isLoaded) {
-    return (
-      <div className="flex items-center justify-center p-4">
-        <div className="text-gray-500">Loading maps...</div>
-      </div>
-    );
-  }
+  // if (!isLoaded) {
+  //   return (
+  //     <div className="flex items-center justify-center p-4">
+  //       <div className="text-gray-500">Loading maps...</div>
+  //     </div>
+  //   );
+  // }
 
-  if (loadError) {
-    return (
-      <div className="flex items-center justify-center p-4">
-        <div className="text-red-500">Error loading maps. Please check your API key.</div>
-      </div>
-    );
-  }
+  // if (loadError) {
+  //   return (
+  //     <div className="flex items-center justify-center p-4">
+  //       <div className="text-red-500">Error loading maps. Please check your API key.</div>
+  //     </div>
+  //   );
+  // }
 
   return <>{children}</>;
 };

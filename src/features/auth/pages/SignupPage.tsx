@@ -70,25 +70,24 @@ function SignupPage() {
             ]}
           />
           <div className="grid grid-cols-2 gap-4">
-
-          <FormInput
-            name="firstName"
-            label="First Name"
-            type="text"
-            disabled={signupMutation.isPending}
-            placeholder="First Name"
-            className="text-base px-4 border-gray-300"
-          />
-          <FormInput
-            name="lastName"
-            label="Last Name"
-            type="text"
-            disabled={signupMutation.isPending}
-            placeholder="Last Name"
-            className="text-base px-4 border-gray-300"
-          />
+            <FormInput
+              name="firstName"
+              label="First Name"
+              type="text"
+              disabled={signupMutation.isPending}
+              placeholder="First Name"
+              className="text-base px-4 border-gray-300"
+            />
+            <FormInput
+              name="lastName"
+              label="Last Name"
+              type="text"
+              disabled={signupMutation.isPending}
+              placeholder="Last Name"
+              className="text-base px-4 border-gray-300"
+            />
           </div>
-      
+
           <FormInput
             name="businessName"
             label="Business Name"

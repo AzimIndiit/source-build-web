@@ -52,7 +52,10 @@ const createSavedAddressSchema = z.object({
   longitude: z.number().optional().nullable(),
 
   formattedAddress: z.string().optional().nullable(),
-  location: z.string().min(1, 'Location is required').max(100, 'Location must not exceed 100 characters'),
+  location: z
+    .string()
+    .min(1, 'Location is required')
+    .max(100, 'Location must not exceed 100 characters'),
 });
 
 // Schema for updating saved address (same as create for now)
@@ -67,7 +70,7 @@ interface AddSavedAddressModalProps {
   initialData?: Partial<CreateSavedAddressPayload>;
   isEdit?: boolean;
   totalAddress?: boolean;
-  isSubmitting?:boolean;
+  isSubmitting?: boolean;
 }
 
 // Google Places Autocomplete types
@@ -84,8 +87,8 @@ export const AddSavedAddressModal: React.FC<AddSavedAddressModalProps> = ({
   onSubmit,
   initialData,
   isEdit = false,
-  totalAddress=false,
-  isSubmitting=false
+  totalAddress = false,
+  isSubmitting = false,
 }) => {
   const locationInputRef = useRef<HTMLInputElement>(null);
   const autocompleteRef = useRef<any>(null);
@@ -93,7 +96,7 @@ export const AddSavedAddressModal: React.FC<AddSavedAddressModalProps> = ({
 
   const methods = useForm<SavedAddressFormData>({
     resolver: zodResolver(isEdit ? updateSavedAddressSchema : createSavedAddressSchema),
-    defaultValues: initialData 
+    defaultValues: initialData
       ? {
           name: initialData.name || '',
           phoneNumber: initialData.phoneNumber || '',
@@ -129,7 +132,6 @@ export const AddSavedAddressModal: React.FC<AddSavedAddressModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       if (initialData) {
-      
         // Ensure isDefault is explicitly set from initialData when editing
         reset({
           name: initialData.name || '',
@@ -139,7 +141,7 @@ export const AddSavedAddressModal: React.FC<AddSavedAddressModalProps> = ({
           state: initialData.state || '',
           country: initialData.country || '',
           zipCode: initialData.zipCode || '',
-          isDefault: initialData.isDefault ?? false,  // Use nullish coalescing to preserve false values
+          isDefault: initialData.isDefault ?? false, // Use nullish coalescing to preserve false values
           formattedAddress: initialData.formattedAddress || '',
           latitude: initialData.latitude || undefined,
           longitude: initialData.longitude || undefined,
@@ -217,7 +219,7 @@ export const AddSavedAddressModal: React.FC<AddSavedAddressModalProps> = ({
     }
 
     const addressComponents = place.address_components;
-  
+
     // Extract address components
     addressComponents.forEach((component: any) => {
       const types = component.types;
@@ -254,10 +256,9 @@ export const AddSavedAddressModal: React.FC<AddSavedAddressModalProps> = ({
 
   const handleFormSubmit = async (data: SavedAddressFormData) => {
     // Build formatted address from individual fields if not already set
-    const formattedAddress = data.formattedAddress || 
-      [data.location, data.city, data.state, data.country, data.zipCode]
-        .filter(Boolean)
-        .join(', ');
+    const formattedAddress =
+      data.formattedAddress ||
+      [data.location, data.city, data.state, data.country, data.zipCode].filter(Boolean).join(', ');
 
     const submitData: CreateSavedAddressPayload = {
       name: data.name,
@@ -333,7 +334,7 @@ export const AddSavedAddressModal: React.FC<AddSavedAddressModalProps> = ({
                     <FormInput
                       label="Location"
                       name="location"
-                      inputRef={(e:any) => {
+                      inputRef={(e: any) => {
                         field.ref(e);
                         locationInputRef.current = e;
                       }}
@@ -360,14 +361,26 @@ export const AddSavedAddressModal: React.FC<AddSavedAddressModalProps> = ({
                   />
                 </div>
                 <div>
-                  <FormInput label="State" name="state" placeholder="Alaska" className="w-full" disabled={isSubmitting} />
+                  <FormInput
+                    label="State"
+                    name="state"
+                    placeholder="Alaska"
+                    className="w-full"
+                    disabled={isSubmitting}
+                  />
                 </div>
               </div>
 
               {/* Country and ZIP Code */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <FormInput label="Country" name="country" placeholder="USA" className="w-full" disabled={isSubmitting} />
+                  <FormInput
+                    label="Country"
+                    name="country"
+                    placeholder="USA"
+                    className="w-full"
+                    disabled={isSubmitting}
+                  />
                 </div>
                 <div>
                   <FormInput
@@ -379,27 +392,29 @@ export const AddSavedAddressModal: React.FC<AddSavedAddressModalProps> = ({
                   />
                 </div>
               </div>
-             {totalAddress &&  <Controller
-                name="isDefault"
-                control={control}
-                render={({ field }) => (
-                  <div className="flex items-center gap-2 pt-2">
-                    <Checkbox
-                      id="isDefault"
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                      className="border-gray-300"
-                      disabled={isSubmitting}
+              {totalAddress && (
+                <Controller
+                  name="isDefault"
+                  control={control}
+                  render={({ field }) => (
+                    <div className="flex items-center gap-2 pt-2">
+                      <Checkbox
+                        id="isDefault"
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        className="border-gray-300"
+                        disabled={isSubmitting}
                       />
-                    <Label
-                      htmlFor="isDefault"
-                      className="text-sm font-normal text-gray-600 cursor-pointer"
-                    >
-                      Save as default
-                    </Label>
-                  </div>
-                )}
-              />}
+                      <Label
+                        htmlFor="isDefault"
+                        className="text-sm font-normal text-gray-600 cursor-pointer"
+                      >
+                        Save as default
+                      </Label>
+                    </div>
+                  )}
+                />
+              )}
             </div>
 
             {/* Action Buttons */}

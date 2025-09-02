@@ -24,19 +24,22 @@ function ForgotPasswordPage() {
   const onSubmit = async (data: ForgotPasswordFormData) => {
     setIsLoading(true);
     try {
-      const response :any = await authService.forgotPassword(data.email);
-      
-      if (response.status==='success') {
-        toast.success( `Password reset link sent to ${data.email}`, {
+      const response: any = await authService.forgotPassword(data.email);
+
+      if (response.status === 'success') {
+        toast.success(`Password reset link sent to ${data.email}`, {
           duration: 5000,
         });
         reset();
       } else {
-        toast.error( 'Failed to send reset link. Please try again.');
+        toast.error('Failed to send reset link. Please try again.');
       }
     } catch (error: any) {
       console.error('Forgot password error:', error);
-      const errorMessage = error?.response?.data?.message || error?.message || 'Failed to send reset link. Please try again.';
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        'Failed to send reset link. Please try again.';
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);

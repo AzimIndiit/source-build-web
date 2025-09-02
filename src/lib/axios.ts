@@ -73,7 +73,7 @@ axiosInstance.interceptors.response.use(
         // Clear all auth-related data
         localStorage.clear();
         sessionStorage.clear();
-        
+
         // Navigate to login
         window.location.href = '/auth/login';
         return Promise.reject(error);
@@ -97,11 +97,11 @@ axiosInstance.interceptors.response.use(
           })
           .catch((err) => {
             processQueue(err, null);
-            
+
             // Clear all auth-related data
             localStorage.clear();
             sessionStorage.clear();
-            
+
             // Navigate to login
             window.location.href = '/auth/login';
             reject(err);

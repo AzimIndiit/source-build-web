@@ -62,3 +62,4 @@ export {
 export { DeleteConfirmationModal } from '../common/DeleteConfirmationModal';
 export { ConfirmationModal } from './ConfirmationModal';
 export { Timeline, type TimelineItem } from './Timeline';
+export { Skeleton } from './skeleton';

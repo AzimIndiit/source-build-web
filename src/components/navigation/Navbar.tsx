@@ -31,6 +31,7 @@ import { useLogoutModal } from '@/stores/useLogoutModal';
 import { DeleteConfirmationModal } from '../ui';
 import { LocationSearch } from '@/components/location/LocationSearch';
 import { useUnreadCountQuery } from '@/features/notifications/hooks/useNotificationMutations';
+import { useUnreadMessageCount } from '@/features/messages/hooks/useUnreadMessageCount';
 
 export const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
@@ -40,13 +41,16 @@ export const Navbar: React.FC = () => {
   const [isBuyerMode, setIsBuyerMode] = useState(user?.role === 'buyer');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   // Get real notification count from API
   const { data: unreadNotifications } = useUnreadCountQuery();
   const notificationCount = unreadNotifications?.data?.count || 0;
+
+  // Get real message count from API
+  const { unreadCount: messageCount } = useUnreadMessageCount();
   
-  // Mock counts for other features - replace with actual data from your backend
-  const messageCount = 5; // Example count
+  // Mock count for cart - replace with actual data from your backend
   const cartCount = 2; // Example count
 
   const handleLogoutConfirmation = () => {
@@ -55,6 +59,7 @@ export const Navbar: React.FC = () => {
   };
 
   const handleLogout = async () => {
+    setIsLoggingOut(true);
     try {
       await logout();
       closeModal(); // Close the modal after logout
@@ -63,6 +68,8 @@ export const Navbar: React.FC = () => {
       // Even if logout fails, close modal and navigate
       closeModal();
       navigate('/');
+    } finally {
+      setIsLoggingOut(false);
     }
   };
   return (
@@ -103,11 +110,8 @@ export const Navbar: React.FC = () => {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild className="cursor-pointer">
                     <button className="bg-blue-50 flex gap-2 h-[42px] items-center px-2 lg:px-3 py-2 rounded-lg hover:bg-blue-100 transition-colors outline-none">
-                      <Avatar  className="w-8 h-8">
-                      <AvatarImage 
-                      src={user?.avatar} 
-                      alt={user?.displayName} 
-                    />
+                      <Avatar className="w-8 h-8">
+                        <AvatarImage src={user?.avatar} alt={user?.displayName} />
                         <AvatarFallback className="bg-gray-400 text-gray-500 font-medium top-[2px] relative">
                           {getInitials(user?.displayName || 'Smith')}
                         </AvatarFallback>
@@ -227,20 +231,22 @@ export const Navbar: React.FC = () => {
             )}
 
             {/* Cart */}
-            <Button
-              variant="ghost"
-              className="flex gap-2 lg:gap-6 items-center hover:bg-gray-50 p-2 h-auto"
-            >
-              <div className="relative">
-                <ShoppingCart className="!w-[24px] !h-[24px]" />
-                {cartCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-red-500 min-w-[18px] h-[18px] px-1 rounded-full flex items-center justify-center text-white text-xs font-medium">
-                    {cartCount > 9 ? '9+' : cartCount}
-                  </span>
-                )}
-              </div>
-              <div className="hidden lg:block text-sm font-medium">Cart</div>
-            </Button>
+            {(!user || user?.role === 'buyer') && (
+              <Button
+                variant="ghost"
+                className="flex gap-2 lg:gap-6 items-center hover:bg-gray-50 p-2 h-auto"
+              >
+                <div className="relative">
+                  <ShoppingCart className="!w-[24px] !h-[24px]" />
+                  {cartCount > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-500 min-w-[18px] h-[18px] px-1 rounded-full flex items-center justify-center text-white text-xs font-medium">
+                      {cartCount > 9 ? '9+' : cartCount}
+                    </span>
+                  )}
+                </div>
+                <div className="hidden lg:block text-sm font-medium">Cart</div>
+              </Button>
+            )}
           </div>
         </div>
 
@@ -296,10 +302,7 @@ export const Navbar: React.FC = () => {
 
                   <Link to="/profile" className="flex items-center gap-3 py-2">
                     <Avatar className="w-10 h-10">
-                    <AvatarImage 
-                      src={user?.avatar} 
-                      alt={user?.displayName} 
-                    />
+                      <AvatarImage src={user?.avatar} alt={user?.displayName} />
                       <AvatarFallback className="bg-gray-400 text-white">
                         {getInitials(user?.displayName || 'Smith')}
                       </AvatarFallback>
@@ -400,6 +403,7 @@ export const Navbar: React.FC = () => {
           description="Are you sure, You want to logout?"
           confirmText="Yes I'm Sure"
           cancelText="Cancel"
+          isLoading={isLoggingOut}
         />
       )}
     </>

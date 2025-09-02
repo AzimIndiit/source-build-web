@@ -7,10 +7,11 @@ import {
   Paperclip,
   MoreVertical,
   Trash2,
-  Check,
   CheckCheck,
   X,
   FileText,
+  Loader2,
+  Check,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
@@ -27,116 +28,41 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { getInitials } from '@/lib/helpers';
 import { cn, truncateFilename } from '@/lib/utils';
-
-// Mock data matching the image
-const mockOtherUser = {
-  id: '2',
-  displayName: 'Zendaya Kimathi',
-  isOnline: true,
-  avatar: '',
-};
-
-const mockMessages = [
-  {
-    id: '1',
-    chatId: '123',
-    senderId: '2',
-    content:
-      'Hi Zendaya, I just received a notification that a $500 refund has been issued for my order (#34567). Can you clarify why?',
-    messageType: 'text' as const,
-    attachments: [],
-    status: 'read' as const,
-    sentAt: '2022-07-16T06:15:00Z',
-  },
-  {
-    id: '2',
-    chatId: '123',
-    senderId: '1',
-    content:
-      'Thanks for reaching out! Yes, a partial refund of $500 was processed due to [reason, e.g., an item being out of stock, a price adjustment, or a cancellation request]. I apologize for any inconvenience this may have caused.',
-    messageType: 'text' as const,
-    attachments: [],
-    status: 'read' as const,
-    sentAt: '2022-07-16T06:20:00Z',
-  },
-  {
-    id: '3',
-    chatId: '123',
-    senderId: '2',
-    content: 'Oh, I see.',
-    messageType: 'text' as const,
-    attachments: [],
-    status: 'read' as const,
-    sentAt: '2022-07-16T12:16:00Z',
-  },
-  {
-    id: '4',
-    chatId: '123',
-    senderId: '2',
-    content:
-      'My order included multiple items—does this refund affect the delivery of the rest of my order?',
-    messageType: 'text' as const,
-    attachments: [],
-    status: 'read' as const,
-    sentAt: '2022-07-16T15:22:00Z',
-  },
-  {
-    id: '5',
-    chatId: '123',
-    senderId: '1',
-    content:
-      'No worries! Your remaining items in Order #34567 are still scheduled for delivery as planned.',
-    messageType: 'text' as const,
-    attachments: [],
-    status: 'read' as const,
-    sentAt: '2022-07-16T17:35:00Z',
-  },
-  {
-    id: '6',
-    chatId: '123',
-    senderId: '2',
-    content:
-      'Thanks for the clarification! How long will it take for the refund to reflect in my account?',
-    messageType: 'text' as const,
-    attachments: [],
-    status: 'read' as const,
-    sentAt: '2022-07-16T15:22:00Z',
-  },
-  {
-    id: '7',
-    chatId: '123',
-    senderId: '1',
-    content: 'Refunds typically take 4 business days to process, depending on your payment method.',
-    messageType: 'text' as const,
-    attachments: [],
-    status: 'delivered' as const,
-    sentAt: '2022-07-16T17:35:00Z',
-  },
-];
-
-type MessageStatus = 'sending' | 'sent' | 'delivered' | 'read';
-type MessageType = 'text' | 'file' | 'image';
-
-interface Message {
-  id: string;
-  chatId: string;
-  senderId: string;
-  content: string;
-  messageType: MessageType;
-  attachments: Array<{
-    originalName: string;
-    mimetype: string;
-    url: string;
-  }>;
-  status: MessageStatus;
-  sentAt: string;
-}
+import {
+  useChatMessagesQuery,
+  useChatQuery,
+  useMarkAsReadMutation,
+  useDeleteChatMutation,
+} from '../hooks/useChatQueries';
+import { useSocket } from '@/hooks/useSocket';
+import { ChatMessage, ChatUser, MessageStatus } from '../services/chatService';
+import { useAuth } from '@/hooks/useAuth';
+import { fileService } from '@/features/profile/services/fileService';
+import { Skeleton } from '@/components/ui/skeleton';
+import ChatInterfaceSkeleton from './ChatInterfaceSkeleton';
 
 const ChatInterface = () => {
   const navigate = useNavigate();
   const params = useParams();
-  const [otherUser] = useState(mockOtherUser);
-  const [messages, setMessages] = useState<Message[]>(mockMessages);
+  const chatId = params.id as string;
+  const { user } = useAuth();
+  const { emit, on, isConnected, off } = useSocket();
+  const [page, setPage] = useState(1);
+  const [limit] = useState(20);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+
+  // API Hooks
+  const { data: chatData, isLoading: isLoadingChat } = useChatQuery(chatId);
+  const {
+    data: messagesData,
+    isLoading: isLoadingMessages,
+    error: errorMessages,
+  } = useChatMessagesQuery({ chatId, page, limit });
+  const { mutate: markAsRead } = useMarkAsReadMutation();
+  const { mutate: deleteChat } = useDeleteChatMutation();
+
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
   const [previewImages, setPreviewImages] = useState<string[]>([]);
@@ -145,11 +71,212 @@ const ChatInterface = () => {
 
   const chatBodyRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const currentUser = { id: '1', displayName: 'You' };
+  const [otherUser, setOtherUser] = useState<ChatUser | null>(null);
+  const previousScrollHeightRef = useRef<number>(0);
+  const shouldScrollToBottomRef = useRef<boolean>(false);
+
+  // Update otherUser when chatData is fetched
+  useEffect(() => {
+    if (chatData?.data?.participants && user?.id) {
+      const other = chatData.data.participants.find(
+        (p: any) => p?.id !== user.id || p?._id !== user.id
+      );
+      console.log('Setting otherUser:', other);
+      setOtherUser(other || null);
+    }
+  }, [chatData, user?.id]);
+
+  // Scroll to bottom only for new messages or initial load
+  useEffect(() => {
+    // Only scroll to bottom if it's the initial load (page 1) or a new message is added
+    if (page === 1 && messages.length > 0) {
+      scrollToBottom();
+    }
+  }, [messages.length, page]);
+
+  // Update messages when fetched from API
+  useEffect(() => {
+    if (messagesData?.data) {
+      if (page === 1) {
+        // Initial load or refresh
+        setMessages(messagesData.data);
+      } else {
+        // Loading more messages (prepend to existing)
+        setMessages((prev) => [...messagesData.data, ...prev]);
+
+        // Maintain scroll position after prepending messages
+        if (chatBodyRef.current) {
+          const newScrollHeight = chatBodyRef.current.scrollHeight;
+          const scrollDiff = newScrollHeight - previousScrollHeightRef.current;
+          chatBodyRef.current.scrollTop = scrollDiff;
+        }
+      }
+
+      // Check if there are more messages to load
+      setHasMore(messagesData.data.length === limit);
+      setIsLoadingMore(false);
+    }
+  }, [messagesData, page, limit]);
+
+  // Mark messages as read when chat is opened
+  useEffect(() => {
+    if (chatId && user?.id) {
+      markAsRead(chatId);
+    }
+  }, [chatId, user?.id, markAsRead]);
+
+  // Reset pagination when chatId changes
+  useEffect(() => {
+    setPage(1);
+    setHasMore(true);
+    setIsLoadingMore(false);
+    setMessages([]);
+  }, [chatId]);
+
+  // Auto-scroll when shouldScrollToBottomRef is set
+  useEffect(() => {
+    if (shouldScrollToBottomRef.current && messages.length > 0) {
+      setTimeout(() => {
+        scrollToBottom();
+        shouldScrollToBottomRef.current = false;
+      }, 50);
+    }
+  }, [messages]);
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    if (!chatId) return;
+
+    const handleNewMessage = (data: any) => {
+      console.log('Frontend: Received new_message event:', data);
+
+      // Filter messages for this chat only
+      if (data.chat && data.chat.toString() !== chatId) {
+        console.log('Frontend: Message is for different chat, ignoring');
+        return;
+      }
+
+      setMessages((prev) => {
+        // First check if it's replacing a temp message
+        if (data.tempId) {
+          const tempIndex = prev.findIndex((msg) => msg._id === data.tempId);
+          if (tempIndex !== -1) {
+            console.log('Frontend: Replacing temp message with real message');
+            // Replace the temp message with the real one
+            const updated = [...prev];
+            updated[tempIndex] = {
+              ...data,
+              senderId: data.sender || data.senderId,
+              status: MessageStatus.DELIVERED,
+            };
+            emit('mark_as_delivered', { messageId: data._id });
+
+            // If this was sent by current user, scroll to bottom
+            if (data.sender === user?.id || data.senderId === user?.id) {
+              shouldScrollToBottomRef.current = true;
+            }
+
+            return updated;
+          }
+        }
+
+        // Check if message already exists (by _id)
+        const existingIndex = prev.findIndex((msg) => msg._id === data._id);
+        if (existingIndex !== -1) {
+          console.log('Frontend: Updating existing message');
+          // Update existing message instead of adding duplicate
+          const updated = [...prev];
+          updated[existingIndex] = { ...data, senderId: data.sender || data.senderId };
+          return updated;
+        }
+
+        console.log('Frontend: Adding new message to chat');
+        // Always scroll to bottom for any new message
+        shouldScrollToBottomRef.current = true;
+        return [...prev, { ...data, senderId: data.sender || data.senderId }];
+      });
+    };
+    const handleReadMessage = (data: any) => {
+      setMessages((prev) => {
+        const index = prev.findIndex((msg) => msg._id === data._id);
+
+        if (index !== -1) {
+          // Update message status to read
+          const updated = [...prev];
+          updated[index] = {
+            ...updated[index],
+            ...data,
+            status: MessageStatus.READ,
+            senderId: data.sender || updated[index].senderId,
+          };
+          return updated;
+        }
+
+        return prev;
+      });
+    };
+
+    // Join the chat room when connected
+    const joinRoom = () => {
+      console.log('Frontend: Joining chat room with ID:', chatId);
+      emit('join_chat', { roomId: chatId });
+    };
+
+    // Join immediately if already connected
+    if (isConnected()) {
+      joinRoom();
+    }
+
+    // Listen for reconnections
+    const removeConnectListener = on('connect', joinRoom);
+
+    console.log('Frontend: Setting up new_message listener for chat:', chatId);
+    const removeMessageListener = on('new_message', handleNewMessage);
+
+    const handleDeliveredMessage = (data: any) => {
+      setMessages((prev) => {
+        const index = prev.findIndex((msg) => msg._id === data._id);
+
+        if (index !== -1) {
+          // Update message status to delivered
+          const updated = [...prev];
+          updated[index] = {
+            ...updated[index],
+            ...data,
+            status: MessageStatus.DELIVERED,
+            senderId: data.sender || updated[index].senderId,
+          };
+          return updated;
+        }
+
+        return prev;
+      });
+    };
+    const removeDeliveredMessageListener = on('message_delivered', handleDeliveredMessage);
+    const handleUserOnline = (data: any) => {
+      setOtherUser((prev: any) => {
+        if (prev?.id === data.userId) {
+          return { ...prev, isOnline: data.is_online };
+        }
+        return prev;
+      });
+    };
+
+    const removeReadMessageListener = on('message_read', handleReadMessage);
+    const removeUserOnlineListener = on('is_online', handleUserOnline);
+
+    return () => {
+      // Leave the room when component unmounts
+      if (isConnected()) {
+        emit('leave_chat', { roomId: chatId });
+      }
+
+      removeConnectListener(); // This is the cleanup returned by `on`
+      removeMessageListener(); // Likewise
+      removeDeliveredMessageListener();
+      removeReadMessageListener();
+      removeUserOnlineListener();
+    };
+  }, [chatId, emit, on, off, isConnected, user?.id]);
 
   const scrollToBottom = () => {
     if (chatBodyRef.current) {
@@ -157,46 +284,150 @@ const ChatInterface = () => {
     }
   };
 
+  // Handle scroll event for pagination
+  const handleScroll = () => {
+    if (!chatBodyRef.current || isLoadingMore || !hasMore) return;
+
+    // Check if scrolled to top
+    if (chatBodyRef.current.scrollTop === 0) {
+      loadMoreMessages();
+    }
+  };
+
+  // Load more messages
+  const loadMoreMessages = async () => {
+    if (isLoadingMore || !hasMore) return;
+
+    setIsLoadingMore(true);
+
+    // Store current scroll height before loading new messages
+    if (chatBodyRef.current) {
+      previousScrollHeightRef.current = chatBodyRef.current.scrollHeight;
+    }
+
+    // Load next page
+    setPage((prev) => prev + 1);
+  };
+
   const sendMessage = async () => {
     if (!newMessage.trim() && !attachmentFile) return;
+    if (!user?.id || !chatId) return;
 
     const tempId = Date.now().toString();
-    const newMsg: Message = {
-      id: tempId,
-      chatId: params.id || '123',
-      senderId: currentUser.id,
-      content: newMessage.trim(),
-      messageType: attachmentFile ? 'file' : 'text',
-      attachments: attachmentFile 
-        ? [{
-            originalName: attachmentFile.name,
-            mimetype: attachmentFile.type,
-            url: URL.createObjectURL(attachmentFile),
-          }]
-        : [],
-      status: 'sending',
-      sentAt: new Date().toISOString(),
-    };
+    const messageContent = newMessage.trim();
+    const fileToUpload = attachmentFile;
 
-    setMessages((prev) => [...prev, newMsg]);
+    // Clear input immediately for better UX
     setNewMessage('');
     setAttachmentFile(null);
 
-    // Simulate message being sent
-    setTimeout(() => {
-      setMessages((prev) =>
-        prev.map((msg) => (msg.id === tempId ? { ...msg, status: 'sent' as MessageStatus } : msg))
-      );
-    }, 500);
+    // Set flag to scroll to bottom after message is added
+    shouldScrollToBottomRef.current = true;
 
-    // Simulate message being delivered
-    setTimeout(() => {
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === tempId ? { ...msg, status: 'delivered' as MessageStatus } : msg
-        )
-      );
-    }, 1500);
+    // Handle file upload asynchronously
+    if (fileToUpload) {
+      // Create optimistic message with loading state for file
+      const tempMsg: ChatMessage = {
+        _id: tempId,
+        messageType: 'file',
+        content: messageContent,
+        sentAt: new Date().toISOString(),
+        senderId: user.id,
+        status: MessageStatus.SENDING,
+        attachments: [
+          {
+            _id: tempId + '_file',
+            id: tempId + '_file',
+            originalName: fileToUpload.name,
+            mimeType: fileToUpload.type,
+            mimetype: fileToUpload.type, // Add both for compatibility
+            url: URL.createObjectURL(fileToUpload), // Temporary local URL for preview
+            size: fileToUpload.size,
+            uploading: true, // Flag to show "Sending..." overlay
+          },
+        ],
+      };
+
+      // Add optimistic message immediately
+      setMessages((prev) => [...prev, tempMsg]);
+
+      // Upload file in background
+      fileService
+        .uploadFile(fileToUpload)
+        .then((uploadResponse: any) => {
+          if (uploadResponse.status === 'success') {
+            const uploadedFile = {
+              _id: uploadResponse.data.id,
+              id: uploadResponse.data.id,
+              originalName: uploadResponse.data.originalName,
+              mimeType: uploadResponse.data.mimeType,
+              url: uploadResponse.data.url,
+              size: uploadResponse.data.size,
+              bestImageUrl: uploadResponse.data.bestImageUrl || '',
+              bestMediaUrl: uploadResponse.data.bestMediaUrl || '',
+              thumbnailUrl: uploadResponse.data.thumbnailUrl || '',
+              streamingUrl: uploadResponse.data.streamingUrl || null,
+              isImage: uploadResponse.data.isImage || false,
+              isVideo: uploadResponse.data.isVideo || false,
+            };
+
+            // Update message with real file data
+            const messageData = {
+              _id: tempId,
+              messageType: 'file',
+              content: messageContent,
+              sentAt: tempMsg.sentAt,
+              senderId: user.id,
+              status: MessageStatus.SENT,
+              chatId,
+              attachments: [{ _id: uploadedFile.id }],
+            };
+
+            // Emit the message with uploaded file
+            emit('send_message', messageData);
+
+            // Update local message to show upload complete
+            setMessages((prev) =>
+              prev.map((msg) =>
+                msg._id === tempId ? { ...msg, attachments: [uploadedFile] } : msg
+              )
+            );
+          } else {
+            toast.error('Failed to upload file');
+            // Remove failed message
+            setMessages((prev) => prev.filter((msg) => msg._id !== tempId));
+          }
+        })
+        .catch((error) => {
+          console.error('File upload error:', error);
+          toast.error('Failed to upload file');
+          // Remove failed message
+          setMessages((prev) => prev.filter((msg) => msg._id !== tempId));
+        });
+    } else {
+      // Text message only - send immediately
+      const newMsg: ChatMessage = {
+        _id: tempId,
+        messageType: 'text',
+        content: messageContent,
+        sentAt: new Date().toISOString(),
+        senderId: user.id,
+        status: MessageStatus.SENDING,
+        attachments: undefined,
+      };
+
+      // Add optimistic update
+      setMessages((prev) => [...prev, newMsg]);
+
+      // Emit message
+      const messageData = {
+        ...newMsg,
+        chatId,
+        attachments: [],
+      };
+
+      emit('send_message', messageData);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -217,7 +448,7 @@ const ChatInterface = () => {
     }
 
     setAttachmentFile(file);
-    
+
     // Reset input
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -232,8 +463,14 @@ const ChatInterface = () => {
   };
 
   const handleDeleteChat = () => {
-    toast.success('Chat deleted successfully');
-    navigate(-1);
+    if (!chatId) return;
+
+    deleteChat(chatId, {
+      onSuccess: () => {
+        toast.success('Chat deleted successfully');
+        navigate(`/${user?.role}/messages`);
+      },
+    });
   };
 
   const openImagePreview = (imageUrl: string) => {
@@ -241,8 +478,9 @@ const ChatInterface = () => {
     setCurrentImageIndex(0);
   };
 
-  const groupMessagesByDate = (messages: Message[]) => {
-    return messages.reduce((acc: Record<string, Message[]>, msg) => {
+  // Group messages by date
+  const groupMessagesByDate = (messages: ChatMessage[]) => {
+    return messages.reduce((acc: Record<string, ChatMessage[]>, msg) => {
       const dateKey = format(parseISO(msg.sentAt), 'yyyy-MM-dd');
       if (!acc[dateKey]) acc[dateKey] = [];
       acc[dateKey].push(msg);
@@ -250,31 +488,35 @@ const ChatInterface = () => {
     }, {});
   };
 
-  const getDateLabel = (dateStr: string) => {
+  // Get readable date label
+  const getReadableDateLabel = (dateStr: string) => {
     const date = new Date(dateStr);
     if (isToday(date)) return 'Today';
     if (isYesterday(date)) return 'Yesterday';
-    return format(date, 'MMMM d, yyyy, h:mm a');
+    return format(date, 'MMM dd, yyyy');
   };
 
   const renderMessageStatus = (status: MessageStatus) => {
-    switch (status) {
-      case 'sending':
-        return <span className="text-gray-400">...</span>;
-      case 'sent':
-        return <Check className="w-4 h-4 text-gray-400" />;
-      case 'delivered':
-        return <CheckCheck className="w-4 h-4 text-gray-400" />;
-      case 'read':
-        return <CheckCheck className="w-4 h-4 text-blue-500" />;
-      default:
-        return null;
+    if (status === MessageStatus.SENDING) {
+      return <p className="text-[10px] text-gray-500">sending...</p>;
     }
+    if (status === MessageStatus.DELIVERED) {
+      return <CheckCheck className="w-4 h-4 text-gray-400" />;
+    } else if (status === MessageStatus.READ) {
+      return <CheckCheck className="w-4 h-4 text-primary" />;
+    }
+    // For now, show as delivered for all sent messages
+    return <Check className="w-4 h-4 text-gray-400" />;
   };
   const breadcrumbItems = [
     { label: 'Messages', href: '/seller/messages' },
     { label: `Chat Details`, isCurrentPage: true },
   ];
+  // Show loading state while chat is being fetched
+  if (isLoadingChat) {
+    return <ChatInterfaceSkeleton />;
+  }
+
   return (
     <div className="py-4 md:p-6 space-y-6">
       {/* Breadcrumb */}
@@ -285,14 +527,20 @@ const ChatInterface = () => {
         <CardHeader className="flex flex-row items-center justify-between p-4 border-b border-gray-200 bg-white flex-shrink-0">
           <div className="flex items-center gap-3">
             <Avatar className="h-10 w-10">
-              <AvatarImage src={otherUser.avatar} alt={otherUser.displayName} />
+              <AvatarImage src={otherUser?.avatar} alt={otherUser?.displayName} />
               <AvatarFallback className="bg-gray-200">
-                {getInitials(otherUser.displayName)}
+                {otherUser ? getInitials(otherUser.displayName) : '?'}
               </AvatarFallback>
             </Avatar>
             <div>
-              <h3 className="font-semibold text-gray-900">{otherUser.displayName}</h3>
-              <p className="text-sm text-green-500">{otherUser.isOnline ? 'Online' : 'Offline'}</p>
+              <h3 className="font-semibold text-gray-900 capitalize">
+                {otherUser?.displayName || 'Loading...'}
+              </h3>
+              <p
+                className={`xtext-sm mt-1 ${otherUser?.isOnline ? 'text-green-500' : 'text-red-500'}`}
+              >
+                {otherUser?.isOnline ? 'Online' : 'Offline'}
+              </p>
             </div>
           </div>
 
@@ -315,128 +563,228 @@ const ChatInterface = () => {
         </CardHeader>
 
         {/* Chat Messages */}
-        <CardContent ref={chatBodyRef} className="flex-1 overflow-y-auto p-4 space-y-2 bg-white">
-          {/* Date Header */}
-          <div className="flex items-center justify-center ">
-            <div className="text-gray-500 text-md">Jul 16, 2022, 06:15 am</div>
-          </div>
+        <CardContent
+          ref={chatBodyRef}
+          className="flex-1 overflow-y-auto p-4 space-y-2 bg-white"
+          onScroll={handleScroll}
+        >
+          {/* Loading State */}
+          {isLoadingMessages && page === 1 && (
+            <>
+              {/* Date separator skeleton */}
+              <div className="flex items-center justify-center my-4">
+                <Skeleton className="h-6 w-20 rounded-full" />
+              </div>
+
+              {/* Message skeletons */}
+              {[...Array(5)].map((_, index) => (
+                <div key={index} className="space-y-4">
+                  {index % 2 === 0 ? (
+                    /* Other user message skeleton */
+                    <div className="flex items-start gap-2 justify-start">
+                      <Skeleton className="h-10 w-10 rounded-full" />
+                      <div className="flex flex-col max-w-[70%] items-start space-y-2">
+                        <Skeleton className="h-3 w-20" />
+                        <Skeleton className="h-16 w-56 rounded-2xl" />
+                        <Skeleton className="h-3 w-16" />
+                      </div>
+                    </div>
+                  ) : (
+                    /* Current user message skeleton */
+                    <div className="flex items-start gap-2 justify-end">
+                      <div className="flex flex-col max-w-[70%] items-end space-y-2">
+                        <Skeleton className="h-12 w-48 rounded-2xl" />
+                        <Skeleton className="h-3 w-16" />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </>
+          )}
+
+          {/* Error State */}
+          {errorMessages && (
+            <div className="flex items-center justify-center h-full">
+              <p className="text-red-500">Failed to load messages</p>
+            </div>
+          )}
 
           {/* Messages */}
-          {messages.map((msg) => {
-            const isSentByUser = msg.senderId === currentUser.id;
-
-            return (
-              <div key={msg.id} className="space-y-2">
-                {/* Avatar and message bubble */}
-                <div
-                  className={cn(
-                    'flex items-start gap-2',
-                    isSentByUser ? 'justify-end' : 'justify-start'
-                  )}
-                >
-                  {!isSentByUser && (
-                    <Avatar className="h-10 w-10 mt-1">
-                      <AvatarImage src={otherUser.avatar} alt={otherUser.displayName} />
-                      <AvatarFallback className="bg-gray-200 text-sm">
-                        {getInitials(otherUser.displayName)}
-                      </AvatarFallback>
-                    </Avatar>
-                  )}
-
-                  <div
-                    className={cn(
-                      'flex flex-col max-w-[70%]',
-                      isSentByUser ? 'items-end' : 'items-start'
-                    )}
-                  >
-                    {!isSentByUser && (
-                      <span className="text-xs text-gray-500 mb-1 px-1">
-                        {otherUser.displayName}
-                      </span>
-                    )}
-
-                    <div
-                      className={cn(
-                        'px-4 py-2 rounded-2xl break-words',
-                        isSentByUser
-                          ? 'bg-primary text-white'
-                          : 'bg-gray-200 border border-gray-200'
-                      )}
-                    >
-                      {/* Attachments */}
-                      {msg.attachments.length > 0 &&
-                        msg.attachments.map((att, index) => {
-                          const isImage = att.mimetype?.startsWith('image/');
-
-                          return (
-                            <div key={index} className="mb-2">
-                              {isImage ? (
-                                <img
-                                  src={att.url}
-                                  alt={att.originalName}
-                                  className="rounded-lg max-w-full cursor-pointer"
-                                  style={{ height: '200px', width: '200px' }}
-                                  onClick={() => openImagePreview(att.url)}
-                                />
-                              ) : (
-                                <div className='flex items-center gap-2 flex-col justify-center h-full w-full bg-gray-100 rounded-sm cursor-pointer' style={{ height: '200px', width: '200px' }} >
-                                    <a href={att.url} target='_blank' rel='noopener noreferrer' className='flex items-center gap-2 flex-col'>
-                                        <FileText className="h-5 w-5 text-gray-500" />
-                                        <div className="">
-                                            <p className="text-xs font-medium text-gray-700 truncate" title={att.originalName}>
-                                                {truncateFilename(att.originalName,10)}
-                                            </p>
-                                        </div>
-                                    </a>
-                                
-                                 </div> 
-                               
-                              )}
-                            </div>
-                          );
-                        })}
-
-                      {/* Message Text */}
-                      {msg.content && (
-                        <ReadMore
-                          text={msg.content}
-                          maxLength={1000}
-                          className={` ${isSentByUser ? 'text-white hover:text-white' : 'text-gray-700'}  `}
-                          buttonClassName={`${isSentByUser ? 'text-white hover:text-white' : 'text-gray-700'} !text-sm`}
-                        />
-                      )}
-                    </div>
-
-                    {/* Time and Status */}
-                    <div
-                      className={cn(
-                        'flex items-center gap-1 mt-1 px-1',
-                        isSentByUser ? 'justify-end' : 'justify-start'
-                      )}
-                    >
-                      <span className="text-xs text-gray-500">
-                        {format(parseISO(msg.sentAt), 'h:mm a')}
-                      </span>
-                      {isSentByUser && renderMessageStatus(msg.status)}
-                    </div>
-                  </div>
+          {(!isLoadingMessages || page > 1) && !errorMessages && (
+            <>
+              {/* Loading more indicator */}
+              {isLoadingMore && (
+                <div className="flex items-center justify-center py-2">
+                  <Loader2 className="h-5 w-5 animate-spin text-gray-400 mr-2" />
+                  <span className="text-sm text-gray-500">Loading previous messages...</span>
                 </div>
+              )}
 
-                {/* "Hi!" button on the right (as shown in the image) */}
-                {msg.id === '2' && (
-                  <div className="flex justify-end">
-                    <Button
-                      variant="default"
-                      size="sm"
-                      className="bg-primary hover:bg-blue-700 text-white"
-                    >
-                      Hi!
-                    </Button>
+              {Object.entries(groupMessagesByDate(messages)).map(
+                ([date, dayMessages], dateIndex) => (
+                  <div key={dateIndex}>
+                    {/* Date Separator */}
+                    <div className="flex items-center justify-center my-4">
+                      <div className="bg-gray-100 px-3 py-1 rounded-full">
+                        <span className="text-xs text-gray-600 font-medium">
+                          {getReadableDateLabel(date)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Messages for this date */}
+                    {dayMessages.map((msg) => {
+                      const isSentByUser =
+                        msg.senderId === user?.id || msg?.sender?.id === user?.id;
+
+                      return (
+                        <div key={msg._id} className="space-y-2">
+                          {/* Avatar and message bubble */}
+                          <div
+                            className={cn(
+                              'flex items-start gap-2',
+                              isSentByUser ? 'justify-end' : 'justify-start'
+                            )}
+                          >
+                            {!isSentByUser && (
+                              <Avatar className="h-10 w-10 mt-1">
+                                <AvatarImage src={otherUser?.avatar} alt={otherUser?.displayName} />
+                                <AvatarFallback className="bg-gray-200 text-sm">
+                                  {otherUser ? getInitials(otherUser.displayName) : '?'}
+                                </AvatarFallback>
+                              </Avatar>
+                            )}
+
+                            <div
+                              className={cn(
+                                'flex flex-col max-w-[70%]',
+                                isSentByUser ? 'items-end' : 'items-start'
+                              )}
+                            >
+                              {!isSentByUser && otherUser && (
+                                <span className="text-xs text-gray-500 mb-1 px-1">
+                                  {otherUser.displayName}
+                                </span>
+                              )}
+
+                              <div
+                                className={cn(
+                                  'px-4 py-2 rounded-2xl break-words',
+                                  isSentByUser
+                                    ? 'bg-primary text-white'
+                                    : 'bg-gray-200 border border-gray-200'
+                                )}
+                              >
+                                {/* Files/Attachments */}
+                                {msg.attachments &&
+                                  msg.attachments.length > 0 &&
+                                  msg.attachments.map((file, index) => {
+                                    // Check various ways the mime type might be stored
+                                    const isImage =
+                                      file.mimeType?.startsWith('image/') ||
+                                      file.mimetype?.startsWith('image/') ||
+                                      file.url?.includes('image/upload') || // Cloudinary URLs often have this
+                                      file.url?.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i);
+
+                                    return (
+                                      <div key={index} className="mb-2 relative">
+                                        {file.uploading && (
+                                          <div className="absolute inset-0 bg-black/50 rounded-lg flex flex-col items-center justify-center z-10">
+                                            <Loader2 className="h-8 w-8 text-white animate-spin mb-2" />
+                                            <span className="text-white text-sm font-medium">
+                                              Uploading...
+                                            </span>
+                                          </div>
+                                        )}
+                                        {isImage ? (
+                                          <img
+                                            src={file.url || file.bestImageUrl || file.thumbnailUrl}
+                                            alt={file.originalName || 'attachment'}
+                                            className="rounded-lg max-w-full cursor-pointer object-cover"
+                                            style={{ height: '200px', width: '200px' }}
+                                            onClick={() =>
+                                              !file.uploading &&
+                                              openImagePreview(file.url || file.bestImageUrl || '')
+                                            }
+                                          />
+                                        ) : (
+                                          <div
+                                            className="flex items-center gap-2 flex-col justify-center h-full w-full bg-gray-100 rounded-sm cursor-pointer"
+                                            style={{ height: '200px', width: '200px' }}
+                                          >
+                                            <a
+                                              href={file.url}
+                                              target="_blank"
+                                              rel="noopener noreferrer"
+                                              className="flex items-center gap-2 flex-col"
+                                            >
+                                              <FileText className="h-5 w-5 text-gray-500" />
+                                              <div className="">
+                                                <p
+                                                  className="text-xs font-medium text-gray-700 truncate"
+                                                  title={file.originalName || 'attachment'}
+                                                >
+                                                  {truncateFilename(
+                                                    file.originalName || 'attachment',
+                                                    10
+                                                  )}
+                                                </p>
+                                              </div>
+                                            </a>
+                                          </div>
+                                        )}
+                                      </div>
+                                    );
+                                  })}
+
+                                {/* Message Text */}
+                                {msg.content && (
+                                  <ReadMore
+                                    text={msg.content}
+                                    maxLength={1000}
+                                    className={` ${isSentByUser ? 'text-white hover:text-white' : 'text-gray-700'}  `}
+                                    buttonClassName={`${isSentByUser ? 'text-white hover:text-white' : 'text-gray-700'} !text-sm`}
+                                  />
+                                )}
+                              </div>
+
+                              {/* Time and Status */}
+                              <div
+                                className={cn(
+                                  'flex items-center gap-1 mt-1 px-1',
+                                  isSentByUser ? 'justify-end' : 'justify-start'
+                                )}
+                              >
+                                <span className="text-xs text-gray-500">
+                                  {msg.status !== MessageStatus.SENDING &&
+                                    format(parseISO(msg.sentAt), 'h:mm a')}
+                                </span>
+                                {isSentByUser && renderMessageStatus(msg.status)}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* "Hi!" button on the right (as shown in the image) */}
+                          {msg._id === '2' && (
+                            <div className="flex justify-end">
+                              <Button
+                                variant="default"
+                                size="sm"
+                                className="bg-primary hover:bg-blue-700 text-white"
+                              >
+                                Hi!
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
-                )}
-              </div>
-            );
-          })}
+                )
+              )}
+            </>
+          )}
         </CardContent>
 
         {/* Message Input */}
@@ -504,15 +852,18 @@ const ChatInterface = () => {
                     <div className="flex items-center gap-2 flex-col justify-center">
                       <FileText className="h-5 w-5 text-gray-500" />
                       <div className="">
-                        <p className="text-xs font-medium text-gray-700 truncate" title={attachmentFile.name}>
+                        <p
+                          className="text-xs font-medium text-gray-700 truncate"
+                          title={attachmentFile.name}
+                        >
                           {truncateFilename(attachmentFile.name, 10)}
                         </p>
                         <p className="text-xs text-gray-500">
                           {attachmentFile.size < 1024
                             ? `${attachmentFile.size} B`
                             : attachmentFile.size < 1024 * 1024
-                            ? `${(attachmentFile.size / 1024).toFixed(1)} KB`
-                            : `${(attachmentFile.size / (1024 * 1024)).toFixed(1)} MB`}
+                              ? `${(attachmentFile.size / 1024).toFixed(1)} KB`
+                              : `${(attachmentFile.size / (1024 * 1024)).toFixed(1)} MB`}
                         </p>
                       </div>
                     </div>

@@ -2,11 +2,13 @@ import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { MessageSquareMore } from 'lucide-react';
 import { Card, StarRating } from '@/components/ui';
+import { useGetOrCreateChatMutation } from '@/features/messages/hooks/useChatQueries';
 
 interface CustomerDetailsSectionProps {
   title?: string;
   reviewTitle?: string;
   customerDetails?: {
+    id: string;
     displayName: string;
     email: string;
     avatar?: string;
@@ -20,11 +22,18 @@ export const CustomerDetailsSection: React.FC<CustomerDetailsSectionProps> = ({
   title = 'Customer Details',
   reviewTitle = 'Reviews & Rating From Customer',
 }) => {
+  const { mutate: getOrCreateChat } = useGetOrCreateChatMutation();
+
+  const handleMessageClick = () => {
+    if (customerDetails?.id) {
+      getOrCreateChat({ participantId: customerDetails.id });
+    }
+  };
   return (
     <div className="space-y-4">
       {/* Customer Details Card */}
       <div className="space-y-2">
-        <h2 className="text-lg font-medium text-gray-900">{title}</h2>
+        <h2 className="text-lg font-medium text-gray-900 capitalize">{title}</h2>
 
         <Card className="bg-white rounded-sm border border-gray-200 shadow-none p-4">
           {/* Customer Info Box */}
@@ -38,16 +47,21 @@ export const CustomerDetailsSection: React.FC<CustomerDetailsSectionProps> = ({
                     className="object-cover"
                   />
                 ) : null}
-                <AvatarFallback className="bg-teal-100 text-teal-700 font-medium text-lg">
+                <AvatarFallback className=" font-medium text-lg">
                   {customerDetails?.displayName?.charAt(0)}
                 </AvatarFallback>
               </Avatar>
               <div>
-                <h3 className="font-semibold text-gray-900 text-base">{customerDetails?.name}</h3>
+                <h3 className="font-semibold text-gray-900 text-base capitalize">
+                  {customerDetails?.displayName}
+                </h3>
                 <p className="text-sm text-gray-500 mt-0.5">{customerDetails?.email}</p>
               </div>
             </div>
-            <button className="p-3 bg-primary/10 hover:bg-primary/20 rounded-full transition-colors cursor-pointer">
+            <button
+              className="p-3 bg-primary/10 hover:bg-primary/20 rounded-full transition-colors cursor-pointer"
+              onClick={handleMessageClick}
+            >
               <MessageSquareMore className="w-5 h-5 text-primary " />
             </button>
           </div>
@@ -57,14 +71,16 @@ export const CustomerDetailsSection: React.FC<CustomerDetailsSectionProps> = ({
       {/* Reviews & Rating From Customer */}
       {customerDetails?.rating && customerDetails?.rating > 0 ? (
         <div className="space-y-2">
-          <h2 className="font-medium text-gray-900 text-lg">{reviewTitle}</h2>
+          <h2 className="font-medium text-gray-900 text-lg capitalize">{reviewTitle}</h2>
 
           <Card className="p-4 border-gray-200 gap-3">
             <div className="">
               <StarRating size="h-6 w-6" rating={customerDetails?.rating || 0} />
             </div>
 
-            <p className="text-gray-500 leading-relaxed text-[15px]">{customerDetails?.review}</p>
+            <p className="text-gray-500 leading-relaxed text-[15px] capitalize">
+              {customerDetails?.review}
+            </p>
           </Card>
         </div>
       ) : (

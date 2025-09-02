@@ -66,8 +66,10 @@ export const StarRating: React.FC<StarRatingProps> = ({
       {showValue && (
         <span className="text-gray-700 text-sm">
           {rating.toFixed(1)} / 5
-          {totalReviews && (
+          {totalReviews ? (
             <span className="ml-1 font-semibold text-gray-500">({totalReviews} reviews)</span>
+          ) : (
+            ''
           )}
         </span>
       )}

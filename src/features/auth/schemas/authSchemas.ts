@@ -46,7 +46,11 @@ export const signupSchema = z
     businessName: z.string().min(2, 'Business name must be at least 2 characters').max(70).trim(),
     firstName: z.string().min(2, 'First name must be at least 2 characters').max(70).trim(),
     lastName: z.string().min(2, 'Last name must be at least 2 characters').max(70).trim(),
-    businessAddress: z.string().min(2, 'Business address must be at least 2 characters').max(255).trim(),
+    businessAddress: z
+      .string()
+      .min(2, 'Business address must be at least 2 characters')
+      .max(255)
+      .trim(),
     email: z.string().min(1, 'Email is required').email('Please enter valid email address'),
     phone: phoneValidation,
     cellPhone: optionalPhoneValidation, // Cell phone can be optional

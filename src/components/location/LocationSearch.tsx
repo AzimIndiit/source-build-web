@@ -448,39 +448,47 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
                   <Button
                     variant="outline"
                     className="h-10 border-gray-500 hover:bg-gray-50 text-gray-600"
-                    onClick={() => {navigate('/profile/address')
-                      setIsOpen(false)
+                    onClick={() => {
+                      navigate('/profile/address');
+                      setIsOpen(false);
                     }}
                   >
                     Manage Addresses
                   </Button>
                 </div>
                 {/* Address list with show more/less functionality */}
-                <div className={cn(
-                  "space-y-3 transition-all duration-300",
-                  showAllAddresses && savedAddresses.length > 3 && "max-h-[400px] overflow-y-auto pr-2"
-                )}>
-                  {(showAllAddresses ? savedAddresses : savedAddresses.slice(0, 3)).map((address) => (
-                    <div
-                      key={address.id}
-                      className="flex items-start gap-3 p-3 hover:bg-gray-100 rounded-lg cursor-pointer relative bg-gray-50 border border-gray-200"
-                      onClick={() => handleSavedAddressSelect(address)}
-                    >
-                     
-                      {/* <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
+                <div
+                  className={cn(
+                    'space-y-3 transition-all duration-300',
+                    showAllAddresses &&
+                      savedAddresses.length > 3 &&
+                      'max-h-[400px] overflow-y-auto pr-2'
+                  )}
+                >
+                  {(showAllAddresses ? savedAddresses : savedAddresses.slice(0, 3)).map(
+                    (address) => (
+                      <div
+                        key={address.id}
+                        className="flex items-start gap-3 p-3 hover:bg-gray-100 rounded-lg cursor-pointer relative bg-gray-50 border border-gray-200"
+                        onClick={() => handleSavedAddressSelect(address)}
+                      >
+                        {/* <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
                         {address.icon || <MapPin className="w-5 h-5 text-yellow-600" />}
                       </div> */}
 
-                      <div className="flex-1">
-                       <div className='flex items-center gap-2'> <h4 className="font-medium text-gray-900">{address.name}</h4>
-                        {address.isDefault && (
-            <span className="inline-flex items-center px-2.5 py-0.5 text-xs font-medium text-primary bg-blue-100 rounded">
-              Default
-            </span>
-          )}</div>
-                        <p className="text-sm text-gray-600 mt-1">{address.formattedAddress}</p>
-                      </div>
-{/* 
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            {' '}
+                            <h4 className="font-medium text-gray-900">{address.name}</h4>
+                            {address.isDefault && (
+                              <span className="inline-flex items-center px-2.5 py-0.5 text-xs font-medium text-primary bg-blue-100 rounded">
+                                Default
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-gray-600 mt-1">{address.formattedAddress}</p>
+                        </div>
+                        {/* 
                       <div className="flex gap-2">
                         <button
                           onClick={(e) => {
@@ -501,10 +509,11 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
                           <Trash2 className="w-4 h-4 text-gray-500" />
                         </button>
                       </div> */}
-                    </div>
-                  ))}
+                      </div>
+                    )
+                  )}
                 </div>
-                
+
                 {/* Show More/Less button */}
                 {savedAddresses.length > 3 && (
                   <button

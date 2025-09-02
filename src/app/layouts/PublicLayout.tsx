@@ -1,6 +1,6 @@
 import { Outlet } from 'react-router-dom';
 import { Navbar } from '@/components/navigation/Navbar';
-import { Footer } from '@/components/navigation/Footer';
+import HomeFooter from '@/features/landing/pages/home/components/HomeFooter';
 
 export function PublicLayout() {
   return (
@@ -9,7 +9,7 @@ export function PublicLayout() {
       <main className="flex-1">
         <Outlet />
       </main>
-      <Footer />
+      <HomeFooter />
     </div>
   );
 }

@@ -1,6 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { addressService, CreateSavedAddressPayload, UpdateSavedAddressPayload } from '../services/addressService';
+import {
+  addressService,
+  CreateSavedAddressPayload,
+  UpdateSavedAddressPayload,
+} from '../services/addressService';
 
 const SAVED_ADDRESSES_QUERY_KEY = ['savedAddresses'];
 
@@ -15,7 +19,7 @@ export function useSavedAddresssQuery() {
 
 export function useCreateSavedAddressMutation() {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: (data: CreateSavedAddressPayload) => addressService.createAddress(data),
     onSuccess: async (response) => {
@@ -33,7 +37,7 @@ export function useCreateSavedAddressMutation() {
 
 export function useUpdateSavedAddressMutation() {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateSavedAddressPayload }) =>
       addressService.updateAddress(id, data),
@@ -52,7 +56,7 @@ export function useUpdateSavedAddressMutation() {
 
 export function useDeleteSavedAddressMutation() {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: (id: string) => addressService.deleteAddress(id),
     onSuccess: async (response) => {
@@ -70,7 +74,7 @@ export function useDeleteSavedAddressMutation() {
 
 export function useSetDefaultSavedAddressMutation() {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: (id: string) => addressService.setDefaultAddress(id),
     onSuccess: async (response) => {

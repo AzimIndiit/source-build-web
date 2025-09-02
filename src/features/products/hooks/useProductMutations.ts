@@ -1,6 +1,11 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { productService, CreateProductPayload, UpdateProductPayload, SaveDraftPayload } from '../services/productService';
+import {
+  productService,
+  CreateProductPayload,
+  UpdateProductPayload,
+  SaveDraftPayload,
+} from '../services/productService';
 import { queryClient } from '@/lib/queryClient';
 
 export const PRODUCTS_QUERY_KEY = ['products'];
@@ -60,17 +65,17 @@ export function useCreateProductMutation() {
   return useMutation({
     mutationFn: async (data: CreateProductWithFiles) => {
       let imageUrls: string[] = [];
-      
+
       // Upload main product images in parallel (if needed)
       if (data.imageFiles && data.imageFiles.length > 0) {
         // If productService.uploadProductImages already uploads all files in parallel, this is sufficient.
         // If you want to upload each file individually in parallel, use Promise.all:
         imageUrls = await Promise.all(
-          data.imageFiles.map(file =>
+          data.imageFiles.map((file) =>
             productService
               .uploadProductImages([file])
-              .then(urls => urls[0])
-              .catch(error => {
+              .then((urls) => urls[0])
+              .catch((error) => {
                 console.error('Failed to upload product image:', error);
                 toast.error('Failed to upload product image');
                 throw error;
@@ -81,11 +86,11 @@ export function useCreateProductMutation() {
 
       // Upload variant images if any
       let variants = data.variants;
-      
+
       if (data.variantFiles && data.variantFiles.length > 0 && variants) {
         // Create a map of variant images indexed by their position
         const variantImagesByIndex = new Map<number, string[]>();
-        
+
         // Upload images for each variant
         for (const variantFile of data.variantFiles) {
           if (variantFile.files.length > 0) {
@@ -101,7 +106,7 @@ export function useCreateProductMutation() {
             }
           }
         }
-        
+
         // Now update the variants with their uploaded images using the index
         variants = variants.map((variant, index) => {
           const images = variantImagesByIndex.get(index);
@@ -124,9 +129,11 @@ export function useCreateProductMutation() {
         shippingPrice: productData.shippingPrice ? Number(productData.shippingPrice) : undefined,
         discount: {
           ...productData.discount,
-          discountValue: productData.discount.discountValue ? Number(productData.discount.discountValue) : undefined,
+          discountValue: productData.discount.discountValue
+            ? Number(productData.discount.discountValue)
+            : undefined,
         },
-        variants: variants?.map(v => ({
+        variants: variants?.map((v) => ({
           ...v,
           price: Number(v.price),
           quantity: Number(v.quantity),
@@ -157,7 +164,7 @@ export function useUpdateProductMutation() {
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: UpdateProductWithFiles }) => {
       let imageUrls: string[] = data.existingImages || [];
-      
+
       // Upload new product images if any
       if (data.imageFiles && data.imageFiles.length > 0) {
         try {
@@ -175,18 +182,18 @@ export function useUpdateProductMutation() {
       if (data.variantFiles && data.variantFiles.length > 0 && variants) {
         // Create a map of variant images indexed by their position
         const variantImagesByIndex = new Map<number, string[]>();
-        
+
         for (const variantFile of data.variantFiles) {
           if (variantFile.files.length > 0) {
             try {
               const variantImageUrls = await productService.uploadProductImages(variantFile.files);
-              
+
               // If variantIndex is provided, use it; otherwise try to match by variantId
               if (variantFile.variantIndex !== undefined) {
                 variantImagesByIndex.set(variantFile.variantIndex, variantImageUrls);
               } else {
                 // Fallback: Update the corresponding variant with the uploaded image URLs
-                variants = variants.map(v => {
+                variants = variants.map((v) => {
                   if (v.color === variantFile.variantId) {
                     return { ...v, images: [...(v.images || []), ...variantImageUrls] };
                   }
@@ -200,7 +207,7 @@ export function useUpdateProductMutation() {
             }
           }
         }
-        
+
         // Apply images by index if we have any
         if (variantImagesByIndex.size > 0) {
           variants = variants.map((variant, index) => {
@@ -222,11 +229,15 @@ export function useUpdateProductMutation() {
         price: productData.price ? Number(productData.price) : undefined,
         quantity: productData.quantity ? Number(productData.quantity) : undefined,
         shippingPrice: productData.shippingPrice ? Number(productData.shippingPrice) : undefined,
-        discount: productData.discount ? {
-          ...productData.discount,
-          discountValue: productData.discount.discountValue ? Number(productData.discount.discountValue) : undefined,
-        } : undefined,
-        variants: variants?.map(v => ({
+        discount: productData.discount
+          ? {
+              ...productData.discount,
+              discountValue: productData.discount.discountValue
+                ? Number(productData.discount.discountValue)
+                : undefined,
+            }
+          : undefined,
+        variants: variants?.map((v) => ({
           ...v,
           price: Number(v.price),
           quantity: Number(v.quantity),
@@ -258,15 +269,15 @@ export function useSaveDraftMutation() {
   return useMutation({
     mutationFn: async (data: SaveDraftWithFiles) => {
       let imageUrls: string[] = data.existingImages || [];
-      
+
       // Upload main product images if there are new files
       if (data.imageFiles && data.imageFiles.length > 0) {
         const newImageUrls = await Promise.all(
-          data.imageFiles.map(file =>
+          data.imageFiles.map((file) =>
             productService
               .uploadProductImages([file])
-              .then(urls => urls[0])
-              .catch(error => {
+              .then((urls) => urls[0])
+              .catch((error) => {
                 console.error('Failed to upload product image:', error);
                 toast.error('Failed to upload product image');
                 throw error;
@@ -280,7 +291,7 @@ export function useSaveDraftMutation() {
       let variants = data.variants;
       if (data.variantFiles && data.variantFiles.length > 0 && variants) {
         const variantImagesByIndex = new Map<number, string[]>();
-        
+
         for (const variantFile of data.variantFiles) {
           if (variantFile.files.length > 0) {
             try {
@@ -292,7 +303,7 @@ export function useSaveDraftMutation() {
             }
           }
         }
-        
+
         variants = variants.map((variant, index) => {
           const images = variantImagesByIndex.get(index);
           if (images) {
@@ -326,19 +337,23 @@ export function useSaveDraftMutation() {
         ...(draftData.discount && {
           discount: {
             ...draftData.discount,
-            discountValue: draftData.discount.discountValue ? Number(draftData.discount.discountValue) : undefined,
-          }
+            discountValue: draftData.discount.discountValue
+              ? Number(draftData.discount.discountValue)
+              : undefined,
+          },
         }),
         ...(variants && {
-          variants: variants.map(v => ({
+          variants: variants.map((v) => ({
             ...v,
             price: Number(v.price),
             quantity: Number(v.quantity),
             discount: {
               ...v.discount,
-              discountValue: v.discount.discountValue ? Number(v.discount.discountValue) : undefined,
+              discountValue: v.discount.discountValue
+                ? Number(v.discount.discountValue)
+                : undefined,
             },
-          }))
+          })),
         }),
       };
 
@@ -389,7 +404,7 @@ export function useProductsQuery(params?: {
 }
 
 export function useProductQuery(slug: string) {
-  console.log('slug-1', slug)
+  console.log('slug-1', slug);
   return useQuery({
     queryKey: PRODUCT_QUERY_KEY(slug),
     queryFn: () => productService.getProductBySlug(slug),

@@ -9,7 +9,7 @@ function UnauthorizedPage() {
         <p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
           You don't have permission to access this page.
         </p>
-        <Button asChild className='text-white hover:text-white'>
+        <Button asChild className="text-white hover:text-white">
           <Link to="/dashboard">Go to Dashboard</Link>
         </Button>
       </div>

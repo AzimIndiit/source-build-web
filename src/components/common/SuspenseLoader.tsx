@@ -24,7 +24,7 @@ export const SuspenseLoader: React.FC<SuspenseLoaderProps> = ({
 
   return (
     <div className={containerClasses}>
-      <div className="gap-4 p-8 bg-white rounded-lg shadow-2xl border border-gray-200 min-h-[100vh] w-full flex justify-center items-center">
+      <div className="gap-4 p-8 bg-red-500 rounded-lg shadow-2xl border border-gray-200 min-h-[100vh] w-full flex justify-center items-center">
         <Loader2 className={`${sizeClasses[size]} animate-spin text-primary`} />
         <p className="text-lg text-gray-900 font-semibold">{message}</p>
       </div>

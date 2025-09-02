@@ -31,7 +31,7 @@ class AuthService {
       localDelivery: data.localDelivery === 'yes',
       role: data.accountType, // Map accountType to role for backend
     };
-    
+
     const response = await axiosInstance.post<RegisterResponse>('/auth/register', payload);
     return response.data;
   }
@@ -86,7 +86,9 @@ class AuthService {
    * Request password reset
    */
   async forgotPassword(email: string): Promise<ForgotPasswordResponse> {
-    const response = await axiosInstance.post<ForgotPasswordResponse>('/auth/forgot-password', { email });
+    const response = await axiosInstance.post<ForgotPasswordResponse>('/auth/forgot-password', {
+      email,
+    });
     return response.data;
   }
 
@@ -94,7 +96,10 @@ class AuthService {
    * Verify password reset token
    */
   async verifyResetToken(token: string): Promise<VerifyResetTokenResponse> {
-    const response = await axiosInstance.post<VerifyResetTokenResponse>('/auth/verify-reset-token', { token });
+    const response = await axiosInstance.post<VerifyResetTokenResponse>(
+      '/auth/verify-reset-token',
+      { token }
+    );
     return response.data;
   }
 
@@ -102,7 +107,10 @@ class AuthService {
    * Reset password with token
    */
   async resetPassword(token: string, password: string): Promise<ResetPasswordResponse> {
-    const response = await axiosInstance.post<ResetPasswordResponse>('/auth/reset-password', { token, password });
+    const response = await axiosInstance.post<ResetPasswordResponse>('/auth/reset-password', {
+      token,
+      password,
+    });
     return response.data;
   }
 
@@ -134,7 +142,10 @@ class AuthService {
    * Change user password
    */
   async changePassword(data: ChangePasswordPayload): Promise<ChangePasswordResponse> {
-    const response = await axiosInstance.post<ChangePasswordResponse>('/auth/change-password', data);
+    const response = await axiosInstance.post<ChangePasswordResponse>(
+      '/auth/change-password',
+      data
+    );
     return response.data;
   }
 }

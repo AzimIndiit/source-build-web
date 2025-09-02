@@ -20,12 +20,12 @@ function VerifyOtpPage() {
   const calculateRemainingTime = () => {
     const storedTimestamp = localStorage.getItem(OTP_RESEND_KEY);
     if (!storedTimestamp) return 0;
-    
+
     const timestamp = parseInt(storedTimestamp, 10);
     const now = Date.now();
     const elapsed = Math.floor((now - timestamp) / 1000);
     const remaining = OTP_RESEND_COOLDOWN - elapsed;
-    
+
     return remaining > 0 ? remaining : 0;
   };
 
@@ -38,12 +38,12 @@ function VerifyOtpPage() {
   // Countdown timer effect
   useEffect(() => {
     let timer: NodeJS.Timeout;
-    
+
     if (countdown > 0) {
       timer = setTimeout(() => {
         const newCountdown = countdown - 1;
         setCountdown(newCountdown);
-        
+
         // Clear localStorage when countdown reaches 0
         if (newCountdown === 0) {
           localStorage.removeItem(OTP_RESEND_KEY);
@@ -71,12 +71,12 @@ function VerifyOtpPage() {
 
     // Call the verify OTP mutation
     verifyOtpMutation.mutate(
-      { email, otp ,type :'UR' },
+      { email, otp, type: 'UR' },
       {
         onSuccess: () => {
           // Clear the OTP resend timestamp on successful verification
           localStorage.removeItem(OTP_RESEND_KEY);
-        }
+        },
       }
     );
   };
@@ -86,23 +86,23 @@ function VerifyOtpPage() {
       toast.error('Email not found. Please sign up again.');
       return;
     }
-    
+
     // Check if already in cooldown (double-check)
     const remaining = calculateRemainingTime();
     if (remaining > 0) {
       toast.error(`Please wait ${remaining} seconds before requesting another OTP`);
       return;
     }
-    
+
     // Store timestamp in localStorage
     localStorage.setItem(OTP_RESEND_KEY, Date.now().toString());
-    
+
     // Call the resend OTP mutation
     resendOtpMutation.mutate(
       { email, type: 'UR' },
       {
         onSuccess: () => {
-          setOtp('')
+          setOtp('');
           // Start countdown only on successful resend
           setCountdown(OTP_RESEND_COOLDOWN);
         },
@@ -110,7 +110,7 @@ function VerifyOtpPage() {
           // Clear the timestamp if resend fails
           localStorage.removeItem(OTP_RESEND_KEY);
           setCountdown(0);
-        }
+        },
       }
     );
   };
@@ -125,7 +125,12 @@ function VerifyOtpPage() {
         </div>
 
         <div className="flex justify-center py-6">
-          <InputOTP disabled={verifyOtpMutation.isPending || resendOtpMutation.isPending} maxLength={6} value={otp} onChange={(value) => setOtp(value)}>
+          <InputOTP
+            disabled={verifyOtpMutation.isPending || resendOtpMutation.isPending}
+            maxLength={6}
+            value={otp}
+            onChange={(value) => setOtp(value)}
+          >
             <InputOTPGroup className="gap-3">
               <InputOTPSlot index={0} />
               <InputOTPSlot index={1} />

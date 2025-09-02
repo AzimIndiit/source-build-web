@@ -5,10 +5,11 @@ import { formatCurrency } from '@/lib/helpers';
 import { ReviewModal } from './ReviewModal';
 import { Badge } from '@/components/ui';
 import { getStatusBadgeColor } from '@/features/dashboard/utils/orderUtils';
+import { formatDate } from '@/lib/date-utils';
 
 interface OrderProductCardProps {
   order: Order;
-  onViewItem?: () => void;
+  onViewItem?: ({ slug }: { slug: string }) => void;
   onWriteReview?: () => void;
 }
 
@@ -56,7 +57,7 @@ export const OrderProductCard: React.FC<OrderProductCardProps> = ({
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 lg:gap-6 flex-1">
               <div>
                 <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Order Placed</p>
-                <p className="text-sm font-medium text-gray-900">{order.date}</p>
+                <p className="text-sm font-medium text-gray-900">{formatDate(order.date)}</p>
               </div>
               <div>
                 <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Total</p>
@@ -85,15 +86,17 @@ export const OrderProductCard: React.FC<OrderProductCardProps> = ({
               </p>
               {/* Common Write Review Button - Only show on last item */}
 
-              <div className="flex-shrink-0 self-start">
-                <Button
-                  type="button"
-                  onClick={() => setIsReviewModalOpen(true)}
-                  className="bg-primary  hover:bg-primary/80 text-white rounded-lg px-6 py-3 h-auto font-medium text-base whitespace-nowrap"
-                >
-                  Write a Review
-                </Button>
-              </div>
+              {order.status === 'Delivered' && (
+                <div className="flex-shrink-0 self-start">
+                  <Button
+                    type="button"
+                    onClick={() => setIsReviewModalOpen(true)}
+                    className="bg-primary  hover:bg-primary/80 text-white rounded-lg px-6 py-3 h-auto font-medium text-base whitespace-nowrap"
+                  >
+                    Write a Review
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -110,7 +113,7 @@ export const OrderProductCard: React.FC<OrderProductCardProps> = ({
                       product.image ||
                       'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=128&h=96&fit=crop'
                     }
-                    alt={product.name}
+                    alt={product.title}
                     className="w-full sm:w-32 h-32 sm:h-24 object-cover rounded-lg"
                   />
                 </div>
@@ -118,7 +121,7 @@ export const OrderProductCard: React.FC<OrderProductCardProps> = ({
                 {/* Product Info */}
                 <div className="flex-1">
                   <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">
-                    {product.name}
+                    {product.title}
                   </h3>
                   <div className="flex items-center gap-4 mb-2">
                     <p className="text-sm text-gray-600">
@@ -130,17 +133,17 @@ export const OrderProductCard: React.FC<OrderProductCardProps> = ({
                     </p>
                   </div>
                   <p className="text-sm text-gray-500 mb-3 sm:mb-4">
-                    Delivery on {product.deliveryDate || '12 October 2024'}
+                    Delivery on {formatDate(product.deliveryDate || '12 October 2024')}
                   </p>
                 </div>
                 {/* View Item Button */}
                 <Button
                   variant="outline"
                   onClick={() => {
-                    onViewItem?.();
-                    console.log('Viewing item:', product.name);
+                    onViewItem?.({ slug: product.productRef?.slug || '' });
+                    console.log('Viewing item:', product.title);
                   }}
-                  className="border-[#3b82f6] text-[#3b82f6] hover:bg-blue-50 rounded-lg px-6 py-2 h-auto font-medium"
+                  className="border-primary text-primary hover:bg-blue-50 rounded-lg px-6 py-2 h-auto font-medium"
                 >
                   View your item
                 </Button>
