@@ -14,7 +14,7 @@ export function useSignupMutation() {
     mutationFn: (data: SignupPayload) => authService.signup(data),
     onSuccess: async (response) => {
       // Store email for OTP verification
-      if (response.data.user.email) {
+      if (response?.data?.user?.email) {
         sessionStorage.setItem('signup_email', response.data.user.email);
 
         // Create OTP for the registered user
@@ -124,11 +124,10 @@ export function useVerifyOtpMutation() {
     onSuccess: async (response) => {
       // Store tokens
       console.log('response.data', response.data);
-      if (response.data.tokens) {
+      if (response?.data?.tokens) {
         // Handle both camelCase and snake_case token keys
-        const accessToken = response.data.tokens.accessToken || response.data.tokens.access_token;
-        const refreshToken =
-          response.data.tokens.refreshToken || response.data.tokens.refresh_token;
+        const accessToken = response.data.tokens.accessToken;
+        const refreshToken = response.data.tokens.refreshToken;
 
         if (accessToken && refreshToken) {
           localStorage.setItem('access_token', accessToken);
@@ -137,7 +136,7 @@ export function useVerifyOtpMutation() {
       }
 
       // Check if user data is in the response
-      if (response.data.user) {
+      if (response?.data?.user) {
         const profile = response.data.user;
 
         // Transform the profile to match the User type in authStore
@@ -148,7 +147,7 @@ export function useVerifyOtpMutation() {
             profile.displayName ||
             `${profile.firstName || ''} ${profile.lastName || ''}`.trim() ||
             profile.email,
-          role: (profile.role || profile.accountType || 'seller') as
+          role: (profile.role || 'seller') as
             | 'driver'
             | 'seller'
             | 'admin'

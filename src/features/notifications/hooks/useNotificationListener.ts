@@ -33,29 +33,26 @@ export function useNotificationListener() {
       queryClient.invalidateQueries({ queryKey: UNREAD_COUNT_QUERY_KEY });
 
       // Show toast notification
-      toast((t) => (
-        <div
-          className="flex items-start gap-3 cursor-pointer"
-          onClick={() => {
-            toast.dismiss(t.id);
+      const toastId = toast(`${notification.title}: ${notification.message}`, {
+        duration: 5000,
+        position: 'top-right',
+      });
+
+      // Add click handler to the toast
+      setTimeout(() => {
+        const toastElement = document.querySelector(`[data-toast-id="${toastId}"]`);
+        if (toastElement) {
+          toastElement.addEventListener('click', () => {
+            toast.dismiss(toastId);
             // Navigate to notifications or action URL
             if (notification.actionUrl) {
               window.location.href = notification.actionUrl;
             } else {
               window.location.href = '/notifications';
             }
-          }}
-        >
-          <div className="flex-shrink-0 w-2 h-2 bg-primary rounded-full mt-2"></div>
-          <div className="flex-1">
-            <p className="font-semibold text-sm">{notification.title}</p>
-            <p className="text-xs text-gray-600 mt-1">{notification.message}</p>
-          </div>
-        </div>
-      ), {
-        duration: 5000,
-        position: 'top-right',
-      });
+          });
+        }
+      }, 100);
     });
 
     // Listen for notification updates

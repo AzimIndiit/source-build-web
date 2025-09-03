@@ -1,10 +1,21 @@
 export { authService } from './authService';
 export type {
   SignupPayload,
-  AuthResponse,
+  RegisterResponse,
   LoginResponse,
   VerifyOtpPayload,
   VerifyOtpResponse,
   ResendOtpPayload,
   ResendOtpResponse,
+  CreateOtpPayload,
+  CreateOtpResponse,
+  ForgotPasswordResponse,
+  VerifyResetTokenResponse,
+  ResetPasswordResponse,
+  RefreshTokenPayload,
+  RefreshTokenResponse,
+  ProfileResponse,
+  LogoutResponse,
+  ChangePasswordPayload,
+  ChangePasswordResponse,
 } from './authService';

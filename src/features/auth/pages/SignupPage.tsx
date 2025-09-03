@@ -48,6 +48,7 @@ function SignupPage() {
     const fullData = {
       ...data,
       localDelivery,
+      role: data.accountType,
     };
 
     // Use the mutation to handle the API call

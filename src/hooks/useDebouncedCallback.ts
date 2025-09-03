@@ -10,7 +10,7 @@ export function useDebouncedCallback<T extends (...args: any[]) => any>(
   func: T,
   delay: number = 1000
 ): (...args: Parameters<T>) => void {
-  const timerRef = useRef<NodeJS.Timeout>();
+  const timerRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   useEffect(() => {
     // Cleanup on unmount

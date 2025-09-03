@@ -151,3 +151,25 @@ class AuthService {
 }
 
 export const authService = new AuthService();
+
+// Export types for external use
+export type {
+  SignupPayload,
+  RegisterResponse,
+  LoginResponse,
+  VerifyOtpPayload,
+  VerifyOtpResponse,
+  ResendOtpPayload,
+  ResendOtpResponse,
+  CreateOtpPayload,
+  CreateOtpResponse,
+  ForgotPasswordResponse,
+  VerifyResetTokenResponse,
+  ResetPasswordResponse,
+  RefreshTokenPayload,
+  RefreshTokenResponse,
+  ProfileResponse,
+  LogoutResponse,
+  ChangePasswordPayload,
+  ChangePasswordResponse,
+};

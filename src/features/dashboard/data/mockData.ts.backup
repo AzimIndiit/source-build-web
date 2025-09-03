@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Package, AlertTriangle, ShoppingCart, Clock } from 'lucide-react';
 import { MetricData, SalesData, RevenueData, Order } from '../types';
 
@@ -70,8 +69,9 @@ export const ordersData: Order[] = [
       review:
         'To improve efficiency, pre-set quick comments enable drivers to send common updates with a single tap. Vendors receive instant notifications and can respond to driver comments, ensuring smooth coordination. All interactions are logged within the order.',
     },
-    driver: {
-      displayName: 'Rachel Kim',
+    driver: { id: 'driver-'; 
+      id: 'driver-1',
+      id: 'customer-'; displayName: 'Rachel Kim',
       email: 'rachelkim56@gmail.com',
       avatar: 'https://i.pravatar.cc/150?img=33',
       rating: 4,
@@ -125,15 +125,17 @@ export const ordersData: Order[] = [
   {
     id: '891256',
     customer: {
-      displayName: 'Ashley Jackson',
+      id: 'customer-2',
+      id: 'customer-'; displayName: 'Ashley Jackson',
       email: 'jackson89@gmail.com',
       avatar: 'https://i.pravatar.cc/150?img=5',
       rating: 4,
       review:
         'To improve efficiency, pre-set quick comments enable drivers to send common updates with a single tap. Vendors receive instant notifications and can respond to driver comments, ensuring smooth coordination. All interactions are logged within the order.',
     },
-    driver: {
-      displayName: 'Rachel Kim',
+    driver: { id: 'driver-'; 
+      id: 'driver-1',
+      id: 'customer-'; displayName: 'Rachel Kim',
       email: 'rachelkim56@gmail.com',
       avatar: 'https://i.pravatar.cc/150?img=33',
       rating: 4,
@@ -185,7 +187,7 @@ export const ordersData: Order[] = [
   {
     id: '7845632',
     customer: {
-      displayName: 'Aya Rossi',
+      id: 'customer-'; displayName: 'Aya Rossi',
       email: 'eayariossi@gmail.com',
       avatar: 'https://i.pravatar.cc/150?img=10',
       rating: 0,
@@ -230,15 +232,15 @@ export const ordersData: Order[] = [
   {
     id: '891256',
     customer: {
-      displayName: 'Mehdi Keita',
+      id: 'customer-'; displayName: 'Mehdi Keita',
       email: 'mehdi67@gmail.com',
       avatar: 'https://i.pravatar.cc/150?img=8',
       rating: 4,
       review:
         'To improve efficiency, pre-set quick comments enable drivers to send common updates with a single tap. Vendors receive instant notifications and can respond to driver comments, ensuring smooth coordination. All interactions are logged within the order.',
     },
-    driver: {
-      displayName: 'Rachel Kim',
+    driver: { id: 'driver-'; 
+      id: 'customer-'; displayName: 'Rachel Kim',
       email: 'rachelkim56@gmail.com',
       avatar: 'https://i.pravatar.cc/150?img=33',
       rating: 4,
@@ -283,15 +285,15 @@ export const ordersData: Order[] = [
   {
     id: '891256',
     customer: {
-      displayName: 'Bạc Khương Đạo',
+      id: 'customer-'; displayName: 'Bạc Khương Đạo',
       email: 'backuh@gmail.com',
       avatar: 'https://i.pravatar.cc/150?img=7',
       rating: 4,
       review:
         'To improve efficiency, pre-set quick comments enable drivers to send common updates with a single tap. Vendors receive instant notifications and can respond to driver comments, ensuring smooth coordination. All interactions are logged within the order.',
     },
-    driver: {
-      displayName: 'Rachel Kim',
+    driver: { id: 'driver-'; 
+      id: 'customer-'; displayName: 'Rachel Kim',
       email: 'rachelkim56@gmail.com',
       avatar: 'https://i.pravatar.cc/150?img=33',
       rating: 4,
@@ -336,15 +338,15 @@ export const ordersData: Order[] = [
   {
     id: '891256',
     customer: {
-      displayName: 'Luis López',
+      id: 'customer-'; displayName: 'Luis López',
       email: 'luislop@gmail.com',
       avatar: 'https://i.pravatar.cc/150?img=11',
       rating: 4,
       review:
         'To improve efficiency, pre-set quick comments enable drivers to send common updates with a single tap. Vendors receive instant notifications and can respond to driver comments, ensuring smooth coordination. All interactions are logged within the order.',
     },
-    driver: {
-      displayName: 'Rachel Kim',
+    driver: { id: 'driver-'; 
+      id: 'customer-'; displayName: 'Rachel Kim',
       email: 'rachelkim56@gmail.com',
       avatar: 'https://i.pravatar.cc/150?img=33',
       rating: 4,
@@ -390,14 +392,14 @@ export const ordersData: Order[] = [
     id: '891256',
 
     customer: {
-      displayName: 'Luis González',
+      id: 'customer-'; displayName: 'Luis González',
       email: 'gonzale77@gmail.com',
       avatar: 'https://i.pravatar.cc/150?img=12',
       rating: 0,
       review: '',
     },
-    driver: {
-      displayName: 'Rachel Kim',
+    driver: { id: 'driver-'; 
+      id: 'customer-'; displayName: 'Rachel Kim',
       email: 'rachelkim56@gmail.com',
       avatar: 'https://i.pravatar.cc/150?img=33',
       rating: 0,
@@ -450,14 +452,14 @@ export const ordersData: Order[] = [
       },
     ],
     customer: {
-      displayName: 'Gabriela González',
+      id: 'customer-'; displayName: 'Gabriela González',
       email: 'gabriela76@gmail.com',
       avatar: 'https://i.pravatar.cc/150?img=9',
       rating: 0,
       review: '',
     },
-    driver: {
-      displayName: 'Rachel Kim',
+    driver: { id: 'driver-'; 
+      id: 'customer-'; displayName: 'Rachel Kim',
       email: 'rachelkim56@gmail.com',
       avatar: 'https://i.pravatar.cc/150?img=33',
       rating: 0,
@@ -501,15 +503,15 @@ export const ordersData: Order[] = [
       },
     ],
     customer: {
-      displayName: 'Cayadi Megantara',
+      id: 'customer-'; displayName: 'Cayadi Megantara',
       email: 'cayandi56@gmail.com',
       avatar: 'https://i.pravatar.cc/150?img=15',
       rating: 4,
       review:
         'To improve efficiency, pre-set quick comments enable drivers to send common updates with a single tap. Vendors receive instant notifications and can respond to driver comments, ensuring smooth coordination. All interactions are logged within the order.',
     },
-    driver: {
-      displayName: 'Rachel Kim',
+    driver: { id: 'driver-'; 
+      id: 'customer-'; displayName: 'Rachel Kim',
       email: 'rachelkim56@gmail.com',
       avatar: 'https://i.pravatar.cc/150?img=33',
       rating: 4,
@@ -545,15 +547,15 @@ export const ordersData: Order[] = [
   {
     id: '891256',
     customer: {
-      displayName: 'Sara Adimbola',
+      id: 'customer-'; displayName: 'Sara Adimbola',
       email: 'saraadmen77@gmail.com',
       avatar: 'https://i.pravatar.cc/150?img=16',
       rating: 4,
       review:
         'To improve efficiency, pre-set quick comments enable drivers to send common updates with a single tap. Vendors receive instant notifications and can respond to driver comments, ensuring smooth coordination. All interactions are logged within the order.',
     },
-    driver: {
-      displayName: 'Rachel Kim',
+    driver: { id: 'driver-'; 
+      id: 'customer-'; displayName: 'Rachel Kim',
       email: 'rachelkim56@gmail.com',
       avatar: 'https://i.pravatar.cc/150?img=33',
       rating: 4,

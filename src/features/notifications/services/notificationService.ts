@@ -3,7 +3,7 @@ import axiosInstance from '@/lib/axios';
 export interface NotificationResponse {
   success: boolean;
   message: string;
-  data: Notification[];
+  data: NotificationData[];
   pagination?: {
     total: number;
     page: number;
@@ -12,7 +12,7 @@ export interface NotificationResponse {
   };
 }
 
-export interface Notification {
+export interface NotificationData {
   _id: string;
   userId: string;
   type: string;
@@ -37,7 +37,7 @@ export interface UnreadCountResponse {
 export interface MarkReadResponse {
   success: boolean;
   message: string;
-  data: Notification;
+  data: NotificationData;
 }
 
 export interface NotificationFilters {

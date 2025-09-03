@@ -31,11 +31,16 @@ export interface User {
   firstName?: string;
   lastName?: string;
   displayName?: string;
+  name?: string; // Alias for displayName
   role: 'buyer' | 'seller' | 'driver' | 'admin';
   status: 'pending' | 'active' | 'inactive' | 'suspended';
   isEmailVerified: boolean;
+  isVerified?: boolean; // Alias for isEmailVerified
   authType: 'email' | 'google';
   termsAccepted: boolean;
+  phone?: string; // Direct phone property
+  businessName?: string; // Direct business name property
+  businessAddress?: string; // Direct business address property
   profile?: UserProfile;
   createdAt: string;
   updatedAt: string;

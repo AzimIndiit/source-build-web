@@ -425,7 +425,7 @@ function EditProductPage() {
     },
   });
 
-  const { handleSubmit, watch, reset } = methods;
+  const { handleSubmit, watch, reset, setValue } = methods;
   const formValues = watch();
   useEffect(() => {
     if (productData?.data) {

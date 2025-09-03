@@ -11,5 +11,6 @@ export * from './types';
 export * from './hooks/useNotificationMutations';
 export * from './hooks/useNotificationListener';
 
-// Services
-export * from './services/notificationService';
+// Services - export specific items to avoid conflicts
+export { notificationService } from './services/notificationService';
+export type { NotificationData, NotificationResponse, UnreadCountResponse, MarkReadResponse, NotificationFilters } from './services/notificationService';

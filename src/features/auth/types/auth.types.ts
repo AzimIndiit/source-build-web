@@ -5,7 +5,7 @@ import type { SignupFormData, LoginFormData } from '../schemas/authSchemas';
  * Signup payload sent to backend
  */
 export interface SignupPayload extends SignupFormData {
-  localDelivery: boolean | string;
+  localDelivery: string;
   role: string;
 }
 
