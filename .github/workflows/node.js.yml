@@ -57,7 +57,7 @@ jobs:
         cat > .env.production << EOF
         VITE_APP_ENV=production
         VITE_API_BASE_URL=https://${{ secrets.SERVER_HOST }}/api/v1
-        VITE_APP_NAME=Xuthority
+        VITE_APP_NAME=source-build
         VITE_APP_VERSION=${{ github.sha }}
         EOF
 
@@ -126,11 +126,11 @@ jobs:
           echo "Starting frontend deployment..."
           
           # Create deployment directory
-          sudo mkdir -p /opt/xuthority
-          sudo chown -R ubuntu:ubuntu /opt/xuthority
+          sudo mkdir -p /opt/source-build
+          sudo chown -R ubuntu:ubuntu /opt/source-build
           
           # Create new deployment directory
-          DEPLOY_DIR="/opt/xuthority/frontend"
+          DEPLOY_DIR="/opt/source-build/frontend"
           mkdir -p $DEPLOY_DIR
           
           # Extract deployment package
@@ -153,7 +153,7 @@ jobs:
           fi
           
           # Create Nginx configuration
-          sudo tee /etc/nginx/sites-available/xuthority > /dev/null << 'NGINX_EOF'
+          sudo tee /etc/nginx/sites-available/source-build > /dev/null << 'NGINX_EOF'
           server {
               listen 80;
               server_name _;
@@ -172,7 +172,7 @@ jobs:
               
               # Frontend static files
               location / {
-                  root /opt/xuthority/frontend;
+                  root /opt/source-build/frontend;
                   try_files $uri $uri/ /index.html;
                   
                   # Cache static assets
@@ -192,7 +192,7 @@ jobs:
               # Health check endpoint
               location /health {
                   access_log off;
-                  alias /opt/xuthority/frontend/health;
+                  alias /opt/source-build/frontend/health;
                   add_header Content-Type text/plain;
               }
               
@@ -227,7 +227,7 @@ jobs:
           NGINX_EOF
           
           # Enable site
-          sudo ln -sf /etc/nginx/sites-available/xuthority /etc/nginx/sites-enabled/xuthority
+          sudo ln -sf /etc/nginx/sites-available/source-build /etc/nginx/sites-enabled/source-build
           sudo rm -f /etc/nginx/sites-enabled/default
           
           # Test Nginx configuration
