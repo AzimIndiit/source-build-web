@@ -31,7 +31,7 @@ export interface User {
   firstName?: string;
   lastName?: string;
   displayName?: string;
-  name?: string; // Alias for displayName
+  avatar?: string;
   role: 'buyer' | 'seller' | 'driver' | 'admin';
   status: 'pending' | 'active' | 'inactive' | 'suspended';
   isEmailVerified: boolean;

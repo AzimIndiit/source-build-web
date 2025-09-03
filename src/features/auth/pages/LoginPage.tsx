@@ -1,18 +1,23 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { AuthWrapper } from '../components/AuthWrapper';
 import { loginSchema, type LoginFormData } from '../schemas/authSchemas';
 import { Button } from '@/components/ui/button';
 import { FormInput } from '@/components/forms/FormInput';
 import { useAuth } from '@/hooks/useAuth';
+import { RoleSelectionModal } from '../components/RoleSelectionModal';
 
 function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [showRoleModal, setShowRoleModal] = useState(false);
+  const [pendingUserId, setPendingUserId] = useState<string>('');
 
   const methods = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -23,6 +28,17 @@ function LoginPage() {
   });
 
   const { handleSubmit } = methods;
+
+  // Check for content parameter in URL (new Google user without role)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const content = params.get('content');
+    console.log('cont', content);
+    if (content) {
+      setPendingUserId(content);
+      setShowRoleModal(true);
+    }
+  }, [location.search]);
 
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
@@ -43,8 +59,24 @@ function LoginPage() {
     }
   };
 
+  const handleGoogleLogin = () => {
+    setGoogleLoading(true);
+    // No need to send role parameter for login
+    // Backend will check if user exists and handle accordingly
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8081/api/v1';
+    const googleAuthUrl = `${apiBaseUrl}/auth/google`;
+
+    // Redirect to backend Google OAuth endpoint
+    window.location.href = googleAuthUrl;
+  };
+
   return (
     <AuthWrapper>
+      <RoleSelectionModal
+        isOpen={showRoleModal}
+        userId={pendingUserId}
+        onClose={() => setShowRoleModal(false)}
+      />
       <FormProvider {...methods}>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <FormInput
@@ -89,11 +121,12 @@ function LoginPage() {
             </div>
           </div>
 
-          {/* <Button
+          <Button
             type="button"
             variant="outline"
             className="w-full  flex justify-center items-center  border-gray-300 font-medium text-base"
-            onClick={() => console.log('Google sign in')}
+            onClick={handleGoogleLogin}
+            disabled={googleLoading}
           >
             <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
               <path
@@ -114,7 +147,7 @@ function LoginPage() {
               />
             </svg>
             Continue With Google
-          </Button> */}
+          </Button>
 
           <Button
             type="button"

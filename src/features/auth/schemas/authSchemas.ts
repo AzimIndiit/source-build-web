@@ -25,7 +25,7 @@ export const phoneValidation = z
   }, 'Invalid phone number. Area code cannot start with 0 or 1');
 
 // Helper for optional phone numbers
-const optionalPhoneValidation = z
+export const optionalPhoneValidation = z
   .string()
   .optional()
   .transform((val) => {
@@ -43,19 +43,10 @@ const optionalPhoneValidation = z
 export const signupSchema = z
   .object({
     accountType: z.string().min(1, 'Account type is required'),
-    businessName: z.string().min(2, 'Business name must be at least 2 characters').max(70).trim(),
+    // Common fields
     firstName: z.string().min(2, 'First name must be at least 2 characters').max(70).trim(),
     lastName: z.string().min(2, 'Last name must be at least 2 characters').max(70).trim(),
-    businessAddress: z
-      .string()
-      .min(2, 'Business address must be at least 2 characters')
-      .max(255)
-      .trim(),
     email: z.string().min(1, 'Email is required').email('Please enter valid email address'),
-    phone: phoneValidation,
-    cellPhone: optionalPhoneValidation, // Cell phone can be optional
-    einNumber: z.string().min(1, 'EIN number is required'),
-    salesTaxId: z.string().min(1, 'Sales Tax ID is required'),
     password: z
       .string()
       .min(8, 'Password must be at least 8 characters')
@@ -67,10 +58,83 @@ export const signupSchema = z
     termsAccepted: z.boolean().refine((val) => val === true, {
       message: 'You must accept the terms and conditions',
     }),
+    // Seller fields (optional unless seller is selected)
+    businessName: z.string().optional(),
+    businessAddress: z.string().optional(),
+    phone: z.string().optional(),
+    cellPhone: z.string().optional(),
+    einNumber: z.string().optional(),
+    salesTaxId: z.string().optional(),
+    localDelivery: z.string().optional(),
+    // Driver fields (optional unless driver is selected)
+    driverLicenseNumber: z.string().optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
     path: ['confirmPassword'],
+  })
+  .superRefine((data, ctx) => {
+    // Seller-specific validation
+    if (data.accountType === 'seller') {
+      if (!data.businessName || data.businessName.length < 2) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Business name must be at least 2 characters',
+          path: ['businessName'],
+        });
+      }
+      if (!data.businessAddress || data.businessAddress.length < 2) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Business address must be at least 2 characters',
+          path: ['businessAddress'],
+        });
+      }
+      if (!data.phone || data.phone.replace(/\D/g, '').length !== 10) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Phone number is required',
+          path: ['phone'],
+        });
+      }
+      if (!data.cellPhone || data.cellPhone.replace(/\D/g, '').length !== 10) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Cell phone is required',
+          path: ['cellPhone'],
+        });
+      }
+      if (!data.einNumber || data.einNumber.length < 1) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'EIN number is required',
+          path: ['einNumber'],
+        });
+      }
+      if (!data.salesTaxId || data.salesTaxId.length < 1) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Sales Tax ID is required',
+          path: ['salesTaxId'],
+        });
+      }
+    }
+
+    // Driver-specific validation
+    if (data.accountType === 'driver') {
+      if (!data.phone || data.phone.replace(/\D/g, '').length !== 10) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Phone number is required',
+          path: ['phone'],
+        });
+      }
+    }
+
+    // Buyer validation - only common fields are required
+    if (data.accountType === 'buyer') {
+      // No additional fields required for buyer
+    }
   });
 
 export const forgotPasswordSchema = z.object({

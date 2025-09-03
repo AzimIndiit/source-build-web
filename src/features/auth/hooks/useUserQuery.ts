@@ -27,6 +27,10 @@ export interface ApiUser {
   address?: string;
   description?: string;
   avatar?: string;
+  profile?: {
+    isVehicles?: boolean;
+    isLicense?: boolean;
+  };
 }
 
 export const transformApiUserToUser = (apiUser: ApiUser): User => {

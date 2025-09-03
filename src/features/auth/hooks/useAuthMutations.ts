@@ -85,6 +85,9 @@ export function useLoginMutation() {
 
       // Navigate based on user role
       if (user.role === 'driver') {
+        // For login, we assume existing drivers have vehicles
+        // New drivers without vehicles would go through signup + OTP flow
+        // If needed, we could make an additional API call here to check vehicles
         navigate('/driver/dashboard');
       } else if (user.role === 'seller') {
         navigate('/seller/dashboard');
@@ -147,11 +150,7 @@ export function useVerifyOtpMutation() {
             profile.displayName ||
             `${profile.firstName || ''} ${profile.lastName || ''}`.trim() ||
             profile.email,
-          role: (profile.role || 'seller') as
-            | 'driver'
-            | 'seller'
-            | 'admin'
-            | 'buyer',
+          role: (profile.role || 'seller') as 'driver' | 'seller' | 'admin' | 'buyer',
           isVerified: true, // Set to true since OTP is verified
           firstName: profile.firstName || '',
           lastName: profile.lastName || '',
@@ -180,8 +179,31 @@ export function useVerifyOtpMutation() {
         toast.success(response.message || 'Email verified successfully!');
 
         // Navigate based on user role
-        if (user.role !== 'buyer') {
+        if (user.role === 'driver') {
+          // Check if driver has vehicles in their profile
+          // Access vehicles from the profile object, not the user type
+          const vehicles = (profile as any).vehicles;
+          console.log('Driver profile vehicles:', vehicles);
+          console.log('Vehicles is array:', Array.isArray(vehicles));
+          console.log('Vehicles length:', vehicles ? vehicles.length : 'undefined');
+
+          const hasVehicles = vehicles && Array.isArray(vehicles) && vehicles.length > 0;
+
+          console.log('Has vehicles:', hasVehicles);
+
+          if (!hasVehicles) {
+            // Redirect to vehicle information page if no vehicles
+            console.log('No vehicles found, redirecting to vehicle information page');
+            navigate('/auth/vehicle-information');
+          } else {
+            // Redirect to driver dashboard if vehicles exist
+            console.log('Vehicles found, redirecting to driver dashboard');
+            navigate('/driver/dashboard');
+          }
+        } else if (user.role === 'seller') {
           navigate(`/${user.role}/dashboard`);
+        } else if (user.role === 'buyer') {
+          navigate('/');
         } else {
           navigate('/');
         }
@@ -206,8 +228,14 @@ export function useVerifyOtpMutation() {
 
           // Navigate based on user role
           if (currentUser) {
-            if (currentUser.role !== 'buyer') {
+            if (currentUser.role === 'driver') {
+              // For drivers from checkAuth, we assume no vehicles yet (new signup)
+              // since vehicle data wouldn't be in the auth store user type
+              navigate('/auth/vehicle-information');
+            } else if (currentUser.role === 'seller') {
               navigate(`/${currentUser.role}/dashboard`);
+            } else if (currentUser.role === 'buyer') {
+              navigate('/');
             } else {
               navigate('/');
             }

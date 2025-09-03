@@ -100,8 +100,23 @@ export const router = createBrowserRouter([
             Component: module.default,
           })),
       },
+      {
+        path: 'callback',
+        lazy: () =>
+          import('@/features/auth/pages/AuthRedirectPage').then((module) => ({
+            Component: module.default,
+          })),
+      },
+      {
+        path: 'vehicle-information',
+        lazy: () =>
+          import('@/features/vehicle/pages/VehicleInformationPage').then((module) => ({
+            Component: module.default,
+          })),
+      },
     ],
   },
+
   {
     path: 'profile',
     element: (

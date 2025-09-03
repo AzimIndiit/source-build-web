@@ -5,21 +5,76 @@ import { MetricsGrid } from '../components/MetricsGrid';
 import { WeeklySalesChart } from '../components/charts/WeeklySalesChart';
 import { RevenueChart } from '../components/charts/RevenueChart';
 import { OrdersTable } from '../components/OrdersTable';
+import { OrdersTableSkeleton } from '../components/OrdersTableSkeleton';
 
 // Import data and types
-import { metricsData, weekSalesData, revenueData, ordersData } from '../data/mockData';
+import { metricsData, weekSalesData, revenueData } from '../data/mockData';
 import { useNavigate } from 'react-router-dom';
+import { useSellerOrdersQuery } from '@/features/orders/hooks/useOrderMutations';
 
 export const SellerDashboard: React.FC = () => {
   const [selectedYear, setSelectedYear] = useState('2024');
+  const [currentPage] = useState(1);
+  const [itemsPerPage] = useState(5);
   const navigate = useNavigate();
+
+  // Fetch orders from API
+  const { data, isLoading, isError, error } = useSellerOrdersQuery({
+    page: currentPage,
+    limit: itemsPerPage,
+  });
+  const orders = data?.data || [];
+  // Transform API orders to match dashboard Order type
+  const transformedOrders = orders.map((order: any) => ({
+    id: order.orderNumber || order._id,
+    customer: {
+      id: order.customer?.userRef?._id || '',
+      displayName: order.customer?.userRef?.displayName || 'Customer',
+      email: order.customer?.userRef?.email || '',
+      avatar: order.customer?.userRef?.avatar || '',
+    },
+    driver: order.driver
+      ? {
+          id: order.driver?.userRef?._id || '',
+          displayName: order.driver?.userRef?.displayName || 'Driver',
+          email: order.driver?.userRef?.email || '',
+          avatar: order.driver?.userRef?.avatar || '',
+        }
+      : undefined,
+      products: order.products.map((p) => ({
+        id: p.id,
+        title: p.title,
+        quantity: p.quantity,
+        price: p.price,
+        deliveryDate: p.deliveryDate,
+        image: p.image,
+      })),
+    date: order.createdAt,
+    amount: order.amount,
+    status: order.status as any,
+    orderSummary: order.orderSummary
+      ? {
+          shippingAddress: order.orderSummary.shippingAddress,
+          proofOfDelivery: order.orderSummary.proofOfDelivery || '',
+          paymentMethod: {
+            type: order.orderSummary.paymentMethod.type,
+            cardType: order.orderSummary.paymentMethod.cardType || '',
+            cardNumber: order.orderSummary.paymentMethod.cardNumber || '',
+          },
+          subTotal: order.orderSummary.subTotal,
+          shippingFee: order.orderSummary.shippingFee,
+          marketplaceFee: order.orderSummary.marketplaceFee,
+          taxes: order.orderSummary.taxes,
+          total: order.orderSummary.total,
+        }
+      : undefined,
+  }));
+
   const handleViewAllOrders = () => {
-    // Navigate to orders page or show all orders
     navigate('/seller/orders');
   };
 
   const handleViewOrderDetails = (orderId: string) => {
-    // Navigate to order details page
     navigate(`/seller/orders/${orderId}`);
   };
 
@@ -48,13 +103,26 @@ export const SellerDashboard: React.FC = () => {
       </div>
 
       {/* Orders Table */}
-      <OrdersTable
-        title="Latest Orders"
-        orders={ordersData}
-        showSort={false}
-        onViewAll={handleViewAllOrders}
-        onViewDetails={handleViewOrderDetails}
-      />
+      {isLoading ? (
+        <OrdersTableSkeleton />
+      ) : isError ? (
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="flex flex-col items-center justify-center min-h-[200px] text-center">
+            <p className="text-red-600 font-semibold mb-2">Error loading orders</p>
+            <p className="text-gray-600 text-sm">
+              {(error as any)?.response?.data?.message || 'Failed to fetch orders. Please try again.'}
+            </p>
+          </div>
+        </div>
+      ) : (
+        <OrdersTable
+          title="Latest Orders"
+          orders={transformedOrders}
+          showSort={false}
+          onViewAll={handleViewAllOrders}
+          onViewDetails={handleViewOrderDetails}
+        />
+      )}
     </div>
   );
 };

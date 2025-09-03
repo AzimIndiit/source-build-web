@@ -55,7 +55,10 @@ const CustomSlider: React.FC<CustomSliderProps> = ({ slides }) => {
     <section className="relative w-full">
       <Slider {...customSettings}>
         {slides.map((slide, index) => (
-          <div className="relative h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px] xl:h-[750px] w-full" key={index}>
+          <div
+            className="relative h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px] xl:h-[750px] w-full"
+            key={index}
+          >
             <img src={slide.image} alt="Slider image" className="h-full w-full object-cover" />
             <div
               className="absolute inset-0"
@@ -70,7 +73,9 @@ const CustomSlider: React.FC<CustomSliderProps> = ({ slides }) => {
                     <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-bold leading-tight">
                       {slide.title}
                     </h1>
-                    <p className="text-sm sm:text-base md:text-lg lg:text-xl leading-relaxed max-w-2xl">{slide.description}</p>
+                    <p className="text-sm sm:text-base md:text-lg lg:text-xl leading-relaxed max-w-2xl">
+                      {slide.description}
+                    </p>
                     <div className="flex gap-4 flex-row">
                       <Button className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base font-semibold text-white transition-all duration-300 hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2  h-10 sm:h-[69px]">
                         Shop cabinets

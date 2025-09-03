@@ -23,6 +23,10 @@ export interface User {
   region: string;
   address: string;
   description: string;
+  profile?: {
+    isVehicles?: boolean;
+    isLicense?: boolean;
+  };
 }
 
 export interface LocationData {

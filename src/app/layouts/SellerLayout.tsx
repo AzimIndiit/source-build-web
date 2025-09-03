@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom';
 import { Navbar } from '@/components/navigation/Navbar';
 import { SellerSidebar, SellerSidebarToggle } from '@/components/navigation/SellerSidebar';
 import { Footer } from '@/components/common/Footer';
+import { ScrollToTop } from '@/components/common/ScrollToTop';
 
 export const SellerLayout: React.FC = () => {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -45,6 +46,7 @@ export const SellerLayout: React.FC = () => {
 
   return (
     <div className=" relative size-full min-h-screen">
+      <ScrollToTop />
       {/* Header */}
       <div className="fixed top-0 left-0 right-0 z-50">
         <Navbar />

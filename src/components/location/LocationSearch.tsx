@@ -53,7 +53,7 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
   className,
   variant = 'navbar',
 }) => {
-  const { currentLocation, setCurrentLocation } = useAuthStore();
+  const { currentLocation, setCurrentLocation, user } = useAuthStore();
   const [isOpen, setIsOpen] = useState(false);
   const [isDetectingLocation, setIsDetectingLocation] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -62,8 +62,10 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
   const [addressToDelete, setAddressToDelete] = useState<SavedAddressType | null>(null);
   const [showAllAddresses, setShowAllAddresses] = useState(false);
   const navigate = useNavigate();
-  // Queries and Mutations
-  const { data: addressesData, isLoading: addressesLoading } = useSavedAddresssQuery();
+  const isAuthenticated = !!user;
+  // Queries and Mutations - only fetch saved addresses when authenticated
+  const { data: addressesData, isLoading: addressesLoading } =
+    useSavedAddresssQuery(isAuthenticated);
   const updateMutation = useUpdateSavedAddressMutation();
   const deleteMutation = useDeleteSavedAddressMutation();
 

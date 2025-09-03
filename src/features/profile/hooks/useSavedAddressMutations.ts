@@ -8,12 +8,13 @@ import {
 
 const SAVED_ADDRESSES_QUERY_KEY = ['savedAddresses'];
 
-export function useSavedAddresssQuery() {
+export function useSavedAddresssQuery(enabled: boolean = true) {
   return useQuery({
     queryKey: SAVED_ADDRESSES_QUERY_KEY,
     queryFn: () => addressService.getAddresses(),
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
+    enabled, // Only run query if enabled is true
   });
 }
 

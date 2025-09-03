@@ -11,7 +11,7 @@ export function useNotificationListener() {
 
   useEffect(() => {
     const token = localStorage.getItem('access_token');
-    
+
     if (!token) {
       return;
     }
@@ -90,7 +90,7 @@ export function useNotificationListener() {
 export function useNotificationPolling(intervalMs: number = 30000) {
   useEffect(() => {
     const token = localStorage.getItem('access_token');
-    
+
     if (!token) {
       return;
     }

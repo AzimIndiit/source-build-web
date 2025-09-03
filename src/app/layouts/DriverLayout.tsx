@@ -2,12 +2,14 @@ import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { DriverSidebar } from '@/components/navigation/DriverSidebar';
 import { Navbar } from '@/components/navigation/Navbar';
+import { ScrollToTop } from '@/components/common/ScrollToTop';
 
 export function DriverLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <div className="flex h-screen overflow-hidden">
+      <ScrollToTop />
       <DriverSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       <div className="flex flex-1 flex-col">

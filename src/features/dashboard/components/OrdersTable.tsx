@@ -230,7 +230,7 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
                         </AvatarFallback>
                       </Avatar>
                       <div className="text-left">
-                        <div className="font-medium text-xs lg:text-sm text-gray-900">
+                        <div className="font-medium text-xs lg:text-sm text-gray-900 capitalize">
                           {order.customer?.displayName || 'Unknown'}
                         </div>
                         <div className="text-xs text-gray-500 hidden xl:block">

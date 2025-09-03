@@ -53,7 +53,7 @@ const SmallCardComponent: React.FC = () => {
           {dealsData.map((deal, index) => (
             <Card
               key={index}
-              className="shadow-sm sm:shadow-lg hover:shadow-xl transition-shadow duration-300 border-gray-100"
+              className="shadow-sm sm:shadow-lg hover:shadow-xl transition-shadow duration-300 border-gray-100 p-0"
             >
               <CardContent className="p-4 sm:p-5 md:p-6">
                 <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-3 sm:mb-4 md:mb-6">

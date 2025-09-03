@@ -1,13 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Car, Package2, Shield, Zap } from 'lucide-react';
+import { Card } from '@/components/ui/Card';
 import { HeaderMenu } from '@/components/navigation/HeaderMenu';
 import CustomSlider from './home/components/SingleSlider';
 import SmallCardComponent from './home/components/SmallCardComponent';
 import IMAGES from '@/config/constants';
-import HomeFooter from './home/components/HomeFooter';
 import MultiSliderSlider from './home/components/MultiSliderSlider';
-import ProductCarousel from '../components/ProductCarousel';
 import { HomePageSkeleton } from '../components/SkeletonLoader';
 
 interface Slide {

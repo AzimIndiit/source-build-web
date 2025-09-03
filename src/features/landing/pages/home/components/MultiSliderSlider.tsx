@@ -112,7 +112,9 @@ const MultiSliderSlider: React.FC<MultiSliderSliderProps> = ({ slides }) => {
   };
 
   return (
-    <section className={`relative w-full overflow-hidden ${slides.length === 1 ? 'max-w-md mx-auto' : ''}`}>
+    <section
+      className={`relative w-full overflow-hidden ${slides.length === 1 ? 'max-w-md mx-auto' : ''}`}
+    >
       <Slider {...customSettings} className="px-2 sm:px-0">
         {slides.map((slide, index) => (
           <div className="pr-1.5 sm:pr-2 md:pr-3 lg:pr-4" key={index}>

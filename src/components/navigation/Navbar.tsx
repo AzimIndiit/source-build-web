@@ -43,13 +43,13 @@ export const Navbar: React.FC = () => {
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  // Get real notification count from API
-  const { data: unreadNotifications } = useUnreadCountQuery();
+  // Get real notification count from API (only when authenticated)
+  const { data: unreadNotifications } = useUnreadCountQuery(isAuthenticated);
   const notificationCount = unreadNotifications?.data?.count || 0;
 
-  // Get real message count from API
-  const { unreadCount: messageCount } = useUnreadMessageCount();
-  
+  // Get real message count from API (only when authenticated)
+  const { unreadCount: messageCount } = useUnreadMessageCount(isAuthenticated);
+
   // Mock count for cart - replace with actual data from your backend
   const cartCount = 2; // Example count
 
@@ -84,7 +84,7 @@ export const Navbar: React.FC = () => {
             </Link>
 
             {/* Location Selector - Visible on tablet and desktop */}
-            <LocationSearch variant="navbar" />
+            {isAuthenticated && <LocationSearch variant="navbar" />}
           </div>
 
           <div className="flex gap-3 lg:gap-8 justify-end items-center ml-4 flex-1">
@@ -221,11 +221,13 @@ export const Navbar: React.FC = () => {
             ) : (
               /* Login/Signup buttons for unauthenticated users */
               <div className="flex items-center gap-3">
-                <Button variant="ghost" asChild className="hidden lg:inline-flex">
+                <Button variant="ghost" asChild className="hidden md:inline-flex">
                   <Link to="/auth/login">Login</Link>
                 </Button>
                 <Button asChild>
-                  <Link className='text-white hover:text-white' to="/auth/signup">Sign Up</Link>
+                  <Link className="text-white hover:text-white" to="/auth/signup">
+                    Sign Up
+                  </Link>
                 </Button>
               </div>
             )}
@@ -294,7 +296,7 @@ export const Navbar: React.FC = () => {
           {isMobileMenuOpen && (
             <div className="border-t border-gray-200 bg-white px-4 py-4 space-y-4">
               {/* Location */}
-              <LocationSearch variant="navbar" className="w-full" />
+              {isAuthenticated && <LocationSearch variant="navbar" className="w-full" />}
 
               {isAuthenticated ? (
                 <>
@@ -365,10 +367,14 @@ export const Navbar: React.FC = () => {
                 </>
               ) : (
                 <div className="space-y-2">
-                  <Button asChild className="w-full">
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="w-full border-gray-300 hover:bg-gray-200 "
+                  >
                     <Link to="/auth/login">Login</Link>
                   </Button>
-                  <Button asChild variant="outline" className="w-full">
+                  <Button asChild className="w-full text-white hover:text-white ">
                     <Link to="/auth/signup">Sign Up</Link>
                   </Button>
                 </div>

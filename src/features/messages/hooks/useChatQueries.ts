@@ -14,12 +14,16 @@ export const CHATS_QUERY_KEY = ['chats'];
 export const CHAT_QUERY_KEY = (id: string) => ['chat', id];
 export const CHAT_MESSAGES_QUERY_KEY = (chatId: string) => ['chat', chatId, 'messages'];
 
-export function useChatsQuery(params?: { page?: number; limit?: number; search?: string }) {
+export function useChatsQuery(
+  params?: { page?: number; limit?: number; search?: string },
+  enabled: boolean = true
+) {
   return useQuery({
     queryKey: [...CHATS_QUERY_KEY, params],
     queryFn: () => chatService.getChats(params),
     staleTime: 1 * 60 * 1000, // 1 minute
     gcTime: 5 * 60 * 1000, // 5 minutes
+    enabled, // Only run query if enabled is true
   });
 }
 

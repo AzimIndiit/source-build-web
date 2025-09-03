@@ -31,13 +31,14 @@ export function useInfiniteNotificationsQuery(filters?: Omit<NotificationFilters
   });
 }
 
-export function useUnreadCountQuery() {
+export function useUnreadCountQuery(enabled: boolean = true) {
   return useQuery({
     queryKey: UNREAD_COUNT_QUERY_KEY,
     queryFn: () => notificationService.getUnreadCount(),
     staleTime: 30 * 1000,
     gcTime: 5 * 60 * 1000,
     refetchInterval: 60 * 1000, // Refetch every minute
+    enabled, // Only run query if enabled is true
   });
 }
 

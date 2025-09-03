@@ -25,12 +25,16 @@ class AuthService {
   /**
    * Register a new user
    */
-  async signup(data: SignupFormData & { localDelivery: string }): Promise<RegisterResponse> {
+  async signup(data: SignupFormData & { localDelivery?: string }): Promise<RegisterResponse> {
     const payload: SignupPayload = {
       ...data,
-      localDelivery: data.localDelivery === 'yes',
       role: data.accountType, // Map accountType to role for backend
     };
+
+    // Only add localDelivery for seller role
+    if (data.accountType === 'seller' && data.localDelivery) {
+      payload.localDelivery = data.localDelivery === 'yes';
+    }
 
     const response = await axiosInstance.post<RegisterResponse>('/auth/register', payload);
     return response.data;
