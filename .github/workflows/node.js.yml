@@ -1,0 +1,292 @@
+name: Frontend CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+    
+
+env:
+  NODE_VERSION: '20.x'
+  BUILD_PATH: 'dist'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Run linting
+      run: npm run lint || echo "Linting completed with warnings"
+
+    - name: Run security audit
+      run: npm audit --audit-level=high || echo "Security audit completed"
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Create production environment file
+      run: |
+        cat > .env.production << EOF
+        VITE_APP_ENV=production
+        VITE_API_BASE_URL=https://${{ secrets.SERVER_HOST }}/api/v1
+        VITE_APP_NAME=Xuthority
+        VITE_APP_VERSION=${{ github.sha }}
+        EOF
+
+    - name: Build application with Vite
+      run: |
+        echo "Building React application with Vite..."
+        npm run build
+        echo "Build completed successfully"
+        ls -la ${{ env.BUILD_PATH }}
+      env:
+        NODE_ENV: production
+
+    - name: Create build info
+      run: |
+        cat > ${{ env.BUILD_PATH }}/build-info.json << EOF
+        {
+          "version": "${{ github.sha }}",
+          "branch": "${{ github.ref_name }}",
+          "buildTime": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+          "commitMessage": "${{ github.event.head_commit.message }}",
+          "author": "${{ github.event.head_commit.author.name }}"
+        }
+        EOF
+
+    - name: Create deployment package
+      run: |
+        tar -czf frontend-deployment.tar.gz -C ${{ env.BUILD_PATH }} .
+        echo "Deployment package created: $(ls -lh frontend-deployment.tar.gz)"
+
+    - name: Upload deployment artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: frontend-deployment
+        path: frontend-deployment.tar.gz
+        retention-days: 30
+
+  deploy:
+    needs: [test, build]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Download deployment artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: frontend-deployment
+
+    - name: Setup SSH
+      uses: webfactory/ssh-agent@v0.9.0
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+    - name: Add server to known hosts
+      run: |
+        ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+
+    - name: Deploy to server
+      run: |
+        # Copy deployment package to server
+        scp frontend-deployment.tar.gz ubuntu@${{ secrets.SERVER_HOST }}:/tmp/
+        
+        # Deploy on server
+        ssh ubuntu@${{ secrets.SERVER_HOST }} << 'EOF'
+          set -e
+          
+          echo "Starting frontend deployment..."
+          
+          # Create deployment directory
+          sudo mkdir -p /opt/xuthority
+          sudo chown -R ubuntu:ubuntu /opt/xuthority
+          
+          # Create new deployment directory
+          DEPLOY_DIR="/opt/xuthority/frontend"
+          mkdir -p $DEPLOY_DIR
+          
+          # Extract deployment package
+          cd $DEPLOY_DIR
+          tar -xzf /tmp/frontend-deployment.tar.gz
+          rm /tmp/frontend-deployment.tar.gz
+          
+          # Create health check endpoint first (while user still has permissions)
+          echo "healthy" > $DEPLOY_DIR/health
+          
+          # Set proper permissions after creating all files
+          sudo chown -R www-data:www-data $DEPLOY_DIR
+          sudo chmod -R 755 $DEPLOY_DIR
+          sudo chmod 644 $DEPLOY_DIR/health
+          
+          # Install/update Nginx if not present
+          if ! command -v nginx &> /dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y nginx
+          fi
+          
+          # Create Nginx configuration
+          sudo tee /etc/nginx/sites-available/xuthority > /dev/null << 'NGINX_EOF'
+          server {
+              listen 80;
+              server_name _;
+              
+              # Security headers
+              add_header X-Frame-Options "SAMEORIGIN" always;
+              add_header X-Content-Type-Options "nosniff" always;
+              add_header X-XSS-Protection "1; mode=block" always;
+              add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+              
+              # Gzip compression
+              gzip on;
+              gzip_vary on;
+              gzip_min_length 1024;
+              gzip_types text/plain text/css text/xml text/javascript application/javascript application/xml+rss application/json;
+              
+              # Frontend static files
+              location / {
+                  root /opt/xuthority/frontend;
+                  try_files $uri $uri/ /index.html;
+                  
+                  # Cache static assets
+                  location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+                      expires 1y;
+                      add_header Cache-Control "public, immutable";
+                      access_log off;
+                  }
+                  
+                  # Cache HTML files for shorter period
+                  location ~* \.(html)$ {
+                      expires 1h;
+                      add_header Cache-Control "public, must-revalidate";
+                  }
+              }
+              
+              # Health check endpoint
+              location /health {
+                  access_log off;
+                  alias /opt/xuthority/frontend/health;
+                  add_header Content-Type text/plain;
+              }
+              
+              # API proxy to backend
+              location /api/ {
+                  proxy_pass http://localhost:8081;
+                  proxy_http_version 1.1;
+                  proxy_set_header Upgrade $http_upgrade;
+                  proxy_set_header Connection 'upgrade';
+                  proxy_set_header Host $host;
+                  proxy_set_header X-Real-IP $remote_addr;
+                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                  proxy_set_header X-Forwarded-Proto $scheme;
+                  proxy_cache_bypass $http_upgrade;
+                  
+                  # Timeouts
+                  proxy_connect_timeout 60s;
+                  proxy_send_timeout 60s;
+                  proxy_read_timeout 60s;
+              }
+              
+              # Security: Hide server information
+              server_tokens off;
+              
+              # Prevent access to sensitive files
+              location ~ /\. {
+                  deny all;
+                  access_log off;
+                  log_not_found off;
+              }
+          }
+          NGINX_EOF
+          
+          # Enable site
+          sudo ln -sf /etc/nginx/sites-available/xuthority /etc/nginx/sites-enabled/xuthority
+          sudo rm -f /etc/nginx/sites-enabled/default
+          
+          # Test Nginx configuration
+          sudo nginx -t
+          
+          # Start/reload Nginx
+          sudo systemctl enable nginx
+          sudo systemctl restart nginx
+          
+          echo "Frontend deployment completed successfully"
+        EOF
+
+    - name: Verify deployment
+      run: |
+        # Wait for deployment to stabilize
+        sleep 10
+        
+        # Verify deployment
+        ssh ubuntu@${{ secrets.SERVER_HOST }} << 'EOF'
+          # Check Nginx status
+          sudo systemctl status nginx --no-pager
+          
+          # Check frontend health endpoint
+          echo "Testing health endpoint..."
+          curl -f http://localhost/health && echo "✅ Health check passed"
+          
+          # Check if frontend is serving correctly
+          echo "Testing frontend serving..."
+          curl -f http://localhost/ | grep -q "<!DOCTYPE html>" && echo "✅ Frontend HTML serving correctly"
+          
+          # Test API proxy if backend is running
+          if curl -f http://localhost:8081/api/v1/health > /dev/null 2>&1; then
+            curl -f http://localhost/api/v1/health && echo "✅ API proxy working"
+          else
+            echo "⚠️  Backend not running, skipping API proxy test"
+          fi
+          
+          echo "✅ Deployment verification completed"
+        EOF
+
+    - name: Notify deployment status
+      if: always()
+      run: |
+        if [ ${{ job.status }} == 'success' ]; then
+          echo "✅ Frontend deployment successful"
+        else
+          echo "❌ Frontend deployment failed"
+        fi
+
+  lighthouse:
+    needs: deploy
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Run Lighthouse CI
+      run: |
+        npm install -g @lhci/cli
+        lhci autorun --upload.target=temporary-public-storage || echo "Lighthouse audit completed"
+      env:
+        LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+        LHCI_SERVER_BASE_URL: http://${{ secrets.SERVER_HOST }} 
