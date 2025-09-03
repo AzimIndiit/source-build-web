@@ -288,7 +288,7 @@ function HomePage() {
     <div className="min-h-screen bg-gray-50">
       <HeaderMenu />
       <CustomSlider slides={slides} />
-      <div className="relative mt-[-50px] sm:mt-[-100px] md:mt-[-150px] lg:mt-[-200px] w-full z-10 px-4 sm:px-6 lg:px-8">
+      <div className="relative sm:mt-[-100px] md:mt-[-150px] lg:mt-[-200px] w-full z-10 px-4 sm:px-6 lg:px-8">
         <SmallCardComponent />
       </div>
 

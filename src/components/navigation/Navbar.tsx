@@ -225,7 +225,7 @@ export const Navbar: React.FC = () => {
                   <Link to="/auth/login">Login</Link>
                 </Button>
                 <Button asChild>
-                  <Link to="/auth/signup">Sign Up</Link>
+                  <Link className='text-white hover:text-white' to="/auth/signup">Sign Up</Link>
                 </Button>
               </div>
             )}
