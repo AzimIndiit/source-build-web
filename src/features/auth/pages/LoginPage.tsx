@@ -17,8 +17,8 @@ function LoginPage() {
   const methods = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: 'vugodid@mailinator.com',
-      password: 'Password@123', // Default password for testing
+      email: '',
+      password: '', // Default password for testing
     },
   });
 
