@@ -1,6 +1,7 @@
 import axiosInstance from '@/lib/axios';
 
 interface FileUploadResponse {
+  status: string;
   success: boolean;
   data: {
     id: string;

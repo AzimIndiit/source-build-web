@@ -138,114 +138,62 @@ export function useVerifyOtpMutation() {
         }
       }
 
-      // Check if user data is in the response
-      if (response?.data?.user) {
-        const profile = response.data.user;
-
-        // Transform the profile to match the User type in authStore
+      const profile = response?.data?.user;
+      
+      // Clear session data
+      sessionStorage.removeItem('signup_email');
+      localStorage.removeItem('otp_resend_timestamp');
+      
+      if (profile) {
+        // Store user with required fields
         const user = {
+          ...profile,
           id: profile.id || profile._id || '',
           email: profile.email,
-          displayName:
-            profile.displayName ||
-            `${profile.firstName || ''} ${profile.lastName || ''}`.trim() ||
-            profile.email,
-          role: (profile.role || 'seller') as 'driver' | 'seller' | 'admin' | 'buyer',
-          isVerified: true, // Set to true since OTP is verified
+          displayName: profile.displayName || `${profile.firstName || ''} ${profile.lastName || ''}`.trim() || profile.email,
+          role: profile.role,
+          isVerified: true,
           firstName: profile.firstName || '',
           lastName: profile.lastName || '',
-          company: profile.businessName || '',
+          company: (profile as any).businessName || '',
           region: '',
-          address: profile.businessAddress || '',
+          address: (profile as any).businessAddress || '',
           description: '',
-          phone: profile.phone || '',
+          phone: (profile as any).phone || '',
           createdAt: profile.createdAt || new Date().toISOString(),
         };
-
-        // Store user
-        setUser(user);
+        
+        // setUser(user as any);
         setIsAuthenticated(true);
         localStorage.setItem('user', JSON.stringify(user));
-
-        // Clear signup email from session
-        sessionStorage.removeItem('signup_email');
-
-        // Clear OTP resend timestamp
-        localStorage.removeItem('otp_resend_timestamp');
-
-        // Invalidate queries
+        
+        // Invalidate queries and show success
         queryClient.invalidateQueries({ queryKey: ['user'] });
-
         toast.success(response.message || 'Email verified successfully!');
-
-        // Navigate based on user role
-        if (user.role === 'driver') {
-          // Check if driver has vehicles in their profile
-          // Access vehicles from the profile object, not the user type
-          const vehicles = (profile as any).vehicles;
-          console.log('Driver profile vehicles:', vehicles);
-          console.log('Vehicles is array:', Array.isArray(vehicles));
-          console.log('Vehicles length:', vehicles ? vehicles.length : 'undefined');
-
-          const hasVehicles = vehicles && Array.isArray(vehicles) && vehicles.length > 0;
-
-          console.log('Has vehicles:', hasVehicles);
-
-          if (!hasVehicles) {
-            // Redirect to vehicle information page if no vehicles
-            console.log('No vehicles found, redirecting to vehicle information page');
-            navigate('/auth/vehicle-information');
-          } else {
-            // Redirect to driver dashboard if vehicles exist
-            console.log('Vehicles found, redirecting to driver dashboard');
-            navigate('/driver/dashboard');
-          }
-        } else if (user.role === 'seller') {
-          navigate(`/${user.role}/dashboard`);
-        } else if (user.role === 'buyer') {
-          navigate('/');
+        
+        // Navigate based on role
+        if (profile.role === 'driver') {
+          const hasVehicles = (profile as any).vehicles?.length > 0;
+          console.log('hasVehicles', hasVehicles)
+          navigate(hasVehicles ? '/driver' : '/vehicle-information');
         } else {
-          navigate('/');
+          setUser(  user as any)
+          navigate(profile.role === 'seller' ? '/seller/dashboard' : '/');
         }
       } else {
-        // If no user data in response, call checkAuth to fetch and set user
+        // Fallback: fetch user profile
         try {
-          // Clear signup email from session
-          sessionStorage.removeItem('signup_email');
-          // Clear OTP resend timestamp
-          localStorage.removeItem('otp_resend_timestamp');
-
-          // Call checkAuth to fetch user profile and set state properly
           await checkAuth();
-
-          // Invalidate queries
           queryClient.invalidateQueries({ queryKey: ['user'] });
-
           toast.success(response.message || 'Email verified successfully!');
-
-          // Get the user from store after checkAuth
+          
           const currentUser = useAuthStore.getState().user;
-
-          // Navigate based on user role
-          if (currentUser) {
-            if (currentUser.role === 'driver') {
-              // For drivers from checkAuth, we assume no vehicles yet (new signup)
-              // since vehicle data wouldn't be in the auth store user type
-              navigate('/auth/vehicle-information');
-            } else if (currentUser.role === 'seller') {
-              navigate(`/${currentUser.role}/dashboard`);
-            } else if (currentUser.role === 'buyer') {
-              navigate('/');
-            } else {
-              navigate('/');
-            }
-          } else {
-            // Fallback navigation if user is not set
-            navigate('/');
-          }
+          const path = currentUser?.role === 'driver' ? '/vehicle-information' :
+                      currentUser?.role === 'seller' ? '/seller/dashboard' : '/';
+                      console.log('hasVehicles', path,currentUser)
+          navigate(path);
         } catch (error) {
-          console.error('Failed to fetch profile after verification:', error);
-          // Still navigate even if profile fetch fails
+          console.error('Failed to fetch profile:', error);
           toast.success(response.message || 'Email verified successfully!');
           navigate('/');
         }

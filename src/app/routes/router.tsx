@@ -54,6 +54,7 @@ export const router = createBrowserRouter([
             Component: module.default,
           })),
       },
+     
     ],
   },
   {
@@ -101,16 +102,23 @@ export const router = createBrowserRouter([
           })),
       },
       {
-        path: 'callback',
+        path: 'vehicle-information',
         lazy: () =>
-          import('@/features/auth/pages/AuthRedirectPage').then((module) => ({
+          import('@/features/vehicle/pages/VehicleInformationPage').then((module) => ({
             Component: module.default,
           })),
       },
       {
-        path: 'vehicle-information',
+        path: 'driver-license',
         lazy: () =>
-          import('@/features/vehicle/pages/VehicleInformationPage').then((module) => ({
+          import('@/features/vehicle/pages/DrivingLicenseInformationPage').then((module) => ({
+            Component: module.default,
+          })),
+      },
+      {
+        path: 'callback',
+        lazy: () =>
+          import('@/features/auth/pages/AuthRedirectPage').then((module) => ({
             Component: module.default,
           })),
       },

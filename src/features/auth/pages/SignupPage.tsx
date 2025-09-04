@@ -21,7 +21,7 @@ function SignupPage() {
   const methods = useForm({
     resolver: zodResolver(signupSchema),
     defaultValues: {
-      accountType: 'buyer',
+      accountType: 'driver',
       firstName: '',
       lastName: '',
       email: '',
@@ -109,7 +109,7 @@ function SignupPage() {
             options={[
               // { value: 'buyer', label: 'Buyer' },
               { value: 'seller', label: 'Seller' },
-              // { value: 'driver', label: 'Driver' },
+              { value: 'driver', label: 'Driver' },
             ]}
           />
           <div className="grid grid-cols-2 gap-4">
