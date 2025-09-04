@@ -6,6 +6,7 @@ on:
   pull_request:
     branches: [ main ]
     
+
 env:
   NODE_VERSION: '20.x'
   BUILD_PATH: 'dist'
@@ -156,79 +157,67 @@ jobs:
           server {
               listen 80;
               server_name _;
-
+              
               # Security headers
               add_header X-Frame-Options "SAMEORIGIN" always;
               add_header X-Content-Type-Options "nosniff" always;
               add_header X-XSS-Protection "1; mode=block" always;
               add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-
+              
               # Gzip compression
               gzip on;
               gzip_vary on;
               gzip_min_length 1024;
               gzip_types text/plain text/css text/xml text/javascript application/javascript application/xml+rss application/json;
-
-              # Assets (images, css, js, etc.)
-              location /assets/ {
-                  alias /opt/source-build/frontend/assets/;
-                  access_log off;
-                  add_header Cache-Control "public, immutable";
-                  expires 1y;
-              }
-
-              # Fonts
-              location /fonts/ {
-                  alias /opt/source-build/frontend/fonts/;
-                  access_log off;
-                  add_header Cache-Control "public, immutable";
-                  expires 1y;
-              }
-
-              # Main React app
+              
+              # Frontend static files
               location / {
                   root /opt/source-build/frontend;
                   try_files $uri $uri/ /index.html;
-              }
+                  
+                  # Cache static assets
+                  location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+                      expires 1y;
+                      add_header Cache-Control "public, immutable";
+                      access_log off;
+                  }
+                  
+                  # Cache HTML files for shorter period
+                  location ~* \.(html)$ {
+                      add_header Cache-Control "no-cache, no-store, must-revalidate";
+                      expires 1h;
 
+                  }
+              }
+              
               # Health check endpoint
               location /health {
                   access_log off;
                   alias /opt/source-build/frontend/health;
                   add_header Content-Type text/plain;
               }
-
-              # WebSocket (optional)
-              location /socket.io/ {
-                  proxy_pass http://localhost:8081;
-                  proxy_http_version 1.1;
-                  proxy_set_header Upgrade $http_upgrade;
-                  proxy_set_header Connection "upgrade";
-                  proxy_set_header Host $host;
-                  proxy_cache_bypass $http_upgrade;
-              }
-
+              
               # API proxy to backend
               location /api/ {
                   proxy_pass http://localhost:8081;
                   proxy_http_version 1.1;
                   proxy_set_header Upgrade $http_upgrade;
-                  proxy_set_header Connection "upgrade";
+                  proxy_set_header Connection 'upgrade';
                   proxy_set_header Host $host;
                   proxy_set_header X-Real-IP $remote_addr;
                   proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
                   proxy_set_header X-Forwarded-Proto $scheme;
                   proxy_cache_bypass $http_upgrade;
-
+                  
                   # Timeouts
                   proxy_connect_timeout 60s;
                   proxy_send_timeout 60s;
                   proxy_read_timeout 60s;
               }
-
+              
               # Security: Hide server information
               server_tokens off;
-
+              
               # Prevent access to sensitive files
               location ~ /\. {
                   deny all;
@@ -254,18 +243,29 @@ jobs:
 
     - name: Verify deployment
       run: |
+        # Wait for deployment to stabilize
         sleep 10
+        
+        # Verify deployment
         ssh ubuntu@${{ secrets.SERVER_HOST }} << 'EOF'
+          # Check Nginx status
           sudo systemctl status nginx --no-pager
+          
+          # Check frontend health endpoint
           echo "Testing health endpoint..."
           curl -f http://localhost/health && echo "✅ Health check passed"
+          
+          # Check if frontend is serving correctly
           echo "Testing frontend serving..."
           curl -f http://localhost/ | grep -q "<!DOCTYPE html>" && echo "✅ Frontend HTML serving correctly"
+          
+          # Test API proxy if backend is running
           if curl -f http://localhost:8081/api/v1/health > /dev/null 2>&1; then
             curl -f http://localhost/api/v1/health && echo "✅ API proxy working"
           else
             echo "⚠️  Backend not running, skipping API proxy test"
           fi
+          
           echo "✅ Deployment verification completed"
         EOF
 
@@ -290,4 +290,4 @@ jobs:
         lhci autorun --upload.target=temporary-public-storage || echo "Lighthouse audit completed"
       env:
         LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
-        LHCI_SERVER_BASE_URL: http://${{ secrets.SERVER_HOST }}
+        LHCI_SERVER_BASE_URL: http://${{ secrets.SERVER_HOST }} 
