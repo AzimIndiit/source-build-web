@@ -116,15 +116,32 @@ jobs:
     - name: Create nginx config
       run: |
         cat > nginx.conf << 'NGINX'
+        # HTTP to HTTPS redirect
         server {
             listen 80;
-            server_name _;
+            listen [::]:80;
+            server_name source-build.indiitserver.in;
+            return 301 https://$server_name$request_uri;
+        }
+
+        # HTTPS server configuration
+        server {
+            listen 443 ssl http2;
+            listen [::]:443 ssl http2;
+            server_name source-build.indiitserver.in;
+
+            # SSL Certificate Configuration
+            ssl_certificate /etc/letsencrypt/live/source-build.indiitserver.in/fullchain.pem;
+            ssl_certificate_key /etc/letsencrypt/live/source-build.indiitserver.in/privkey.pem;
+            include /etc/letsencrypt/options-ssl-nginx.conf;
+            ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
             
             # Security headers
             add_header X-Frame-Options "SAMEORIGIN" always;
             add_header X-Content-Type-Options "nosniff" always;
             add_header X-XSS-Protection "1; mode=block" always;
             add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+            add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
             
             # Gzip compression
             gzip on;
@@ -267,20 +284,36 @@ jobs:
           # Check Nginx status
           sudo systemctl status nginx --no-pager
           
-          # Check frontend health endpoint
-          echo "Testing health endpoint..."
-          curl -f http://localhost/health && echo "✅ Health check passed"
+          # Check SSL certificate validity
+          echo "Checking SSL certificate..."
+          if [ -f /etc/letsencrypt/live/source-build.indiitserver.in/fullchain.pem ]; then
+            echo "✅ SSL certificate found"
+          else
+            echo "⚠️ SSL certificate not found, HTTPS may not work"
+          fi
           
-          # Check if frontend is serving correctly
+          # Check frontend health endpoint via HTTPS
+          echo "Testing health endpoint..."
+          curl -fk https://localhost/health && echo "✅ Health check passed (HTTPS)"
+          
+          # Check if frontend is serving correctly via HTTPS
           echo "Testing frontend serving..."
-          curl -f http://localhost/ | grep -q "<!DOCTYPE html>" && echo "✅ Frontend HTML serving correctly"
+          curl -fk https://localhost/ | grep -q "<!DOCTYPE html>" && echo "✅ Frontend HTML serving correctly (HTTPS)"
+          
+          # Test HTTP to HTTPS redirect
+          echo "Testing HTTP to HTTPS redirect..."
+          curl -I http://localhost 2>/dev/null | grep -q "301" && echo "✅ HTTP to HTTPS redirect working"
           
           # Test API proxy if backend is running
           if curl -f http://localhost:8081/api/v1/health > /dev/null 2>&1; then
-            curl -f http://localhost/api/v1/health && echo "✅ API proxy working"
+            curl -fk https://localhost/api/v1/health && echo "✅ API proxy working (HTTPS)"
           else
             echo "⚠️  Backend not running, skipping API proxy test"
           fi
+          
+          # Test external access
+          echo "Testing external access..."
+          curl -f https://source-build.indiitserver.in/health 2>/dev/null && echo "✅ External HTTPS access working" || echo "⚠️ External access may need time to propagate"
           
           echo "✅ Deployment verification completed"
         EOF
@@ -306,4 +339,4 @@ jobs:
         lhci autorun --upload.target=temporary-public-storage || echo "Lighthouse audit completed"
       env:
         LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
-        LHCI_SERVER_BASE_URL: http://${{ secrets.SERVER_HOST }} 
+        LHCI_SERVER_BASE_URL: https://source-build.indiitserver.in 
