@@ -184,8 +184,8 @@ jobs:
                   
                   # Cache HTML files for shorter period
                   location ~* \.(html)$ {
-                      expires 1h;
-                      add_header Cache-Control "public, must-revalidate";
+                      add_header Cache-Control "no-cache, no-store, must-revalidate";
+                      expires -1;
                   }
               }
               
