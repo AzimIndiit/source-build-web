@@ -8,7 +8,7 @@ import { ApiUser, transformApiUserToUser } from '../hooks/useUserQuery';
 const AuthRedirectPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { updateUser } = useAuth();
+  const { setUser } = useAuth();
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -20,7 +20,7 @@ const AuthRedirectPage = () => {
         const accessToken = params.get('accessToken');
         const refreshToken = params.get('refreshToken');
         const needsAdditionalInfo = params.get('needsAdditionalInfo');
-
+console.log('accessToken', accessToken)
         if (!accessToken) {
           console.error('No access token found in URL');
           navigate('/auth/login', { replace: true });
@@ -48,7 +48,7 @@ const AuthRedirectPage = () => {
           if (response.data && response.data.user) {
             transformedUser = transformApiUserToUser(response.data.user as ApiUser);
             if (transformedUser) {
-              updateUser(transformedUser);
+              setUser(transformedUser);
             }
           }
         } catch (error) {
@@ -85,7 +85,7 @@ const AuthRedirectPage = () => {
     };
 
     fetchProfile();
-  }, [location.search, navigate, updateUser]);
+  }, [location.search, navigate, setUser]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">

@@ -13,6 +13,7 @@ export function ProtectedRoute({ allowedRoles = [], redirectTo = '/login' }: Pro
   console.log('ProtectedRoute: Checking authentication');
   console.log('ProtectedRoute: User:', user);
   console.log('ProtectedRoute: IsLoading:', isLoading);
+  console.log('ProtectedRoute: User:', user);
   console.log('ProtectedRoute: AllowedRoles:', allowedRoles);
   console.log('ProtectedRoute: RedirectTo:', redirectTo);
   console.log('ProtectedRoute: Current location:', location.pathname);
