@@ -2,9 +2,8 @@ name: Frontend CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, develop ]
-  pull_request:
     branches: [ main ]
+
     
 
 env:
@@ -114,143 +113,87 @@ jobs:
       run: |
         ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
 
-    - name: Deploy to server
-      run: |
-        # Copy deployment package to server
-        scp frontend-deployment.tar.gz ubuntu@${{ secrets.SERVER_HOST }}:/tmp/
-        
-        # Deploy on server
-        ssh ubuntu@${{ secrets.SERVER_HOST }} << 'EOF'
-          set -e
+        - name: Deploy to server
+        run: |
+          # Copy deployment package to server
+          scp frontend-deployment.tar.gz ubuntu@${{ secrets.SERVER_HOST }}:/tmp/
           
-          echo "Starting frontend deployment..."
-          
-          # Create deployment directory
-          sudo mkdir -p /opt/source-build
-          sudo chown -R ubuntu:ubuntu /opt/source-build
-          
-          # Create new deployment directory
-          DEPLOY_DIR="/opt/source-build/frontend"
-          mkdir -p $DEPLOY_DIR
-          
-          # Extract deployment package
-          cd $DEPLOY_DIR
-          tar -xzf /tmp/frontend-deployment.tar.gz
-          rm /tmp/frontend-deployment.tar.gz
-          
-          # Create health check endpoint first (while user still has permissions)
-          echo "healthy" > $DEPLOY_DIR/health
-          
-          # Set proper permissions after creating all files
-          sudo chown -R www-data:www-data $DEPLOY_DIR
-          sudo chmod -R 755 $DEPLOY_DIR
-          sudo chmod 644 $DEPLOY_DIR/health
-          
-          # Install/update Nginx if not present
-          if ! command -v nginx &> /dev/null; then
-            sudo apt-get update
-            sudo apt-get install -y nginx
-          fi
-          
-          # Create Nginx configuration
-          sudo tee /etc/nginx/sites-available/source-build > /dev/null << 'NGINX_EOF'
-          server {
-              listen 80;
-              server_name _;
-              
-              # Security headers
-              add_header X-Frame-Options "SAMEORIGIN" always;
-              add_header X-Content-Type-Options "nosniff" always;
-              add_header X-XSS-Protection "1; mode=block" always;
-              add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-              
-              # Gzip compression
-              gzip on;
-              gzip_vary on;
-              gzip_min_length 1024;
-              gzip_types text/plain text/css text/xml text/javascript application/javascript application/xml+rss application/json;
-              
-              # Frontend static files
-              location / {
+          # Deploy on server
+          ssh ubuntu@${{ secrets.SERVER_HOST }} << 'EOF'
+            set -e
+            
+            echo "Starting frontend deployment..."
+            
+            DEPLOY_DIR="/opt/source-build/frontend"
+            sudo mkdir -p $DEPLOY_DIR
+            sudo chown -R ubuntu:ubuntu $DEPLOY_DIR
+            
+            # Extract new build
+            rm -rf $DEPLOY_DIR/*
+            tar -xzf /tmp/frontend-deployment.tar.gz -C $DEPLOY_DIR
+            rm /tmp/frontend-deployment.tar.gz
+            
+            # Health check endpoint
+            echo "healthy" > $DEPLOY_DIR/health
+            
+            # Permissions
+            sudo chown -R www-data:www-data $DEPLOY_DIR
+            sudo chmod -R 755 $DEPLOY_DIR
+            sudo chmod 644 $DEPLOY_DIR/health
+            
+            # Only create nginx config if missing
+            if [ ! -f /etc/nginx/sites-available/source-build ]; then
+              echo "Nginx config missing → creating..."
+              sudo tee /etc/nginx/sites-available/source-build > /dev/null << 'NGINX_EOF'
+              server {
+                  listen 80;
+                  server_name source-build.indiitserver.in;
+  
                   root /opt/source-build/frontend;
-                  try_files $uri $uri/ /index.html;
-                  
-                  # Cache static assets
-                  location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
-                      expires 1y;
-                      add_header Cache-Control "public, immutable";
+                  index index.html;
+  
+                  location / {
+                      try_files $uri $uri/ /index.html;
+                  }
+  
+                  location /health {
+                      alias /opt/source-build/frontend/health;
                       access_log off;
                   }
-                  
-                  # Cache HTML files for shorter period
-                  location ~* \.(html)$ {
-                      add_header Cache-Control "no-cache, no-store, must-revalidate";
-                      expires 1h;
-
+  
+                  location /socket.io/ {
+                      proxy_pass http://localhost:8081;
+                      proxy_http_version 1.1;
+                      proxy_set_header Upgrade $http_upgrade;
+                      proxy_set_header Connection "upgrade";
+                      proxy_set_header Host $host;
+                      proxy_cache_bypass $http_upgrade;
+                  }
+  
+                  location /api/ {
+                      proxy_pass http://localhost:8081;
+                      proxy_http_version 1.1;
+                      proxy_set_header Upgrade $http_upgrade;
+                      proxy_set_header Connection 'upgrade';
+                      proxy_set_header Host $host;
+                      proxy_cache_bypass $http_upgrade;
                   }
               }
-              
-              # Health check endpoint
-              location /health {
-                  access_log off;
-                  alias /opt/source-build/frontend/health;
-                  add_header Content-Type text/plain;
-              }
-              
-                 # WebSocket (optional)
-              location /socket.io/ {
-                  proxy_pass http://localhost:8081;
-                  proxy_http_version 1.1;
-                  proxy_set_header Upgrade $http_upgrade;
-                  proxy_set_header Connection "upgrade";
-                  proxy_set_header Host $host;
-                  proxy_cache_bypass $http_upgrade;
-              }
-
-              # API proxy to backend
-              location /api/ {
-                  proxy_pass http://localhost:8081;
-                  proxy_http_version 1.1;
-                  proxy_set_header Upgrade $http_upgrade;
-                  proxy_set_header Connection 'upgrade';
-                  proxy_set_header Host $host;
-                  proxy_set_header X-Real-IP $remote_addr;
-                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-                  proxy_set_header X-Forwarded-Proto $scheme;
-                  proxy_cache_bypass $http_upgrade;
-                  
-                  # Timeouts
-                  proxy_connect_timeout 60s;
-                  proxy_send_timeout 60s;
-                  proxy_read_timeout 60s;
-              }
-              
-              # Security: Hide server information
-              server_tokens off;
-              
-              # Prevent access to sensitive files
-              location ~ /\. {
-                  deny all;
-                  access_log off;
-                  log_not_found off;
-              }
-          }
-          NGINX_EOF
+              NGINX_EOF
+  
+              sudo ln -sf /etc/nginx/sites-available/source-build /etc/nginx/sites-enabled/source-build
+              sudo rm -f /etc/nginx/sites-enabled/default
+            else
+              echo "Nginx config already exists → skipping creation"
+            fi
+            
+            # Reload Nginx to pick up any changes in files
+            sudo nginx -t
+            sudo systemctl restart nginx
+            
+            echo "✅ Frontend deployment completed"
+          EOF
           
-          # Enable site
-          sudo ln -sf /etc/nginx/sites-available/source-build /etc/nginx/sites-enabled/source-build
-          sudo rm -f /etc/nginx/sites-enabled/default
-          
-          # Test Nginx configuration
-          sudo nginx -t
-          
-          # Start/reload Nginx
-          sudo systemctl enable nginx
-          sudo systemctl restart nginx
-          
-          echo "Frontend deployment completed successfully"
-        EOF
-
     - name: Verify deployment
       run: |
         # Wait for deployment to stabilize
