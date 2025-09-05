@@ -48,11 +48,18 @@ export const FormSelect: React.FC<FormSelectProps> = ({
   onCreateOption,
   className = '',
 }) => {
+  const formContext = useFormContext();
+  if (!formContext) {
+    console.error('FormSelect must be used within a FormProvider');
+  }
   const {
     control,
+    watch,
     formState: { errors },
-  } = useFormContext();
-
+  } = formContext || { control: undefined, watch: () => undefined, formState: { errors: {} } };
+  const fieldValue = watch(name);
+  console.log('fieldValue', fieldValue, name);
+  console.log('form context exists:', !!formContext);
   const [searchTerm, setSearchTerm] = useState('');
   const [visibleCount, setVisibleCount] = useState(optionsPerPage);
   const [isOpen, setIsOpen] = useState(false);
@@ -62,8 +69,9 @@ export const FormSelect: React.FC<FormSelectProps> = ({
 
   // Update localOptions when options prop changes
   useEffect(() => {
+    console.log(`FormSelect ${name} - options updated:`, options.length, 'options');
     setLocalOptions(options);
-  }, [options]);
+  }, [options, name]);
 
   // Reset visible count when search term changes
   useEffect(() => {
@@ -163,7 +171,7 @@ export const FormSelect: React.FC<FormSelectProps> = ({
     if (!multiple) return [];
     const valueArray = Array.isArray(values) ? values : [];
     return valueArray.map(
-      (value) => options.find((option) => option.value === value)?.label || value
+      (value) => localOptions.find((option) => option.value === value)?.label || value
     );
   };
 
@@ -284,28 +292,25 @@ export const FormSelect: React.FC<FormSelectProps> = ({
           {label}
         </Label>
       )}
-      <Controller
-        name={name}
-        control={control}
-        render={({ field }) => {
+      {control ? (
+        <Controller
+          name={name}
+          control={control}
+          render={({ field }) => {
           const currentSelectedOption = multiple
             ? null
-            : options.find((option) => option.value === field.value);
+            : localOptions.find((option) => option.value === field.value);
 
-          const finalVisibleOptions = useMemo(() => {
-            if (multiple) {
-              return visibleOptions;
-            }
-
-            if (!currentSelectedOption) return visibleOptions;
-
+          // Compute final visible options without useMemo (can't use hooks in render callback)
+          let finalVisibleOptions = visibleOptions;
+          if (!multiple && currentSelectedOption) {
             const hasSelectedInVisible = visibleOptions.some(
               (option) => option.value === field.value
             );
-            if (hasSelectedInVisible) return visibleOptions;
-
-            return [currentSelectedOption, ...visibleOptions];
-          }, [visibleOptions, currentSelectedOption, field.value, multiple]);
+            if (!hasSelectedInVisible) {
+              finalVisibleOptions = [currentSelectedOption, ...visibleOptions];
+            }
+          }
 
           if (multiple) {
             return (
@@ -461,12 +466,38 @@ export const FormSelect: React.FC<FormSelectProps> = ({
             );
           }
 
+          console.log('field.value ', field.value, name);
+          console.log('available options:', localOptions);
+
           // Single select mode (original behavior)
+          // Force the value to be a string and ensure it exists in options
+          const selectValue = field.value ? String(field.value) : '';
+          
+          // For creatable selects, always allow the current value
+          let finalValue = '';
+          if (selectValue) {
+            if (creatable) {
+              // For creatable selects, always use the value even if not in options
+              finalValue = selectValue;
+              // Add to localOptions if not present
+              if (!localOptions.some(opt => opt.value === selectValue)) {
+                localOptions.push({ value: selectValue, label: selectValue });
+              }
+            } else {
+              // For non-creatable, only use if in options
+              const valueExistsInOptions = localOptions.some(opt => opt.value === selectValue);
+              finalValue = valueExistsInOptions ? selectValue : '';
+            }
+          }
+          
+          console.log('Select value:', selectValue, 'final value:', finalValue, 'creatable:', creatable);
+          
           return (
             <Select
               onValueChange={(value) => handleSingleSelectChange(value, field.onChange)}
-              value={field.value || ''}
+              value={finalValue}
               disabled={disabled}
+              key={`${name}-${finalValue}-${localOptions.length}`} // Force re-render when value or options change
             >
               <SelectTrigger
                 id={name}
@@ -529,8 +560,11 @@ export const FormSelect: React.FC<FormSelectProps> = ({
               </SelectContent>
             </Select>
           );
-        }}
-      />
+          }}
+        />
+      ) : (
+        <div className="text-red-500 text-xs">FormSelect must be used within a FormProvider</div>
+      )}
       {error && <p className="text-red-500 text-xs mt-2">{error.message?.toString()}</p>}
     </div>
   );

@@ -104,8 +104,8 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   return (
     <Card
       className={cn(
-        "overflow-hidden border border-gray-200 rounded-xl hover:shadow-md transition-shadow p-0 cursor-pointer group gap-0",
-        product.status === 'inactive' && "grayscale"
+        'overflow-hidden border border-gray-200 rounded-xl hover:shadow-md transition-shadow p-0 cursor-pointer group gap-0',
+        product.status === 'inactive' && 'grayscale'
       )}
       onClick={() => onProductClick(product.slug, product.status)}
     >
@@ -178,25 +178,27 @@ const ProductGrid: React.FC<ProductGridProps> = ({
           <span className="text-primary capitalize">{formatDate(product.createdAt)}</span>
         </div>
         {/* Status Toggle */}
-      {product.status !== 'draft' && <div className="flex items-center justify-end border-t border-gray-200 pt-2 mt-2">
-          <div className="flex items-center space-x-2">
-            <Label htmlFor={`status-${productId}`} className="text-xs text-gray-600">
-              {isActive ? 'Active' : 'Inactive'}
-            </Label>
-            <Switch
-              id={`status-${productId}`}
-              checked={isActive}
-              onCheckedChange={handleToggleStatus}
-              disabled={isUpdating}
-              className={cn(
-                'h-6 w-12  transition-all duration-200',
-                isUpdating && 'opacity-70',
-                isActive && 'data-[state=checked]:bg-green-500'
-              )}
-              onClick={(e) => e.stopPropagation()}
-            />
+        {product.status !== 'draft' && (
+          <div className="flex items-center justify-end border-t border-gray-200 pt-2 mt-2">
+            <div className="flex items-center space-x-2">
+              <Label htmlFor={`status-${productId}`} className="text-xs text-gray-600">
+                {isActive ? 'Active' : 'Inactive'}
+              </Label>
+              <Switch
+                id={`status-${productId}`}
+                checked={isActive}
+                onCheckedChange={handleToggleStatus}
+                disabled={isUpdating}
+                className={cn(
+                  'h-6 w-12  transition-all duration-200',
+                  isUpdating && 'opacity-70',
+                  isActive && 'data-[state=checked]:bg-green-500'
+                )}
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
           </div>
-        </div>}
+        )}
       </CardContent>
     </Card>
   );

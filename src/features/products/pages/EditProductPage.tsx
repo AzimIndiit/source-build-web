@@ -376,9 +376,22 @@ const categorySubcategoryMap: Record<string, Array<{ value: string; label: strin
     { value: 'bathroom', label: 'Bathroom' },
     { value: 'garden', label: 'Garden' },
   ],
+  'home & garden': [
+    { value: 'furniture', label: 'Furniture' },
+    { value: 'decor', label: 'Decor' },
+    { value: 'kitchen', label: 'Kitchen' },
+    { value: 'bathroom', label: 'Bathroom' },
+    { value: 'garden', label: 'Garden' },
+  ],
   sports: [
-    { value: 'fitness', label: 'Fitness Equipment' },
-    { value: 'outdoor', label: 'Outdoor Gear' },
+    { value: 'fitness equipment', label: 'Fitness Equipment' },
+    { value: 'outdoor gear', label: 'Outdoor Gear' },
+    { value: 'sportswear', label: 'Sportswear' },
+    { value: 'accessories', label: 'Accessories' },
+  ],
+  'sports & outdoors': [
+    { value: 'fitness equipment', label: 'Fitness Equipment' },
+    { value: 'outdoor gear', label: 'Outdoor Gear' },
     { value: 'sportswear', label: 'Sportswear' },
     { value: 'accessories', label: 'Accessories' },
   ],
@@ -402,6 +415,7 @@ const categorySubcategoryMap: Record<string, Array<{ value: string; label: strin
     { value: 'frames', label: 'Frames' },
     { value: 'hardware', label: 'Hardware' },
   ],
+  // Add mappings for variations in category names from backend
 };
 
 const tagOptions = [
@@ -497,22 +511,46 @@ function EditProductPage() {
   const formValues = watch();
 
   // Get subcategory options based on selected category
-  const subCategoryOptions = formValues.category
-    ? categorySubcategoryMap[formValues.category] || []
+  // Check both exact match and lowercase match for category
+  let subCategoryOptions = formValues.category
+    ? [
+        ...(categorySubcategoryMap[formValues.category] ||
+          categorySubcategoryMap[formValues.category.toLowerCase()] ||
+          []),
+      ]
     : [];
 
   // If we have a subcategory value but no options (for custom categories from backend),
   // create an option for it
   const currentSubCategory = formValues.subCategory;
+  
+  console.log('=== SubCategory Debug ===');
+  console.log('Current category:', formValues.category);
+  console.log('Current subCategory value:', currentSubCategory);
+  console.log('SubCategory options before adding current:', subCategoryOptions);
+  
   if (currentSubCategory && subCategoryOptions.length === 0 && formValues.category) {
     subCategoryOptions.push({ value: currentSubCategory, label: currentSubCategory });
+    console.log('Added subcategory because no options available');
   } else if (
     currentSubCategory &&
-    !subCategoryOptions.find((opt) => opt.value === currentSubCategory)
+    !subCategoryOptions.find((opt) => opt.value.toLowerCase() === currentSubCategory.toLowerCase())
   ) {
-    // Add current subcategory if it's not in the options list
+    // Add current subcategory if it's not in the options list (case-insensitive check)
     subCategoryOptions.push({ value: currentSubCategory, label: currentSubCategory });
+    console.log('Added subcategory because not in options list');
   }
+  
+  console.log('Final subCategory options:', subCategoryOptions);
+  console.log('=== End SubCategory Debug ===');
+
+  // Force update subcategory when data is loaded
+  useEffect(() => {
+    if (isInitialDataLoaded && currentSubCategory) {
+      console.log('Forcing subcategory update after initial load:', currentSubCategory);
+      methods.setValue('subCategory', currentSubCategory);
+    }
+  }, [isInitialDataLoaded, currentSubCategory, methods]);
 
   // Reset subcategory when category changes (but not during initial load)
   useEffect(() => {
@@ -521,11 +559,16 @@ function EditProductPage() {
 
     if (formValues.category) {
       const currentSubcategory = formValues.subCategory;
-      const availableSubcategories = categorySubcategoryMap[formValues.category] || [];
+      const availableSubcategories =
+        categorySubcategoryMap[formValues.category] ||
+        categorySubcategoryMap[formValues.category.toLowerCase()] ||
+        [];
 
       // Check if current subcategory is valid for the new category
       const isValidSubcategory = availableSubcategories.some(
-        (sub) => sub.value === currentSubcategory
+        (sub) =>
+          sub.value === currentSubcategory ||
+          sub.value.toLowerCase() === currentSubcategory?.toLowerCase()
       );
 
       // Reset subcategory if it's not valid for the new category
@@ -588,7 +631,11 @@ function EditProductPage() {
       // Now handle subcategory based on the selected category
       if (categoryValue) {
         // Get subcategory options for the current category
-        const categorySubOptions = categorySubcategoryMap[categoryValue] || [];
+        // Try both exact match and lowercase match
+        const categorySubOptions =
+          categorySubcategoryMap[categoryValue] ||
+          categorySubcategoryMap[categoryValue.toLowerCase()] ||
+          [];
         console.log(`Subcategory options for category "${categoryValue}":`, categorySubOptions);
         console.log(`Original subcategory value: "${subCategoryValue}"`);
 
@@ -670,19 +717,51 @@ function EditProductPage() {
 
       console.log('Form data being set:', formData);
       console.log('Discount data:', formData.discount);
-      reset(formData);
+      console.log('Setting subCategory to:', subCategoryValue);
 
+      // Ensure subcategory options include the current value before resetting
+      const subCatOptions = categoryValue
+        ? categorySubcategoryMap[categoryValue] ||
+          categorySubcategoryMap[categoryValue.toLowerCase()] ||
+          []
+        : [];
+
+      // Check if the subcategory exists in options
+      const matchingSubCat = subCatOptions.find(
+        (opt) => opt.value.toLowerCase() === subCategoryValue.toLowerCase()
+      );
+
+      // Use the exact value from options if found, otherwise use the original value
+      const finalSubCategoryValue = matchingSubCat ? matchingSubCat.value : subCategoryValue;
+
+      // Update formData with the final subcategory value
+      formData.subCategory = finalSubCategoryValue;
+
+      console.log('About to reset form with subCategory:', formData.subCategory);
+      
+      // Use reset to set all form values at once
+      reset(formData);
+      
+      // Immediately check what was set
+      const valuesAfterReset = methods.getValues();
+      console.log('Values immediately after reset:', valuesAfterReset);
+      console.log('SubCategory after reset:', valuesAfterReset.subCategory);
+      
       // Force a re-render of the form fields by setting values again after a small delay
       setTimeout(() => {
         console.log(
           'Setting form values after delay - category:',
           categoryValue,
           'subcategory:',
-          subCategoryValue
+          finalSubCategoryValue
         );
         console.log('Setting discount after delay:', formData.discount);
         methods.setValue('category', categoryValue);
-        methods.setValue('subCategory', subCategoryValue);
+        methods.setValue('subCategory', finalSubCategoryValue);
+        
+        // Check again after setValue
+        const valuesAfterSet = methods.getValues();
+        console.log('SubCategory after setValue:', valuesAfterSet.subCategory);
         // Also explicitly set the discount fields
         methods.setValue('discount.discountType', formData.discount.discountType);
         methods.setValue('discount.discountValue', formData.discount.discountValue);
