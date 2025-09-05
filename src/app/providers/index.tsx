@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Toaster } from 'react-hot-toast';
@@ -12,6 +12,19 @@ interface ProvidersProps {
 }
 
 export function Providers({ children }: ProvidersProps) {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="system" storageKey="source-build-theme">
@@ -19,7 +32,7 @@ export function Providers({ children }: ProvidersProps) {
           <GoogleMapsLoader>
             {children}
             <Toaster
-              position="top-right"
+              position={isMobile ? "top-center" : "top-right"}
               toastOptions={{
                 duration: 4000,
                 style: {

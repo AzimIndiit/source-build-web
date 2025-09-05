@@ -224,17 +224,21 @@ export const FormSelect: React.FC<FormSelectProps> = ({
 
     return (
       <div className="flex items-center justify-between w-full">
-        <div className="flex flex-wrap gap-1 flex-1 min-w-0">
+        <div className="flex flex-wrap gap-1 flex-1 min-w-0 pr-8">
           {selectedLabels.slice(0, 3).map((label, index) => (
             <Badge
               key={selectedValues[index]}
               variant="secondary"
-              className={`text-xs flex items-center gap-1 truncate pr-1 p-2 rounded-full  bg-primary/10 ${selectedValues.length > 3 ? ' max-w-24' : 'max-w-28'}`}
+              className={`text-xs flex items-center gap-1 pr-1 p-2 rounded-full bg-primary/10 ${
+                selectedValues.length > 3 
+                  ? 'max-w-[5rem] sm:max-w-[6rem]' 
+                  : 'max-w-[6rem] sm:max-w-[7rem]'
+              }`}
             >
               <span className="truncate">{label}</span>
               <button
                 type="button"
-                className="ml-1 p-1.5 hover:bg-red-200 rounded-sm transition-colors duration-150 flex items-center justify-center"
+                className="ml-1 p-1.5 hover:bg-red-200 rounded-sm transition-colors duration-150 flex items-center justify-center flex-shrink-0"
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
@@ -247,17 +251,17 @@ export const FormSelect: React.FC<FormSelectProps> = ({
             </Badge>
           ))}
           {selectedValues.length > 3 && (
-            <Badge variant="outline" className="text-xs p-2 rounded-sm">
+            <Badge variant="outline" className="text-xs p-2 rounded-sm whitespace-nowrap">
               +{selectedValues.length - 3} more
             </Badge>
           )}
         </div>
 
-        {/* Clear All Button */}
+        {/* Clear All Button - positioned absolutely to prevent overflow */}
         {selectedValues.length > 0 && (
           <button
             type="button"
-            className="ml-2 p-1 hover:bg-red-100 rounded-sm transition-colors duration-150 flex items-center justify-center flex-shrink-0 cursor-pointer"
+            className="absolute right-2 p-1 hover:bg-red-100 rounded-sm transition-colors duration-150 flex items-center justify-center flex-shrink-0 cursor-pointer bg-white"
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -309,7 +313,7 @@ export const FormSelect: React.FC<FormSelectProps> = ({
                 <div
                   ref={field.ref}
                   id={name}
-                  className={`${label ? 'mt-2' : ''} rounded-sm w-full min-h-14 px-3 py-2 border cursor-pointer flex items-center ${
+                  className={`${label ? 'mt-2' : ''} rounded-sm w-full min-h-14 px-3 py-2 border cursor-pointer flex items-center relative ${
                     error ? 'border-red-500' : 'border-gray-300'
                   } ${disabled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white hover:border-gray-400'} ${className}`}
                   onClick={() => !disabled && setIsOpen(!isOpen)}
@@ -379,26 +383,35 @@ export const FormSelect: React.FC<FormSelectProps> = ({
                       {finalVisibleOptions.length > 0 ? (
                         <>
                           {finalVisibleOptions.map((option) => {
-                            const isSelected = (
-                              Array.isArray(field.value) ? field.value : []
-                            ).includes(option.value);
+                            const currentValues = Array.isArray(field.value) ? field.value : [];
+                            const isSelected = currentValues.includes(option.value);
+                            const isMaxReached = maxSelections && currentValues.length >= maxSelections;
+                            const isDisabled = !isSelected && isMaxReached;
+                            
                             return (
                               <div
                                 key={option.value}
-                                className={`p-2 cursor-pointer hover:bg-gray-50 flex items-center gap-2 ${
+                                className={`p-2 flex items-center gap-2 ${
+                                  isDisabled 
+                                    ? 'opacity-50 cursor-not-allowed bg-gray-50' 
+                                    : 'cursor-pointer hover:bg-gray-50'
+                                } ${
                                   isSelected ? 'bg-blue-50 text-blue-700' : ''
                                 }`}
-                                onClick={() =>
-                                  handleMultiSelectChange(
-                                    option.value,
-                                    Array.isArray(field.value) ? field.value : [],
-                                    field.onChange
-                                  )
-                                }
+                                onClick={() => {
+                                  if (!isDisabled) {
+                                    handleMultiSelectChange(
+                                      option.value,
+                                      currentValues,
+                                      field.onChange
+                                    );
+                                  }
+                                }}
                               >
                                 <input
                                   type="checkbox"
                                   checked={isSelected}
+                                  disabled={isDisabled ? true : undefined}
                                   onChange={() => {}} // handled by onClick above
                                   className="rounded"
                                 />
@@ -426,8 +439,18 @@ export const FormSelect: React.FC<FormSelectProps> = ({
 
                     {maxSelections && (
                       <div className="p-2 border-t border-gray-200 text-xs text-gray-500 text-center">
-                        {Array.isArray(field.value) ? field.value.length : 0} of {maxSelections}{' '}
-                        selected
+                        {(() => {
+                          const selectedCount = Array.isArray(field.value) ? field.value.length : 0;
+                          const remainingSlots = maxSelections - selectedCount;
+                          
+                          if (selectedCount === maxSelections) {
+                            return `Maximum ${maxSelections} tags selected`;
+                          } else if (selectedCount > 0) {
+                            return `${selectedCount} selected • ${remainingSlots} more available`;
+                          } else {
+                            return `Select up to ${maxSelections} tags`;
+                          }
+                        })()}
                       </div>
                     )}
                   </div>

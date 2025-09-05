@@ -11,12 +11,14 @@ import { queryClient } from '@/lib/queryClient';
 export const VEHICLES_QUERY_KEY = ['vehicles'];
 export const VEHICLE_QUERY_KEY = (id: string) => ['vehicle', id];
 
-interface CreateVehicleWithFiles extends Omit<CreateVehiclePayload, 'vehicleImages' | 'insuranceImages'> {
+interface CreateVehicleWithFiles
+  extends Omit<CreateVehiclePayload, 'vehicleImages' | 'insuranceImages'> {
   vehicleImageFiles: File[];
   insuranceImageFiles: File[];
 }
 
-interface UpdateVehicleWithFiles extends Partial<Omit<CreateVehiclePayload, 'vehicleImages' | 'insuranceImages'>> {
+interface UpdateVehicleWithFiles
+  extends Partial<Omit<CreateVehiclePayload, 'vehicleImages' | 'insuranceImages'>> {
   id: string;
   vehicleImageFiles?: File[];
   insuranceImageFiles?: File[];
@@ -53,13 +55,12 @@ export function useCreateVehicleMutation() {
     onSuccess: (response) => {
       // Invalidate vehicles list query
       queryClient.invalidateQueries({ queryKey: VEHICLES_QUERY_KEY });
-      
+
       toast.success(response.message || 'Vehicle information submitted successfully!');
-      
-    
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || error.message || 'Failed to submit vehicle information';
+      const message =
+        error.response?.data?.message || error.message || 'Failed to submit vehicle information';
       toast.error(message);
       console.error('Error submitting vehicle information:', error);
     },
@@ -74,11 +75,11 @@ export function useUpdateVehicleMutation() {
 
       // Upload new images if provided
       const uploadPromises: Promise<string[]>[] = [];
-      
+
       if (data.vehicleImageFiles && data.vehicleImageFiles.length > 0) {
         uploadPromises.push(vehicleService.uploadVehicleImages(data.vehicleImageFiles));
       }
-      
+
       if (data.insuranceImageFiles && data.insuranceImageFiles.length > 0) {
         uploadPromises.push(vehicleService.uploadInsuranceImages(data.insuranceImageFiles));
       }
@@ -86,19 +87,26 @@ export function useUpdateVehicleMutation() {
       if (uploadPromises.length > 0) {
         const uploadResults = await Promise.all(uploadPromises);
         let index = 0;
-        
+
         if (data.vehicleImageFiles && data.vehicleImageFiles.length > 0) {
           vehicleImageUrls = [...vehicleImageUrls, ...uploadResults[index++]];
         }
-        
+
         if (data.insuranceImageFiles && data.insuranceImageFiles.length > 0) {
           insuranceImageUrls = [...insuranceImageUrls, ...uploadResults[index]];
         }
       }
 
       // Prepare update payload
-      const { id, vehicleImageFiles, insuranceImageFiles, existingVehicleImages, existingInsuranceImages, ...updateData } = data;
-      
+      const {
+        id,
+        vehicleImageFiles,
+        insuranceImageFiles,
+        existingVehicleImages,
+        existingInsuranceImages,
+        ...updateData
+      } = data;
+
       const payload: Partial<CreateVehiclePayload> = {
         ...updateData,
         vehicleImages: vehicleImageUrls,
@@ -111,7 +119,7 @@ export function useUpdateVehicleMutation() {
       // Invalidate both the list and specific vehicle queries
       queryClient.invalidateQueries({ queryKey: VEHICLES_QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: VEHICLE_QUERY_KEY(response.data.id) });
-      
+
       toast.success(response.message || 'Vehicle updated successfully!');
     },
     onError: (error: any) => {
@@ -128,7 +136,7 @@ export function useDeleteVehicleMutation() {
     onSuccess: (response) => {
       // Invalidate vehicles list query
       queryClient.invalidateQueries({ queryKey: VEHICLES_QUERY_KEY });
-      
+
       toast.success(response.message || 'Vehicle deleted successfully!');
     },
     onError: (error: any) => {
@@ -145,7 +153,7 @@ export function useRestoreVehicleMutation() {
     onSuccess: (response) => {
       // Invalidate vehicles list query
       queryClient.invalidateQueries({ queryKey: VEHICLES_QUERY_KEY });
-      
+
       toast.success(response.message || 'Vehicle restored successfully!');
     },
     onError: (error: any) => {

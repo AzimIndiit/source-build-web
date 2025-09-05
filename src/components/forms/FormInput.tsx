@@ -65,7 +65,7 @@ export const FormInput: React.FC<FormInputProps> = ({
           type={inputType}
           className={cn(
             leftIcon && 'pl-10',
-            isPasswordField && 'pr-12',
+            isPasswordField && '!pr-10',
             error && '!border-red-500 focus-visible:!border-red-500 focus-visible:!ring-red-500/20',
             className
           )}

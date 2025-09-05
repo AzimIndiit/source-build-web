@@ -153,7 +153,7 @@ export const AddBankAccountModal: React.FC<AddBankAccountModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-[90vw] sm:max-w-[600px] md:max-w-[700px] p-0 bg-white max-h-[90vh] overflow-y-auto">
+      <DialogContent className=" sm:max-w-[600px] md:max-w-[700px] p-0 bg-white max-h-[90vh] overflow-y-auto">
         <DialogHeader className="px-4 pt-4 sm:px-6 pb-0 mb-0">
           <DialogTitle className="text-lg sm:text-xl font-semibold">
             {isEdit ? 'Manage Account' : 'Add New Account'}
@@ -236,7 +236,7 @@ export const AddBankAccountModal: React.FC<AddBankAccountModalProps> = ({
               />
             )}
 
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-3 sm:pt-4 sm:justify-end">
+            <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 pt-3 sm:pt-4 sm:justify-end">
               <Button
                 type="button"
                 variant="outline"

@@ -20,7 +20,7 @@ const AuthRedirectPage = () => {
         const accessToken = params.get('accessToken');
         const refreshToken = params.get('refreshToken');
         const needsAdditionalInfo = params.get('needsAdditionalInfo');
-console.log('accessToken', accessToken)
+        console.log('accessToken', accessToken);
         if (!accessToken) {
           console.error('No access token found in URL');
           navigate('/auth/login', { replace: true });

@@ -139,18 +139,21 @@ export function useVerifyOtpMutation() {
       }
 
       const profile = response?.data?.user;
-      
+
       // Clear session data
       sessionStorage.removeItem('signup_email');
       localStorage.removeItem('otp_resend_timestamp');
-      
+
       if (profile) {
         // Store user with required fields
         const user = {
           ...profile,
           id: profile.id || profile._id || '',
           email: profile.email,
-          displayName: profile.displayName || `${profile.firstName || ''} ${profile.lastName || ''}`.trim() || profile.email,
+          displayName:
+            profile.displayName ||
+            `${profile.firstName || ''} ${profile.lastName || ''}`.trim() ||
+            profile.email,
           role: profile.role,
           isVerified: true,
           firstName: profile.firstName || '',
@@ -162,22 +165,22 @@ export function useVerifyOtpMutation() {
           phone: (profile as any).phone || '',
           createdAt: profile.createdAt || new Date().toISOString(),
         };
-        
+
         // setUser(user as any);
         setIsAuthenticated(true);
         localStorage.setItem('user', JSON.stringify(user));
-        
+
         // Invalidate queries and show success
         queryClient.invalidateQueries({ queryKey: ['user'] });
         toast.success(response.message || 'Email verified successfully!');
-        
+
         // Navigate based on role
         if (profile.role === 'driver') {
           const hasVehicles = (profile as any).vehicles?.length > 0;
-          console.log('hasVehicles', hasVehicles)
+          console.log('hasVehicles', hasVehicles);
           navigate(hasVehicles ? '/driver' : '/vehicle-information');
         } else {
-          setUser(  user as any)
+          setUser(user as any);
           navigate(profile.role === 'seller' ? '/seller/dashboard' : '/');
         }
       } else {
@@ -186,11 +189,15 @@ export function useVerifyOtpMutation() {
           await checkAuth();
           queryClient.invalidateQueries({ queryKey: ['user'] });
           toast.success(response.message || 'Email verified successfully!');
-          
+
           const currentUser = useAuthStore.getState().user;
-          const path = currentUser?.role === 'driver' ? '/vehicle-information' :
-                      currentUser?.role === 'seller' ? '/seller/dashboard' : '/';
-                      console.log('hasVehicles', path,currentUser)
+          const path =
+            currentUser?.role === 'driver'
+              ? '/vehicle-information'
+              : currentUser?.role === 'seller'
+                ? '/seller/dashboard'
+                : '/';
+          console.log('hasVehicles', path, currentUser);
           navigate(path);
         } catch (error) {
           console.error('Failed to fetch profile:', error);

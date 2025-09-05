@@ -14,6 +14,7 @@ import { useProductsQuery, useDeleteProductMutation } from '../hooks/useProductM
 import { ProductGrid } from '../components';
 import { ProductsPageSkeleton } from '../components/ProductsPageSkeleton';
 import { DeleteConfirmationModal } from '@/components/ui';
+import toast from 'react-hot-toast';
 
 interface FilterOption {
   id: string;
@@ -178,8 +179,13 @@ const ProductsPage: React.FC = () => {
     });
   };
 
-  const handleProductClick = (slug: string) => {
-    navigate(`/seller/products/${slug}`);
+  const handleProductClick = (slug: string ,status:string) => {
+    if(status === 'draft'){
+      toast.error('Draft products are not available for preview');
+      return;
+    }else{
+      navigate(`/seller/products/${slug}`);
+    }
   };
 
   const handleEditProduct = (e: React.MouseEvent, productId: string) => {
@@ -378,7 +384,7 @@ const ProductsPage: React.FC = () => {
       </div>
 
       {/* Product Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
         {products.map((product: any) => (
           <ProductGrid
             key={product.id || product._id}
@@ -405,7 +411,13 @@ const ProductsPage: React.FC = () => {
         onClose={cancelDelete}
         onConfirm={confirmDelete}
         title="Delete Product"
-        description={`Are you sure you want to delete "${deleteModal.productTitle}"? This action cannot be undone.`}
+        description={
+          <>
+            Are you sure you want to delete{' '}
+            <strong className="font-semibold">"{deleteModal.productTitle}"</strong>? This action
+            cannot be undone.
+          </>
+        }
         confirmText="Delete"
         cancelText="Cancel"
         isLoading={deleteProductMutation.isPending}

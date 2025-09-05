@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { useForm, FormProvider, FieldErrors } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { X } from 'lucide-react';
+import { X, Eye, EyeOff } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
@@ -24,6 +24,8 @@ import {
   useSaveDraftMutation,
 } from '../hooks/useProductMutations';
 import { format } from 'date-fns';
+import { Button } from '@/components/ui';
+import { validateImageFile, validateMultipleImages } from '@/utils/imageValidation';
 
 // Variant schema
 const variantSchema = z.object({
@@ -203,6 +205,14 @@ const editProductSchema = z
 
     readyByTime: z.string().min(1, 'Time is required'),
 
+    dimensions: z
+      .object({
+        width: z.string().optional(),
+        length: z.string().optional(),
+        height: z.string().optional(),
+      })
+      .optional(),
+
     discount: z
       .object({
         discountType: z.enum(['none', 'flat', 'percentage']),
@@ -341,14 +351,57 @@ const categoryOptions = [
   { value: 'commercial doors', label: 'Commercial Doors' },
 ];
 
-const subCategoryOptions = [
-  { value: 'phones', label: 'Phones' },
-  { value: 'laptops', label: 'Laptops' },
-  { value: 'accessories', label: 'Accessories' },
-  { value: 'doors', label: 'Doors' },
-  { value: 'windows', label: 'Windows' },
-  { value: 'glass doors', label: 'Glass Doors' },
-];
+// Category to subcategory mapping
+const categorySubcategoryMap: Record<string, Array<{ value: string; label: string }>> = {
+  electronics: [
+    { value: 'phones', label: 'Phones' },
+    { value: 'laptops', label: 'Laptops' },
+    { value: 'tablets', label: 'Tablets' },
+    { value: 'headphones', label: 'Headphones' },
+    { value: 'cameras', label: 'Cameras' },
+    { value: 'accessories', label: 'Accessories' },
+  ],
+  clothing: [
+    { value: 'mens', label: "Men's Clothing" },
+    { value: 'womens', label: "Women's Clothing" },
+    { value: 'kids', label: "Kids' Clothing" },
+    { value: 'shoes', label: 'Shoes' },
+    { value: 'accessories', label: 'Accessories' },
+  ],
+  home: [
+    { value: 'furniture', label: 'Furniture' },
+    { value: 'decor', label: 'Decor' },
+    { value: 'kitchen', label: 'Kitchen' },
+    { value: 'bathroom', label: 'Bathroom' },
+    { value: 'garden', label: 'Garden' },
+  ],
+  sports: [
+    { value: 'fitness', label: 'Fitness Equipment' },
+    { value: 'outdoor', label: 'Outdoor Gear' },
+    { value: 'sportswear', label: 'Sportswear' },
+    { value: 'accessories', label: 'Accessories' },
+  ],
+  accessories: [
+    { value: 'jewelry', label: 'Jewelry' },
+    { value: 'bags', label: 'Bags' },
+    { value: 'watches', label: 'Watches' },
+    { value: 'belts', label: 'Belts' },
+    { value: 'other', label: 'Other' },
+  ],
+  commercial: [
+    { value: 'equipment', label: 'Equipment' },
+    { value: 'supplies', label: 'Supplies' },
+    { value: 'furniture', label: 'Furniture' },
+    { value: 'tools', label: 'Tools' },
+  ],
+  'commercial doors': [
+    { value: 'doors', label: 'Doors' },
+    { value: 'windows', label: 'Windows' },
+    { value: 'glass doors', label: 'Glass Doors' },
+    { value: 'frames', label: 'Frames' },
+    { value: 'hardware', label: 'Hardware' },
+  ],
+};
 
 const tagOptions = [
   { value: 'casing', label: 'Casing' },
@@ -357,10 +410,16 @@ const tagOptions = [
   { value: 'hardware', label: 'Hardware' },
   { value: 'doors', label: 'Doors' },
   { value: 'windows', label: 'Windows' },
+  { value: 'glass', label: 'Glass' },
+  { value: 'locks', label: 'Locks' },
+  { value: 'hinges', label: 'Hinges' },
+  { value: 'frames', label: 'Frames' },
+  { value: 'panels', label: 'Panels' },
+  { value: 'handles', label: 'Handles' },
 ];
 
+
 const MAX_IMAGES = 5;
-const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
 function EditProductPage() {
   const navigate = useNavigate();
@@ -374,6 +433,8 @@ function EditProductPage() {
   >([]);
   const [showVariants, setShowVariants] = useState(false);
   const [variantDragActive, setVariantDragActive] = useState<string | null>(null);
+  const [isInitialDataLoaded, setIsInitialDataLoaded] = useState(false);
+  const [showMobilePreview, setShowMobilePreview] = useState(false);
 
   const [showAddAddressModal, setShowAddAddressModal] = useState(false);
 
@@ -381,6 +442,7 @@ function EditProductPage() {
   const { data: addressesData, refetch: refetchAddresses } = useSavedAddresssQuery();
   const createAddressMutation = useCreateSavedAddressMutation();
   const updateProductMutation = useUpdateProductMutation();
+  const saveDraftMutation = useSaveDraftMutation();
 
   const savedAddresses = Array.isArray(addressesData?.data)
     ? addressesData.data
@@ -418,6 +480,11 @@ function EditProductPage() {
       shippingPrice: '',
       readyByDate: '',
       readyByTime: '',
+      dimensions: {
+        width: '',
+        length: '',
+        height: '',
+      },
       discount: {
         discountType: 'none',
         discountValue: '',
@@ -427,6 +494,45 @@ function EditProductPage() {
 
   const { handleSubmit, watch, reset, setValue } = methods;
   const formValues = watch();
+  
+  // Get subcategory options based on selected category
+  const subCategoryOptions = formValues.category 
+    ? categorySubcategoryMap[formValues.category] || []
+    : [];
+  
+  // If we have a subcategory value but no options (for custom categories from backend),
+  // create an option for it
+  const currentSubCategory = formValues.subCategory;
+  if (currentSubCategory && subCategoryOptions.length === 0 && formValues.category) {
+    subCategoryOptions.push({ value: currentSubCategory, label: currentSubCategory });
+  } else if (currentSubCategory && !subCategoryOptions.find(opt => opt.value === currentSubCategory)) {
+    // Add current subcategory if it's not in the options list
+    subCategoryOptions.push({ value: currentSubCategory, label: currentSubCategory });
+  }
+
+  // Reset subcategory when category changes (but not during initial load)
+  useEffect(() => {
+    // Skip this effect during initial data load
+    if (!isInitialDataLoaded) return;
+    
+    if (formValues.category) {
+      const currentSubcategory = formValues.subCategory;
+      const availableSubcategories = categorySubcategoryMap[formValues.category] || [];
+      
+      // Check if current subcategory is valid for the new category
+      const isValidSubcategory = availableSubcategories.some(
+        sub => sub.value === currentSubcategory
+      );
+      
+      // Reset subcategory if it's not valid for the new category
+      if (!isValidSubcategory && currentSubcategory) {
+        setValue('subCategory', '');
+      }
+    } else {
+      // Clear subcategory when no category is selected
+      setValue('subCategory', '');
+    }
+  }, [formValues.category, setValue, isInitialDataLoaded]);
   useEffect(() => {
     if (productData?.data) {
       const product = productData.data;
@@ -452,49 +558,60 @@ function EditProductPage() {
         }
       }
 
-      // Check if category exists in options
-      const categoryExists = categoryOptions.some((opt) => opt.value === product.category);
-      const subCategoryExists = subCategoryOptions.some((opt) => opt.value === product.subCategory);
-
-      console.log('Category exists in options:', categoryExists);
-      console.log('SubCategory exists in options:', subCategoryExists);
-
-      // Handle category/subcategory values - ensure they exist in options or use fallback
+      // Handle category value - ensure it exists in options
       let categoryValue = product.category || '';
       let subCategoryValue = product.subCategory || '';
 
-      // If the stored value doesn't exist in options, try to find a close match or use the first option
-      if (categoryValue && !categoryExists) {
-        // Try to find a case-insensitive match
-        const caseInsensitiveMatch = categoryOptions.find(
+      // First, validate and normalize the category
+      if (categoryValue) {
+        // Check if category exists in options (case-insensitive)
+        const categoryMatch = categoryOptions.find(
           (opt) => opt.value.toLowerCase() === categoryValue.toLowerCase()
         );
-        if (caseInsensitiveMatch) {
-          categoryValue = caseInsensitiveMatch.value;
+        
+        if (categoryMatch) {
+          // Use the exact value from options
+          categoryValue = categoryMatch.value;
         } else {
-          // If no match found, use the first option as fallback
-          categoryValue = categoryOptions[0]?.value || '';
-          console.warn(
-            `Category "${product.category}" not found in options, using fallback: "${categoryValue}"`
-          );
+          // Category doesn't exist in options - keep original value but log warning
+          console.warn(`Category "${product.category}" not found in predefined options, keeping original value`);
+          // Don't use fallback - preserve the original category
         }
       }
 
-      if (subCategoryValue && !subCategoryExists) {
-        // Try to find a case-insensitive match
-        const caseInsensitiveMatch = subCategoryOptions.find(
-          (opt) => opt.value.toLowerCase() === subCategoryValue.toLowerCase()
-        );
-        if (caseInsensitiveMatch) {
-          subCategoryValue = caseInsensitiveMatch.value;
-        } else {
-          // If no match found, use the first option as fallback
-          subCategoryValue = subCategoryOptions[0]?.value || '';
-          console.warn(
-            `SubCategory "${product.subCategory}" not found in options, using fallback: "${subCategoryValue}"`
-          );
+      // Now handle subcategory based on the selected category
+      if (categoryValue) {
+        // Get subcategory options for the current category
+        const categorySubOptions = categorySubcategoryMap[categoryValue] || [];
+        console.log(`Subcategory options for category "${categoryValue}":`, categorySubOptions);
+        console.log(`Original subcategory value: "${subCategoryValue}"`);
+        
+        if (subCategoryValue) {
+          if (categorySubOptions.length > 0) {
+            // Check if subcategory exists in the category's options (case-insensitive)
+            const subCategoryMatch = categorySubOptions.find(
+              (opt) => opt.value.toLowerCase() === subCategoryValue.toLowerCase()
+            );
+            
+            if (subCategoryMatch) {
+              // Use the exact value from options
+              console.log(`Found matching subcategory: "${subCategoryMatch.value}"`);
+              subCategoryValue = subCategoryMatch.value;
+            } else {
+              // Subcategory doesn't exist for this category - keep original value
+              console.warn(`SubCategory "${product.subCategory}" not found for category "${categoryValue}", keeping original value`);
+              // Keep the original subcategory value even if not in options
+              // This is important for custom or backend-specific values
+            }
+          } else {
+            // No subcategory options available for this category
+            console.log(`No subcategory options available for category "${categoryValue}", keeping value: "${subCategoryValue}"`);
+          }
         }
       }
+
+      console.log('Final category value:', categoryValue);
+      console.log('Final subcategory value:', subCategoryValue);
 
       // Reset form with all values
       const formData = {
@@ -530,6 +647,11 @@ function EditProductPage() {
         shippingPrice: product.shippingPrice?.toString() || '',
         readyByDate,
         readyByTime,
+        dimensions: {
+          width: product.dimensions?.width?.toString() || '',
+          length: product.dimensions?.length?.toString() || '',
+          height: product.dimensions?.height?.toString() || '',
+        },
         discount: {
           discountType: product.discount?.discountType || 'none',
           discountValue: product.discount?.discountValue?.toString() || '',
@@ -537,15 +659,24 @@ function EditProductPage() {
       };
 
       console.log('Form data being set:', formData);
+      console.log('Discount data:', formData.discount);
       reset(formData);
 
       // Force a re-render of the form fields by setting values again after a small delay
       setTimeout(() => {
+        console.log('Setting form values after delay - category:', categoryValue, 'subcategory:', subCategoryValue);
+        console.log('Setting discount after delay:', formData.discount);
         methods.setValue('category', categoryValue);
         methods.setValue('subCategory', subCategoryValue);
+        // Also explicitly set the discount fields
+        methods.setValue('discount.discountType', formData.discount.discountType);
+        methods.setValue('discount.discountValue', formData.discount.discountValue);
         // Clear any validation errors and trigger validation
-        methods.clearErrors(['category', 'subCategory']);
-        methods.trigger(['category', 'subCategory']);
+        methods.clearErrors(['category', 'subCategory', 'discount.discountType', 'discount.discountValue']);
+        // Don't trigger validation immediately as it might cause the value to be cleared
+        setTimeout(() => {
+          methods.trigger(['category', 'subCategory']);
+        }, 50);
       }, 100);
 
       if (product.variants && product.variants.length > 0) {
@@ -557,6 +688,16 @@ function EditProductPage() {
             existingImages: v.images || [], // Store existing variant images separately
           }))
         );
+        
+        // Explicitly set variant discount values after a delay
+        setTimeout(() => {
+          product.variants?.forEach((v: any, index: number) => {
+            if (v.discount?.discountType) {
+              methods.setValue(`variants.${index}.discount.discountType`, v.discount.discountType);
+              methods.setValue(`variants.${index}.discount.discountValue`, v.discount.discountValue?.toString() || '');
+            }
+          });
+        }, 150);
       }
 
       // Clear form errors and revalidate after reset
@@ -567,20 +708,12 @@ function EditProductPage() {
         console.log('Form values after reset:', formValues);
         // Manually validate to ensure the form knows these are valid values
         methods.trigger();
+        // Mark that initial data has been loaded
+        setIsInitialDataLoaded(true);
       }, 200);
     }
   }, [productData, reset, methods]);
 
-  const validateFile = (file: File): { valid: boolean; error?: string } => {
-    if (!file.type.startsWith('image/')) {
-      return { valid: false, error: `"${file.name}" is not an image file` };
-    }
-    if (file.size > MAX_FILE_SIZE) {
-      const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
-      return { valid: false, error: `Selected image is ${sizeMB}MB. Maximum size is 5MB allowed` };
-    }
-    return { valid: true };
-  };
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -593,7 +726,7 @@ function EditProductPage() {
   }, []);
 
   const handleDrop = useCallback(
-    (e: React.DragEvent) => {
+    async (e: React.DragEvent) => {
       e.preventDefault();
       e.stopPropagation();
       setDragActive(false);
@@ -601,29 +734,13 @@ function EditProductPage() {
       if (e.dataTransfer.files && e.dataTransfer.files[0]) {
         const files = Array.from(e.dataTransfer.files);
         const totalImages = existingImages.length + uploadedPhotos.length;
-        if (totalImages >= MAX_IMAGES) {
-          toast.error(`Maximum ${MAX_IMAGES} images allowed`);
-          return;
-        }
-
-        const remainingSlots = MAX_IMAGES - totalImages;
-        const validFiles: File[] = [];
-        const errors: string[] = [];
-
-        for (let i = 0; i < Math.min(files.length, remainingSlots); i++) {
-          const validation = validateFile(files[i]);
-          if (validation.valid) {
-            validFiles.push(files[i]);
-          } else if (validation.error) {
-            errors.push(validation.error);
-          }
-        }
-
-        if (files.length > remainingSlots) {
-          errors.push(
-            `Only ${remainingSlots} more image(s) can be added (max ${MAX_IMAGES} total)`
-          );
-        }
+        
+        // Validate files using common utility
+        const { validFiles, errors } = await validateMultipleImages(
+          files, 
+          MAX_IMAGES, 
+          totalImages
+        );
 
         if (validFiles.length > 0) {
           setUploadedPhotos((prev) => [...prev, ...validFiles]);
@@ -636,32 +753,17 @@ function EditProductPage() {
     [uploadedPhotos, existingImages]
   );
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const files = Array.from(e.target.files);
       const totalImages = existingImages.length + uploadedPhotos.length;
-      if (totalImages >= MAX_IMAGES) {
-        toast.error(`Maximum ${MAX_IMAGES} images allowed`);
-        e.target.value = '';
-        return;
-      }
-
-      const remainingSlots = MAX_IMAGES - totalImages;
-      const validFiles: File[] = [];
-      const errors: string[] = [];
-
-      for (let i = 0; i < Math.min(files.length, remainingSlots); i++) {
-        const validation = validateFile(files[i]);
-        if (validation.valid) {
-          validFiles.push(files[i]);
-        } else if (validation.error) {
-          errors.push(validation.error);
-        }
-      }
-
-      if (files.length > remainingSlots) {
-        errors.push(`Only ${remainingSlots} more image(s) can be added (max ${MAX_IMAGES} total)`);
-      }
+      
+      // Validate files using common utility
+      const { validFiles, errors } = await validateMultipleImages(
+        files, 
+        MAX_IMAGES, 
+        totalImages
+      );
 
       if (validFiles.length > 0) {
         setUploadedPhotos((prev) => [...prev, ...validFiles]);
@@ -682,9 +784,10 @@ function EditProductPage() {
   };
 
   const onSubmit = async (data: EditProductForm) => {
-    if (existingImages.length === 0 && uploadedPhotos.length === 0) {
+    const totalImages = existingImages.length + uploadedPhotos.length;
+    if (totalImages < 2) {
       setImageError(true);
-      toast.error('Please keep at least one product image');
+      toast.error('Please keep at least 2 product images');
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
@@ -721,6 +824,11 @@ function EditProductPage() {
       shippingPrice: data.shippingPrice ? parseFloat(data.shippingPrice) : undefined,
       readyByDate,
       readyByTime: data.readyByTime,
+      dimensions: data.dimensions && (data.dimensions.width || data.dimensions.length || data.dimensions.height) ? {
+        width: data.dimensions.width ? parseFloat(data.dimensions.width) : undefined,
+        length: data.dimensions.length ? parseFloat(data.dimensions.length) : undefined,
+        height: data.dimensions.height ? parseFloat(data.dimensions.height) : undefined,
+      } : undefined,
       discount: {
         discountType: data.discount.discountType,
         discountValue: data.discount.discountValue
@@ -755,13 +863,197 @@ function EditProductPage() {
     }
   };
 
+
+  const handleSaveDraft = async () => {
+    // Check if minimal required fields are present
+    const formData = methods.getValues();
+
+    // Validate minimal required fields for draft
+    if (!formData.title || formData.title.trim().length === 0) {
+      toast.error('Title is required to save as draft');
+      methods.setFocus('title');
+      methods.setError('title', { message: 'Title is required to save as draft' });
+      return;
+    }
+    // Validate minimal required fields for draft
+    if (!formData.category || formData.category.trim().length === 0) {
+      toast.error('Category is required to save as draft');
+      methods.setFocus('category');
+      methods.setError('category', { message: 'Category is required to save as draft' });
+      return;
+    }
+    if (!formData.price || formData.price.trim().length === 0) {
+      toast.error('Price is required to save as draft');
+      methods.setFocus('price');
+      methods.setError('price', { message: 'Price is required to save as draft' });
+      return;
+    }
+    // Check for minimum required images for draft
+    const totalImages = existingImages.length + uploadedPhotos.length;
+    if (totalImages < 2) {
+      setImageError(true);
+      toast.error('At least 2 images are required to save as draft');
+      // Scroll to the photo section
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    setImageError(false);
+
+    // Prepare variant files if any
+    const variantFiles = variants
+      .map((v, index) => ({ variant: v, index }))
+      .filter(({ variant }) => variant.images.length > 0)
+      .map(({ variant, index }) => ({
+        variantId: variant.id,
+        variantIndex: index,
+        files: variant.images,
+      }));
+
+    // Convert readyByDate if provided
+    let readyByDate: string | undefined;
+    if (formData.readyByDate) {
+      const time = formData.readyByTime || '00:00';
+      readyByDate = new Date(`${formData.readyByDate}T${time}:00`).toISOString();
+    }
+
+    // For editing existing product, use different approach for draft
+    // First prepare basic draft data
+    const draftData: any = {
+      id: id!, // Include the product ID for update
+      title: formData.title,
+      imageFiles: uploadedPhotos.length > 0 ? uploadedPhotos : undefined,
+      existingImages: existingImages,
+    };
+
+    // Add optional fields only if they have values
+    if (formData.price && formData.price.trim()) {
+      draftData.price = formData.price;
+    }
+    if (formData.description && formData.description.trim()) {
+      draftData.description = formData.description;
+    }
+    if (formData.category && formData.category.trim()) {
+      draftData.category = formData.category;
+    }
+    if (formData.subCategory && formData.subCategory.trim()) {
+      draftData.subCategory = formData.subCategory;
+    }
+    if (formData.quantity && formData.quantity.trim()) {
+      draftData.quantity = formData.quantity;
+    }
+    if (formData.brand && formData.brand.trim()) {
+      draftData.brand = formData.brand;
+    }
+    if (formData.color && formData.color.trim()) {
+      draftData.color = formData.color;
+    }
+    if (formData.locationIds && formData.locationIds.length > 0) {
+      draftData.locationIds = formData.locationIds;
+    }
+    if (formData.productTag && formData.productTag.length > 0) {
+      draftData.productTag = formData.productTag;
+    }
+    if (
+      formData.marketplaceOptions &&
+      (formData.marketplaceOptions.pickup ||
+        formData.marketplaceOptions.shipping ||
+        formData.marketplaceOptions.delivery)
+    ) {
+      draftData.marketplaceOptions = formData.marketplaceOptions;
+    }
+    if (formData.pickupHours && formData.pickupHours.trim()) {
+      draftData.pickupHours = formData.pickupHours;
+    }
+    if (formData.shippingPrice && formData.shippingPrice.trim()) {
+      draftData.shippingPrice = formData.shippingPrice;
+    }
+    if (readyByDate) {
+      draftData.readyByDate = readyByDate;
+      draftData.readyByTime = formData.readyByTime;
+    }
+    if (formData.dimensions && (formData.dimensions.width || formData.dimensions.length || formData.dimensions.height)) {
+      draftData.dimensions = formData.dimensions;
+    }
+    if (formData.discount && formData.discount.discountType !== 'none') {
+      // For drafts, include discount even if value is empty
+      draftData.discount = {
+        discountType: formData.discount.discountType,
+        discountValue: formData.discount.discountValue || ''
+      };
+    }
+    if (formData.variants && formData.variants.length > 0) {
+      // For drafts, ensure variant discount values are handled properly
+      draftData.variants = formData.variants.map(v => ({
+        ...v,
+        discount: {
+          discountType: v.discount.discountType,
+          discountValue: v.discount.discountValue || ''
+        }
+      }));
+    }
+    if (variantFiles.length > 0) {
+      draftData.variantFiles = variantFiles;
+    }
+
+    try {
+      // Check if this is for updating an existing product draft
+      if (id) {
+        // For existing products being edited, use the update mutation with status: 'draft'
+        const updateData = {
+          ...draftData,
+          status: 'draft',
+          // Convert string values to proper types for update
+          price: draftData.price ? parseFloat(draftData.price) : undefined,
+          quantity: draftData.quantity ? parseInt(draftData.quantity) : undefined,
+          shippingPrice: draftData.shippingPrice ? parseFloat(draftData.shippingPrice) : undefined,
+          dimensions: draftData.dimensions ? {
+            width: draftData.dimensions.width ? parseFloat(draftData.dimensions.width) : undefined,
+            length: draftData.dimensions.length ? parseFloat(draftData.dimensions.length) : undefined,
+            height: draftData.dimensions.height ? parseFloat(draftData.dimensions.height) : undefined,
+          } : undefined,
+          discount: draftData.discount ? {
+            discountType: draftData.discount.discountType,
+            discountValue: draftData.discount.discountValue
+              ? parseFloat(draftData.discount.discountValue)
+              : undefined,
+          } : undefined,
+          variants: draftData.variants?.map((v: any) => ({
+            color: v.color,
+            quantity: parseInt(v.quantity || '0'),
+            price: parseFloat(v.price || '0'),
+            discount: {
+              discountType: v.discount.discountType,
+              discountValue: v.discount.discountValue
+                ? parseFloat(v.discount.discountValue)
+                : undefined,
+            },
+          })),
+        };
+        
+        // Remove the id from updateData as it's passed separately
+        delete updateData.id;
+        
+        await saveDraftMutation.mutateAsync({ id: id!, ...updateData });
+      } else {
+        // For new products, use the saveDraftMutation
+        await saveDraftMutation.mutateAsync(draftData);
+      }
+      
+      navigate('/seller/products');
+    } catch (error) {
+      console.error('Failed to save draft:', error);
+      // Error is already handled by the mutation with toast
+    }
+  };
   const onError = (errors: FieldErrors<EditProductForm>) => {
     console.log('Form errors:', errors);
 
     // Check for image upload error first
-    if (existingImages.length === 0 && uploadedPhotos.length === 0) {
+    const totalImages = existingImages.length + uploadedPhotos.length;
+    if (totalImages < 2) {
       setImageError(true);
-      toast.error('Please keep at least one product image');
+      toast.error('Please keep at least 2 product images');
       // Scroll to the photo section
       setTimeout(() => {
         const photoSection = document.getElementById('photos');
@@ -851,42 +1143,34 @@ function EditProductPage() {
   };
 
   const removeVariant = (variantId: string) => {
+    // Find the index of the variant to remove
+    const variantIndex = variants.findIndex((v) => v.id === variantId);
+    
+    // Remove the variant from state
     setVariants(variants.filter((v) => v.id !== variantId));
+    
+    // Clear any errors for this variant
+    if (variantIndex !== -1) {
+      methods.clearErrors(`variants.${variantIndex}`);
+    }
+    
     if (variants.length <= 1) {
       setShowVariants(false);
     }
   };
 
-  const handleVariantImageUpload = (variantId: string, files: File[]) => {
+  const handleVariantImageUpload = useCallback(async (variantId: string, files: File[]) => {
     const variant = variants.find((v) => v.id === variantId);
     if (!variant) return;
 
-    const currentCount = variant.images.length;
     const maxImages = 5;
 
-    if (currentCount >= maxImages) {
-      toast.error(`Maximum ${maxImages} images allowed per variant`);
-      return;
-    }
-
-    const remainingSlots = maxImages - currentCount;
-    const validFiles: File[] = [];
-    const errors: string[] = [];
-
-    for (let i = 0; i < Math.min(files.length, remainingSlots); i++) {
-      const validation = validateFile(files[i]);
-      if (validation.valid) {
-        validFiles.push(files[i]);
-      } else if (validation.error) {
-        errors.push(validation.error);
-      }
-    }
-
-    if (files.length > remainingSlots) {
-      errors.push(
-        `Only ${remainingSlots} more image(s) can be added (max ${maxImages} per variant)`
-      );
-    }
+    // Validate files using common utility
+    const { validFiles, errors } = await validateMultipleImages(
+      files, 
+      maxImages, 
+      variant.images.length
+    );
 
     if (validFiles.length > 0) {
       setVariants(
@@ -897,7 +1181,7 @@ function EditProductPage() {
     }
 
     errors.forEach((error) => toast.error(error));
-  };
+  }, [variants]);
 
   const removeVariantImage = (variantId: string, imageIndex: number) => {
     setVariants(
@@ -936,7 +1220,7 @@ function EditProductPage() {
       const files = Array.from(e.dataTransfer.files);
       handleVariantImageUpload(variantId, files);
     }
-  }, []);
+  }, [handleVariantImageUpload]);
 
   if (isLoadingProduct) {
     return <EditProductPageSkeleton />;
@@ -959,8 +1243,60 @@ function EditProductPage() {
                 <div className="text-white text-sm sm:text-base font-medium">Edit Product</div>
               </div>
             </div>
+       <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                onClick={handleSaveDraft}
+                variant="ghost"
+                className="text-white hover:bg-white border border-white h-[40px] sm:h-[48px] text-sm sm:text-base hover:text-primary px-3 sm:px-4"
+                disabled={updateProductMutation.isPending}
+              >
+                {updateProductMutation.isPending ? 'Saving...' : 'Save Draft'}
+              </Button>
+            </div>
           </div>
         </div>
+
+        {/* Mobile Preview Toggle Button */}
+        <div className="lg:hidden fixed bottom-4 right-4 z-50">
+          {!showMobilePreview && (
+            <Button
+              type="button"
+              onClick={() => setShowMobilePreview(!showMobilePreview)}
+              className="bg-primary text-white p-3 shadow-sm hover:bg-primary/90 rounded-sm flex gap-3 w-fit h-10"
+            >
+              {showMobilePreview ? (
+                <>
+                  <span>Hide Preview </span> <EyeOff className="h-6 w-6" />
+                </>
+              ) : (
+                <>
+                  <span>Show Preview </span> <Eye className="h-6 w-6" />
+                </>
+              )}
+            </Button>
+          )}
+        </div>
+
+        {/* Mobile Preview Modal */}
+        {showMobilePreview && (
+          <div className="lg:hidden fixed inset-0 z-[100] bg-white overflow-y-auto">
+            <div className="min-h-screen">
+              <ProductPreview
+                handleBackClick={() => setShowMobilePreview(false)}
+                formValues={formValues}
+                uploadedPhotos={uploadedPhotos}
+                existingImages={existingImages}
+                addressOptions={addressOptions}
+                savedAddresses={savedAddresses}
+                variants={variants}
+                categoryOptions={categoryOptions}
+                subCategoryOptions={subCategoryOptions}
+                tagOptions={tagOptions}
+              />
+            </div>
+          </div>
+        )}
 
         {/* Rest of the component structure similar to CreateProductPage */}
         <form

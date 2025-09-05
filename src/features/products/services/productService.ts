@@ -35,6 +35,11 @@ export interface CreateProductPayload {
     discountType: 'none' | 'flat' | 'percentage';
     discountValue?: number;
   };
+  dimensions?: {
+    width?: number;
+    length?: number;
+    height?: number;
+  };
   images: string[];
 }
 
@@ -72,6 +77,11 @@ export interface SaveDraftPayload {
   discount?: {
     discountType: 'none' | 'flat' | 'percentage';
     discountValue?: number;
+  };
+  dimensions?: {
+    width?: number;
+    length?: number;
+    height?: number;
   };
   isDraft: boolean;
 }
@@ -116,6 +126,11 @@ export interface Product {
   discount: {
     discountType: 'none' | 'flat' | 'percentage';
     discountValue?: number;
+  };
+  dimensions?: {
+    width?: number;
+    length?: number;
+    height?: number;
   };
   images: string[];
   userId?: string;
@@ -168,8 +183,16 @@ class ProductService {
     return response.data;
   }
 
+  async updateDraft(id: string, data: Partial<SaveDraftPayload> & { status?: string }): Promise<ProductResponse> {
+    const response = await axiosInstance.patch<ProductResponse>(`/products/${id}`, {
+      ...data,
+      status: 'draft'
+    });
+    return response.data;
+  }
+
   async updateProduct(id: string, data: Partial<CreateProductPayload>): Promise<ProductResponse> {
-    const response = await axiosInstance.patch<ProductResponse>(`/products/${id}`, data);
+    const response = await axiosInstance.put<ProductResponse>(`/products/${id}`, data);
     return response.data;
   }
 

@@ -17,15 +17,15 @@ import {
   MapPin,
 } from 'lucide-react';
 import { cn, getInitials } from '@/lib/helpers';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { useLogoutModal } from '@/stores/useLogoutModal';
 import { useAuth } from '@/hooks/useAuth';
 
 interface ProfileMenuItem {
   id: string;
-
   label: string;
   icon: React.ReactNode;
+  path?: string;
   onClick?: () => void;
 }
 
@@ -49,6 +49,7 @@ export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
   onCollapsedChange,
 }) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [localCollapsed, setLocalCollapsed] = useState(false);
   const isCollapsed = controlledCollapsed !== undefined ? controlledCollapsed : localCollapsed;
   const setIsCollapsed = onCollapsedChange || setLocalCollapsed;
@@ -58,36 +59,43 @@ export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
       id: 'profile',
       label: 'Profile Details',
       icon: <User className="w-5 h-5" />,
+      path: '/profile',
     },
     {
       id: 'my-earnings',
       label: 'My Earnings',
       icon: <DollarSign className="w-5 h-5" />,
+      path: '/profile/my-earnings',
     },
     {
       id: 'bank',
       label: 'Manage Bank Acccounts',
       icon: <Building2 className="w-5 h-5" />,
+      path: '/profile/bank',
     },
     {
       id: 'address',
       label: 'Saved Addresses',
       icon: <MapPin className="w-5 h-5" />,
+      path: '/profile/address',
     },
     {
       id: 'terms',
       label: 'Terms & Conditions',
       icon: <FileText className="w-5 h-5" />,
+      path: '/profile/terms',
     },
     {
       id: 'privacy',
       label: 'Privacy Policy',
       icon: <Shield className="w-5 h-5" />,
+      path: '/profile/privacy',
     },
     {
       id: 'contact-us',
       label: 'Contact Us',
       icon: <Phone className="w-5 h-5" />,
+      path: '/profile/contact-us',
     },
     {
       id: 'logout',
@@ -113,11 +121,21 @@ export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
     }
   }, [isMobile, controlledCollapsed]);
 
-  const handleItemClick = (itemId: string) => {
-    if (itemId === 'logout') {
+  const handleItemClick = (item: ProfileMenuItem) => {
+    if (item.id === 'logout') {
       openModal();
+    } else if (item.path) {
+      // Navigate to the path
+      navigate(item.path);
+      // Call the onItemClick callback if provided
+      onItemClick?.(item.id);
+      // Close the mobile sidebar if on mobile
+      if (isMobile) {
+        onClose?.();
+      }
     } else {
-      onItemClick?.(itemId);
+      // Just call the callback if no path is defined
+      onItemClick?.(item.id);
     }
   };
 
@@ -192,7 +210,9 @@ export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
           </Avatar>
           {!isCollapsed && (
             <div>
-              <h3 className="text-lg font-semibold text-gray-900">{user?.displayName}</h3>
+              <h3 className="text-lg font-semibold text-gray-900 line-clamp-2  max-w-40">
+                {user?.displayName}
+              </h3>
               <p className="text-sm text-gray-500">{user?.email}</p>
             </div>
           )}
@@ -204,7 +224,7 @@ export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
             <button
               key={item.id}
               type="button"
-              onClick={() => handleItemClick(item.id)}
+              onClick={() => handleItemClick(item)}
               className={cn(
                 'w-full flex items-center justify-between px-3 py-3 text-sm font-medium rounded-lg transition-colors h-[46px] cursor-pointer',
                 activeItem === item.id

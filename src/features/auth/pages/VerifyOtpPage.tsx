@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { AuthWrapper } from '../components/AuthWrapper';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,7 @@ const OTP_RESEND_COOLDOWN = 60; // seconds
 const OTP_RESEND_KEY = 'otp_resend_timestamp';
 
 function VerifyOtpPage() {
+  const navigate = useNavigate();
   const [otp, setOtp] = useState('');
   const [countdown, setCountdown] = useState(0);
   const email = sessionStorage.getItem('signup_email');
@@ -28,6 +29,14 @@ function VerifyOtpPage() {
 
     return remaining > 0 ? remaining : 0;
   };
+
+  // Check if email exists, redirect if not
+  useEffect(() => {
+    if (!email) {
+      // toast.error('Session expired. Please sign up again.');
+      navigate('/auth/login');
+    }
+  }, [email, navigate]);
 
   // Initialize countdown on mount
   useEffect(() => {
@@ -115,6 +124,11 @@ function VerifyOtpPage() {
     );
   };
 
+  // Don't render the form if no email is present
+  if (!email) {
+    return null;
+  }
+
   return (
     <AuthWrapper>
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -124,10 +138,11 @@ function VerifyOtpPage() {
           <p className="text-gray-600 font-medium">{email}</p>
         </div>
 
-        <div className="flex justify-center py-6">
+        <div className="flex justify-center sm:py-6">
           <InputOTP
             disabled={verifyOtpMutation.isPending || resendOtpMutation.isPending}
             maxLength={6}
+            pattern="^[0-9]+$"
             value={otp}
             onChange={(value) => setOtp(value)}
           >

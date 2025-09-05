@@ -146,6 +146,22 @@ export const AddSavedAddressModal: React.FC<AddSavedAddressModalProps> = ({
           latitude: initialData.latitude || undefined,
           longitude: initialData.longitude || undefined,
         });
+
+        // Prevent text selection after reset in edit mode
+        setTimeout(() => {
+          // Remove selection from all input fields
+          const inputs = document.querySelectorAll('input');
+          inputs.forEach((input) => {
+            if (input.setSelectionRange) {
+              // Set cursor to end of text without selecting
+              const length = input.value.length;
+              input.setSelectionRange(length, length);
+            }
+          });
+
+          // If you want to blur all inputs to prevent any selection
+          // document.activeElement?.blur();
+        }, 0);
       }
     } else {
       // Reset form when modal is closed
@@ -219,6 +235,8 @@ export const AddSavedAddressModal: React.FC<AddSavedAddressModalProps> = ({
     }
 
     const addressComponents = place.address_components;
+    let streetNumber = '';
+    let route = '';
 
     // Extract address components
     addressComponents.forEach((component: any) => {
@@ -289,7 +307,7 @@ export const AddSavedAddressModal: React.FC<AddSavedAddressModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-[90vw] sm:max-w-[600px] md:max-w-[700px] p-0 bg-white max-h-[90vh] overflow-y-auto z-51 ">
+      <DialogContent className=" sm:max-w-[600px] md:max-w-[700px] p-0 bg-white max-h-[90vh] overflow-y-auto z-51 ">
         <DialogHeader className="px-4 pt-4 sm:px-6 pb-0 mb-0">
           <DialogTitle className="text-lg sm:text-xl font-semibold">
             {isEdit ? 'Edit Address' : 'Add New Address'}
@@ -418,7 +436,7 @@ export const AddSavedAddressModal: React.FC<AddSavedAddressModalProps> = ({
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-3 sm:pt-4 sm:justify-end">
+            <div className="flex  flex-col-reverse sm:flex-row gap-2 sm:gap-3 pt-3 sm:pt-4 sm:justify-end">
               <Button
                 type="button"
                 variant="outline"

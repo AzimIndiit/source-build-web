@@ -59,6 +59,7 @@ export const signupSchema = z
       message: 'You must accept the terms and conditions',
     }),
     // Seller fields (optional unless seller is selected)
+
     businessName: z.string().optional(),
     businessAddress: z.string().optional(),
     phone: z.string().optional(),
@@ -90,19 +91,52 @@ export const signupSchema = z
           path: ['businessAddress'],
         });
       }
-      if (!data.phone || data.phone.replace(/\D/g, '').length !== 10) {
+      // Validate business phone
+      if (!data.phone) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: 'Phone number is required',
+          message: 'Business phone is required',
           path: ['phone'],
         });
+      } else {
+        const cleanedPhone = data.phone.replace(/\D/g, '');
+        if (cleanedPhone.length !== 10) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'Phone number must be exactly 10 digits',
+            path: ['phone'],
+          });
+        } else if (!/^[2-9]\d{2}[2-9]\d{6}$/.test(cleanedPhone)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'Invalid phone number. Area code cannot start with 0 or 1',
+            path: ['phone'],
+          });
+        }
       }
-      if (!data.cellPhone || data.cellPhone.replace(/\D/g, '').length !== 10) {
+
+      // Validate cell phone
+      if (!data.cellPhone) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: 'Cell phone is required',
           path: ['cellPhone'],
         });
+      } else {
+        const cleanedCellPhone = data.cellPhone.replace(/\D/g, '');
+        if (cleanedCellPhone.length !== 10) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'Cell phone must be exactly 10 digits',
+            path: ['cellPhone'],
+          });
+        } else if (!/^[2-9]\d{2}[2-9]\d{6}$/.test(cleanedCellPhone)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'Invalid cell phone. Area code cannot start with 0 or 1',
+            path: ['cellPhone'],
+          });
+        }
       }
       if (!data.einNumber || data.einNumber.length < 1) {
         ctx.addIssue({
@@ -122,12 +156,27 @@ export const signupSchema = z
 
     // Driver-specific validation
     if (data.accountType === 'driver') {
-      if (!data.phone || data.phone.replace(/\D/g, '').length !== 10) {
+      if (!data.phone) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: 'Phone number is required',
           path: ['phone'],
         });
+      } else {
+        const cleanedPhone = data.phone.replace(/\D/g, '');
+        if (cleanedPhone.length !== 10) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'Phone number must be exactly 10 digits',
+            path: ['phone'],
+          });
+        } else if (!/^[2-9]\d{2}[2-9]\d{6}$/.test(cleanedPhone)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'Invalid phone number. Area code cannot start with 0 or 1',
+            path: ['phone'],
+          });
+        }
       }
     }
 

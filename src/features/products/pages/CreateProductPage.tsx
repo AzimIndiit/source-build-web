@@ -18,6 +18,7 @@ import {
   CreateSavedAddressPayload,
 } from '@/features/profile/services/addressService';
 import { useCreateProductMutation, useSaveDraftMutation } from '../hooks/useProductMutations';
+import { validateImageFile, validateMultipleImages } from '@/utils/imageValidation';
 
 // Variant schema
 const variantSchema = z.object({
@@ -197,6 +198,14 @@ const createProductSchema = z
 
     readyByTime: z.string().min(1, 'Time is required'),
 
+    dimensions: z
+      .object({
+        width: z.string().optional(),
+        length: z.string().optional(),
+        height: z.string().optional(),
+      })
+      .optional(),
+
     discount: z
       .object({
         discountType: z.enum(['none', 'flat', 'percentage']),
@@ -335,14 +344,57 @@ const categoryOptions = [
   { value: 'commercial doors', label: 'Commercial Doors' },
 ];
 
-const subCategoryOptions = [
-  { value: 'phones', label: 'Phones' },
-  { value: 'laptops', label: 'Laptops' },
-  { value: 'accessories', label: 'Accessories' },
-  { value: 'doors', label: 'Doors' },
-  { value: 'windows', label: 'Windows' },
-  { value: 'glass doors', label: 'Glass Doors' },
-];
+// Category to subcategory mapping
+const categorySubcategoryMap: Record<string, Array<{ value: string; label: string }>> = {
+  electronics: [
+    { value: 'phones', label: 'Phones' },
+    { value: 'laptops', label: 'Laptops' },
+    { value: 'tablets', label: 'Tablets' },
+    { value: 'headphones', label: 'Headphones' },
+    { value: 'cameras', label: 'Cameras' },
+    { value: 'accessories', label: 'Accessories' },
+  ],
+  clothing: [
+    { value: 'mens', label: "Men's Clothing" },
+    { value: 'womens', label: "Women's Clothing" },
+    { value: 'kids', label: "Kids' Clothing" },
+    { value: 'shoes', label: 'Shoes' },
+    { value: 'accessories', label: 'Accessories' },
+  ],
+  home: [
+    { value: 'furniture', label: 'Furniture' },
+    { value: 'decor', label: 'Decor' },
+    { value: 'kitchen', label: 'Kitchen' },
+    { value: 'bathroom', label: 'Bathroom' },
+    { value: 'garden', label: 'Garden' },
+  ],
+  sports: [
+    { value: 'fitness', label: 'Fitness Equipment' },
+    { value: 'outdoor', label: 'Outdoor Gear' },
+    { value: 'sportswear', label: 'Sportswear' },
+    { value: 'accessories', label: 'Accessories' },
+  ],
+  accessories: [
+    { value: 'jewelry', label: 'Jewelry' },
+    { value: 'bags', label: 'Bags' },
+    { value: 'watches', label: 'Watches' },
+    { value: 'belts', label: 'Belts' },
+    { value: 'other', label: 'Other' },
+  ],
+  commercial: [
+    { value: 'equipment', label: 'Equipment' },
+    { value: 'supplies', label: 'Supplies' },
+    { value: 'furniture', label: 'Furniture' },
+    { value: 'tools', label: 'Tools' },
+  ],
+  'commercial doors': [
+    { value: 'doors', label: 'Doors' },
+    { value: 'windows', label: 'Windows' },
+    { value: 'glass doors', label: 'Glass Doors' },
+    { value: 'frames', label: 'Frames' },
+    { value: 'hardware', label: 'Hardware' },
+  ],
+};
 
 const tagOptions = [
   { value: 'casing', label: 'Casing' },
@@ -351,11 +403,16 @@ const tagOptions = [
   { value: 'hardware', label: 'Hardware' },
   { value: 'doors', label: 'Doors' },
   { value: 'windows', label: 'Windows' },
+  { value: 'glass', label: 'Glass' },
+  { value: 'locks', label: 'Locks' },
+  { value: 'hinges', label: 'Hinges' },
+  { value: 'frames', label: 'Frames' },
+  { value: 'panels', label: 'Panels' },
+  { value: 'handles', label: 'Handles' },
 ];
 
 // Image upload constraints
 const MAX_IMAGES = 5;
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB in bytes
 
 function CreateProductPage() {
   const navigate = useNavigate();
@@ -410,6 +467,11 @@ function CreateProductPage() {
       shippingPrice: '',
       readyByDate: '',
       readyByTime: '',
+      dimensions: {
+        width: '',
+        length: '',
+        height: '',
+      },
       discount: {
         discountType: 'none',
         discountValue: '',
@@ -429,21 +491,32 @@ function CreateProductPage() {
   } = methods;
   const formValues = watch();
 
-  // Validate file before adding
-  const validateFile = (file: File): { valid: boolean; error?: string } => {
-    // Check if it's an image
-    if (!file.type.startsWith('image/')) {
-      return { valid: false, error: `"${file.name}" is not an image file` };
-    }
+  // Get subcategory options based on selected category
+  const subCategoryOptions = formValues.category 
+    ? categorySubcategoryMap[formValues.category] || []
+    : [];
 
-    // Check file size
-    if (file.size > MAX_FILE_SIZE) {
-      const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
-      return { valid: false, error: `Selected image is ${sizeMB}MB. Maximum size is 5MB allowed` };
+  // Reset subcategory when category changes
+  useEffect(() => {
+    if (formValues.category) {
+      const currentSubcategory = formValues.subCategory;
+      const availableSubcategories = categorySubcategoryMap[formValues.category] || [];
+      
+      // Check if current subcategory is valid for the new category
+      const isValidSubcategory = availableSubcategories.some(
+        sub => sub.value === currentSubcategory
+      );
+      
+      // Reset subcategory if it's not valid for the new category
+      if (!isValidSubcategory && currentSubcategory) {
+        methods.setValue('subCategory', '');
+      }
+    } else {
+      // Clear subcategory when no category is selected
+      methods.setValue('subCategory', '');
     }
+  }, [formValues.category, methods]);
 
-    return { valid: true };
-  };
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -456,7 +529,7 @@ function CreateProductPage() {
   }, []);
 
   const handleDrop = useCallback(
-    (e: React.DragEvent) => {
+    async (e: React.DragEvent) => {
       e.preventDefault();
       e.stopPropagation();
       setDragActive(false);
@@ -464,39 +537,16 @@ function CreateProductPage() {
       if (e.dataTransfer.files && e.dataTransfer.files[0]) {
         const files = Array.from(e.dataTransfer.files);
 
-        // Check total image count
-        if (uploadedPhotos.length >= MAX_IMAGES) {
-          toast.error(`Maximum ${MAX_IMAGES} images allowed`);
-          return;
-        }
-
-        const remainingSlots = MAX_IMAGES - uploadedPhotos.length;
-        const validFiles: File[] = [];
-        const errors: string[] = [];
-
-        for (let i = 0; i < Math.min(files.length, remainingSlots); i++) {
-          const validation = validateFile(files[i]);
-          if (validation.valid) {
-            validFiles.push(files[i]);
-          } else if (validation.error) {
-            errors.push(validation.error);
-          }
-        }
-
-        if (files.length > remainingSlots) {
-          errors.push(
-            `Only ${remainingSlots} more image(s) can be added (max ${MAX_IMAGES} total)`
-          );
-        }
+        // Validate files using common utility
+        const { validFiles, errors } = await validateMultipleImages(
+          files, 
+          MAX_IMAGES, 
+          uploadedPhotos.length
+        );
 
         if (validFiles.length > 0) {
           setUploadedPhotos((prev) => [...prev, ...validFiles]);
           setImageError(false); // Clear error when images are added
-          // if (validFiles.length === 1) {
-          //   // toast.success('Image uploaded successfully');
-          // } else {
-          //   toast.success(`${validFiles.length} images uploaded successfully`);
-          // }
         }
 
         // Show all errors
@@ -506,42 +556,20 @@ function CreateProductPage() {
     [uploadedPhotos]
   );
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const files = Array.from(e.target.files);
 
-      // Check total image count
-      if (uploadedPhotos.length >= MAX_IMAGES) {
-        toast.error(`Maximum ${MAX_IMAGES} images allowed`);
-        e.target.value = ''; // Reset input
-        return;
-      }
-
-      const remainingSlots = MAX_IMAGES - uploadedPhotos.length;
-      const validFiles: File[] = [];
-      const errors: string[] = [];
-
-      for (let i = 0; i < Math.min(files.length, remainingSlots); i++) {
-        const validation = validateFile(files[i]);
-        if (validation.valid) {
-          validFiles.push(files[i]);
-        } else if (validation.error) {
-          errors.push(validation.error);
-        }
-      }
-
-      if (files.length > remainingSlots) {
-        errors.push(`Only ${remainingSlots} more image(s) can be added (max ${MAX_IMAGES} total)`);
-      }
+      // Validate files using common utility
+      const { validFiles, errors } = await validateMultipleImages(
+        files, 
+        MAX_IMAGES, 
+        uploadedPhotos.length
+      );
 
       if (validFiles.length > 0) {
         setUploadedPhotos((prev) => [...prev, ...validFiles]);
         setImageError(false); // Clear error when images are added
-        // if (validFiles.length === 1) {
-        //   toast.success('Image uploaded successfully');
-        // } else {
-        //   toast.success(`${validFiles.length} images uploaded successfully`);
-        // }
       }
 
       // Show all errors
@@ -558,10 +586,10 @@ function CreateProductPage() {
   };
 
   const onSubmit = async (data: CreateProductForm) => {
-    // Check if images are uploaded
-    if (uploadedPhotos.length === 0) {
+    // Check if minimum required images are uploaded
+    if (uploadedPhotos.length < 2) {
       setImageError(true);
-      toast.error('Please upload at least one product image');
+      toast.error('Please upload at least 2 product images');
       // Scroll to the photo section
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
@@ -609,6 +637,11 @@ function CreateProductPage() {
       shippingPrice: data.shippingPrice ? parseFloat(data.shippingPrice) : undefined,
       readyByDate,
       readyByTime: data.readyByTime,
+      dimensions: data.dimensions && (data.dimensions.width || data.dimensions.length || data.dimensions.height) ? {
+        width: data.dimensions.width ? parseFloat(data.dimensions.width) : undefined,
+        length: data.dimensions.length ? parseFloat(data.dimensions.length) : undefined,
+        height: data.dimensions.height ? parseFloat(data.dimensions.height) : undefined,
+      } : undefined,
       discount: {
         discountType: data.discount.discountType,
         discountValue: data.discount.discountValue
@@ -664,9 +697,9 @@ function CreateProductPage() {
       setError('price', { message: 'Price is required to save as draft' });
       return;
     }
-    if (uploadedPhotos.length === 0) {
+    if (uploadedPhotos.length < 2) {
       setImageError(true);
-      toast.error('At least one image is required to save as draft');
+      toast.error('At least 2 images are required to save as draft');
       // Scroll to the photo section
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
@@ -743,11 +776,25 @@ function CreateProductPage() {
       draftData.readyByDate = readyByDate;
       draftData.readyByTime = formData.readyByTime;
     }
+    if (formData.dimensions && (formData.dimensions.width || formData.dimensions.length || formData.dimensions.height)) {
+      draftData.dimensions = formData.dimensions;
+    }
     if (formData.discount && formData.discount.discountType !== 'none') {
-      draftData.discount = formData.discount;
+      // For drafts, include discount even if value is empty
+      draftData.discount = {
+        discountType: formData.discount.discountType,
+        discountValue: formData.discount.discountValue || ''
+      };
     }
     if (formData.variants && formData.variants.length > 0) {
-      draftData.variants = formData.variants;
+      // For drafts, ensure variant discount values are handled properly
+      draftData.variants = formData.variants.map(v => ({
+        ...v,
+        discount: {
+          discountType: v.discount.discountType,
+          discountValue: v.discount.discountValue || ''
+        }
+      }));
     }
     if (variantFiles.length > 0) {
       draftData.variantFiles = variantFiles;
@@ -767,9 +814,9 @@ function CreateProductPage() {
     console.log('Form errors:', errors);
 
     // Check for image upload error first
-    if (uploadedPhotos.length === 0) {
+    if (uploadedPhotos.length < 2) {
       setImageError(true);
-      toast.error('Please upload at least one product image');
+      toast.error('Please upload at least 2 product images');
       // Scroll to the photo section
       setTimeout(() => {
         const photoSection = document.getElementById('photos');
@@ -861,42 +908,34 @@ function CreateProductPage() {
   };
 
   const removeVariant = (variantId: string) => {
+    // Find the index of the variant to remove
+    const variantIndex = variants.findIndex((v) => v.id === variantId);
+    
+    // Remove the variant from state
     setVariants(variants.filter((v) => v.id !== variantId));
+    
+    // Clear any errors for this variant
+    if (variantIndex !== -1) {
+      methods.clearErrors(`variants.${variantIndex}`);
+    }
+    
     if (variants.length <= 1) {
       setShowVariants(false);
     }
   };
 
-  const handleVariantImageUpload = (variantId: string, files: File[]) => {
+  const handleVariantImageUpload = useCallback(async (variantId: string, files: File[]) => {
     const variant = variants.find((v) => v.id === variantId);
     if (!variant) return;
 
-    const currentCount = variant.images.length;
     const maxImages = 5;
 
-    if (currentCount >= maxImages) {
-      toast.error(`Maximum ${maxImages} images allowed per variant`);
-      return;
-    }
-
-    const remainingSlots = maxImages - currentCount;
-    const validFiles: File[] = [];
-    const errors: string[] = [];
-
-    for (let i = 0; i < Math.min(files.length, remainingSlots); i++) {
-      const validation = validateFile(files[i]);
-      if (validation.valid) {
-        validFiles.push(files[i]);
-      } else if (validation.error) {
-        errors.push(validation.error);
-      }
-    }
-
-    if (files.length > remainingSlots) {
-      errors.push(
-        `Only ${remainingSlots} more image(s) can be added (max ${maxImages} per variant)`
-      );
-    }
+    // Validate files using common utility
+    const { validFiles, errors } = await validateMultipleImages(
+      files, 
+      maxImages, 
+      variant.images.length
+    );
 
     if (validFiles.length > 0) {
       setVariants(
@@ -908,7 +947,7 @@ function CreateProductPage() {
 
     // Show all errors
     errors.forEach((error) => toast.error(error));
-  };
+  }, [variants]);
 
   const removeVariantImage = (variantId: string, imageIndex: number) => {
     setVariants(
@@ -938,8 +977,7 @@ function CreateProductPage() {
       const files = Array.from(e.dataTransfer.files);
       handleVariantImageUpload(variantId, files);
     }
-  }, []);
-  console.log('getValues', getValues());
+  }, [handleVariantImageUpload]);
   return (
     <FormProvider {...methods}>
       <div className="h-screen bg-gray-50 fixed top-0 w-full z-50 left-0 flex flex-col  ">
@@ -962,7 +1000,7 @@ function CreateProductPage() {
                 type="button"
                 onClick={handleSaveDraft}
                 variant="ghost"
-                className="text-white hover:bg-white h-[40px] sm:h-[48px] text-sm sm:text-base hover:text-primary px-3 sm:px-4"
+                className="text-white hover:bg-white border border-white h-[40px] sm:h-[48px] text-sm sm:text-base hover:text-primary px-3 sm:px-4"
                 disabled={createProductMutation.isPending || saveDraftMutation.isPending}
               >
                 {saveDraftMutation.isPending ? 'Saving...' : 'Save Draft'}

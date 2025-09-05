@@ -277,7 +277,7 @@ export function RoleSelectionModal({ isOpen, userId }: RoleSelectionModalProps) 
 
                 <FormInput
                   name="businessAddress"
-                  label="Address"
+                  label="Business Address"
                   type="text"
                   placeholder="Address of sales for materials"
                   disabled={isSubmitting}

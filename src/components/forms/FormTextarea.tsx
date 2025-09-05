@@ -38,14 +38,14 @@ export const FormTextarea: React.FC<FormTextareaProps> = ({
         {...register(name)}
         {...props}
         className={cn(
-          'resize-none rounded-md min-h-[160px]',
+          'resize-none rounded-sm min-h-[160px]',
           'border border-gray-300 bg-white',
           'px-4 py-3 text-sm',
           'placeholder:text-gray-500',
           'focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20',
           'disabled:opacity-50 disabled:cursor-not-allowed',
           'transition-all duration-200',
-          error && 'border-red-500 focus:ring-red-500',
+          error && '!border-red-500 focus-visible:!border-red-500 focus-visible:!ring-red-500/20',
           props.className
         )}
       />

@@ -20,6 +20,7 @@ const ManageBankAccountsPage: React.FC = () => {
   const [editingAccount, setEditingAccount] = useState<BankAccount | null>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [accountToDelete, setAccountToDelete] = useState<BankAccount | null>(null);
+  const [optimisticDefaultId, setOptimisticDefaultId] = useState<string | null>(null);
 
   // Queries
   const { data: accountsData, isLoading, error } = useBankAccountsQuery();
@@ -28,8 +29,28 @@ const ManageBankAccountsPage: React.FC = () => {
   const createMutation = useCreateBankAccountMutation();
   const updateMutation = useUpdateBankAccountMutation();
   const deleteMutation = useDeleteBankAccountMutation();
+  const setDefaultMutation = useSetDefaultBankAccountMutation();
 
   const accounts = accountsData?.data || [];
+
+  const handleToggleDefault = async (accountId: string, isDefault: boolean) => {
+    if (isDefault) {
+      // Set this account as default
+      await setDefaultMutation.mutateAsync(accountId);
+    } else {
+      // Update account to remove default status
+      const account = accounts.find((a) => a.id === accountId);
+      if (account) {
+        await updateMutation.mutateAsync({
+          id: accountId,
+          data: {
+            ...account,
+            isDefault: false,
+          },
+        });
+      }
+    }
+  };
 
   const handleAddAccount = async (data: CreateBankAccountPayload) => {
     try {
@@ -96,7 +117,7 @@ const ManageBankAccountsPage: React.FC = () => {
   }
 
   return (
-    <Card className="bg-white border-gray-200 shadow-none h-[calc(100vh-200px)] flex flex-col">
+    <Card className="bg-white border-gray-200 shadow-none min-h-[calc(100vh-200px)] flex flex-col">
       <CardContent className="px-4 sm:px-6 flex flex-col flex-1">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
           <h2 className="text-xl sm:text-2xl font-semibold">Manage Bank Accounts</h2>
@@ -111,16 +132,18 @@ const ManageBankAccountsPage: React.FC = () => {
         </div>
 
         {/* Bank Account Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 ">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 ">
           {accounts.length > 0 ? (
             accounts.map((account) => (
               <BankAccountCard
                 key={account.id}
+                id={account.id}
                 accountHolder={account.accountHolderName}
                 accountNumber={`XXXX XXXX XXXX ${account.accountNumber.slice(-4)}`}
                 bankName={account.bankName}
                 onEdit={() => handleEditAccount(account)}
                 onDelete={() => handleDeleteAccount(account)}
+                onToggleDefault={handleToggleDefault}
                 isDefault={account.isDefault}
               />
             ))
@@ -162,7 +185,13 @@ const ManageBankAccountsPage: React.FC = () => {
             onClose={cancelDelete}
             onConfirm={confirmDelete}
             title="Delete Bank Account?"
-            description={`Are you sure you want to delete the bank account ending in ${accountToDelete?.accountNumber.slice(-4)}? This action cannot be undone.`}
+            description={
+              <>
+                Are you sure you want to delete the bank account ending in{' '}
+                <strong className="font-semibold">{accountToDelete?.accountNumber}</strong>? This
+                action cannot be undone.
+              </>
+            }
             confirmText="Yes, I'm Sure"
             cancelText="Cancel"
             isLoading={deleteMutation.isPending}

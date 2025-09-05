@@ -1,0 +1,1 @@
+const a=t=>{const e=t instanceof Date?t:new Date(t);if(isNaN(e.getTime()))return"Invalid Date";const n={month:"long",day:"numeric",year:"numeric"};return e.toLocaleDateString("en-US",n)};export{a as f};

@@ -7,7 +7,7 @@ interface DeleteConfirmationModalProps {
   onClose: () => void;
   onConfirm: () => void;
   title?: string;
-  description?: string;
+  description?: string | React.ReactNode;
   confirmText?: string;
   cancelText?: string;
   isLoading?: boolean;
@@ -28,7 +28,7 @@ export const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = (
       <DialogContent className="sm:max-w-[425px] p-0 gap-0 overflow-hidden bg-white">
         <div className="p-8 text-center">
           <DialogTitle className="text-xl font-semibold mb-3">{title}</DialogTitle>
-          <p className="text-gray-600 text-sm mb-6">{description}</p>
+          <div className="text-gray-600 text-sm mb-6">{description}</div>
           <div className="flex gap-3 justify-center">
             <Button
               variant="outline"

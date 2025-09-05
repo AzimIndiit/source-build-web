@@ -32,9 +32,9 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
       </div>
 
       {/* Right Panel - Form */}
-      <div className="w-full lg:w-1/2 bg-gray-100 overflow-y-auto">
-        <div className="min-h-screen flex items-center justify-center p-6 lg:p-16">
-          <div className="w-full max-w-lg">
+      <div className="w-full lg:w-1/2 bg-gray-100 overflow-y-auto ">
+        <div className="min-h-screen flex items-center justify-center p-2 sm:p-6 ">
+          <div className="w-full max-w-xl">
             {/* Mobile Logo */}
             <div className="lg:hidden mb-8 text-center">
               <div className="flex items-center justify-center gap-2">
@@ -43,7 +43,7 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
             </div>
 
             {/* Form Card */}
-            <div className="bg-white rounded-2xl shadow-lg p-10">{children}</div>
+            <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-10">{children}</div>
           </div>
         </div>
       </div>

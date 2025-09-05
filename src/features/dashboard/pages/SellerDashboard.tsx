@@ -41,14 +41,14 @@ export const SellerDashboard: React.FC = () => {
           avatar: order.driver?.userRef?.avatar || '',
         }
       : undefined,
-      products: order.products.map((p) => ({
-        id: p.id,
-        title: p.title,
-        quantity: p.quantity,
-        price: p.price,
-        deliveryDate: p.deliveryDate,
-        image: p.image,
-      })),
+    products: order.products.map((p) => ({
+      id: p.id,
+      title: p.title,
+      quantity: p.quantity,
+      price: p.price,
+      deliveryDate: p.deliveryDate,
+      image: p.image,
+    })),
     date: order.createdAt,
     amount: order.amount,
     status: order.status as any,
@@ -110,7 +110,8 @@ export const SellerDashboard: React.FC = () => {
           <div className="flex flex-col items-center justify-center min-h-[200px] text-center">
             <p className="text-red-600 font-semibold mb-2">Error loading orders</p>
             <p className="text-gray-600 text-sm">
-              {(error as any)?.response?.data?.message || 'Failed to fetch orders. Please try again.'}
+              {(error as any)?.response?.data?.message ||
+                'Failed to fetch orders. Please try again.'}
             </p>
           </div>
         </div>

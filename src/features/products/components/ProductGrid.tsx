@@ -31,7 +31,7 @@ interface Product {
 
 interface ProductGridProps {
   product: Product;
-  onProductClick: (slug: string) => void;
+  onProductClick: (slug: string, status: string) => void;
   onEditProduct: (e: React.MouseEvent, productId: string) => void;
   onDeleteProduct: (e: React.MouseEvent, productId: string, productTitle: string) => void;
 }
@@ -80,7 +80,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   return (
     <Card
       className="overflow-hidden border border-gray-200 rounded-xl hover:shadow-md transition-shadow p-0 cursor-pointer group gap-0"
-      onClick={() => onProductClick(product.slug)}
+      onClick={() => onProductClick(product.slug, product.status)}
     >
       <div className="relative">
         <img
@@ -141,10 +141,10 @@ const ProductGrid: React.FC<ProductGridProps> = ({
         {/* Title + Description */}
         <p className="text-[12px] text-gray-500 line-clamp-1 capitalize">{product.category}</p>
         <p className="text-[14px] text-gray-700 leading-snug line-clamp-1 mb-1 capitalize">
-          {product.dimensions
-            ? `${product.dimensions.length} x ${product.dimensions.width} x ${product.dimensions.height} - `
+         
+          {product.title}  {product.dimensions
+            ? `- ${product.dimensions.length} L x ${product.dimensions.width} W x ${product.dimensions.height} H `
             : ''}{' '}
-          {product.title}
         </p>
 
         {/* Location + Date + Actions */}

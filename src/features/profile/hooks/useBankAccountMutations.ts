@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { bankAccountService, CreateBankAccountPayload, de } from '../services/bankAccountService';
+import { bankAccountService, CreateBankAccountPayload } from '../services/bankAccountService';
 import { queryClient } from '@/lib/queryClient';
 
 const BANK_ACCOUNTS_QUERY_KEY = ['bankAccounts'];
@@ -32,7 +32,7 @@ export function useCreateBankAccountMutation() {
 
 export function useUpdateBankAccountMutation() {
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdateBankAccountPayload }) =>
+    mutationFn: ({ id, data }: { id: string; data: CreateBankAccountPayload }) =>
       bankAccountService.updateBankAccount(id, data),
     onSuccess: async (response) => {
       await queryClient.invalidateQueries({ queryKey: BANK_ACCOUNTS_QUERY_KEY });
@@ -64,17 +64,50 @@ export function useDeleteBankAccountMutation() {
 }
 
 export function useSetDefaultBankAccountMutation() {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: (id: string) => bankAccountService.setDefaultBankAccount(id),
-    onSuccess: async (response) => {
-      await queryClient.invalidateQueries({ queryKey: BANK_ACCOUNTS_QUERY_KEY });
-      await queryClient.refetchQueries({ queryKey: BANK_ACCOUNTS_QUERY_KEY });
-      toast.success(response.message || 'Default bank account updated');
+    // Optimistic update
+    onMutate: async (newDefaultId) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: BANK_ACCOUNTS_QUERY_KEY });
+
+      // Snapshot the previous value
+      const previousAccounts = queryClient.getQueryData(BANK_ACCOUNTS_QUERY_KEY);
+
+      // Optimistically update the cache
+      queryClient.setQueryData(BANK_ACCOUNTS_QUERY_KEY, (old: any) => {
+        if (!old?.data) return old;
+
+        // Update all accounts: set the new one as default, unset all others
+        const updatedAccounts = old.data.map((account: any) => ({
+          ...account,
+          isDefault: account.id === newDefaultId,
+        }));
+
+        return {
+          ...old,
+          data: updatedAccounts,
+        };
+      });
+
+      // Return a context object with the snapshotted value
+      return { previousAccounts };
     },
-    onError: (error: any) => {
+    // If the mutation fails, use the context returned from onMutate to roll back
+    onError: (error: any, newDefaultId, context) => {
+      queryClient.setQueryData(BANK_ACCOUNTS_QUERY_KEY, context?.previousAccounts);
       const message = error.response?.data?.message || 'Failed to set default bank account';
       toast.error(message);
       console.error('Set default bank account error:', error);
+    },
+    // Always refetch after error or success to ensure we're in sync
+    onSettled: async () => {
+      await queryClient.invalidateQueries({ queryKey: BANK_ACCOUNTS_QUERY_KEY });
+    },
+    onSuccess: (response) => {
+      toast.success(response.message || 'Default bank account updated');
     },
   });
 }

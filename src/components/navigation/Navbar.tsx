@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   MessageCircle,
@@ -32,6 +32,7 @@ import { DeleteConfirmationModal } from '../ui';
 import { LocationSearch } from '@/components/location/LocationSearch';
 import { useUnreadCountQuery } from '@/features/notifications/hooks/useNotificationMutations';
 import { useUnreadMessageCount } from '@/features/messages/hooks/useUnreadMessageCount';
+import toast from 'react-hot-toast';
 
 export const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
@@ -42,6 +43,7 @@ export const Navbar: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
 
   // Get real notification count from API (only when authenticated)
   const { data: unreadNotifications } = useUnreadCountQuery(isAuthenticated);
@@ -72,6 +74,30 @@ export const Navbar: React.FC = () => {
       setIsLoggingOut(false);
     }
   };
+
+  // Close mobile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (isMobileMenuOpen && mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node)) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    if (isMobileMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isMobileMenuOpen]);
+
+  const handleSwitchBuyerMode = (checked: boolean) => {
+   return toast.error('Functionality is not available yet');
+    setIsBuyerMode(checked);
+
+  };
+
   return (
     <>
       <div className="bg-white w-full shadow-sm border-b border-gray-200">
@@ -116,11 +142,11 @@ export const Navbar: React.FC = () => {
                           {getInitials(user?.displayName || 'Smith')}
                         </AvatarFallback>
                       </Avatar>
-                      <div className="hidden md:flex flex-col text-left">
-                        <span className="text-xs text-gray-600">
+                      <div className="hidden md:flex flex-col text-right items-end justify-end">
+                        <span className="text-xs text-gray-600 line-clamp-1 truncate max-w-30">
                           Hello, {user?.displayName || 'Smith'}
                         </span>
-                        <span className="text-sm font-semibold text-gray-900 flex items-center gap-1">
+                        <span className="text-sm font-semibold text-gray-900 flex items-center gap-1 text-right">
                           Account Profile
                           <ChevronDown size={12} />
                         </span>
@@ -166,7 +192,7 @@ export const Navbar: React.FC = () => {
                           <Switch
                             className={`h-6 w-12 ${isBuyerMode ? 'data-[state=checked]:bg-green-500' : ''}`}
                             checked={isBuyerMode}
-                            onCheckedChange={setIsBuyerMode}
+                            onCheckedChange={handleSwitchBuyerMode}
                           />
                         </div>
                       </DropdownMenuItem>
@@ -253,7 +279,7 @@ export const Navbar: React.FC = () => {
         </div>
 
         {/* Mobile Navbar */}
-        <div className="md:hidden">
+        <div className="md:hidden" ref={mobileMenuRef}>
           <div className="flex items-center justify-between px-4 py-3">
             {/* Logo */}
             <Link to="/" className="flex items-center">
@@ -269,12 +295,12 @@ export const Navbar: React.FC = () => {
                 className="rounded-full w-10 h-10"
                 onClick={() => setIsMobileSearchOpen(true)}
               >
-                <Search className="w-5 h-5" />
+                <Search className="!w-6 !h-6" />
               </Button>
 
               {/* Cart */}
               <Button variant="ghost" className="relative p-2">
-                <ShoppingCart className="w-5 h-5" />
+                <ShoppingCart className="!w-6 !h-6" />
                 <span className="absolute top-2 -right-1 bg-red-500 min-w-[16px] h-[16px] px-1 rounded-full flex items-center justify-center text-white text-[10px] font-medium">
                   2
                 </span>
@@ -287,7 +313,7 @@ export const Navbar: React.FC = () => {
                 className="rounded-full w-10 h-10"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               >
-                {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                {isMobileMenuOpen ? <X className="!w-6 !h-6" /> : <Menu className="!w-6 !h-6" />}
               </Button>
             </div>
           </div>
@@ -310,7 +336,9 @@ export const Navbar: React.FC = () => {
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 text-left">
-                      <div className="text-sm font-semibold">{user?.displayName || 'Smith'}</div>
+                      <div className="text-sm font-semibold line-clamp-1 truncate max-w-60">
+                        {user?.displayName || 'Smith'}
+                      </div>
                       <div className="text-xs text-gray-600">View Profile</div>
                     </div>
                   </Link>
@@ -330,7 +358,7 @@ export const Navbar: React.FC = () => {
                       <Switch
                         className={`h-6 w-12 ${isBuyerMode ? 'data-[state=checked]:bg-green-500' : ''}`}
                         checked={isBuyerMode}
-                        onCheckedChange={setIsBuyerMode}
+                        onCheckedChange={handleSwitchBuyerMode}
                       />
                     </div>
                   )}

@@ -48,11 +48,12 @@ export function useCreateLicenseMutation() {
     onSuccess: (response) => {
       // Invalidate license query
       queryClient.invalidateQueries({ queryKey: LICENSE_QUERY_KEY });
-      
+
       toast.success(response.message || 'License information submitted successfully!');
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || error.message || 'Failed to submit license information';
+      const message =
+        error.response?.data?.message || error.message || 'Failed to submit license information';
       toast.error(message);
       console.error('Error submitting license information:', error);
     },

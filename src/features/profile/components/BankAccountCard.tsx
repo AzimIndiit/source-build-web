@@ -1,28 +1,57 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/button';
-import { SquarePen, Trash2 } from 'lucide-react';
+import { SquarePen, Trash2, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/helpers';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 interface BankAccountCardProps {
+  id: string;
   accountHolder: string;
   accountNumber: string;
   bankName: string;
   onEdit?: () => void;
   onDelete?: () => void;
+  onToggleDefault?: (id: string, isDefault: boolean) => Promise<void>;
   className?: string;
   isDefault?: boolean;
 }
 
 export const BankAccountCard: React.FC<BankAccountCardProps> = ({
+  id,
   accountHolder,
   accountNumber,
   bankName,
   onEdit,
   onDelete,
+  onToggleDefault,
   className,
   isDefault,
 }) => {
+  // Local state for tracking update status
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const handleToggle = async (checked: boolean) => {
+    // Don't allow toggle if already updating
+    if (isUpdating) return;
+
+    // Only allow toggling on (setting as default)
+    if (!checked) return;
+
+    if (onToggleDefault) {
+      setIsUpdating(true);
+      try {
+        await onToggleDefault(id, checked);
+        // Toast is handled in the mutation hook
+      } catch (error) {
+        console.error('Failed to update default status:', error);
+      } finally {
+        setIsUpdating(false);
+      }
+    }
+  };
+
   return (
     <Card
       className={cn(
@@ -35,11 +64,25 @@ export const BankAccountCard: React.FC<BankAccountCardProps> = ({
           <h3 className="font-semibold text-gray-900 text-base sm:text-lg line-clamp-1">
             {accountHolder}
           </h3>
-          {isDefault && (
-            <span className="inline-flex items-center px-2.5 py-0.5 text-xs font-medium text-primary bg-blue-100 rounded">
+          <div className="flex items-center space-x-2">
+            <Label htmlFor={`default-${accountNumber}`} className="text-xs text-gray-600">
               Default
-            </span>
-          )}
+            </Label>
+            <Switch
+              id={`default-${accountNumber}`}
+              checked={isDefault || false}
+              onCheckedChange={handleToggle}
+              // disabled={isDefault}
+              className={`h-6 w-12  transition-all duration-200 ${isUpdating ? 'data-[state=checked]:bg-green-500' : isDefault && 'data-[state=checked]:bg-green-500'}`}
+              // className={cn(
+              //   "h-5 w-9 transition-all duration-200",
+              //   isUpdating && "opacity-70"
+              // )}
+            />
+            {/* {isUpdating && (
+              <Loader2 className="h-4 w-4 animate-spin text-primary" />
+            )} */}
+          </div>
         </div>
 
         <div className="flex-1 space-y-2">
@@ -48,7 +91,7 @@ export const BankAccountCard: React.FC<BankAccountCardProps> = ({
         </div>
 
         <div className="flex gap-2 justify-end mt-auto pt-3">
-          <Button
+          {/* <Button
             title="Edit"
             variant="ghost"
             size="icon"
@@ -56,7 +99,7 @@ export const BankAccountCard: React.FC<BankAccountCardProps> = ({
             className="w-8 h-8 hover:bg-gray-200 text-gray-600 hover:text-gray-900 rounded-md"
           >
             <SquarePen className="w-4 h-4" />
-          </Button>
+          </Button> */}
           <Button
             title="Delete"
             variant="ghost"

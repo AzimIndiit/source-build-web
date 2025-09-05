@@ -23,6 +23,9 @@ export interface User {
   region: string;
   address: string;
   description: string;
+  currentLocationId?: string;
+  currentLocation?: any;
+  authType?: string;
   profile?: {
     isVehicles?: boolean;
     isLicense?: boolean;
@@ -81,6 +84,23 @@ const useAuthStore = create<AuthState>()(
           isAuthenticated: !!user,
         });
 
+        // Set current location from user data if available
+        if (user && user.currentLocation) {
+          const location = user.currentLocation;
+          set({
+            currentLocation: {
+              address: location.address || '',
+              city: location.city || '',
+              state: location.state || '',
+              country: location.country || '',
+              zipCode: location.zipCode || '',
+              lat: location.latitude || 0,
+              lng: location.longitude || 0,
+              formattedAddress: location.formattedAddress || '',
+            }
+          });
+        }
+
         // Handle socket connection
         if (user) {
           socketService.connect(user.id);
@@ -121,6 +141,18 @@ const useAuthStore = create<AuthState>()(
               region: 'Smith',
               address: 'Smith',
               description: 'Smith',
+              currentLocationId: '1',
+              currentLocation: {
+                address: 'Smith',
+                city: 'Smith',
+                state: 'Smith',
+                country: 'Smith',
+                zipCode: 'Smith',
+                lat: 0,
+                lng: 0,
+                formattedAddress: 'Smith',
+              },
+              authType: 'email',
             };
 
             get().setUser(mockUser);
@@ -132,6 +164,7 @@ const useAuthStore = create<AuthState>()(
           const { queryClient } = await import('@/lib/queryClient');
 
           try {
+            get().setLoading(true);
             // Fetch user data using the query client
             const user = await queryClient.fetchQuery({
               queryKey: USER_QUERY_KEY,
@@ -142,7 +175,7 @@ const useAuthStore = create<AuthState>()(
                   const apiUser = response.data.data.user as ApiUser;
                   return transformApiUserToUser(apiUser);
                 }
-
+                get().setLoading(true);
                 throw new Error('Invalid user data from API');
               },
             });

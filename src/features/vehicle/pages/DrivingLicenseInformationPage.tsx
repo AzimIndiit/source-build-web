@@ -3,10 +3,7 @@ import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState, useCallback } from 'react';
 import { AuthWrapper } from '@/features/auth/components/AuthWrapper';
-import {
-  drivingLicenseSchema,
-  type DrivingLicenseFormData,
-} from '../schemas/licenseSchemas';
+import { drivingLicenseSchema, type DrivingLicenseFormData } from '../schemas/licenseSchemas';
 import { Button } from '@/components/ui/button';
 import { FormInput } from '@/components/forms/FormInput';
 import { Upload, X } from 'lucide-react';
@@ -22,7 +19,7 @@ function DrivingLicenseInformationPage() {
   const [licenseImages, setLicenseImages] = useState<File[]>([]);
   const [dragActive, setDragActive] = useState(false);
   const [licenseImageError, setLicenseImageError] = useState(false);
-  
+
   const createLicenseMutation = useCreateLicenseMutation();
 
   const methods = useForm<DrivingLicenseFormData>({
@@ -168,7 +165,7 @@ function DrivingLicenseInformationPage() {
         licenseNumber: data.licenseNumber,
         licenseImageFiles: licenseImages,
       });
-      
+
       // Navigate to driver dashboard on success
       if (response?.success) {
         navigate('/driver');
@@ -300,12 +297,13 @@ function DrivingLicenseInformationPage() {
 
                   {licenseImages.length === 1 && (
                     <p className="text-sm text-amber-600 text-center">
-                      ℹ️ Consider uploading both front and back of your license for faster verification
+                      ℹ️ Consider uploading both front and back of your license for faster
+                      verification
                     </p>
                   )}
                 </div>
               )}
-              
+
               {licenseImageError && (
                 <p className="text-sm text-red-600 text-center">
                   Please upload at least one driving license image

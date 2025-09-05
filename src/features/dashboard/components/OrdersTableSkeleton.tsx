@@ -3,7 +3,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 export const OrdersTableSkeleton = () => {
   return (
     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-  
       {/* Table content */}
       <div className="overflow-x-auto">
         {/* Table header */}

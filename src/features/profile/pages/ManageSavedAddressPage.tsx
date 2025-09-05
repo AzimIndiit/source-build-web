@@ -116,7 +116,7 @@ const ManageSavedAddressPage: React.FC = () => {
   }
 
   return (
-    <Card className="bg-white border-gray-200 shadow-none h-[calc(100vh-200px)] flex flex-col">
+    <Card className="bg-white border-gray-200 shadow-none min-h-[calc(100vh-200px)] flex flex-col ">
       <CardContent className="px-4 sm:px-6 flex flex-col flex-1">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
           <h2 className="text-xl sm:text-2xl font-semibold">Saved Address</h2>
@@ -131,7 +131,7 @@ const ManageSavedAddressPage: React.FC = () => {
         </div>
 
         {/* Address Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 ">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 mb-4 ">
           {addresses.length > 0 ? (
             addresses.map((address: SavedAddress) => {
               const addressId = address.id || address._id || '';
@@ -192,7 +192,13 @@ const ManageSavedAddressPage: React.FC = () => {
             onClose={cancelDelete}
             onConfirm={confirmDelete}
             title="Delete Address?"
-            description={`Are you sure you want to delete the address for ${addressToDelete?.name}? This action cannot be undone.`}
+            description={
+              <>
+                Are you sure you want to delete the address for{' '}
+                <strong className="font-semibold">{addressToDelete?.name}</strong>? This action
+                cannot be undone.
+              </>
+            }
             confirmText="Yes, I'm Sure"
             cancelText="Cancel"
             isLoading={deleteMutation.isPending}

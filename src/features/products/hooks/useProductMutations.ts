@@ -17,6 +17,7 @@ interface CreateProductWithFiles extends Omit<CreateProductPayload, 'images'> {
 }
 
 interface SaveDraftWithFiles {
+  id?: string; // For updating existing products
   title: string;
   imageFiles: File[];
   existingImages?: string[]; // For editing existing products
@@ -313,7 +314,7 @@ export function useSaveDraftMutation() {
         });
       }
 
-      const { imageFiles, variantFiles, existingImages, ...draftData } = data;
+      const { imageFiles, variantFiles, existingImages, id, ...draftData } = data;
 
       // Convert string values to numbers where provided
       const payload: SaveDraftPayload = {
@@ -357,7 +358,13 @@ export function useSaveDraftMutation() {
         }),
       };
 
-      return await productService.saveDraft(payload);
+      // If id is present, update existing product as draft
+      if (id) {
+        return await productService.updateDraft(id, payload);
+      } else {
+        // Otherwise create a new draft
+        return await productService.saveDraft(payload);
+      }
     },
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEY });

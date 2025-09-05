@@ -65,6 +65,11 @@ class BankAccountService {
     const response = await axiosInstance.delete<BaseApiResponse>(`/bank-accounts/${id}`);
     return response.data;
   }
+
+  async setDefaultBankAccount(id: string): Promise<BaseApiResponse> {
+    const response = await axiosInstance.patch<BaseApiResponse>(`/bank-accounts/${id}/set-default`);
+    return response.data;
+  }
 }
 
 export const bankAccountService = new BankAccountService();

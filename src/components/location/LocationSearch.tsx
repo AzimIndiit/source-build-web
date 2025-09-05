@@ -10,6 +10,7 @@ import {
   X,
   ChevronDown,
   ChevronUp,
+  Plus,
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -241,7 +242,10 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
   };
 
   // Handle saved address selection
-  const handleSavedAddressSelect = (address: SavedAddress) => {
+  const handleSavedAddressSelect = async (address: SavedAddress) => {
+    const addressId = address.id || address._id;
+    
+    // Update local state immediately for better UX
     setCurrentLocation({
       address: address.address,
       city: address.city,
@@ -252,6 +256,16 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
       formattedAddress: address.formattedAddress || address.address,
     });
     setIsOpen(false);
+    
+    // Update in database if user is authenticated
+    if (isAuthenticated && addressId) {
+      try {
+        const { updateCurrentLocation } = await import('@/services/userService');
+        await updateCurrentLocation(addressId);
+      } catch (error) {
+        console.error('Failed to update current location:', error);
+      }
+    }
   };
 
   // Handle edit address
@@ -390,11 +404,11 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
       </button>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="max-w-[600px] p-0 bg-white">
+        <DialogContent className="max-w-[95%] rounded-lg sm:max-w-[600px] p-0 bg-white">
           <DialogHeader className="px-6 pt-6 border-b pb-4 border-gray-200">
             <DialogTitle className="text-xl font-semibold">Change Location</DialogTitle>
           </DialogHeader>
-
+        
           <div className="px-6 pb-6 space-y-6">
             {/* Search and Detect Location */}
             {/* <div className="flex gap-3 items-center">
@@ -443,10 +457,12 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
             )}
 
             {/* Saved Addresses */}
-            {!value && savedAddresses.length > 0 && (
+            {!value && (
               <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-medium text-gray-700">Your saved addresses</h3>
+                <div className={cn("flex items-center justify-between", savedAddresses.length === 0 && 'justify-center')}>
+                  <h3 className="text-sm font-medium text-gray-700">
+                    {savedAddresses.length > 0 ? 'Your saved addresses' : ''}
+                  </h3>
                   <Button
                     variant="outline"
                     className="h-10 border-gray-500 hover:bg-gray-50 text-gray-600"
@@ -455,85 +471,71 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
                       setIsOpen(false);
                     }}
                   >
-                    Manage Addresses
+                   {savedAddresses.length  === 0 && <Plus className="w-4 h-4" />}
+                    {savedAddresses.length > 0 ? 'Manage Addresses' : 'Add Address'}
                   </Button>
                 </div>
-                {/* Address list with show more/less functionality */}
-                <div
-                  className={cn(
-                    'space-y-3 transition-all duration-300',
-                    showAllAddresses &&
-                      savedAddresses.length > 3 &&
-                      'max-h-[400px] overflow-y-auto pr-2'
-                  )}
-                >
-                  {(showAllAddresses ? savedAddresses : savedAddresses.slice(0, 3)).map(
-                    (address) => (
-                      <div
-                        key={address.id}
-                        className="flex items-start gap-3 p-3 hover:bg-gray-100 rounded-lg cursor-pointer relative bg-gray-50 border border-gray-200"
-                        onClick={() => handleSavedAddressSelect(address)}
-                      >
-                        {/* <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
-                        {address.icon || <MapPin className="w-5 h-5 text-yellow-600" />}
-                      </div> */}
-
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            {' '}
-                            <h4 className="font-medium text-gray-900">{address.name}</h4>
-                            {address.isDefault && (
-                              <span className="inline-flex items-center px-2.5 py-0.5 text-xs font-medium text-primary bg-blue-100 rounded">
-                                Default
-                              </span>
-                            )}
+                
+                {savedAddresses.length > 0 ? (
+                  <>
+                    {/* Address list with show more/less functionality */}
+                    <div
+                      className={cn(
+                        'space-y-3 transition-all duration-300',
+                        showAllAddresses &&
+                          savedAddresses.length > 3 &&
+                          'max-h-[400px] overflow-y-auto pr-2'
+                      )}
+                    >
+                      {(showAllAddresses ? savedAddresses : savedAddresses.slice(0, 3)).map(
+                        (address) => (
+                          <div
+                            key={address.id}
+                            className="flex items-start gap-3 p-3 hover:bg-gray-100 rounded-lg cursor-pointer relative bg-gray-50 border border-gray-200"
+                            onClick={() => handleSavedAddressSelect(address)}
+                          >
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2">
+                                <h4 className="font-medium text-gray-900">{address.name}</h4>
+                                {address.isDefault && (
+                                  <span className="inline-flex items-center px-2.5 py-0.5 text-xs font-medium text-primary bg-blue-100 rounded">
+                                    Default
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-sm text-gray-600 mt-1">{address.formattedAddress}</p>
+                            </div>
                           </div>
-                          <p className="text-sm text-gray-600 mt-1">{address.formattedAddress}</p>
-                        </div>
-                        {/* 
-                      <div className="flex gap-2">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleEditAddress(address);
-                          }}
-                          className="p-2 hover:bg-gray-100 rounded"
-                        >
-                          <Edit2 className="w-4 h-4 text-gray-500" />
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteAddress(address);
-                          }}
-                          className="p-2 hover:bg-gray-100 rounded"
-                        >
-                          <Trash2 className="w-4 h-4 text-gray-500" />
-                        </button>
-                      </div> */}
-                      </div>
-                    )
-                  )}
-                </div>
+                        )
+                      )}
+                    </div>
 
-                {/* Show More/Less button */}
-                {savedAddresses.length > 3 && (
-                  <button
-                    onClick={() => setShowAllAddresses(!showAllAddresses)}
-                    className="flex items-center gap-2 text-sm text-primary hover:text-primary/80 font-medium mx-auto"
-                  >
-                    {showAllAddresses ? (
-                      <>
-                        Show Less
-                        <ChevronUp className="w-4 h-4" />
-                      </>
-                    ) : (
-                      <>
-                        Show More ({savedAddresses.length - 3} more)
-                        <ChevronDown className="w-4 h-4" />
-                      </>
+                    {/* Show More/Less button */}
+                    {savedAddresses.length > 3 && (
+                      <button
+                        onClick={() => setShowAllAddresses(!showAllAddresses)}
+                        className="flex items-center gap-2 text-sm text-primary hover:text-primary/80 font-medium mx-auto"
+                      >
+                        {showAllAddresses ? (
+                          <>
+                            Show Less
+                            <ChevronUp className="w-4 h-4" />
+                          </>
+                        ) : (
+                          <>
+                            Show More ({savedAddresses.length - 3} more)
+                            <ChevronDown className="w-4 h-4" />
+                          </>
+                        )}
+                      </button>
                     )}
-                  </button>
+                  </>
+                ) : (
+                  <div className="text-center py-4">
+                    <p className="text-sm text-gray-500">
+                      Save your addresses for quick access during checkout
+                    </p>
+                  </div>
                 )}
               </div>
             )}
@@ -574,7 +576,13 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
           onClose={cancelDelete}
           onConfirm={confirmDelete}
           title="Delete Address?"
-          description={`Are you sure you want to delete the address for ${addressToDelete?.name}? This action cannot be undone.`}
+          description={
+            <>
+              Are you sure you want to delete the address for{' '}
+              <strong className="font-semibold">{addressToDelete?.name}</strong>? This action cannot
+              be undone.
+            </>
+          }
           confirmText="Yes, I'm Sure"
           cancelText="Cancel"
           isLoading={deleteMutation.isPending}

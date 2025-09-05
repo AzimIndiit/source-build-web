@@ -27,13 +27,25 @@ export interface ApiUser {
   address?: string;
   description?: string;
   avatar?: string;
+  currentLocationId?: string;
+  currentLocation?: any; // Populated location object
+  authType?: string;
   profile?: {
     isVehicles?: boolean;
     isLicense?: boolean;
   };
 }
 
-export const transformApiUserToUser = (apiUser: ApiUser): User => {
+export const transformApiUserToUser = (
+  apiUser: ApiUser
+): User & {
+  businessName?: string;
+  businessAddress?: string;
+  cellPhone?: string;
+  einNumber?: string;
+  salesTaxId?: string;
+  localDelivery?: boolean;
+} => {
   return {
     id: apiUser.id || apiUser._id || '',
     email: apiUser.email,
@@ -56,6 +68,17 @@ export const transformApiUserToUser = (apiUser: ApiUser): User => {
     description: apiUser.description || '',
     phone: apiUser.phone,
     createdAt: apiUser.createdAt || new Date().toISOString(),
+    currentLocationId: apiUser.currentLocationId,
+    currentLocation: apiUser.currentLocation,
+    // Include seller-specific fields
+    businessName: apiUser.businessName,
+    businessAddress: apiUser.businessAddress,
+    cellPhone: apiUser.cellPhone,
+    einNumber: apiUser.einNumber,
+    salesTaxId: apiUser.salesTaxId,
+    localDelivery: apiUser.localDelivery,
+    profile: apiUser.profile,
+    authType: apiUser.authType,
   };
 };
 

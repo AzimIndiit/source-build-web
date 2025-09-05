@@ -24,20 +24,12 @@ const personalDetailsSchema = z.object({
     .min(1, 'Last name is required')
     .min(2, 'Last name must be at least 2 characters')
     .max(50, 'Last name must not exceed 50 characters'),
-  email: z
-    .string()
-    .trim()
-    .email('Please enter a valid email')
-    .max(100, 'Email must not exceed 100 characters')
-    .optional()
-    .or(z.literal('')),
-
+  email: z.string().min(1, 'Email is required').email('Please enter valid email address'),
   message: z
     .string()
     .trim()
-    .max(500, 'Description must not exceed 500 characters')
-    .optional()
-    .or(z.literal('')),
+    .min(10, 'Message must be at least 10 characters')
+    .max(500, 'Message must not exceed 500 characters'),
 });
 
 type ContactFormPageData = z.infer<typeof personalDetailsSchema>;
@@ -106,16 +98,10 @@ const ContactFormPage: React.FC<ContactFormPageProps> = ({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   <FormInput
                     name="firstName"
-                    label="First Name *"
+                    label="First Name"
                     placeholder="Enter your first name"
-                    required
                   />
-                  <FormInput
-                    name="lastName"
-                    label="Last Name *"
-                    placeholder="Enter your last name"
-                    required
-                  />
+                  <FormInput name="lastName" label="Last Name" placeholder="Enter your last name" />
                 </div>
 
                 {/* Email and Company */}
@@ -135,6 +121,7 @@ const ContactFormPage: React.FC<ContactFormPageProps> = ({
                   placeholder="Enter your message..."
                   rows={5}
                   className="min-h-[120px]"
+                  maxLength={500}
                 />
 
                 <div className="pt-4 sm:pt-6 flex flex-col-reverse sm:flex-row items-center justify-end gap-4">

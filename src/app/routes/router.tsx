@@ -54,7 +54,6 @@ export const router = createBrowserRouter([
             Component: module.default,
           })),
       },
-     
     ],
   },
   {

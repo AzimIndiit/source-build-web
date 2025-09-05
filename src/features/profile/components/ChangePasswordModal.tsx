@@ -88,7 +88,7 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[480px] p-0 gap-0 overflow-hidden bg-white">
+      <DialogContent className="max-w-[95%] rounded-lg sm:max-w-[480px] p-0 gap-0 overflow-hidden bg-white">
         <div className="p-6">
           <DialogTitle className="text-xl font-semibold mb-2">Change Password?</DialogTitle>
           <p className="text-gray-600 text-sm mb-6">

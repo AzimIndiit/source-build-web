@@ -10,13 +10,14 @@ import {
   Menu,
   X,
   ChevronLeft,
+  NotepadText,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
 const navigationItems = [
   { name: 'Dashboard', href: '/seller/dashboard', icon: LayoutGrid },
-  { name: 'My Listings', href: '/seller/products', icon: Receipt },
+  { name: 'My Listings', href: '/seller/products', icon: NotepadText },
   { name: 'Orders', href: '/seller/orders', icon: Package },
   { name: 'Notifications', href: '/seller/notifications', icon: Bell },
   { name: 'Messages', href: '/seller/messages', icon: MessageSquare },

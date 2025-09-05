@@ -67,15 +67,13 @@ class VehicleService {
   }
 
   async restoreVehicle(id: string): Promise<VehicleResponse> {
-    const response = await axiosInstance.patch<VehicleResponse>(
-      `/driver/vehicles/${id}/restore`
-    );
+    const response = await axiosInstance.patch<VehicleResponse>(`/driver/vehicles/${id}/restore`);
     return response.data;
   }
 
   async uploadVehicleImages(files: File[]): Promise<string[]> {
     if (files.length === 0) return [];
-    
+
     const uploadPromises = files.map(async (file) => {
       try {
         const response = await fileService.uploadFile(file);
@@ -95,7 +93,7 @@ class VehicleService {
 
   async uploadInsuranceImages(files: File[]): Promise<string[]> {
     if (files.length === 0) return [];
-    
+
     const uploadPromises = files.map(async (file) => {
       try {
         const response = await fileService.uploadFile(file);

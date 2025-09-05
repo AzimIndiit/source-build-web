@@ -7,6 +7,7 @@ import { FormSelect } from '@/components/forms/FormSelect';
 import { PickupHoursSelector } from './PickupHoursSelector';
 import { UseFormReturn } from 'react-hook-form';
 import toast from 'react-hot-toast';
+import { DeleteConfirmationModal } from '@/components/common/DeleteConfirmationModal';
 
 interface ProductFormProps {
   methods: UseFormReturn<any>;
@@ -83,14 +84,15 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   } = methods;
   const formValues = watch();
   const [currentStep, setCurrentStep] = useState(1);
+  const [variantToDelete, setVariantToDelete] = useState<string | null>(null);
 
   // Validate Step 1 fields
   const validateStep1 = async () => {
-    // Check for images first (existing + uploaded)
+    // Check for minimum required images (existing + uploaded)
     const totalImages = existingImages.length + uploadedPhotos.length;
-    if (totalImages === 0) {
+    if (totalImages < 2) {
       setImageError(true);
-      toast.error('Please upload at least one product image');
+      toast.error('Please upload at least 2 product images');
       return false;
     }
     setImageError(false);
@@ -110,15 +112,69 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       'productTag',
     ];
 
+    // Add variant fields to validation if variants exist
+    if (variants && variants.length > 0) {
+      variants.forEach((_, index) => {
+        step1Fields.push(`variants.${index}.color`);
+        step1Fields.push(`variants.${index}.quantity`);
+        step1Fields.push(`variants.${index}.price`);
+        // Add discount validation if discount type is not 'none'
+        const variantDiscount = formValues.variants?.[index]?.discount;
+        if (variantDiscount?.discountType && variantDiscount.discountType !== 'none') {
+          step1Fields.push(`variants.${index}.discount.discountValue`);
+        }
+      });
+    }
+
     const isValid = await trigger(step1Fields);
 
     if (!isValid) {
-      // Find first error field and show message
-      const firstErrorField = step1Fields.find((field) => errors[field]);
-      if (firstErrorField && errors[firstErrorField]) {
-        const errorMessage = errors[firstErrorField]?.message;
-        if (errorMessage) {
-          toast.error(errorMessage as string);
+      // Check if error is in variants
+      const variantsErrors = errors.variants as any;
+      const hasVariantError = variants.some((_, index) => {
+        return (
+          variantsErrors?.[index]?.color ||
+          variantsErrors?.[index]?.quantity ||
+          variantsErrors?.[index]?.price ||
+          variantsErrors?.[index]?.discount?.discountValue
+        );
+      });
+
+      if (hasVariantError) {
+        // Find first variant with error
+        const variantWithError = variants.findIndex((_, index) => {
+          return (
+            variantsErrors?.[index]?.color ||
+            variantsErrors?.[index]?.quantity ||
+            variantsErrors?.[index]?.price ||
+            variantsErrors?.[index]?.discount?.discountValue
+          );
+        });
+        
+        if (variantWithError !== -1) {
+          const variantErrors = variantsErrors?.[variantWithError];
+          if (variantErrors?.color) {
+            toast.error(`Variant ${variantWithError + 1}: ${variantErrors.color.message}`);
+          } else if (variantErrors?.quantity) {
+            toast.error(`Variant ${variantWithError + 1}: ${variantErrors.quantity.message}`);
+          } else if (variantErrors?.price) {
+            toast.error(`Variant ${variantWithError + 1}: ${variantErrors.price.message}`);
+          } else if (variantErrors?.discount?.discountValue) {
+            toast.error(`Variant ${variantWithError + 1}: ${variantErrors.discount.discountValue.message}`);
+          }
+        }
+      } else {
+        // Find first error field in regular fields and show message
+        const firstErrorField = step1Fields.find((field) => {
+          // Skip variant fields
+          if (field.startsWith('variants.')) return false;
+          return errors[field];
+        });
+        if (firstErrorField && errors[firstErrorField]) {
+          const errorMessage = errors[firstErrorField]?.message;
+          if (errorMessage) {
+            toast.error(errorMessage as string);
+          }
         }
       }
     }
@@ -157,8 +213,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                   <h3
                     className={`text-sm font-medium ${imageError ? 'text-red-600' : 'text-gray-900'}`}
                   >
-                    Photos · {existingImages.length + uploadedPhotos.length}/{MAX_IMAGES} - You can
-                    add up to {MAX_IMAGES} photos.
+                    Photos · {existingImages.length + uploadedPhotos.length}/{MAX_IMAGES} - Minimum 2,
+                    maximum {MAX_IMAGES} photos required.
                     <span className="text-red-500">*</span>
                   </h3>
                 </div>
@@ -278,7 +334,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                   </div>
                 )}
                 {imageError && (
-                  <p className="text-red-500 text-xs mt-2">At least one image is required</p>
+                  <p className="text-red-500 text-xs mt-2">At least 2 images are required</p>
                 )}
               </div>
 
@@ -296,7 +352,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                 <FormInput
                   name="price"
                   label="Price ($)"
-                  placeholder="$300.00"
+                  placeholder="$0.00"
                   type="text"
                   className="border-gray-300 h-[53px]"
                   onInput={(e: React.FormEvent<HTMLInputElement>) => {
@@ -339,10 +395,17 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                 <FormSelect
                   name="subCategory"
                   label="Sub Category"
-                  placeholder="Glass Doors"
+                  placeholder={formValues.category ? "Select Sub Category" : "Select category first"}
                   options={subCategoryOptions}
                   className="h-[53px]"
+                  disabled={!formValues.category}
+                  creatable={true}
+                  searchable={true}
+                  createPlaceholder='Add "{search}" as custom subcategory'
                 />
+                {!formValues.category && (
+                  <p className="text-xs text-gray-500 mt-1">Please select a category first</p>
+                )}
               </div>
 
               <div>
@@ -540,7 +603,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                   ]}
                   className="text-sm h-[53px]"
                 />
-                {formValues.discount?.discountType !== 'none' && (
+                {formValues.discount?.discountType && formValues.discount?.discountType !== 'none' && (
                   <FormInput
                     name={`discount.discountValue`}
                     label="Discount Value"
@@ -615,7 +678,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                           <h4 className="font-medium text-sm">Variant {variantIndex + 1}</h4>
                           <Button
                             type="button"
-                            onClick={() => removeVariant(variant.id)}
+                            onClick={() => setVariantToDelete(variant.id)}
                             variant="ghost"
                             className="text-red-500 hover:text-red-700 p-1 h-10"
                           >
@@ -638,10 +701,26 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                                   ? 'border-primary bg-blue-50'
                                   : 'border-gray-300'
                               }`}
-                              onDragEnter={(e) => handleVariantDrag(e, variant.id)}
-                              onDragLeave={(e) => handleVariantDrag(e, variant.id)}
-                              onDragOver={(e) => handleVariantDrag(e, variant.id)}
-                              onDrop={(e) => handleVariantDrop(e, variant.id)}
+                              onDragEnter={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleVariantDrag(e, variant.id);
+                              }}
+                              onDragLeave={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleVariantDrag(e, variant.id);
+                              }}
+                              onDragOver={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleVariantDrag(e, variant.id);
+                              }}
+                              onDrop={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleVariantDrop(e, variant.id);
+                              }}
                             >
                               <input
                                 type="file"
@@ -677,10 +756,26 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                                     ? 'border-primary bg-blue-50'
                                     : 'border-gray-300'
                                 }`}
-                                onDragEnter={(e) => handleVariantDrag(e, variant.id)}
-                                onDragLeave={(e) => handleVariantDrag(e, variant.id)}
-                                onDragOver={(e) => handleVariantDrag(e, variant.id)}
-                                onDrop={(e) => handleVariantDrop(e, variant.id)}
+                                onDragEnter={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  handleVariantDrag(e, variant.id);
+                                }}
+                                onDragLeave={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  handleVariantDrag(e, variant.id);
+                                }}
+                                onDragOver={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  handleVariantDrag(e, variant.id);
+                                }}
+                                onDrop={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  handleVariantDrop(e, variant.id);
+                                }}
                               >
                                 <input
                                   type="file"
@@ -934,10 +1029,10 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
               <div className="space-y-2 mb-4">
                 <h3 className="text-base font-medium text-gray-900">Marketplace</h3>
-                <div className="space-y-2">
+                <div className="sm:space-y-2 flex flex-row sm:flex-col gap-2 items-center sm:items-start ">
                   <label
                     htmlFor="pickup"
-                    className="flex items-center space-x-3 p-2 rounded-md cursor-pointer hover:bg-gray-50"
+                    className="flex items-center space-x-3 p-2 m-0 rounded-md cursor-pointer hover:bg-gray-50"
                   >
                     <Checkbox
                       id="pickup"
@@ -957,7 +1052,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
                   <label
                     htmlFor="shipping"
-                    className="flex items-center space-x-3 p-2 rounded-md cursor-pointer hover:bg-gray-50"
+                    className="flex items-center space-x-3 p-2 m-0 rounded-md cursor-pointer hover:bg-gray-50"
                   >
                     <Checkbox
                       id="shipping"
@@ -1004,6 +1099,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                   </p>
                 )}
               </div>
+              <hr className='border-gray-200 my-4' />
 
               {/* Conditional Fields based on selected options */}
               {formValues.marketplaceOptions?.pickup && (
@@ -1017,6 +1113,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                   />
                 </div>
               )}
+ <hr className='border-gray-200 my-4' />
 
               {formValues.marketplaceOptions?.shipping && (
                 <div className="mb-4">
@@ -1043,6 +1140,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                   />
                 </div>
               )}
+ <hr className='border-gray-200 my-4' />
 
               {/* Ready By Date and Time */}
               <div className="space-y-4">
@@ -1123,6 +1221,24 @@ export const ProductForm: React.FC<ProductFormProps> = ({
           )}
         </div>
       </Card>
+      
+      {/* Delete Variant Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={!!variantToDelete}
+        onClose={() => setVariantToDelete(null)}
+        onConfirm={() => {
+          if (variantToDelete) {
+            removeVariant(variantToDelete);
+            setVariantToDelete(null);
+          }
+        }}
+        title="Delete Variant?"
+        description={`Are you sure you want to delete Variant ${
+          variantToDelete ? variants.findIndex(v => v.id === variantToDelete) + 1 : ''
+        }? This action cannot be undone.`}
+        confirmText="Delete Variant"
+        cancelText="Cancel"
+      />
     </div>
   );
 };

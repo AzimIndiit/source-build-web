@@ -21,7 +21,7 @@ function SignupPage() {
   const methods = useForm({
     resolver: zodResolver(signupSchema),
     defaultValues: {
-      accountType: 'driver',
+      accountType: '',
       firstName: '',
       lastName: '',
       email: '',
@@ -145,7 +145,7 @@ function SignupPage() {
 
               <FormInput
                 name="businessAddress"
-                label="Address"
+                label="Business Address"
                 type="text"
                 disabled={signupMutation.isPending}
                 placeholder="Address of sales for materials"
@@ -200,14 +200,14 @@ function SignupPage() {
                 </RadioGroup>
               </div>
 
-              <FormInput
+            { localDelivery === "no" && <FormInput
                 name="salesTaxId"
                 label="Sales Tax ID"
                 type="text"
                 disabled={signupMutation.isPending}
                 placeholder="Sales Tax ID/Resale Certificates"
                 className="text-base px-4 border-gray-300"
-              />
+              />}
             </>
           )}
 

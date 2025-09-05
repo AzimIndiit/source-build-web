@@ -120,8 +120,7 @@ const ProductDetailsPage: React.FC = () => {
     if (!product?.id) return;
 
     try {
-      await deleteProductMutation.mutateAsync(product.id);
-      toast.success('Product deleted successfully');
+      await deleteProductMutation.mutateAsync(product.id);P
       setIsDeleteModalOpen(false);
       navigate('/seller/products');
     } catch (error) {
@@ -173,7 +172,7 @@ const ProductDetailsPage: React.FC = () => {
                 'https://placehold.co/600x600/e5e7eb/6b7280?text=No+Image'
               }
               alt={product?.title || 'Product image'}
-              className="w-full h-[250px] sm:h-[350px] md:h-[400px] object-cover rounded-sm"
+              className="w-full h-[250px] sm:h-[350px] md:h-[700px] object-cover rounded-sm"
             />
           </div>
 
@@ -295,58 +294,8 @@ const ProductDetailsPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Description */}
-          <div className="border-t border-gray-200 pt-4 sm:pt-6">
-            <ReadMore
-              text={product.description || 'No description available'}
-              maxLength={200}
-              className="text-sm sm:text-base text-gray-700 leading-relaxed"
-            />
-          </div>
-
-          {/* Categories */}
-          <div className="border-t border-gray-200 pt-4 sm:pt-6">
-            <div className="text-xs sm:text-sm text-gray-600">
-              <span className="font-medium">Categories: </span>
-              <span className="text-gray-900">
-                {product.category}, {product.subCategory}
-              </span>
-            </div>
-          </div>
-
-          {/* Product Information Grid */}
-          <div className="border-t border-gray-200 pt-4 sm:pt-6 grid grid-cols-2 gap-4 text-xs sm:text-sm">
-            {/* Brand */}
-            {product.brand && (
-              <div className=" text-gray-600 flex items-center gap-2">
-                <span className="font-medium">Brand: </span>
-                <p className="text-sm font-medium">{product.brand}</p>
-              </div>
-            )}
-          </div>
-
-          {/* Tags */}
-          {product.productTag && product.productTag.length > 0 && (
-            <div className="border-t border-gray-200 pt-4 sm:pt-6 grid grid-cols-2 gap-4">
-              <div className="col-span-2 space-y-2 text-xs sm:text-sm  text-gray-600 flex-col items-center gap-2">
-                <span className="font-medium">Tags: </span>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {product.productTag.map((tag: string, index: number) => (
-                    <Badge
-                      key={index}
-                      variant="secondary"
-                      className="text-xs bg-blue-100 capitalize"
-                    >
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Variants if available */}
-          <div className="border-t border-gray-200 text-xs sm:text-sm text-gray-600 pt-4 sm:pt-6 space-y-2">
+                    {/* Variants if available */}
+                    <div className=" flex flex-col sm:hidden border-t border-gray-200 text-xs sm:text-sm text-gray-600 pt-4 sm:pt-6 space-y-2">
             <span className="font-medium">Colors: </span>
             <div className="flex flex-wrap gap-3 mt-2">
               {/* Main Product Option */}
@@ -367,10 +316,10 @@ const ProductDetailsPage: React.FC = () => {
                   <div
                     key={index}
                     onClick={() => setSelectedVariant(variant)}
-                    className={`w-12 h-12 rounded-full border-2transition-all cursor-pointer ${
+                    className={`w-12 h-12 rounded-full cursor-pointer transition-all ${
                       selectedVariant === variant
-                        ? 'border-black bg-primary/5 border-3'
-                        : 'border-gray-300 hover:border-gray-400'
+                        ? 'ring-2 ring-black ring-offset-2'
+                        : 'ring-1 ring-gray-300 ring-offset-2 hover:ring-gray-400'
                     }`}
                     style={{ backgroundColor: variant.color }}
                   />
@@ -378,22 +327,107 @@ const ProductDetailsPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Marketplace Options
+          {/* Description */}
+          <div className="border-t border-gray-200 pt-4 sm:pt-6">
+            <ReadMore
+              text={product.description || 'No description available'}
+              maxLength={200}
+              className="text-sm sm:text-base text-gray-700 leading-relaxed"
+            />
+          </div>
+
+          {/* Categories */}
+          <div className="border-t border-gray-200 pt-4 sm:pt-6">
+            <div className="text-xs sm:text-sm text-gray-600">
+              <span className="font-medium">Categories: </span>
+              <span className="text-gray-900">
+                {product.category}, {product.subCategory}
+              </span>
+            </div>
+          </div>
+
+          {/* Product Information Grid */}
+          <div className="border-t border-gray-200 pt-4 sm:pt-6 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs sm:text-sm">
+            {/* Brand */}
+            {product.brand && (
+              <div className=" text-gray-600 flex items-center gap-2">
+                <span className="font-medium">Brand: </span>
+                <p className="text-sm font-medium">{product.brand}</p>
+              </div>
+            )}
+          </div>
+
+          {/* Tags */}
+          {product.productTag && product.productTag.length > 0 && (
+            <div className="border-t border-gray-200 pt-4 sm:pt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="col-span-2 space-y-2 text-xs sm:text-sm  text-gray-600 flex-col items-center gap-2">
+                <span className="font-medium">Tags: </span>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {product.productTag.map((tag: string, index: number) => (
+                    <Badge
+                      key={index}
+                      variant="secondary"
+                      className="text-xs bg-blue-100 capitalize"
+                    >
+                      {tag}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Variants if available */}
+          <div className="border-t hidden sm:flex flex-col border-gray-200 text-xs sm:text-sm text-gray-600 pt-4 sm:pt-6 space-y-2 ">
+            <span className="font-medium">Colors: </span>
+            <div className="flex flex-wrap gap-3 mt-2">
+              {/* Main Product Option */}
+
+              <div
+                onClick={() => setSelectedVariant(null)}
+                className={`w-12 h-12 rounded-full cursor-pointer transition-all ${
+                  selectedVariant === null
+                    ? 'ring-2 ring-black ring-offset-2 '
+                    : 'ring-1 ring-gray-300 ring-offset-2 hover:ring-gray-400 '
+                }`}
+                style={{ backgroundColor: product.color }}
+              />
+
+              {product.variants &&
+                product.variants.length > 0 &&
+                product.variants.map((variant: any, index: number) => (
+                  <div
+                    key={index}
+                    onClick={() => setSelectedVariant(variant)}
+                    className={`w-12 h-12 rounded-full cursor-pointer transition-all ${
+                      selectedVariant === variant
+                        ? 'ring-2 ring-black ring-offset-2'
+                        : 'ring-1 ring-gray-300 ring-offset-2 hover:ring-gray-400'
+                    }`}
+                    style={{ backgroundColor: variant.color }}
+                  />
+                ))}
+            </div>
+          </div>
+
+          {/* Marketplace Options */}
           {product.marketplaceOptions && (
-            <div className="border-t border-gray-200 pt-4 sm:pt-6">
-              <h3 className="text-base sm:text-lg font-semibold mb-3">Delivery Options</h3>
+            <div className="border-t border-gray-200 pt-4 sm:pt-6 ">
+              <h3 className="text-base sm:text-lg font-semibold mb-3 ">Delivery Options</h3>
               <div className="grid grid-cols-3 gap-3">
                 {product.marketplaceOptions.pickup && (
-                  <div className="text-center p-3 border rounded-lg">
+                  <div className="text-center p-3 border rounded-lg border-gray-300 shadow-sm">
                     <div className="text-green-600 mb-1">✓</div>
                     <p className="text-sm font-medium">Pickup</p>
                     {product.pickupHours && (
+                    <>
                       <p className="text-xs text-gray-500 mt-1">Available</p>
+                      <p className="text-xs text-gray-500 mt-1">{product.pickupHours }</p></>
                     )}
                   </div>
                 )}
                 {product.marketplaceOptions.shipping && (
-                  <div className="text-center p-3 border rounded-lg">
+                  <div className="text-center p-3 border rounded-lg border-gray-300 shadow-sm">
                     <div className="text-green-600 mb-1">✓</div>
                     <p className="text-sm font-medium">Shipping</p>
                     {product.shippingPrice && (
@@ -402,7 +436,7 @@ const ProductDetailsPage: React.FC = () => {
                   </div>
                 )}
                 {product.marketplaceOptions.delivery && (
-                  <div className="text-center p-3 border rounded-lg">
+                  <div className="text-center p-3 border rounded-lg border-gray-300 shadow-sm">
                     <div className="text-green-600 mb-1">✓</div>
                     <p className="text-sm font-medium">Delivery</p>
                   </div>
@@ -411,7 +445,7 @@ const ProductDetailsPage: React.FC = () => {
         
               
               {(product.readyByDate || product.readyByTime) && (
-                <div className="mt-3 p-3 bg-blue-50 rounded-lg">
+                <div className="mt-3 p-3 bg-primary/10 rounded-lg border-gray-200 border">
                   <p className="text-xs text-gray-600 mb-1">Ready By</p>
                   <p className="text-sm">
                     {product.readyByDate && new Date(product.readyByDate).toLocaleDateString()}
@@ -420,41 +454,22 @@ const ProductDetailsPage: React.FC = () => {
                 </div>
               )}
             </div>
-          )} */}
+          )}
 
-          {/* Location Information
-          {product.locationIds && product.locationIds.length > 0 && (
-            <div className="border-t border-gray-200 pt-4 sm:pt-6">
-              <h3 className="text-base sm:text-lg font-semibold mb-3">Pickup Locations</h3>
-              <div className="space-y-3">
-                {product.locationIds.map((location: any, index: number) => (
-                  <div key={location.id || index} className="p-3 border rounded-lg">
-                    <div className="flex justify-between items-start mb-2">
-                      <p className="text-sm font-medium">{location.name}</p>
-                      {location.isDefault && (
-                        <Badge className="text-xs">Default</Badge>
-                      )}
-                    </div>
-                    <p className="text-xs text-gray-600 mb-1">{location.formattedAddress}</p>
-                    <p className="text-xs text-gray-500">📞 {location.phoneNumber}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )} */}
+         
 
           {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 pt-4 sm:pt-6">
+          <div className="flex flex-row space-y-2 sm:space-y-0 space-x-4 ">
             <Button
               onClick={() => navigate(`/seller/products/${product.id}/edit`)}
-              className="w-full sm:flex-1 bg-primary hover:bg-primary/90 text-white font-semibold py-3 text-sm sm:text-base h-[48px] sm:h-[56px]"
+              className="flex-1 bg-primary hover:bg-primary/90 text-white font-semibold py-3 text-sm sm:text-base h-[48px] sm:h-[56px]"
             >
               Edit
             </Button>
             <Button
               variant="destructive"
               onClick={handleDeleteClick}
-              className="w-full sm:flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-3 text-sm sm:text-base h-[48px] sm:h-[56px]"
+              className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-3 text-sm sm:text-base h-[48px] sm:h-[56px]"
             >
               Delete
             </Button>

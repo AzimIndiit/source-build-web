@@ -337,7 +337,7 @@ function VehicleInformationPage() {
 
     // Submit vehicle information using the mutation hook
     try {
-      const response :any = await createVehicleMutation.mutateAsync({
+      const response: any = await createVehicleMutation.mutateAsync({
         vehicleType: data.vehicleType,
         vehicleManufacturer: data.vehicleManufacturer,
         vehicleModel: data.vehicleModel,
@@ -345,9 +345,9 @@ function VehicleInformationPage() {
         vehicleImageFiles: vehicleImages,
         insuranceImageFiles: insuranceImages,
       });
-      
+
       // Navigate to driving license page on success
-      if (response?.status==="success") {
+      if (response?.status === 'success') {
         navigate('/auth/driver-license');
       }
     } catch (error) {

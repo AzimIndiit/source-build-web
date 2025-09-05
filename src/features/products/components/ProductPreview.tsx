@@ -79,7 +79,7 @@ export const ProductPreview: React.FC<ProductPreviewProps> = ({
         <div className="flex-1 flex flex-col gap-4 lg:gap-0 lg:flex-row rounded-lg overflow-hidden min-h-0">
           {/* Image Carousel */}
           <div className="w-full  lg:w-3/5  lg:h-full rounded-sm overflow-hidden  lg:rounded-e-none">
-            {existingImages.length > 0 || uploadedPhotos.length > 0 ? (
+            {existingImages.length + uploadedPhotos.length >= 2 ? (
               <Carousel
                 setApi={setApi}
                 className=" min-h-[300px] min-w-[300px] rounded-sm w-full  flex-col lg:flex-row  lg:rounded-e-none lg:h-full bg-[#A9A9A9]   lg:rounded-l-lg  lg:py-20 lg:px-12 relative flex items-center "
@@ -92,7 +92,7 @@ export const ProductPreview: React.FC<ProductPreviewProps> = ({
                         <img
                           src={url}
                           alt={`Product ${index + 1}`}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover "
                         />
                       </div>
                     </CarouselItem>
@@ -117,13 +117,14 @@ export const ProductPreview: React.FC<ProductPreviewProps> = ({
                   </>
                 )}
 
-                <div className="absolute   bottom-10 md:bottom-20 justify-center items-center text-white z-10 left-0 flex gap-2 w-full px-2">
+                <div className="hidden sm:flex absolute   bottom-10 md:bottom-20 justify-center items-center text-white z-10 left-0 flex gap-2 w-full px-2">
                   <div className="flex gap-1 sm:gap-2 m-0 overflow-x-auto max-w-full">
                     {/* Show existing images thumbnails */}
                     {existingImages.map((url, index) => (
                       <div
                         key={`existing-thumb-${index}`}
-                        className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 flex-shrink-0"
+                        className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 flex-shrink-0 cursor-pointer"
+                        onClick={() => api?.scrollTo(index)}
                       >
                         <img
                           src={url}
@@ -132,7 +133,7 @@ export const ProductPreview: React.FC<ProductPreviewProps> = ({
                             index === currentImageIndex
                               ? 'border-2 border-primary shadow-2xl'
                               : 'border-2 border-transparent'
-                          } w-full h-full object-cover rounded-sm transition-all duration-200`}
+                          } w-full h-full object-cover rounded-sm transition-all duration-200 hover:border-primary/50`}
                         />
                       </div>
                     ))}
@@ -140,7 +141,8 @@ export const ProductPreview: React.FC<ProductPreviewProps> = ({
                     {uploadedPhotos.map((photo, index) => (
                       <div
                         key={`upload-thumb-${index}`}
-                        className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 flex-shrink-0"
+                        className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 flex-shrink-0 cursor-pointer"
+                        onClick={() => api?.scrollTo(existingImages.length + index)}
                       >
                         <img
                           src={URL.createObjectURL(photo)}
@@ -149,7 +151,7 @@ export const ProductPreview: React.FC<ProductPreviewProps> = ({
                             existingImages.length + index === currentImageIndex
                               ? 'border-2 border-primary shadow-2xl'
                               : 'border-2 border-transparent'
-                          } w-full h-full object-cover rounded-sm transition-all duration-200`}
+                          } w-full h-full object-cover rounded-sm transition-all duration-200 hover:border-primary/50`}
                         />
                       </div>
                     ))}
@@ -158,18 +160,67 @@ export const ProductPreview: React.FC<ProductPreviewProps> = ({
               </Carousel>
             ) : (
               <div className="h-full bg-gray-100 rounded-t-lg sm:rounded-t-none sm:rounded-l-lg flex items-center justify-center p-4">
-                <div className="text-center text-gray-400">
+                <div className="text-center">
                   <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-600">
                     Your listing Preview
                   </h2>
-                  <p className="text-xs sm:text-sm mt-2">
-                    As you create your listing, you can preview how it will appear to others on
-                    Marketplace
+                  <p className="text-sm sm:text-base mt-4 text-red-500 font-medium">
+                    Minimum 2 images required for preview
                   </p>
+                  {existingImages.length + uploadedPhotos.length === 1 && (
+                    <p className="text-xs sm:text-sm mt-2 text-gray-500">
+                      Please add {2 - (existingImages.length + uploadedPhotos.length)} more image(s) to see the preview
+                    </p>
+                  )}
+                  {existingImages.length + uploadedPhotos.length === 0 && (
+                    <p className="text-xs sm:text-sm mt-2 text-gray-500">
+                      Please add at least 2 images to see how your listing will appear
+                    </p>
+                  )}
                 </div>
               </div>
             )}
           </div>
+          <div className=" sm:hidden justify-center items-center  flex gap-2 w-full px-2">
+                  <div className="flex gap-1 sm:gap-2 m-0 overflow-x-auto max-w-full">
+                    {/* Show existing images thumbnails */}
+                    {existingImages.map((url, index) => (
+                      <div
+                        key={`existing-thumb-${index}`}
+                        className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 flex-shrink-0 cursor-pointer"
+                        onClick={() => api?.scrollTo(index)}
+                      >
+                        <img
+                          src={url}
+                          alt={`Product ${index + 1}`}
+                          className={`${
+                            index === currentImageIndex
+                              ? 'border-2 border-primary shadow-2xl'
+                              : 'border-2 border-transparent'
+                          } w-full h-full object-cover rounded-sm transition-all duration-200 hover:border-primary/50`}
+                        />
+                      </div>
+                    ))}
+                    {/* Show uploaded photos thumbnails */}
+                    {uploadedPhotos.map((photo, index) => (
+                      <div
+                        key={`upload-thumb-${index}`}
+                        className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 flex-shrink-0 cursor-pointer"
+                        onClick={() => api?.scrollTo(existingImages.length + index)}
+                      >
+                        <img
+                          src={URL.createObjectURL(photo)}
+                          alt={`Product ${existingImages.length + index + 1}`}
+                          className={`${
+                            existingImages.length + index === currentImageIndex
+                              ? 'border-2 border-primary shadow-2xl'
+                              : 'border-2 border-transparent'
+                          } w-full h-full object-cover rounded-sm transition-all duration-200 hover:border-primary/50`}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
 
           {/* Product Details */}
           <div className="w-full lg:w-2/5 p-3 sm:p-4 md:p-6 border border-gray-200 rounded-sm lg:rounded-l-none lg:rounded-r-lg lg:overflow-y-auto min-h-0">
@@ -252,33 +303,39 @@ export const ProductPreview: React.FC<ProductPreviewProps> = ({
             )}
 
             {/* Color */}
-            {formValues.color && (
+            {(formValues.color || (variants.length > 0 && formValues.variants && formValues.variants.some((v: any) => v.color))) && (
               <div className="py-4 border-b border-gray-200">
                 <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">
-                  Color
+                  Color{variants.length > 0 && formValues.variants && formValues.variants.filter((v: any) => v.color).length > 0 ? 's' : ''}
                 </h3>
-                <div className="flex items-center gap-2">
-                  <div
-                    className="w-6 h-6 rounded-full border border-gray-300"
-                    style={{ backgroundColor: formValues.color }}
-                  />
-                  {formValues.color ? (
-                    <span className="text-xs sm:text-sm md:text-base text-gray-600">
-                      {formValues.color}
-                      {formValues.variants &&
-                        formValues.variants.length > 0 &&
-                        formValues.variants.some((v: any) => v.color) &&
-                        ', '}
-                      {formValues.variants
-                        ?.map((v: any, i: number) =>
-                          v.color ? (i === 0 ? v.color : v.color) : null
-                        )
-                        .filter(Boolean)
-                        .join('')}
-                    </span>
-                  ) : (
-                    'Color will appear here'
+                <div className="flex items-center gap-2 flex-wrap">
+                  {formValues.color && (
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="w-6 h-6 rounded-full border border-gray-300 shadow-sm"
+                        style={{ backgroundColor: formValues.color }}
+                      />
+                      <span className="text-xs sm:text-sm md:text-base text-gray-600">
+                        {formValues.color}
+                      </span>
+                    </div>
                   )}
+                  {variants.length > 0 &&
+                    formValues.variants &&
+                    formValues.variants
+                      .filter((v: any) => v.color)
+                      .map((v: any, i: number) => (
+                        <div key={i} className="flex items-center gap-2">
+                          {/* {(i === 0 && formValues.color) && <span className="text-gray-400">•</span>} */}
+                          <div
+                            className="w-6 h-6 rounded-full border border-gray-300 shadow-sm"
+                            style={{ backgroundColor: v.color }}
+                          />
+                          <span className="text-xs sm:text-sm md:text-base text-gray-600">
+                            {v.color}
+                          </span>
+                        </div>
+                      ))}
                 </div>
               </div>
             )}
@@ -437,7 +494,7 @@ export const ProductPreview: React.FC<ProductPreviewProps> = ({
 
             {/* Variants */}
             {variants.length > 0 ? (
-              <div className="border-t pt-3">
+              <div className="border-t border-gray-200 pt-3">
                 <h4 className="text-sm font-semibold text-gray-700 mb-3">
                   Available Variants (
                   {
@@ -450,7 +507,7 @@ export const ProductPreview: React.FC<ProductPreviewProps> = ({
                   }
                   )
                 </h4>
-                <div className="grid grid-cols-2 lg:grid-cols-1 gap-4">
+                <div className="grid grid-cols-1 gap-4">
                   {variants.map((variant, index) => {
                     const variantData = formValues.variants?.[index];
                     if (!variantData?.color || !variantData?.price || !variantData?.quantity) {
@@ -473,7 +530,7 @@ export const ProductPreview: React.FC<ProductPreviewProps> = ({
                           : variantData.price;
 
                     return (
-                      <div key={index} className="border rounded-lg p-3 bg-white h-full">
+                      <div key={index} className="border border-gray-200 rounded-lg p-3 bg-white h-full">
                         <div className="flex gap-3">
                           {/* Variant Images */}
                           {variant.images.length > 0 && (
