@@ -169,7 +169,8 @@ export const ProductPreview: React.FC<ProductPreviewProps> = ({
                   </p>
                   {existingImages.length + uploadedPhotos.length === 1 && (
                     <p className="text-xs sm:text-sm mt-2 text-gray-500">
-                      Please add {2 - (existingImages.length + uploadedPhotos.length)} more image(s) to see the preview
+                      Please add {2 - (existingImages.length + uploadedPhotos.length)} more image(s)
+                      to see the preview
                     </p>
                   )}
                   {existingImages.length + uploadedPhotos.length === 0 && (
@@ -182,45 +183,45 @@ export const ProductPreview: React.FC<ProductPreviewProps> = ({
             )}
           </div>
           <div className=" sm:hidden justify-center items-center  flex gap-2 w-full px-2">
-                  <div className="flex gap-1 sm:gap-2 m-0 overflow-x-auto max-w-full">
-                    {/* Show existing images thumbnails */}
-                    {existingImages.map((url, index) => (
-                      <div
-                        key={`existing-thumb-${index}`}
-                        className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 flex-shrink-0 cursor-pointer"
-                        onClick={() => api?.scrollTo(index)}
-                      >
-                        <img
-                          src={url}
-                          alt={`Product ${index + 1}`}
-                          className={`${
-                            index === currentImageIndex
-                              ? 'border-2 border-primary shadow-2xl'
-                              : 'border-2 border-transparent'
-                          } w-full h-full object-cover rounded-sm transition-all duration-200 hover:border-primary/50`}
-                        />
-                      </div>
-                    ))}
-                    {/* Show uploaded photos thumbnails */}
-                    {uploadedPhotos.map((photo, index) => (
-                      <div
-                        key={`upload-thumb-${index}`}
-                        className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 flex-shrink-0 cursor-pointer"
-                        onClick={() => api?.scrollTo(existingImages.length + index)}
-                      >
-                        <img
-                          src={URL.createObjectURL(photo)}
-                          alt={`Product ${existingImages.length + index + 1}`}
-                          className={`${
-                            existingImages.length + index === currentImageIndex
-                              ? 'border-2 border-primary shadow-2xl'
-                              : 'border-2 border-transparent'
-                          } w-full h-full object-cover rounded-sm transition-all duration-200 hover:border-primary/50`}
-                        />
-                      </div>
-                    ))}
-                  </div>
+            <div className="flex gap-1 sm:gap-2 m-0 overflow-x-auto max-w-full">
+              {/* Show existing images thumbnails */}
+              {existingImages.map((url, index) => (
+                <div
+                  key={`existing-thumb-${index}`}
+                  className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 flex-shrink-0 cursor-pointer"
+                  onClick={() => api?.scrollTo(index)}
+                >
+                  <img
+                    src={url}
+                    alt={`Product ${index + 1}`}
+                    className={`${
+                      index === currentImageIndex
+                        ? 'border-2 border-primary shadow-2xl'
+                        : 'border-2 border-transparent'
+                    } w-full h-full object-cover rounded-sm transition-all duration-200 hover:border-primary/50`}
+                  />
                 </div>
+              ))}
+              {/* Show uploaded photos thumbnails */}
+              {uploadedPhotos.map((photo, index) => (
+                <div
+                  key={`upload-thumb-${index}`}
+                  className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 flex-shrink-0 cursor-pointer"
+                  onClick={() => api?.scrollTo(existingImages.length + index)}
+                >
+                  <img
+                    src={URL.createObjectURL(photo)}
+                    alt={`Product ${existingImages.length + index + 1}`}
+                    className={`${
+                      existingImages.length + index === currentImageIndex
+                        ? 'border-2 border-primary shadow-2xl'
+                        : 'border-2 border-transparent'
+                    } w-full h-full object-cover rounded-sm transition-all duration-200 hover:border-primary/50`}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
 
           {/* Product Details */}
           <div className="w-full lg:w-2/5 p-3 sm:p-4 md:p-6 border border-gray-200 rounded-sm lg:rounded-l-none lg:rounded-r-lg lg:overflow-y-auto min-h-0">
@@ -303,10 +304,18 @@ export const ProductPreview: React.FC<ProductPreviewProps> = ({
             )}
 
             {/* Color */}
-            {(formValues.color || (variants.length > 0 && formValues.variants && formValues.variants.some((v: any) => v.color))) && (
+            {(formValues.color ||
+              (variants.length > 0 &&
+                formValues.variants &&
+                formValues.variants.some((v: any) => v.color))) && (
               <div className="py-4 border-b border-gray-200">
                 <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">
-                  Color{variants.length > 0 && formValues.variants && formValues.variants.filter((v: any) => v.color).length > 0 ? 's' : ''}
+                  Color
+                  {variants.length > 0 &&
+                  formValues.variants &&
+                  formValues.variants.filter((v: any) => v.color).length > 0
+                    ? 's'
+                    : ''}
                 </h3>
                 <div className="flex items-center gap-2 flex-wrap">
                   {formValues.color && (
@@ -530,7 +539,10 @@ export const ProductPreview: React.FC<ProductPreviewProps> = ({
                           : variantData.price;
 
                     return (
-                      <div key={index} className="border border-gray-200 rounded-lg p-3 bg-white h-full">
+                      <div
+                        key={index}
+                        className="border border-gray-200 rounded-lg p-3 bg-white h-full"
+                      >
                         <div className="flex gap-3">
                           {/* Variant Images */}
                           {variant.images.length > 0 && (

@@ -150,7 +150,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
             variantsErrors?.[index]?.discount?.discountValue
           );
         });
-        
+
         if (variantWithError !== -1) {
           const variantErrors = variantsErrors?.[variantWithError];
           if (variantErrors?.color) {
@@ -160,7 +160,9 @@ export const ProductForm: React.FC<ProductFormProps> = ({
           } else if (variantErrors?.price) {
             toast.error(`Variant ${variantWithError + 1}: ${variantErrors.price.message}`);
           } else if (variantErrors?.discount?.discountValue) {
-            toast.error(`Variant ${variantWithError + 1}: ${variantErrors.discount.discountValue.message}`);
+            toast.error(
+              `Variant ${variantWithError + 1}: ${variantErrors.discount.discountValue.message}`
+            );
           }
         }
       } else {
@@ -213,8 +215,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                   <h3
                     className={`text-sm font-medium ${imageError ? 'text-red-600' : 'text-gray-900'}`}
                   >
-                    Photos · {existingImages.length + uploadedPhotos.length}/{MAX_IMAGES} - Minimum 2,
-                    maximum {MAX_IMAGES} photos required.
+                    Photos · {existingImages.length + uploadedPhotos.length}/{MAX_IMAGES} - Minimum
+                    2, maximum {MAX_IMAGES} photos required.
                     <span className="text-red-500">*</span>
                   </h3>
                 </div>
@@ -351,8 +353,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({
               <div>
                 <FormInput
                   name="price"
-                  label="Price ($)"
-                  placeholder="$0.00"
+                  label="Price ($ sq ft) "
+                  placeholder="$0.00 / sq ft"
                   type="text"
                   className="border-gray-300 h-[53px]"
                   onInput={(e: React.FormEvent<HTMLInputElement>) => {
@@ -395,7 +397,9 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                 <FormSelect
                   name="subCategory"
                   label="Sub Category"
-                  placeholder={formValues.category ? "Select Sub Category" : "Select category first"}
+                  placeholder={
+                    formValues.category ? 'Select Sub Category' : 'Select category first'
+                  }
                   options={subCategoryOptions}
                   className="h-[53px]"
                   disabled={!formValues.category}
@@ -603,49 +607,50 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                   ]}
                   className="text-sm h-[53px]"
                 />
-                {formValues.discount?.discountType && formValues.discount?.discountType !== 'none' && (
-                  <FormInput
-                    name={`discount.discountValue`}
-                    label="Discount Value"
-                    placeholder={
-                      formValues.discount.discountType === 'percentage' ? '10%' : '10.00'
-                    }
-                    className="text-sm h-[53px]"
-                    type="text"
-                    min="0"
-                    onInput={(e: React.FormEvent<HTMLInputElement>) => {
-                      const input = e.currentTarget;
-                      const value = input.value;
-                      const isPercentage = formValues.discount.discountType === 'percentage';
-
-                      let cleaned = value.replace(/[^0-9.]/g, '');
-                      cleaned = cleaned.replace(/^-/, '');
-
-                      const parts = cleaned.split('.');
-                      if (parts.length > 2) {
-                        cleaned = parts[0] + '.' + parts.slice(1).join('');
+                {formValues.discount?.discountType &&
+                  formValues.discount?.discountType !== 'none' && (
+                    <FormInput
+                      name={`discount.discountValue`}
+                      label="Discount Value"
+                      placeholder={
+                        formValues.discount.discountType === 'percentage' ? '10%' : '10.00'
                       }
+                      className="text-sm h-[53px]"
+                      type="text"
+                      min="0"
+                      onInput={(e: React.FormEvent<HTMLInputElement>) => {
+                        const input = e.currentTarget;
+                        const value = input.value;
+                        const isPercentage = formValues.discount.discountType === 'percentage';
 
-                      if (parts.length === 2 && parts[1].length > 2) {
-                        cleaned = parts[0] + '.' + parts[1].substring(0, 2);
-                      }
+                        let cleaned = value.replace(/[^0-9.]/g, '');
+                        cleaned = cleaned.replace(/^-/, '');
 
-                      if (isPercentage) {
-                        const numValue = parseFloat(cleaned);
-                        if (!isNaN(numValue) && numValue > 100) {
-                          cleaned = '100';
+                        const parts = cleaned.split('.');
+                        if (parts.length > 2) {
+                          cleaned = parts[0] + '.' + parts.slice(1).join('');
                         }
-                      }
 
-                      input.value = cleaned;
-                    }}
-                    onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
-                      if (e.key === '-') {
-                        e.preventDefault();
-                      }
-                    }}
-                  />
-                )}
+                        if (parts.length === 2 && parts[1].length > 2) {
+                          cleaned = parts[0] + '.' + parts[1].substring(0, 2);
+                        }
+
+                        if (isPercentage) {
+                          const numValue = parseFloat(cleaned);
+                          if (!isNaN(numValue) && numValue > 100) {
+                            cleaned = '100';
+                          }
+                        }
+
+                        input.value = cleaned;
+                      }}
+                      onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                        if (e.key === '-') {
+                          e.preventDefault();
+                        }
+                      }}
+                    />
+                  )}
               </div>
 
               {/* Product Variants Section */}
@@ -923,8 +928,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                             <div>
                               <FormInput
                                 name={`variants.${variantIndex}.price`}
-                                label="Price ($)"
-                                placeholder="$99.99"
+                                label="Price ($ sq ft)"
+                                placeholder="$0.00 / sq ft"
                                 type="text"
                                 className="text-sm"
                                 onInput={(e: React.FormEvent<HTMLInputElement>) => {
@@ -1099,7 +1104,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                   </p>
                 )}
               </div>
-              <hr className='border-gray-200 my-4' />
+              <hr className="border-gray-200 my-4" />
 
               {/* Conditional Fields based on selected options */}
               {formValues.marketplaceOptions?.pickup && (
@@ -1113,7 +1118,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                   />
                 </div>
               )}
- <hr className='border-gray-200 my-4' />
+              <hr className="border-gray-200 my-4" />
 
               {formValues.marketplaceOptions?.shipping && (
                 <div className="mb-4">
@@ -1140,7 +1145,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                   />
                 </div>
               )}
- <hr className='border-gray-200 my-4' />
+              <hr className="border-gray-200 my-4" />
 
               {/* Ready By Date and Time */}
               <div className="space-y-4">
@@ -1221,7 +1226,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
           )}
         </div>
       </Card>
-      
+
       {/* Delete Variant Confirmation Modal */}
       <DeleteConfirmationModal
         isOpen={!!variantToDelete}
@@ -1234,7 +1239,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
         }}
         title="Delete Variant?"
         description={`Are you sure you want to delete Variant ${
-          variantToDelete ? variants.findIndex(v => v.id === variantToDelete) + 1 : ''
+          variantToDelete ? variants.findIndex((v) => v.id === variantToDelete) + 1 : ''
         }? This action cannot be undone.`}
         confirmText="Delete Variant"
         cancelText="Cancel"

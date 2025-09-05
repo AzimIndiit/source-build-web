@@ -183,10 +183,13 @@ class ProductService {
     return response.data;
   }
 
-  async updateDraft(id: string, data: Partial<SaveDraftPayload> & { status?: string }): Promise<ProductResponse> {
+  async updateDraft(
+    id: string,
+    data: Partial<SaveDraftPayload> & { status?: string }
+  ): Promise<ProductResponse> {
     const response = await axiosInstance.patch<ProductResponse>(`/products/${id}`, {
       ...data,
-      status: 'draft'
+      status: 'draft',
     });
     return response.data;
   }
@@ -221,6 +224,14 @@ class ProductService {
     const response = await axiosInstance.delete<{ success: boolean; message: string }>(
       `/products/${id}`
     );
+    return response.data;
+  }
+
+  async toggleProductStatus(
+    id: string,
+    status: 'active' | 'inactive'
+  ): Promise<{ message: string; data: any }> {
+    const response = await axiosInstance.patch(`/products/${id}/status`, { status });
     return response.data;
   }
 

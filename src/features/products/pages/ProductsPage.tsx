@@ -179,11 +179,11 @@ const ProductsPage: React.FC = () => {
     });
   };
 
-  const handleProductClick = (slug: string ,status:string) => {
-    if(status === 'draft'){
+  const handleProductClick = (slug: string, status: string) => {
+    if (status === 'draft') {
       toast.error('Draft products are not available for preview');
       return;
-    }else{
+    } else {
       navigate(`/seller/products/${slug}`);
     }
   };

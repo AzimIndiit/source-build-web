@@ -394,6 +394,52 @@ export function useDeleteProductMutation() {
   });
 }
 
+export function useToggleProductStatusMutation() {
+  return useMutation({
+    mutationFn: ({ id, status }: { id: string; status: 'active' | 'inactive' }) =>
+      productService.toggleProductStatus(id, status),
+    onMutate: async ({ id, status }) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: PRODUCTS_QUERY_KEY });
+
+      // Snapshot the previous value
+      const previousProducts = queryClient.getQueryData(PRODUCTS_QUERY_KEY);
+
+      // Optimistically update the product status
+      queryClient.setQueryData(PRODUCTS_QUERY_KEY, (old: any) => {
+        if (!old) return old;
+        return {
+          ...old,
+          data: {
+            ...old.data,
+            products: old.data.products?.map((product: any) =>
+              product._id === id || product.id === id ? { ...product, status } : product
+            ),
+          },
+        };
+      });
+
+      // Return a context object with the snapshotted value
+      return { previousProducts };
+    },
+    onError: (err, variables, context) => {
+      // If the mutation fails, use the context returned from onMutate to roll back
+      if (context?.previousProducts) {
+        queryClient.setQueryData(PRODUCTS_QUERY_KEY, context.previousProducts);
+      }
+      const message = (err as any).response?.data?.message || 'Failed to update product status';
+      toast.error(message);
+    },
+    onSuccess: () => {
+      toast.success('Product status updated successfully');
+    },
+    onSettled: () => {
+      // Always refetch after error or success
+      queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEY });
+    },
+  });
+}
+
 export function useProductsQuery(params?: {
   page?: number;
   limit?: number;

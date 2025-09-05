@@ -18,18 +18,18 @@ export interface ImageValidationResult {
 export const validateImageFile = async (file: File): Promise<ImageValidationResult> => {
   // Check if it's an image file
   if (!file.type.startsWith('image/')) {
-    return { 
-      valid: false, 
-      error: `"${file.name}" is not an image file` 
+    return {
+      valid: false,
+      error: `"${file.name}" is not an image file`,
     };
   }
 
   // Check file size
   if (file.size > IMAGE_CONSTRAINTS.MAX_FILE_SIZE) {
     const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
-    return { 
-      valid: false, 
-      error: `Selected image is ${sizeMB}MB. Maximum size is 5MB allowed` 
+    return {
+      valid: false,
+      error: `Selected image is ${sizeMB}MB. Maximum size is 5MB allowed`,
     };
   }
 
@@ -37,28 +37,28 @@ export const validateImageFile = async (file: File): Promise<ImageValidationResu
   return new Promise((resolve) => {
     const img = new Image();
     const url = URL.createObjectURL(file);
-    
+
     img.onload = () => {
       URL.revokeObjectURL(url);
-      
+
       if (img.width < IMAGE_CONSTRAINTS.MIN_WIDTH || img.height < IMAGE_CONSTRAINTS.MIN_HEIGHT) {
-        resolve({ 
-          valid: false, 
-          error: `Image is ${img.width}x${img.height}px. Minimum size required is ${IMAGE_CONSTRAINTS.MIN_WIDTH}x${IMAGE_CONSTRAINTS.MIN_HEIGHT}px` 
+        resolve({
+          valid: false,
+          error: `Image is ${img.width}x${img.height}px. Minimum size required is ${IMAGE_CONSTRAINTS.MIN_WIDTH}x${IMAGE_CONSTRAINTS.MIN_HEIGHT}px`,
         });
       } else {
         resolve({ valid: true });
       }
     };
-    
+
     img.onerror = () => {
       URL.revokeObjectURL(url);
-      resolve({ 
-        valid: false, 
-        error: `Failed to load image "${file.name}"` 
+      resolve({
+        valid: false,
+        error: `Failed to load image "${file.name}"`,
       });
     };
-    
+
     img.src = url;
   });
 };
@@ -68,8 +68,8 @@ export const validateImageFile = async (file: File): Promise<ImageValidationResu
  * Returns an array of valid files and an array of error messages
  */
 export const validateMultipleImages = async (
-  files: File[], 
-  maxCount: number, 
+  files: File[],
+  maxCount: number,
   currentCount: number = 0
 ): Promise<{ validFiles: File[]; errors: string[] }> => {
   const remainingSlots = maxCount - currentCount;
@@ -91,9 +91,7 @@ export const validateMultipleImages = async (
   }
 
   if (files.length > remainingSlots) {
-    errors.push(
-      `Only ${remainingSlots} more image(s) can be added (max ${maxCount} total)`
-    );
+    errors.push(`Only ${remainingSlots} more image(s) can be added (max ${maxCount} total)`);
   }
 
   return { validFiles, errors };

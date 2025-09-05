@@ -78,7 +78,11 @@ export const Navbar: React.FC = () => {
   // Close mobile menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (isMobileMenuOpen && mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node)) {
+      if (
+        isMobileMenuOpen &&
+        mobileMenuRef.current &&
+        !mobileMenuRef.current.contains(event.target as Node)
+      ) {
         setIsMobileMenuOpen(false);
       }
     };
@@ -93,9 +97,8 @@ export const Navbar: React.FC = () => {
   }, [isMobileMenuOpen]);
 
   const handleSwitchBuyerMode = (checked: boolean) => {
-   return toast.error('Functionality is not available yet');
+    return toast.error('Functionality is not available yet');
     setIsBuyerMode(checked);
-
   };
 
   return (

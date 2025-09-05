@@ -18,10 +18,10 @@ export function Providers({ children }: ProvidersProps) {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
-    
+
     checkMobile();
     window.addEventListener('resize', checkMobile);
-    
+
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
@@ -32,7 +32,7 @@ export function Providers({ children }: ProvidersProps) {
           <GoogleMapsLoader>
             {children}
             <Toaster
-              position={isMobile ? "top-center" : "top-right"}
+              position={isMobile ? 'top-center' : 'top-right'}
               toastOptions={{
                 duration: 4000,
                 style: {

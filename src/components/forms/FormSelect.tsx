@@ -230,8 +230,8 @@ export const FormSelect: React.FC<FormSelectProps> = ({
               key={selectedValues[index]}
               variant="secondary"
               className={`text-xs flex items-center gap-1 pr-1 p-2 rounded-full bg-primary/10 ${
-                selectedValues.length > 3 
-                  ? 'max-w-[5rem] sm:max-w-[6rem]' 
+                selectedValues.length > 3
+                  ? 'max-w-[5rem] sm:max-w-[6rem]'
                   : 'max-w-[6rem] sm:max-w-[7rem]'
               }`}
             >
@@ -385,19 +385,18 @@ export const FormSelect: React.FC<FormSelectProps> = ({
                           {finalVisibleOptions.map((option) => {
                             const currentValues = Array.isArray(field.value) ? field.value : [];
                             const isSelected = currentValues.includes(option.value);
-                            const isMaxReached = maxSelections && currentValues.length >= maxSelections;
+                            const isMaxReached =
+                              maxSelections && currentValues.length >= maxSelections;
                             const isDisabled = !isSelected && isMaxReached;
-                            
+
                             return (
                               <div
                                 key={option.value}
                                 className={`p-2 flex items-center gap-2 ${
-                                  isDisabled 
-                                    ? 'opacity-50 cursor-not-allowed bg-gray-50' 
+                                  isDisabled
+                                    ? 'opacity-50 cursor-not-allowed bg-gray-50'
                                     : 'cursor-pointer hover:bg-gray-50'
-                                } ${
-                                  isSelected ? 'bg-blue-50 text-blue-700' : ''
-                                }`}
+                                } ${isSelected ? 'bg-blue-50 text-blue-700' : ''}`}
                                 onClick={() => {
                                   if (!isDisabled) {
                                     handleMultiSelectChange(
@@ -442,7 +441,7 @@ export const FormSelect: React.FC<FormSelectProps> = ({
                         {(() => {
                           const selectedCount = Array.isArray(field.value) ? field.value.length : 0;
                           const remainingSlots = maxSelections - selectedCount;
-                          
+
                           if (selectedCount === maxSelections) {
                             return `Maximum ${maxSelections} tags selected`;
                           } else if (selectedCount > 0) {

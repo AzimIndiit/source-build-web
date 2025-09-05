@@ -244,7 +244,7 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
   // Handle saved address selection
   const handleSavedAddressSelect = async (address: SavedAddress) => {
     const addressId = address.id || address._id;
-    
+
     // Update local state immediately for better UX
     setCurrentLocation({
       address: address.address,
@@ -256,7 +256,7 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
       formattedAddress: address.formattedAddress || address.address,
     });
     setIsOpen(false);
-    
+
     // Update in database if user is authenticated
     if (isAuthenticated && addressId) {
       try {
@@ -408,7 +408,7 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
           <DialogHeader className="px-6 pt-6 border-b pb-4 border-gray-200">
             <DialogTitle className="text-xl font-semibold">Change Location</DialogTitle>
           </DialogHeader>
-        
+
           <div className="px-6 pb-6 space-y-6">
             {/* Search and Detect Location */}
             {/* <div className="flex gap-3 items-center">
@@ -459,7 +459,12 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
             {/* Saved Addresses */}
             {!value && (
               <div className="space-y-4">
-                <div className={cn("flex items-center justify-between", savedAddresses.length === 0 && 'justify-center')}>
+                <div
+                  className={cn(
+                    'flex items-center justify-between',
+                    savedAddresses.length === 0 && 'justify-center'
+                  )}
+                >
                   <h3 className="text-sm font-medium text-gray-700">
                     {savedAddresses.length > 0 ? 'Your saved addresses' : ''}
                   </h3>
@@ -471,11 +476,11 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
                       setIsOpen(false);
                     }}
                   >
-                   {savedAddresses.length  === 0 && <Plus className="w-4 h-4" />}
+                    {savedAddresses.length === 0 && <Plus className="w-4 h-4" />}
                     {savedAddresses.length > 0 ? 'Manage Addresses' : 'Add Address'}
                   </Button>
                 </div>
-                
+
                 {savedAddresses.length > 0 ? (
                   <>
                     {/* Address list with show more/less functionality */}
@@ -503,7 +508,9 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
                                   </span>
                                 )}
                               </div>
-                              <p className="text-sm text-gray-600 mt-1">{address.formattedAddress}</p>
+                              <p className="text-sm text-gray-600 mt-1">
+                                {address.formattedAddress}
+                              </p>
                             </div>
                           </div>
                         )

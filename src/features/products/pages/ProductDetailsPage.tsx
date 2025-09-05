@@ -120,7 +120,8 @@ const ProductDetailsPage: React.FC = () => {
     if (!product?.id) return;
 
     try {
-      await deleteProductMutation.mutateAsync(product.id);P
+      await deleteProductMutation.mutateAsync(product.id);
+      P;
       setIsDeleteModalOpen(false);
       navigate('/seller/products');
     } catch (error) {
@@ -294,8 +295,8 @@ const ProductDetailsPage: React.FC = () => {
             </div>
           </div>
 
-                    {/* Variants if available */}
-                    <div className=" flex flex-col sm:hidden border-t border-gray-200 text-xs sm:text-sm text-gray-600 pt-4 sm:pt-6 space-y-2">
+          {/* Variants if available */}
+          <div className=" flex flex-col sm:hidden border-t border-gray-200 text-xs sm:text-sm text-gray-600 pt-4 sm:pt-6 space-y-2">
             <span className="font-medium">Colors: </span>
             <div className="flex flex-wrap gap-3 mt-2">
               {/* Main Product Option */}
@@ -420,9 +421,10 @@ const ProductDetailsPage: React.FC = () => {
                     <div className="text-green-600 mb-1">✓</div>
                     <p className="text-sm font-medium">Pickup</p>
                     {product.pickupHours && (
-                    <>
-                      <p className="text-xs text-gray-500 mt-1">Available</p>
-                      <p className="text-xs text-gray-500 mt-1">{product.pickupHours }</p></>
+                      <>
+                        <p className="text-xs text-gray-500 mt-1">Available</p>
+                        <p className="text-xs text-gray-500 mt-1">{product.pickupHours}</p>
+                      </>
                     )}
                   </div>
                 )}
@@ -442,8 +444,7 @@ const ProductDetailsPage: React.FC = () => {
                   </div>
                 )}
               </div>
-        
-              
+
               {(product.readyByDate || product.readyByTime) && (
                 <div className="mt-3 p-3 bg-primary/10 rounded-lg border-gray-200 border">
                   <p className="text-xs text-gray-600 mb-1">Ready By</p>
@@ -455,8 +456,6 @@ const ProductDetailsPage: React.FC = () => {
               )}
             </div>
           )}
-
-         
 
           {/* Action Buttons */}
           <div className="flex flex-row space-y-2 sm:space-y-0 space-x-4 ">

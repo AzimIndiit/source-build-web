@@ -200,14 +200,16 @@ function SignupPage() {
                 </RadioGroup>
               </div>
 
-            { localDelivery === "no" && <FormInput
-                name="salesTaxId"
-                label="Sales Tax ID"
-                type="text"
-                disabled={signupMutation.isPending}
-                placeholder="Sales Tax ID/Resale Certificates"
-                className="text-base px-4 border-gray-300"
-              />}
+              {localDelivery === 'no' && (
+                <FormInput
+                  name="salesTaxId"
+                  label="Sales Tax ID"
+                  type="text"
+                  disabled={signupMutation.isPending}
+                  placeholder="Sales Tax ID/Resale Certificates"
+                  className="text-base px-4 border-gray-300"
+                />
+              )}
             </>
           )}
 

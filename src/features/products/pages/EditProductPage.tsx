@@ -10,6 +10,7 @@ import { ProductForm } from '../components/ProductForm';
 import { ProductPreview } from '../components/ProductPreview';
 import { EditProductPageSkeleton } from '../components/EditProductPageSkeleton';
 import { AddSavedAddressModal } from '@/features/profile/components/AddSavedAddressModal';
+import { DeleteConfirmationModal } from '@/components/common/DeleteConfirmationModal';
 import {
   useSavedAddresssQuery,
   useCreateSavedAddressMutation,
@@ -418,7 +419,6 @@ const tagOptions = [
   { value: 'handles', label: 'Handles' },
 ];
 
-
 const MAX_IMAGES = 5;
 
 function EditProductPage() {
@@ -437,6 +437,7 @@ function EditProductPage() {
   const [showMobilePreview, setShowMobilePreview] = useState(false);
 
   const [showAddAddressModal, setShowAddAddressModal] = useState(false);
+  const [showSaveDraftModal, setShowSaveDraftModal] = useState(false);
 
   const { data: productData, isLoading: isLoadingProduct } = useProductByIdQuery(id || '');
   const { data: addressesData, refetch: refetchAddresses } = useSavedAddresssQuery();
@@ -494,18 +495,21 @@ function EditProductPage() {
 
   const { handleSubmit, watch, reset, setValue } = methods;
   const formValues = watch();
-  
+
   // Get subcategory options based on selected category
-  const subCategoryOptions = formValues.category 
+  const subCategoryOptions = formValues.category
     ? categorySubcategoryMap[formValues.category] || []
     : [];
-  
+
   // If we have a subcategory value but no options (for custom categories from backend),
   // create an option for it
   const currentSubCategory = formValues.subCategory;
   if (currentSubCategory && subCategoryOptions.length === 0 && formValues.category) {
     subCategoryOptions.push({ value: currentSubCategory, label: currentSubCategory });
-  } else if (currentSubCategory && !subCategoryOptions.find(opt => opt.value === currentSubCategory)) {
+  } else if (
+    currentSubCategory &&
+    !subCategoryOptions.find((opt) => opt.value === currentSubCategory)
+  ) {
     // Add current subcategory if it's not in the options list
     subCategoryOptions.push({ value: currentSubCategory, label: currentSubCategory });
   }
@@ -514,16 +518,16 @@ function EditProductPage() {
   useEffect(() => {
     // Skip this effect during initial data load
     if (!isInitialDataLoaded) return;
-    
+
     if (formValues.category) {
       const currentSubcategory = formValues.subCategory;
       const availableSubcategories = categorySubcategoryMap[formValues.category] || [];
-      
+
       // Check if current subcategory is valid for the new category
       const isValidSubcategory = availableSubcategories.some(
-        sub => sub.value === currentSubcategory
+        (sub) => sub.value === currentSubcategory
       );
-      
+
       // Reset subcategory if it's not valid for the new category
       if (!isValidSubcategory && currentSubcategory) {
         setValue('subCategory', '');
@@ -568,13 +572,15 @@ function EditProductPage() {
         const categoryMatch = categoryOptions.find(
           (opt) => opt.value.toLowerCase() === categoryValue.toLowerCase()
         );
-        
+
         if (categoryMatch) {
           // Use the exact value from options
           categoryValue = categoryMatch.value;
         } else {
           // Category doesn't exist in options - keep original value but log warning
-          console.warn(`Category "${product.category}" not found in predefined options, keeping original value`);
+          console.warn(
+            `Category "${product.category}" not found in predefined options, keeping original value`
+          );
           // Don't use fallback - preserve the original category
         }
       }
@@ -585,27 +591,31 @@ function EditProductPage() {
         const categorySubOptions = categorySubcategoryMap[categoryValue] || [];
         console.log(`Subcategory options for category "${categoryValue}":`, categorySubOptions);
         console.log(`Original subcategory value: "${subCategoryValue}"`);
-        
+
         if (subCategoryValue) {
           if (categorySubOptions.length > 0) {
             // Check if subcategory exists in the category's options (case-insensitive)
             const subCategoryMatch = categorySubOptions.find(
               (opt) => opt.value.toLowerCase() === subCategoryValue.toLowerCase()
             );
-            
+
             if (subCategoryMatch) {
               // Use the exact value from options
               console.log(`Found matching subcategory: "${subCategoryMatch.value}"`);
               subCategoryValue = subCategoryMatch.value;
             } else {
               // Subcategory doesn't exist for this category - keep original value
-              console.warn(`SubCategory "${product.subCategory}" not found for category "${categoryValue}", keeping original value`);
+              console.warn(
+                `SubCategory "${product.subCategory}" not found for category "${categoryValue}", keeping original value`
+              );
               // Keep the original subcategory value even if not in options
               // This is important for custom or backend-specific values
             }
           } else {
             // No subcategory options available for this category
-            console.log(`No subcategory options available for category "${categoryValue}", keeping value: "${subCategoryValue}"`);
+            console.log(
+              `No subcategory options available for category "${categoryValue}", keeping value: "${subCategoryValue}"`
+            );
           }
         }
       }
@@ -664,7 +674,12 @@ function EditProductPage() {
 
       // Force a re-render of the form fields by setting values again after a small delay
       setTimeout(() => {
-        console.log('Setting form values after delay - category:', categoryValue, 'subcategory:', subCategoryValue);
+        console.log(
+          'Setting form values after delay - category:',
+          categoryValue,
+          'subcategory:',
+          subCategoryValue
+        );
         console.log('Setting discount after delay:', formData.discount);
         methods.setValue('category', categoryValue);
         methods.setValue('subCategory', subCategoryValue);
@@ -672,7 +687,12 @@ function EditProductPage() {
         methods.setValue('discount.discountType', formData.discount.discountType);
         methods.setValue('discount.discountValue', formData.discount.discountValue);
         // Clear any validation errors and trigger validation
-        methods.clearErrors(['category', 'subCategory', 'discount.discountType', 'discount.discountValue']);
+        methods.clearErrors([
+          'category',
+          'subCategory',
+          'discount.discountType',
+          'discount.discountValue',
+        ]);
         // Don't trigger validation immediately as it might cause the value to be cleared
         setTimeout(() => {
           methods.trigger(['category', 'subCategory']);
@@ -688,13 +708,16 @@ function EditProductPage() {
             existingImages: v.images || [], // Store existing variant images separately
           }))
         );
-        
+
         // Explicitly set variant discount values after a delay
         setTimeout(() => {
           product.variants?.forEach((v: any, index: number) => {
             if (v.discount?.discountType) {
               methods.setValue(`variants.${index}.discount.discountType`, v.discount.discountType);
-              methods.setValue(`variants.${index}.discount.discountValue`, v.discount.discountValue?.toString() || '');
+              methods.setValue(
+                `variants.${index}.discount.discountValue`,
+                v.discount.discountValue?.toString() || ''
+              );
             }
           });
         }, 150);
@@ -713,7 +736,6 @@ function EditProductPage() {
       }, 200);
     }
   }, [productData, reset, methods]);
-
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -734,13 +756,9 @@ function EditProductPage() {
       if (e.dataTransfer.files && e.dataTransfer.files[0]) {
         const files = Array.from(e.dataTransfer.files);
         const totalImages = existingImages.length + uploadedPhotos.length;
-        
+
         // Validate files using common utility
-        const { validFiles, errors } = await validateMultipleImages(
-          files, 
-          MAX_IMAGES, 
-          totalImages
-        );
+        const { validFiles, errors } = await validateMultipleImages(files, MAX_IMAGES, totalImages);
 
         if (validFiles.length > 0) {
           setUploadedPhotos((prev) => [...prev, ...validFiles]);
@@ -757,13 +775,9 @@ function EditProductPage() {
     if (e.target.files) {
       const files = Array.from(e.target.files);
       const totalImages = existingImages.length + uploadedPhotos.length;
-      
+
       // Validate files using common utility
-      const { validFiles, errors } = await validateMultipleImages(
-        files, 
-        MAX_IMAGES, 
-        totalImages
-      );
+      const { validFiles, errors } = await validateMultipleImages(files, MAX_IMAGES, totalImages);
 
       if (validFiles.length > 0) {
         setUploadedPhotos((prev) => [...prev, ...validFiles]);
@@ -824,11 +838,15 @@ function EditProductPage() {
       shippingPrice: data.shippingPrice ? parseFloat(data.shippingPrice) : undefined,
       readyByDate,
       readyByTime: data.readyByTime,
-      dimensions: data.dimensions && (data.dimensions.width || data.dimensions.length || data.dimensions.height) ? {
-        width: data.dimensions.width ? parseFloat(data.dimensions.width) : undefined,
-        length: data.dimensions.length ? parseFloat(data.dimensions.length) : undefined,
-        height: data.dimensions.height ? parseFloat(data.dimensions.height) : undefined,
-      } : undefined,
+      dimensions:
+        data.dimensions &&
+        (data.dimensions.width || data.dimensions.length || data.dimensions.height)
+          ? {
+              width: data.dimensions.width ? parseFloat(data.dimensions.width) : undefined,
+              length: data.dimensions.length ? parseFloat(data.dimensions.length) : undefined,
+              height: data.dimensions.height ? parseFloat(data.dimensions.height) : undefined,
+            }
+          : undefined,
       discount: {
         discountType: data.discount.discountType,
         discountValue: data.discount.discountValue
@@ -862,7 +880,6 @@ function EditProductPage() {
       console.error('Failed to update product:', error);
     }
   };
-
 
   const handleSaveDraft = async () => {
     // Check if minimal required fields are present
@@ -972,24 +989,27 @@ function EditProductPage() {
       draftData.readyByDate = readyByDate;
       draftData.readyByTime = formData.readyByTime;
     }
-    if (formData.dimensions && (formData.dimensions.width || formData.dimensions.length || formData.dimensions.height)) {
+    if (
+      formData.dimensions &&
+      (formData.dimensions.width || formData.dimensions.length || formData.dimensions.height)
+    ) {
       draftData.dimensions = formData.dimensions;
     }
     if (formData.discount && formData.discount.discountType !== 'none') {
       // For drafts, include discount even if value is empty
       draftData.discount = {
         discountType: formData.discount.discountType,
-        discountValue: formData.discount.discountValue || ''
+        discountValue: formData.discount.discountValue || '',
       };
     }
     if (formData.variants && formData.variants.length > 0) {
       // For drafts, ensure variant discount values are handled properly
-      draftData.variants = formData.variants.map(v => ({
+      draftData.variants = formData.variants.map((v) => ({
         ...v,
         discount: {
           discountType: v.discount.discountType,
-          discountValue: v.discount.discountValue || ''
-        }
+          discountValue: v.discount.discountValue || '',
+        },
       }));
     }
     if (variantFiles.length > 0) {
@@ -1007,17 +1027,27 @@ function EditProductPage() {
           price: draftData.price ? parseFloat(draftData.price) : undefined,
           quantity: draftData.quantity ? parseInt(draftData.quantity) : undefined,
           shippingPrice: draftData.shippingPrice ? parseFloat(draftData.shippingPrice) : undefined,
-          dimensions: draftData.dimensions ? {
-            width: draftData.dimensions.width ? parseFloat(draftData.dimensions.width) : undefined,
-            length: draftData.dimensions.length ? parseFloat(draftData.dimensions.length) : undefined,
-            height: draftData.dimensions.height ? parseFloat(draftData.dimensions.height) : undefined,
-          } : undefined,
-          discount: draftData.discount ? {
-            discountType: draftData.discount.discountType,
-            discountValue: draftData.discount.discountValue
-              ? parseFloat(draftData.discount.discountValue)
-              : undefined,
-          } : undefined,
+          dimensions: draftData.dimensions
+            ? {
+                width: draftData.dimensions.width
+                  ? parseFloat(draftData.dimensions.width)
+                  : undefined,
+                length: draftData.dimensions.length
+                  ? parseFloat(draftData.dimensions.length)
+                  : undefined,
+                height: draftData.dimensions.height
+                  ? parseFloat(draftData.dimensions.height)
+                  : undefined,
+              }
+            : undefined,
+          discount: draftData.discount
+            ? {
+                discountType: draftData.discount.discountType,
+                discountValue: draftData.discount.discountValue
+                  ? parseFloat(draftData.discount.discountValue)
+                  : undefined,
+              }
+            : undefined,
           variants: draftData.variants?.map((v: any) => ({
             color: v.color,
             quantity: parseInt(v.quantity || '0'),
@@ -1030,16 +1060,16 @@ function EditProductPage() {
             },
           })),
         };
-        
+
         // Remove the id from updateData as it's passed separately
         delete updateData.id;
-        
+
         await saveDraftMutation.mutateAsync({ id: id!, ...updateData });
       } else {
         // For new products, use the saveDraftMutation
         await saveDraftMutation.mutateAsync(draftData);
       }
-      
+
       navigate('/seller/products');
     } catch (error) {
       console.error('Failed to save draft:', error);
@@ -1145,43 +1175,46 @@ function EditProductPage() {
   const removeVariant = (variantId: string) => {
     // Find the index of the variant to remove
     const variantIndex = variants.findIndex((v) => v.id === variantId);
-    
+
     // Remove the variant from state
     setVariants(variants.filter((v) => v.id !== variantId));
-    
+
     // Clear any errors for this variant
     if (variantIndex !== -1) {
       methods.clearErrors(`variants.${variantIndex}`);
     }
-    
+
     if (variants.length <= 1) {
       setShowVariants(false);
     }
   };
 
-  const handleVariantImageUpload = useCallback(async (variantId: string, files: File[]) => {
-    const variant = variants.find((v) => v.id === variantId);
-    if (!variant) return;
+  const handleVariantImageUpload = useCallback(
+    async (variantId: string, files: File[]) => {
+      const variant = variants.find((v) => v.id === variantId);
+      if (!variant) return;
 
-    const maxImages = 5;
+      const maxImages = 5;
 
-    // Validate files using common utility
-    const { validFiles, errors } = await validateMultipleImages(
-      files, 
-      maxImages, 
-      variant.images.length
-    );
-
-    if (validFiles.length > 0) {
-      setVariants(
-        variants.map((v) =>
-          v.id === variantId ? { ...v, images: [...v.images, ...validFiles] } : v
-        )
+      // Validate files using common utility
+      const { validFiles, errors } = await validateMultipleImages(
+        files,
+        maxImages,
+        variant.images.length
       );
-    }
 
-    errors.forEach((error) => toast.error(error));
-  }, [variants]);
+      if (validFiles.length > 0) {
+        setVariants(
+          variants.map((v) =>
+            v.id === variantId ? { ...v, images: [...v.images, ...validFiles] } : v
+          )
+        );
+      }
+
+      errors.forEach((error) => toast.error(error));
+    },
+    [variants]
+  );
 
   const removeVariantImage = (variantId: string, imageIndex: number) => {
     setVariants(
@@ -1211,16 +1244,19 @@ function EditProductPage() {
     }
   }, []);
 
-  const handleVariantDrop = useCallback((e: React.DragEvent, variantId: string) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setVariantDragActive(null);
+  const handleVariantDrop = useCallback(
+    (e: React.DragEvent, variantId: string) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setVariantDragActive(null);
 
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      const files = Array.from(e.dataTransfer.files);
-      handleVariantImageUpload(variantId, files);
-    }
-  }, [handleVariantImageUpload]);
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        const files = Array.from(e.dataTransfer.files);
+        handleVariantImageUpload(variantId, files);
+      }
+    },
+    [handleVariantImageUpload]
+  );
 
   if (isLoadingProduct) {
     return <EditProductPageSkeleton />;
@@ -1243,15 +1279,17 @@ function EditProductPage() {
                 <div className="text-white text-sm sm:text-base font-medium">Edit Product</div>
               </div>
             </div>
-       <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2">
               <Button
                 type="button"
-                onClick={handleSaveDraft}
+                onClick={() => setShowSaveDraftModal(true)}
                 variant="ghost"
                 className="text-white hover:bg-white border border-white h-[40px] sm:h-[48px] text-sm sm:text-base hover:text-primary px-3 sm:px-4"
-                disabled={updateProductMutation.isPending}
+                disabled={updateProductMutation.isPending || saveDraftMutation.isPending}
               >
-                {updateProductMutation.isPending ? 'Saving...' : 'Save Draft'}
+                {updateProductMutation.isPending || saveDraftMutation.isPending
+                  ? 'Saving...'
+                  : 'Save Draft'}
               </Button>
             </div>
           </div>
@@ -1362,6 +1400,30 @@ function EditProductPage() {
         onSubmit={handleAddNewAddress}
         isSubmitting={createAddressMutation.isPending}
         totalAddress={savedAddresses.length !== 0}
+      />
+
+      <DeleteConfirmationModal
+        isOpen={showSaveDraftModal}
+        onClose={() => setShowSaveDraftModal(false)}
+        onConfirm={() => {
+          setShowSaveDraftModal(false);
+          handleSaveDraft();
+        }}
+        title="Save as Draft?"
+        description={
+          <div className="text-gray-600">
+            <p className="mb-2">Saving this product as a draft will:</p>
+            <ul className="text-left list-disc list-inside space-y-1 text-sm">
+              <li>Remove it from your active listings</li>
+              <li>Make it invisible to buyers</li>
+              <li>Allow you to edit and publish it later</li>
+            </ul>
+            <p className="mt-3 font-medium">Are you sure you want to continue?</p>
+          </div>
+        }
+        confirmText="Yes, Save as Draft"
+        cancelText="Cancel"
+        isLoading={saveDraftMutation.isPending}
       />
     </FormProvider>
   );

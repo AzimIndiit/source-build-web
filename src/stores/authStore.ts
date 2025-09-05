@@ -97,7 +97,7 @@ const useAuthStore = create<AuthState>()(
               lat: location.latitude || 0,
               lng: location.longitude || 0,
               formattedAddress: location.formattedAddress || '',
-            }
+            },
           });
         }
 

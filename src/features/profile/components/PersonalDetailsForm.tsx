@@ -554,7 +554,9 @@ const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({ onSave }) => 
                   disabled={updateProfileMutation.isPending}
                 />
 
-                <div className={`pt-4 sm:pt-6 flex flex-col-reverse sm:flex-row items-center  gap-4 ${userData?.authType === 'email' ? 'justify-between' : 'justify-end'}`}>
+                <div
+                  className={`pt-4 sm:pt-6 flex flex-col-reverse sm:flex-row items-center  gap-4 ${userData?.authType === 'email' ? 'justify-between' : 'justify-end'}`}
+                >
                   {/* Password Change Link */}
                   {userData?.authType === 'email' && (
                     <button

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { SquarePen, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/Card';
@@ -6,6 +6,9 @@ import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import { getStatusBadgeColor } from '@/features/dashboard/utils/orderUtils';
 import { cn } from '@/lib/helpers';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { useToggleProductStatusMutation } from '../hooks/useProductMutations';
 
 interface Product {
   id?: string;
@@ -42,6 +45,27 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   onEditProduct,
   onDeleteProduct,
 }) => {
+  const [isUpdating, setIsUpdating] = useState(false);
+  const toggleStatusMutation = useToggleProductStatusMutation();
+  const productId = product.id || product._id || '';
+  const isActive = product.status === 'active';
+
+  const handleToggleStatus = async (checked: boolean) => {
+    if (isUpdating) return;
+
+    setIsUpdating(true);
+    try {
+      await toggleStatusMutation.mutateAsync({
+        id: productId,
+        status: checked ? 'active' : 'inactive',
+      });
+    } catch (error) {
+      console.error('Failed to update product status:', error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -79,7 +103,10 @@ const ProductGrid: React.FC<ProductGridProps> = ({
 
   return (
     <Card
-      className="overflow-hidden border border-gray-200 rounded-xl hover:shadow-md transition-shadow p-0 cursor-pointer group gap-0"
+      className={cn(
+        "overflow-hidden border border-gray-200 rounded-xl hover:shadow-md transition-shadow p-0 cursor-pointer group gap-0",
+        product.status === 'inactive' && "grayscale"
+      )}
       onClick={() => onProductClick(product.slug, product.status)}
     >
       <div className="relative">
@@ -114,9 +141,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
       <CardContent className="p-3 space-y-2">
         <div className="flex justify-between items-center gap-2">
           {/* Price */}
-          <div className="text-[16px] font-semibold mb-1">
-            {formatPrice(product.price)} per sq ft
-          </div>
+          <div className="text-[16px] font-semibold mb-1">{formatPrice(product.price)} / sq ft</div>
           <div className="flex gap-2 justify-end">
             <Button
               title="Edit"
@@ -141,8 +166,8 @@ const ProductGrid: React.FC<ProductGridProps> = ({
         {/* Title + Description */}
         <p className="text-[12px] text-gray-500 line-clamp-1 capitalize">{product.category}</p>
         <p className="text-[14px] text-gray-700 leading-snug line-clamp-1 mb-1 capitalize">
-         
-          {product.title}  {product.dimensions
+          {product.title}{' '}
+          {product.dimensions
             ? `- ${product.dimensions.length} L x ${product.dimensions.width} W x ${product.dimensions.height} H `
             : ''}{' '}
         </p>
@@ -152,6 +177,26 @@ const ProductGrid: React.FC<ProductGridProps> = ({
           <span className="capitalize">{getLocationDisplay(product)}</span>
           <span className="text-primary capitalize">{formatDate(product.createdAt)}</span>
         </div>
+        {/* Status Toggle */}
+      {product.status !== 'draft' && <div className="flex items-center justify-end border-t border-gray-200 pt-2 mt-2">
+          <div className="flex items-center space-x-2">
+            <Label htmlFor={`status-${productId}`} className="text-xs text-gray-600">
+              {isActive ? 'Active' : 'Inactive'}
+            </Label>
+            <Switch
+              id={`status-${productId}`}
+              checked={isActive}
+              onCheckedChange={handleToggleStatus}
+              disabled={isUpdating}
+              className={cn(
+                'h-6 w-12  transition-all duration-200',
+                isUpdating && 'opacity-70',
+                isActive && 'data-[state=checked]:bg-green-500'
+              )}
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+        </div>}
       </CardContent>
     </Card>
   );
