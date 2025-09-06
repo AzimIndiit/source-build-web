@@ -14,7 +14,6 @@ import { Label } from '@/components/ui/label';
 
 function SignupPage() {
   const navigate = useNavigate();
-  const [localDelivery, setLocalDelivery] = useState('no');
   const [googleLoading, setGoogleLoading] = useState(false);
   const signupMutation = useSignupMutation();
 
@@ -35,6 +34,7 @@ function SignupPage() {
       businessAddress: '',
       einNumber: '',
       salesTaxId: '',
+      localDelivery: 'no',
     },
   });
 
@@ -42,9 +42,11 @@ function SignupPage() {
     handleSubmit,
     formState: { errors },
     watch,
+    setValue,
   } = methods;
 
   const accountType = watch('accountType');
+  const localDelivery = watch('localDelivery');
 
   // Log validation errors for debugging
   console.log('Validation errors:', errors);
@@ -71,7 +73,7 @@ function SignupPage() {
         cellPhone: data.cellPhone?.replace(/\D/g, ''), // Remove non-digit characters
         einNumber: data.einNumber,
         salesTaxId: data.salesTaxId,
-        localDelivery: localDelivery,
+        localDelivery: data.localDelivery,
       };
     } else if (data.accountType === 'driver') {
       fullData = {
@@ -178,27 +180,33 @@ function SignupPage() {
                 />
               </div>
 
-              <div className="space-y-3">
-                <Label className="text-base font-medium">Local Delivery Shipping</Label>
-                <RadioGroup
-                  value={localDelivery}
-                  onValueChange={setLocalDelivery}
-                  className="flex gap-8"
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="yes" id="yes" />
-                    <Label htmlFor="yes" className="font-normal cursor-pointer">
-                      Yes
-                    </Label>
+              <Controller
+                name="localDelivery"
+                control={methods.control}
+                render={({ field }) => (
+                  <div className="space-y-3">
+                    <Label className="text-base font-medium">Local Delivery Shipping *</Label>
+                    <RadioGroup
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      className="flex gap-8"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="yes" id="yes" />
+                        <Label htmlFor="yes" className="font-normal cursor-pointer">
+                          Yes
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="no" id="no" />
+                        <Label htmlFor="no" className="font-normal cursor-pointer">
+                          No
+                        </Label>
+                      </div>
+                    </RadioGroup>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="no" />
-                    <Label htmlFor="no" className="font-normal cursor-pointer">
-                      No
-                    </Label>
-                  </div>
-                </RadioGroup>
-              </div>
+                )}
+              />
 
               {localDelivery === 'no' && (
                 <FormInput
