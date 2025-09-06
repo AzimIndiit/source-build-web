@@ -38,7 +38,7 @@ interface ExtendedUser {
   cellPhone?: string;
   einNumber?: string;
   salesTaxId?: string;
-  localDelivery?: boolean;
+  localDelivery?: string  | boolean;
   profile?: {
     isVehicles?: boolean;
     isLicense?: boolean;
@@ -92,7 +92,7 @@ const basePersonalDetailsSchema = z.object({
   cellPhone: z.string().optional(),
   einNumber: z.string().optional(),
   salesTaxId: z.string().optional(),
-  localDelivery: z.boolean().optional(),
+  localDelivery: z.string().optional(),
 });
 
 // Create a function that returns the appropriate schema based on role
@@ -175,7 +175,7 @@ const getPersonalDetailsSchema = (role?: string) => {
       }
 
       // Validate Sales Tax ID only if localDelivery is false
-      if (data.localDelivery === false && (!data.salesTaxId || data.salesTaxId.length < 1)) {
+      if (data.localDelivery === 'no' && (!data.salesTaxId || data.salesTaxId.length < 1)) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: 'Sales Tax ID is required',
@@ -226,9 +226,10 @@ const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({ onSave }) => 
       cellPhone: '',
       einNumber: '',
       salesTaxId: '',
-      localDelivery: false,
+      localDelivery: 'no',
     },
   });
+  console.log('methods.', methods.formState.errors)
 
   // Update form only on initial load or when user data significantly changes
   // Track if form has been initialized to prevent unnecessary resets
@@ -261,9 +262,9 @@ const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({ onSave }) => 
         cellPhone: formatPhoneNumber(extendedUser.cellPhone || '') || '',
         einNumber: extendedUser.einNumber || '',
         salesTaxId: extendedUser.salesTaxId || '',
-        localDelivery: extendedUser.localDelivery || false,
+        localDelivery: extendedUser.localDelivery === true ? 'yes' : 'no',
       });
-      setLocalDelivery(extendedUser.localDelivery ? 'yes' : 'no');
+      setLocalDelivery(extendedUser.localDelivery === true ? 'yes' : 'no');
       setIsFormInitialized(true);
     }
   }, [queryUser?.id, user?.id, isFormInitialized, methods, extendedUserData?.id]);

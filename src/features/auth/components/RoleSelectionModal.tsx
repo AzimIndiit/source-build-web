@@ -21,6 +21,8 @@ import toast from 'react-hot-toast';
 import { optionalPhoneValidation, phoneValidation } from '../schemas/authSchemas';
 import useAuthStore from '@/stores/authStore';
 import { queryClient } from '@/lib/queryClient';
+import { ApiUser, transformApiUserToUser, USER_QUERY_KEY } from '../hooks/useUserQuery';
+import axiosInstance from '@/lib/axios';
 
 // Dynamic schema based on role - matching SignupPage structure
 const createRoleSchema = (role: string) => {
@@ -47,9 +49,21 @@ const createRoleSchema = (role: string) => {
       phone: phoneValidation,
       cellPhone: phoneValidation,
       einNumber: z.string().min(1, 'EIN number is required'),
-      salesTaxId: z.string().min(1, 'Sales Tax ID is required'),
       localDelivery: z.enum(['yes', 'no']),
-    });
+      salesTaxId: z.string().optional(),
+    }).refine(
+      (data) => {
+        // salesTaxId is required only when localDelivery is 'no'
+        if (data.localDelivery === 'no') {
+          return data.salesTaxId && data.salesTaxId.length > 0;
+        }
+        return true;
+      },
+      {
+        message: 'Sales Tax ID is required when Local Delivery is No',
+        path: ['salesTaxId'],
+      }
+    );
   }
 
   // Buyer doesn't need additional fields
@@ -64,7 +78,7 @@ interface RoleSelectionModalProps {
 
 export function RoleSelectionModal({ isOpen, userId }: RoleSelectionModalProps) {
   const navigate = useNavigate();
-  const { setUser, setIsAuthenticated, checkAuth } = useAuthStore();
+  const { setUser,updateUser, setIsAuthenticated, checkAuth } = useAuthStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedRole, setSelectedRole] = useState<string>('');
   const [localDelivery, setLocalDelivery] = useState('no');
@@ -150,47 +164,55 @@ export function RoleSelectionModal({ isOpen, userId }: RoleSelectionModalProps) 
           localStorage.setItem('access_token', tokens.accessToken || tokens.access_token);
           localStorage.setItem('refresh_token', tokens.refreshToken || tokens.refresh_token);
         }
+        
+        try {
+          const user = await queryClient.fetchQuery({
+            queryKey: USER_QUERY_KEY,
+            queryFn: async () => {
+              const meResponse = await axiosInstance.get('/auth/me');
 
-        // Set user in auth store if user data is present
-        if (user) {
-          // Transform the user data to match the User type in authStore
-          const transformedUser = {
-            id: user.id || user._id || '',
-            email: user.email,
-            displayName:
-              user.displayName ||
-              `${user.firstName || ''} ${user.lastName || ''}`.trim() ||
-              user.email,
-            role: (user.role || data.role) as 'driver' | 'seller' | 'admin' | 'buyer',
-            isVerified: user.isVerified !== undefined ? user.isVerified : true,
-            firstName: user.firstName || '',
-            lastName: user.lastName || '',
-            company: user.businessName || '',
-            region: '',
-            address: user.businessAddress || '',
-            description: '',
-            phone: user.phone || '',
-            createdAt: user.createdAt || new Date().toISOString(),
-            isVehicles: user.isVehicles,
-            isLicense: user.isLicense,
-          };
+              if (meResponse.data && meResponse.data.data && meResponse.data.data.user) {
+                const apiUser = meResponse.data.data.user as ApiUser;
+                return transformApiUserToUser(apiUser);
+              }
 
-          // Store user in auth store and localStorage
-          setUser(transformedUser);
-          setIsAuthenticated(true);
-          localStorage.setItem('user', JSON.stringify(transformedUser));
+              throw new Error('Invalid user data from /me API');
+            },
+          });
 
-          // Invalidate queries to refresh user data
-          queryClient.invalidateQueries({ queryKey: ['user'] });
-          queryClient.invalidateQueries({ queryKey: ['user-me'] });
-        } else {
-          // If no user data in response, call checkAuth to fetch user
-          try {
-            await checkAuth();
-          } catch (error) {
-            console.error('Failed to fetch user profile:', error);
+          if (user) {
+            console.log('AuthStore: User profile fetched', user);
+            setUser(user);
+          } else {
+            throw new Error('No user data received from /me');
+          }
+        } catch (meError) {
+          console.error(
+            'AuthStore: Failed to fetch user from /me, using login response',
+            meError
+          );
+          // Fallback to using the user from login response if /me fails
+          if (response.data.data.user) {
+            const transformedUser = transformApiUserToUser(response.data.data.user as ApiUser);
+            setUser(transformedUser);
+          } else {
+            throw meError;
           }
         }
+        // // Set user in auth store if user data is present
+        // if (user) {
+  
+        //   // Invalidate queries to refresh user data
+        //   queryClient.invalidateQueries({ queryKey: ['user'] });
+        //   queryClient.invalidateQueries({ queryKey: ['user-me'] });
+        // } else {
+        //   // If no user data in response, call checkAuth to fetch user
+        //   try {
+        //     await checkAuth();
+        //   } catch (error) {
+        //     console.error('Failed to fetch user profile:', error);
+        //   }
+        // }
 
         toast.success('Account setup completed successfully!');
 

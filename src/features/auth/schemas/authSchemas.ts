@@ -145,10 +145,11 @@ export const signupSchema = z
           path: ['einNumber'],
         });
       }
-      if (!data.salesTaxId || data.salesTaxId.length < 1) {
+      // salesTaxId is only required when localDelivery is 'no'
+      if (data.localDelivery === 'no' && (!data.salesTaxId || data.salesTaxId.length < 1)) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: 'Sales Tax ID is required',
+          message: 'Sales Tax ID is required when Local Delivery is No',
           path: ['salesTaxId'],
         });
       }
