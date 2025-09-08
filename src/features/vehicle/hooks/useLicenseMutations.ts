@@ -33,17 +33,8 @@ export function useCreateLicenseMutation() {
         licenseNumber: data.licenseNumber,
         licenseImages: licenseImageUrls,
       };
-
-      // Simulate API call - replace with actual service call
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          resolve({
-            success: true,
-            message: 'License information submitted successfully!',
-            data: payload,
-          });
-        }, 1000);
-      });
+      return await vehicleService.createLicense(payload);
+   
     },
     onSuccess: (response) => {
       // Invalidate license query

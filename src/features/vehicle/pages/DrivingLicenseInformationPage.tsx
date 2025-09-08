@@ -161,14 +161,14 @@ function DrivingLicenseInformationPage() {
 
     // Submit license information using the mutation hook
     try {
-      const response = await createLicenseMutation.mutateAsync({
+      const response:any = await createLicenseMutation.mutateAsync({
         licenseNumber: data.licenseNumber,
         licenseImageFiles: licenseImages,
       });
 
       // Navigate to driver dashboard on success
-      if (response?.success) {
-        navigate('/driver');
+      if (response?.status==='success') {
+        navigate('/driver/dashboard');
       }
     } catch (error) {
       // Error is already handled by the mutation's onError callback
@@ -229,6 +229,7 @@ function DrivingLicenseInformationPage() {
                       or <span className="text-primary underline">click here</span>
                     </span>
                   </label>
+                  <div className="text-xs text-red-600">Max file size is 5MB</div>
                 </div>
               ) : (
                 <div className="space-y-2">
@@ -267,7 +268,7 @@ function DrivingLicenseInformationPage() {
                     </label>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4">
                     {/* Display uploaded license images */}
                     {licenseImages.map((image, index) => (
                       <div
@@ -277,7 +278,7 @@ function DrivingLicenseInformationPage() {
                         <img
                           src={URL.createObjectURL(image)}
                           alt={`License ${index === 0 ? 'Front' : 'Back'}`}
-                          className="w-full h-48 object-contain p-2"
+                          className="w-full h-48 object-cover "
                         />
                         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent p-2">
                           <span className="text-white text-sm font-medium">
@@ -287,7 +288,7 @@ function DrivingLicenseInformationPage() {
                         <button
                           type="button"
                           onClick={() => removeImage(index)}
-                          className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 cursor-pointer transition-opacity"
                         >
                           <X className="h-4 w-4" />
                         </button>

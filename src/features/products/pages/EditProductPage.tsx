@@ -523,12 +523,12 @@ function EditProductPage() {
   // If we have a subcategory value but no options (for custom categories from backend),
   // create an option for it
   const currentSubCategory = formValues.subCategory;
-  
+
   console.log('=== SubCategory Debug ===');
   console.log('Current category:', formValues.category);
   console.log('Current subCategory value:', currentSubCategory);
   console.log('SubCategory options before adding current:', subCategoryOptions);
-  
+
   if (currentSubCategory && subCategoryOptions.length === 0 && formValues.category) {
     subCategoryOptions.push({ value: currentSubCategory, label: currentSubCategory });
     console.log('Added subcategory because no options available');
@@ -540,7 +540,7 @@ function EditProductPage() {
     subCategoryOptions.push({ value: currentSubCategory, label: currentSubCategory });
     console.log('Added subcategory because not in options list');
   }
-  
+
   console.log('Final subCategory options:', subCategoryOptions);
   console.log('=== End SubCategory Debug ===');
 
@@ -738,15 +738,15 @@ function EditProductPage() {
       formData.subCategory = finalSubCategoryValue;
 
       console.log('About to reset form with subCategory:', formData.subCategory);
-      
+
       // Use reset to set all form values at once
       reset(formData);
-      
+
       // Immediately check what was set
       const valuesAfterReset = methods.getValues();
       console.log('Values immediately after reset:', valuesAfterReset);
       console.log('SubCategory after reset:', valuesAfterReset.subCategory);
-      
+
       // Force a re-render of the form fields by setting values again after a small delay
       setTimeout(() => {
         console.log(
@@ -758,7 +758,7 @@ function EditProductPage() {
         console.log('Setting discount after delay:', formData.discount);
         methods.setValue('category', categoryValue);
         methods.setValue('subCategory', finalSubCategoryValue);
-        
+
         // Check again after setValue
         const valuesAfterSet = methods.getValues();
         console.log('SubCategory after setValue:', valuesAfterSet.subCategory);
@@ -1361,7 +1361,13 @@ function EditProductPage() {
             <div className="flex items-center gap-2">
               <Button
                 type="button"
-                onClick={() => setShowSaveDraftModal(true)}
+                onClick={() => {
+                  if (productData?.data?.status === 'draft') {
+                    handleSaveDraft();
+                  } else {
+                    setShowSaveDraftModal(true);
+                  }
+                }}
                 variant="ghost"
                 className="text-white hover:bg-white border border-white h-[40px] sm:h-[48px] text-sm sm:text-base hover:text-primary px-3 sm:px-4"
                 disabled={updateProductMutation.isPending || saveDraftMutation.isPending}

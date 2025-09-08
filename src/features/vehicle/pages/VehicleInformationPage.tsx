@@ -85,7 +85,7 @@ function VehicleInformationPage() {
   const [vehicleDragActive, setVehicleDragActive] = useState(false);
   const [insuranceDragActive, setInsuranceDragActive] = useState(false);
   const [vehicleImageError, setVehicleImageError] = useState(false);
-
+  const [insuranceImageError, setInsuranceImageError] = useState(false);
   const createVehicleMutation = useCreateVehicleMutation();
 
   const methods = useForm<VehicleInformationFormData>({
@@ -267,6 +267,7 @@ function VehicleInformationPage() {
 
         if (validFiles.length > 0) {
           setInsuranceImages((prev) => [...prev, ...validFiles]);
+          setInsuranceImageError(false);
         }
 
         // Show all errors
@@ -308,6 +309,7 @@ function VehicleInformationPage() {
 
       if (validFiles.length > 0) {
         setInsuranceImages((prev) => [...prev, ...validFiles]);
+        setInsuranceImageError(false);
       }
 
       // Show all errors
@@ -328,12 +330,18 @@ function VehicleInformationPage() {
 
   const onSubmit = async (data: VehicleInformationFormData) => {
     // Check if at least vehicle images are uploaded
-    if (vehicleImages.length === 0) {
-      setVehicleImageError(true);
-      toast.error('Please upload at least one vehicle image');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      return;
-    }
+      if (vehicleImages.length === 0) {
+        setVehicleImageError(true);
+        toast.error('Please upload at least one vehicle image');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+      if (insuranceImages.length === 0) {
+        setInsuranceImageError(true);
+        toast.error('Please upload at least one insurance image');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
 
     // Submit vehicle information using the mutation hook
     try {
@@ -348,6 +356,7 @@ function VehicleInformationPage() {
 
       // Navigate to driving license page on success
       if (response?.status === 'success') {
+        console.log('navigating to driver license', response?.status);
         navigate('/auth/driver-license');
       }
     } catch (error) {
@@ -407,7 +416,7 @@ function VehicleInformationPage() {
                 <div
                   className={`border-2 border-dashed rounded-lg p-4 text-center bg-gray-50 ${
                     vehicleDragActive ? 'border-primary bg-blue-50' : 'border-gray-300'
-                  }`}
+                  } ${vehicleImageError ? 'border-red-500' : ''}`}
                   onDragEnter={handleVehicleDrag}
                   onDragLeave={handleVehicleDrag}
                   onDragOver={handleVehicleDrag}
@@ -438,7 +447,7 @@ function VehicleInformationPage() {
                   <div
                     className={`border-2 border-dashed rounded-lg p-3 text-center bg-gray-50 ${
                       vehicleDragActive ? 'border-primary bg-blue-50' : 'border-gray-300'
-                    }`}
+                    } ${vehicleImageError ? 'border-red-500' : ''}`}
                     onDragEnter={handleVehicleDrag}
                     onDragLeave={handleVehicleDrag}
                     onDragOver={handleVehicleDrag}
@@ -490,14 +499,18 @@ function VehicleInformationPage() {
                 </div>
               )}
             </div>
-
+            {vehicleImageError && (
+                <p className="text-sm text-red-600 text-center">
+                  Please upload at least one vehicle image
+                </p>
+              )}
             {/* Insurance Images Upload */}
             <div className="space-y-2">
               {insuranceImages.length === 0 ? (
                 <div
                   className={`border-2 border-dashed rounded-lg p-4 text-center bg-gray-50 ${
-                    insuranceDragActive ? 'border-primary bg-blue-50' : 'border-gray-300'
-                  }`}
+                    insuranceDragActive ? 'border-primary bg-blue-50' : 'border-gray-300' 
+                  } ${insuranceImageError ? 'border-red-500' : ''}`}
                   onDragEnter={handleInsuranceDrag}
                   onDragLeave={handleInsuranceDrag}
                   onDragOver={handleInsuranceDrag}
@@ -528,7 +541,7 @@ function VehicleInformationPage() {
                   <div
                     className={`border-2 border-dashed rounded-lg p-3 text-center bg-gray-50 ${
                       insuranceDragActive ? 'border-primary bg-blue-50' : 'border-gray-300'
-                    }`}
+                    } ${insuranceImageError ? 'border-red-500' : ''}`}
                     onDragEnter={handleInsuranceDrag}
                     onDragLeave={handleInsuranceDrag}
                     onDragOver={handleInsuranceDrag}
@@ -578,6 +591,11 @@ function VehicleInformationPage() {
                     ))}
                   </div>
                 </div>
+              )}
+              {insuranceImageError && (
+                <p className="text-sm text-red-600 text-center">
+                  Please upload at least one insurance image
+                </p>
               )}
             </div>
 

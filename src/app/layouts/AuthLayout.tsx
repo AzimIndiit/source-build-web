@@ -9,7 +9,7 @@ export function AuthLayout() {
   // Allow authenticated drivers to access vehicle-information page
   if (user) {
     // If user is on vehicle-information page, allow them to stay
-    if (location.pathname === '/auth/vehicle-information') {
+    if (location.pathname === '/auth/vehicle-information' || location.pathname === '/auth/driver-license') {
       // Only allow drivers on this page
       if (user.role === 'driver') {
         return (

@@ -10,6 +10,7 @@ import { StarRating } from '@/components/common/StarRating';
 import { ProductDetailsPageSkeleton } from '../components/ProductDetailsPageSkeleton';
 import { useProductQuery, useDeleteProductMutation } from '../hooks/useProductMutations';
 import toast from 'react-hot-toast';
+import { format, parse } from 'date-fns';
 
 const ProductDetailsPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -240,20 +241,20 @@ const ProductDetailsPage: React.FC = () => {
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-4">
               {/* Price Section */}
               <div className="flex items-center space-x-2 sm:space-x-4">
-                <span className="text-xl sm:text-2xl font-bold text-primary">
-                  ${(selectedVariant?.price || product.price)?.toFixed(2) || '0.00'}
-                </span>
-                {/* Show discount for selected variant or main product */}
                 {(() => {
                   const currentDiscount = selectedVariant?.discount || product.discount;
                   const currentPrice = selectedVariant?.price || product.price || 0;
 
                   if (currentDiscount?.discountType !== 'none' && currentDiscount?.discountValue) {
                     if (currentDiscount.discountType === 'percentage') {
+                      const discountedPrice = currentPrice * (1 - currentDiscount.discountValue / 100);
                       return (
                         <>
+                          <span className="text-xl sm:text-2xl font-bold text-primary">
+                            ${discountedPrice.toFixed(2)}
+                          </span>
                           <span className="text-lg sm:text-xl md:text-2xl text-gray-400 line-through">
-                            ${(currentPrice / (1 - currentDiscount.discountValue / 100)).toFixed(2)}
+                            ${currentPrice.toFixed(2)}
                           </span>
                           <Badge className="bg-primary text-white px-2 sm:px-3 py-0.5 sm:py-1 text-xs sm:text-sm font-semibold">
                             -{currentDiscount.discountValue}%
@@ -262,10 +263,14 @@ const ProductDetailsPage: React.FC = () => {
                       );
                     }
                     if (currentDiscount.discountType === 'flat') {
+                      const discountedPrice = currentPrice - currentDiscount.discountValue;
                       return (
                         <>
+                          <span className="text-xl sm:text-2xl font-bold text-primary">
+                            ${discountedPrice.toFixed(2)}
+                          </span>
                           <span className="text-lg sm:text-xl md:text-2xl text-gray-400 line-through">
-                            ${(currentPrice + currentDiscount.discountValue).toFixed(2)}
+                            ${currentPrice.toFixed(2)}
                           </span>
                           <Badge className="bg-primary text-white px-2 sm:px-3 py-0.5 sm:py-1 text-xs sm:text-sm font-semibold">
                             -${currentDiscount.discountValue}
@@ -273,8 +278,13 @@ const ProductDetailsPage: React.FC = () => {
                         </>
                       );
                     }
+                  } else {
+                    return (
+                      <span className="text-xl sm:text-2xl font-bold text-primary">
+                        ${currentPrice.toFixed(2)}
+                      </span>
+                    );
                   }
-                  return null;
                 })()}
               </div>
 
@@ -449,8 +459,8 @@ const ProductDetailsPage: React.FC = () => {
                 <div className="mt-3 p-3 bg-primary/10 rounded-lg border-gray-200 border">
                   <p className="text-xs text-gray-600 mb-1">Ready By</p>
                   <p className="text-sm">
-                    {product.readyByDate && new Date(product.readyByDate).toLocaleDateString()}
-                    {product.readyByTime && ` at ${product.readyByTime}`}
+                    {product.readyByDate && format(new Date(product.readyByDate), 'MMM dd, yyyy')}
+                    {product.readyByTime && ` at ${format(parse(product.readyByTime, 'HH:mm', new Date()), 'h:mm a')}`}
                   </p>
                 </div>
               )}

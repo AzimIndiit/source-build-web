@@ -140,10 +140,14 @@ export function useVerifyOtpMutation() {
 
       const profile = response?.data?.user;
 
-      // Clear session data
-      sessionStorage.removeItem('signup_email');
-      localStorage.removeItem('otp_resend_timestamp');
-
+      // // Clear session data
+      // sessionStorage.removeItem('signup_email');
+      // localStorage.removeItem('otp_resend_timestamp');
+      console.log('profile', profile);
+      if (!profile) {
+        navigate('/auth/login');
+        return;
+      }
       if (profile) {
         // Store user with required fields
         const user = {
@@ -174,36 +178,17 @@ export function useVerifyOtpMutation() {
         queryClient.invalidateQueries({ queryKey: ['user'] });
         toast.success(response.message || 'Email verified successfully!');
 
-        // Navigate based on role
+        // // Navigate based on role
         if (profile.role === 'driver') {
           const hasVehicles = (profile as any).vehicles?.length > 0;
           console.log('hasVehicles', hasVehicles);
-          navigate(hasVehicles ? '/driver' : '/vehicle-information');
+          navigate(hasVehicles ? '/driver' : '/auth/vehicle-information');
         } else {
           setUser(user as any);
           navigate(profile.role === 'seller' ? '/seller/dashboard' : '/');
         }
-      } else {
-        // Fallback: fetch user profile
-        try {
-          await checkAuth();
-          queryClient.invalidateQueries({ queryKey: ['user'] });
-          toast.success(response.message || 'Email verified successfully!');
-
-          const currentUser = useAuthStore.getState().user;
-          const path =
-            currentUser?.role === 'driver'
-              ? '/vehicle-information'
-              : currentUser?.role === 'seller'
-                ? '/seller/dashboard'
-                : '/';
-          console.log('hasVehicles', path, currentUser);
-          navigate(path);
-        } catch (error) {
-          console.error('Failed to fetch profile:', error);
-          toast.success(response.message || 'Email verified successfully!');
-          navigate('/');
-        }
+        sessionStorage.removeItem('signup_email');
+        localStorage.removeItem('otp_resend_timestamp');
       }
     },
     onError: (error: any) => {

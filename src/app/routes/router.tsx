@@ -3,11 +3,11 @@ import { createBrowserRouter } from 'react-router-dom';
 import { ProtectedRoute } from './ProtectedRoute';
 import { AuthLayout } from '@/app/layouts/AuthLayout';
 import { PublicLayout } from '@/app/layouts/PublicLayout';
-import { DriverLayout } from '@/app/layouts/DriverLayout';
 import { SellerLayout } from '@/app/layouts/SellerLayout';
 import { ProfileLayout } from '@/features/profile';
 import { RouterErrorBoundary } from '@/features/error/pages/RouterErrorBoundary';
 import SuspenseLoader from '@/components/common/SuspenseLoader';
+import { DriverLayout } from '../layouts/DriverLayout';
 
 export const router = createBrowserRouter([
   {
@@ -211,6 +211,13 @@ export const router = createBrowserRouter([
         children: [
           {
             index: true,
+            lazy: () =>
+              import('@/features/dashboard/pages/DriverDashboard').then((module) => ({
+                Component: module.default,
+              })),
+          },
+          {
+            path: 'dashboard',
             lazy: () =>
               import('@/features/dashboard/pages/DriverDashboard').then((module) => ({
                 Component: module.default,

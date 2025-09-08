@@ -10,6 +10,11 @@ export interface CreateVehiclePayload {
   insuranceImages: string[];
 }
 
+export interface CreateLicensePayload{
+  licenseNumber: string;
+  licenseImages: string[];
+}
+
 export interface Vehicle {
   _id: string;
   id: string;
@@ -43,7 +48,10 @@ class VehicleService {
     const response = await axiosInstance.post<VehicleResponse>('/driver/vehicles', data);
     return response.data;
   }
-
+  async createLicense(data: CreateLicensePayload): Promise<VehicleResponse> {
+    const response = await axiosInstance.post<VehicleResponse>('/driver/license', data);
+    return response.data;
+  }
   async updateVehicle(id: string, data: Partial<CreateVehiclePayload>): Promise<VehicleResponse> {
     const response = await axiosInstance.put<VehicleResponse>(`/driver/vehicles/${id}`, data);
     return response.data;
