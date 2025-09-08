@@ -207,9 +207,38 @@ const StockManagementDialog: React.FC<StockManagementDialogProps> = ({
         </div>
       );
     } else if (pendingAction === 'out-of-stock') {
-      return `This will mark "${product.title}" and all its variants as out of stock (quantity = 0).`;
+      return (
+        <div>
+          <p>This will mark <strong>{product.title}</strong> as completely out of stock:</p>
+          <div className="mt-2 space-y-1 text-sm">
+            <p>• Main stock will be set to <strong>0</strong></p>
+            {hasVariants && (
+              <p>• All {product.variants?.length} variant(s) will be set to <strong>0</strong></p>
+            )}
+          </div>
+        </div>
+      );
     } else if (pendingAction === 'in-stock') {
-      return `This will mark "${product.title}" as in stock with default quantities if currently at 0.`;
+      const itemsToUpdate = [];
+      if (mainQuantity === 0) itemsToUpdate.push('Main stock');
+      const variantsToUpdate = variantQuantities.filter(q => q === 0).length;
+      if (variantsToUpdate > 0) itemsToUpdate.push(`${variantsToUpdate} variant(s)`);
+      
+      return (
+        <div>
+          <p>This will restore stock for <strong>{product.title}</strong>:</p>
+          <div className="mt-2 space-y-1 text-sm">
+            {mainQuantity === 0 && <p>• Main stock: 0 → <strong>10</strong> units</p>}
+            {mainQuantity > 0 && <p>• Main stock: <strong>{mainQuantity}</strong> units (unchanged)</p>}
+            {hasVariants && variantsToUpdate > 0 && (
+              <p>• {variantsToUpdate} variant(s) with 0 stock → <strong>10</strong> units each</p>
+            )}
+            {hasVariants && variantQuantities.filter(q => q > 0).length > 0 && (
+              <p>• {variantQuantities.filter(q => q > 0).length} variant(s) will keep their current stock</p>
+            )}
+          </div>
+        </div>
+      );
     }
     return '';
   };
@@ -399,7 +428,7 @@ const StockManagementDialog: React.FC<StockManagementDialogProps> = ({
                 variant="outline"
                 size="sm"
                 onClick={() => handleQuickStockAction('in-stock')}
-                disabled={isUpdating || mainQuantity > 0}
+                disabled={isUpdating || hasAnyStock}
                 className="flex-1 h-10 border-green-300 text-green-700 hover:bg-green-100 hover:text-green-800 hover:border-green-400 transition-all disabled:opacity-50"
               >
                 <Plus className="h-3 w-3 mr-1" />
