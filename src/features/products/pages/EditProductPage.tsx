@@ -38,9 +38,9 @@ const variantSchema = z.object({
   quantity: z
     .string()
     .trim()
-    .min(1, 'Quantity is required')
+    .min(0, 'Quantity is required')
     .regex(/^\d+$/, 'Quantity must be a whole number')
-    .refine((val) => parseInt(val) > 0, 'Quantity must be at least 1'),
+    .refine((val) => parseInt(val) >= 0, 'Quantity must be at least 0'),
   price: z
     .string()
     .trim()
@@ -129,9 +129,9 @@ const editProductSchema = z
     quantity: z
       .string()
       .trim()
-      .min(1, 'Quantity is required')
+      .min(0, 'Quantity is required')
       .regex(/^\d+$/, 'Quantity must be a whole number')
-      .refine((val) => parseInt(val) > 0, 'Quantity must be at least 1')
+      .refine((val) => parseInt(val) >= 0, 'Quantity must be at least 0')
       .refine((val) => parseInt(val) <= 99999, 'Quantity must not exceed 99,999'),
 
     brand: z
@@ -888,11 +888,12 @@ function EditProductPage() {
     setImageError(false);
 
     const variantFiles = variants
-      .filter((v) => v.images.length > 0)
-      .map((v, index) => ({
-        variantId: v.id,
-        variantIndex: index,
-        files: v.images,
+      .map((v, index) => ({ variant: v, originalIndex: index }))
+      .filter(({ variant }) => variant.images.length > 0)
+      .map(({ variant, originalIndex }) => ({
+        variantId: variant.id,
+        variantIndex: originalIndex,
+        files: variant.images,
       }));
 
     let readyByDate: string | undefined;
@@ -944,6 +945,8 @@ function EditProductPage() {
               ? parseFloat(v.discount.discountValue)
               : undefined,
           },
+          // Keep existing images in the images property
+          // The mutation will merge new uploaded images with these
           images: variant?.existingImages || [],
         };
       }),

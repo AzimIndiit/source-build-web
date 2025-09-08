@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { SquarePen, Trash2 } from 'lucide-react';
+import { SquarePen, Trash2, Package } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/button';
@@ -8,7 +8,15 @@ import { getStatusBadgeColor } from '@/features/dashboard/utils/orderUtils';
 import { cn } from '@/lib/helpers';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { useToggleProductStatusMutation } from '../hooks/useProductMutations';
+import { useToggleProductStatusMutation, useUpdateProductStockMutation } from '../hooks/useProductMutations';
+import StockManagementDialog from './StockManagementDialog';
+
+interface Variant {
+  color: string;
+  quantity: number;
+  price: number;
+  images?: string[];
+}
 
 interface Product {
   id?: string;
@@ -30,6 +38,7 @@ interface Product {
   }>;
   createdAt: string;
   status: string;
+  variants?: Variant[];
 }
 
 interface ProductGridProps {
@@ -46,7 +55,9 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   onDeleteProduct,
 }) => {
   const [isUpdating, setIsUpdating] = useState(false);
+  const [showStockDialog, setShowStockDialog] = useState(false);
   const toggleStatusMutation = useToggleProductStatusMutation();
+  const updateStockMutation = useUpdateProductStockMutation();
   const productId = product.id || product._id || '';
   const isActive = product.status === 'active';
 
@@ -64,6 +75,15 @@ const ProductGrid: React.FC<ProductGridProps> = ({
     } finally {
       setIsUpdating(false);
     }
+  };
+
+  const handleStockUpdate = async (productId: string, quantity: number, variants?: Array<{ index: number; quantity: number }>) => {
+    await updateStockMutation.mutateAsync({ id: productId, quantity, variants });
+  };
+
+  const handleStockClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowStockDialog(true);
   };
 
   const formatPrice = (price: number) => {
@@ -102,6 +122,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   };
 
   return (
+    <>
     <Card
       className={cn(
         'overflow-hidden border border-gray-200 rounded-xl hover:shadow-md transition-shadow p-0 cursor-pointer group gap-0',
@@ -124,7 +145,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
           </Badge>
         )}
         {product.quantity === 0 && (
-          <Badge className="absolute bottom-2 left-2 bg-gray-500 text-white rounded px-2 py-1 text-[11px]">
+          <Badge className="absolute bottom-2 left-2 bg-red-500 text-white rounded px-2 py-1 text-[11px]">
             Out of Stock
           </Badge>
         )}
@@ -143,6 +164,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
           {/* Price */}
           <div className="text-[16px] font-semibold mb-1">{formatPrice(product.price)} / sq ft</div>
           <div className="flex gap-2 justify-end">
+
             <Button
               title="Edit"
               variant="ghost"
@@ -179,7 +201,10 @@ const ProductGrid: React.FC<ProductGridProps> = ({
         </div>
         {/* Status Toggle */}
         {product.status !== 'draft' && (
-          <div className="flex items-center justify-end border-t border-gray-200 pt-2 mt-2">
+          <div className="flex items-center justify-between border-t border-gray-200 pt-2 mt-2">
+         <Button            onClick={handleStockClick} leftIcon={Package} variant='outline' className='text-gray-600 h-10  !text-sm hover:text-gray-600 border-gray-500 hover:bg-gray-50'>
+          Manage Stock
+         </Button>
             <div className="flex items-center space-x-2">
               <Label htmlFor={`status-${productId}`} className="text-xs text-gray-600">
                 {isActive ? 'Active' : 'Inactive'}
@@ -201,6 +226,14 @@ const ProductGrid: React.FC<ProductGridProps> = ({
         )}
       </CardContent>
     </Card>
+    
+    <StockManagementDialog
+      isOpen={showStockDialog}
+      onClose={() => setShowStockDialog(false)}
+      product={product}
+      onUpdateStock={handleStockUpdate}
+    />
+    </>
   );
 };
 

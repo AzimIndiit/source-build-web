@@ -1158,6 +1158,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                       label="Ready By Date"
                       type="date"
                       placeholder="Select date"
+                      min={new Date().toISOString().split('T')[0]}
                       className="border-gray-300 h-[53px] pr-10 cursor-pointer w-full [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-inner-spin-button]:hidden [&::-webkit-clear-button]:hidden"
                       onClick={(e: React.MouseEvent<HTMLInputElement>) => {
                         (e.target as HTMLInputElement).showPicker?.();

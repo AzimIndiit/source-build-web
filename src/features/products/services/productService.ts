@@ -235,6 +235,14 @@ class ProductService {
     return response.data;
   }
 
+  async updateProductStock(
+    id: string,
+    data: { quantity: number; variants?: Array<{ index: number; quantity: number }> }
+  ): Promise<ProductResponse> {
+    const response = await axiosInstance.patch<ProductResponse>(`/products/${id}/stock`, data);
+    return response.data;
+  }
+
   async uploadProductImages(files: File[]): Promise<string[]> {
     const uploadPromises = files.map((file) => fileService.uploadFile(file));
     const responses = await Promise.all(uploadPromises);

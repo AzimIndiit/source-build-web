@@ -440,6 +440,66 @@ export function useToggleProductStatusMutation() {
   });
 }
 
+export function useUpdateProductStockMutation() {
+  return useMutation({
+    mutationFn: ({ 
+      id, 
+      quantity, 
+      variants 
+    }: { 
+      id: string; 
+      quantity: number; 
+      variants?: Array<{ index: number; quantity: number }> 
+    }) =>
+      productService.updateProductStock(id, { quantity, variants }),
+    onMutate: async ({ id, quantity }) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: PRODUCTS_QUERY_KEY });
+
+      // Snapshot the previous value
+      const previousProducts = queryClient.getQueryData(PRODUCTS_QUERY_KEY);
+
+      // Optimistically update the product quantity and status
+      queryClient.setQueryData(PRODUCTS_QUERY_KEY, (old: any) => {
+        if (!old) return old;
+        return {
+          ...old,
+          data: {
+            ...old.data,
+            products: old.data.products?.map((product: any) => {
+              if (product._id === id || product.id === id) {
+                const newStatus = quantity === 0 ? 'out_of_stock' : 
+                                 product.status === 'out_of_stock' ? 'active' : product.status;
+                return { ...product, quantity, status: newStatus };
+              }
+              return product;
+            }),
+          },
+        };
+      });
+
+      // Return a context object with the snapshotted value
+      return { previousProducts };
+    },
+    onError: (err, variables, context) => {
+      // If the mutation fails, use the context returned from onMutate to roll back
+      if (context?.previousProducts) {
+        queryClient.setQueryData(PRODUCTS_QUERY_KEY, context.previousProducts);
+      }
+      const message = (err as any).response?.data?.message || 'Failed to update product stock';
+      toast.error(message);
+    },
+    onSuccess: () => {
+      toast.success('Product stock updated successfully');
+    },
+    onSettled: () => {
+      // Always refetch after error or success
+      queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: ['product'] });
+    },
+  });
+}
+
 export function useProductsQuery(params?: {
   page?: number;
   limit?: number;
