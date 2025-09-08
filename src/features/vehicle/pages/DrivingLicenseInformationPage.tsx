@@ -1,4 +1,4 @@
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState, useCallback } from 'react';
@@ -9,6 +9,7 @@ import { FormInput } from '@/components/forms/FormInput';
 import { Upload, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useCreateLicenseMutation } from '../hooks/useLicenseMutations';
+import useAuthStore from '@/stores/authStore';
 
 // Constants
 const MAX_LICENSE_IMAGES = 2; // Front and back of license
@@ -326,13 +327,43 @@ function DrivingLicenseInformationPage() {
             <div className="text-center pt-2">
               <span className="text-sm text-gray-500">
                 Back to{' '}
-                <Link to="/auth/signup" className="text-primary hover:underline">
+                <button
+                  type="button"
+                  onClick={() => {
+                    // Clear auth state
+                    const { logout } = useAuthStore.getState();
+                    logout();
+                    // Clear all storage
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    // Navigate to signup
+             
+                    setTimeout(() => {
+                      navigate('/auth/signup');
+                        
+                      }, 1000);
+                  }}
+                  className="text-primary hover:underline"
+                >
                   Sign Up
-                </Link>
+                </button>
                 {' | '}
-                <Link to="/auth/login" className="text-primary hover:underline">
+                <button
+                  type="button"
+                  onClick={() => {
+                    // Clear auth state
+                    const { logout } = useAuthStore.getState();
+                    logout();
+                    // Clear all storage
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    // Navigate to login
+                    navigate('/auth/login');
+                  }}
+                  className="text-primary hover:underline"
+                >
                   Login
-                </Link>
+                </button>
               </span>
             </div>
           </form>

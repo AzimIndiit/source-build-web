@@ -38,6 +38,7 @@ interface OrdersTableProps {
   title?: string;
   showFilter?: boolean;
   showSort?: boolean;
+  totalOrders?: number;
 }
 
 export const OrdersTable: React.FC<OrdersTableProps> = ({
@@ -47,6 +48,7 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
   title,
   showFilter = true,
   showSort = true,
+  totalOrders
 }) => {
   const [selectedSort, setSelectedSort] = useState<string>('this-week');
   const [filters, setFilters] = useState<FilterConfig>({
@@ -67,6 +69,15 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
   };
 
   console.log('orders', orders);
+
+  if(totalOrders===0){
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
+        <p className="text-gray-600 font-semibold mb-2">No orders found</p>
+        <p className="text-gray-500 text-sm">You don't have any orders yet.</p>
+      </div>
+    );
+  }
   return (
     <div className="w-full">
       <div className="flex items-center justify-between mb-4">

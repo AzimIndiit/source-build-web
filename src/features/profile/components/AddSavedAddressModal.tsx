@@ -274,9 +274,9 @@ export const AddSavedAddressModal: React.FC<AddSavedAddressModalProps> = ({
 
   const handleFormSubmit = async (data: SavedAddressFormData) => {
     // Build formatted address from individual fields if not already set
-    const formattedAddress =
-      data.formattedAddress ||
-      [data.location, data.city, data.state, data.country, data.zipCode].filter(Boolean).join(', ');
+    const formattedAddress = [data.location, data.city, data.state, data.country, data.zipCode]
+      .filter(Boolean)
+      .join(', ');
 
     const submitData: CreateSavedAddressPayload = {
       name: data.name,

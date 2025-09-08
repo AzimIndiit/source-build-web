@@ -18,6 +18,13 @@ export const useSellerOrdersQuery = (filters?: OrderFilters) => {
   });
 };
 
+export const useDriverOrdersQuery = (filters?: OrderFilters) => {
+  return useQuery({
+    queryKey: ['driver-orders', filters],
+    queryFn: () => orderService.getDriverDeliveries(filters),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+};
 export const useOrderByIdQuery = (orderId: string, enabled = true) => {
   return useQuery({
     queryKey: ['order', orderId],

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Package, Truck, MapPin, Clock, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import ReadMore from '@/components/ui/ReadMore';
@@ -11,6 +11,24 @@ import { ProductDetailsPageSkeleton } from '../components/ProductDetailsPageSkel
 import { useProductQuery, useDeleteProductMutation } from '../hooks/useProductMutations';
 import toast from 'react-hot-toast';
 import { format, parse } from 'date-fns';
+
+// Helper function to ensure pickup hours are displayed in 12-hour format
+const formatPickupHoursDisplay = (hours: string): string => {
+  if (!hours) return '';
+  
+  // If already in 12-hour format (contains AM/PM), return as is
+  if (hours.includes('AM') || hours.includes('PM')) {
+    return hours;
+  }
+  
+  // Convert 24-hour format to 12-hour format
+  return hours.replace(/(\d{1,2}):(\d{2})/g, (match, h, m) => {
+    const hour = parseInt(h);
+    const period = hour >= 12 ? 'PM' : 'AM';
+    const hour12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+    return `${hour12}:${m} ${period}`;
+  });
+};
 
 const ProductDetailsPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -423,45 +441,81 @@ const ProductDetailsPage: React.FC = () => {
 
           {/* Marketplace Options */}
           {product.marketplaceOptions && (
-            <div className="border-t border-gray-200 pt-4 sm:pt-6 ">
-              <h3 className="text-base sm:text-lg font-semibold mb-3 ">Delivery Options</h3>
-              <div className="grid grid-cols-3 gap-3">
+            <div className="border-t border-gray-200 pt-4">
+              <h3 className="text-lg sm:text-xl font-semibold mb-4 text-gray-800">Delivery Options</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {product.marketplaceOptions.pickup && (
-                  <div className="text-center p-3 border rounded-lg border-gray-300 shadow-sm">
-                    <div className="text-green-600 mb-1">✓</div>
-                    <p className="text-sm font-medium">Pickup</p>
-                    {product.pickupHours && (
-                      <>
-                        <p className="text-xs text-gray-500 mt-1">Available</p>
-                        <p className="text-xs text-gray-500 mt-1">{product.pickupHours}</p>
-                      </>
-                    )}
+                  <div className="group relative p-5 border-2 rounded-xl border-gray-200  transition-all duration-200 bg-gradient-to-br from-white to-gray-50 ">
+                  
+                    
+                    {/* Icon and content */}
+                    <div className="flex flex-col items-center text-center">
+                      <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mb-3  transition-transform">
+                        <MapPin className="text-green-600" />
+                      </div>
+                      <p className="text-base font-semibold text-gray-800 mb-3">Pickup</p>
+                      {product.pickupHours && (
+                        <div className="space-y-1">
+                          <p className="text-xs font-medium text-gray-600 uppercase tracking-wide">Hours</p>
+                          <p className="text-xs text-gray-500 leading-relaxed">{formatPickupHoursDisplay(product.pickupHours)}</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
+                
                 {product.marketplaceOptions.shipping && (
-                  <div className="text-center p-3 border rounded-lg border-gray-300 shadow-sm">
-                    <div className="text-green-600 mb-1">✓</div>
-                    <p className="text-sm font-medium">Shipping</p>
-                    {product.shippingPrice && (
-                      <p className="text-xs text-gray-600 mt-1">${product.shippingPrice}</p>
-                    )}
+                  <div className="group relative p-5 border-2 rounded-xl border-gray-200 transition-all duration-200 bg-gradient-to-br from-white to-gray-50 ">
+                
+                    
+                    {/* Icon and content */}
+                    <div className="flex flex-col items-center text-center">
+                      <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-3  transition-transform">
+                        <Package  className="text-blue-600" />
+                      </div>
+                      <p className="text-base font-semibold text-gray-800 mb-3">Shipping</p>
+                      {product.shippingPrice ? (
+                        <div className="space-y-1">
+                          <p className="text-xs font-medium text-gray-600 uppercase tracking-wide">Cost</p>
+                          <p className="text-lg font-bold text-blue-600">${product.shippingPrice}</p>
+                        </div>
+                      ) : (
+                        <p className="text-sm text-gray-500">Contact for rates</p>
+                      )}
+                    </div>
                   </div>
                 )}
+                
                 {product.marketplaceOptions.delivery && (
-                  <div className="text-center p-3 border rounded-lg border-gray-300 shadow-sm">
-                    <div className="text-green-600 mb-1">✓</div>
-                    <p className="text-sm font-medium">Delivery</p>
+                  <div className="group relative p-5 border-2 rounded-xl border-gray-200 transition-all duration-200 bg-gradient-to-br from-white to-gray-50 ">
+                  
+                    
+                    {/* Icon and content */}
+                    <div className="flex flex-col items-center text-center">
+                      <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mb-3  transition-transform">
+                        <Truck  className="text-purple-600" />
+                      </div>
+                      <p className="text-base font-semibold text-gray-800 mb-3">Delivery</p>
+                      <p className="text-sm text-gray-500">Local delivery available</p>
+                    </div>
                   </div>
                 )}
               </div>
 
               {(product.readyByDate || product.readyByTime) && (
-                <div className="mt-3 p-3 bg-primary/10 rounded-lg border-gray-200 border">
-                  <p className="text-xs text-gray-600 mb-1">Ready By</p>
-                  <p className="text-sm">
-                    {product.readyByDate && format(new Date(product.readyByDate), 'MMM dd, yyyy')}
-                    {product.readyByTime && ` at ${format(parse(product.readyByTime, 'HH:mm', new Date()), 'h:mm a')}`}
-                  </p>
+                <div className="mt-4 p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                      <Clock size={16} className="text-amber-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-gray-800 mb-1">Ready for Pickup</p>
+                      <p className="text-sm text-gray-600">
+                        {product.readyByDate && format(new Date(product.readyByDate), 'EEEE, MMMM d, yyyy')}
+                        {product.readyByTime && ` at ${format(parse(product.readyByTime, 'HH:mm', new Date()), 'h:mm a')}`}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>

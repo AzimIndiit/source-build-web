@@ -2,7 +2,7 @@
 import { Package, AlertTriangle, ShoppingCart, Clock } from 'lucide-react';
 import { MetricData, SalesData, RevenueData, Order } from '../types';
 
-export const metricsData: MetricData[] = [
+export const metricsSellerData: MetricData[] = [
   {
     title: 'Total Listings',
     value: '106',
@@ -29,6 +29,37 @@ export const metricsData: MetricData[] = [
     value: '12',
     color: 'bg-[#e68814]',
     icon: Clock,
+    bgColor: 'bg-white/20',
+  },
+];
+
+export const metricsDriverData: MetricData[] = [
+  {
+    title: 'Total Orders',
+    value: '1082',
+    color: 'bg-[#269210]',
+    icon: ShoppingCart,
+    bgColor: 'bg-white/20',
+  },
+  {
+    title: 'Pending Orders',
+    value: '12',
+    color: 'bg-[#e68814]',
+    icon: Clock,
+    bgColor: 'bg-white/20',
+  },
+  {
+    title: 'Delivered',
+    value: '106',
+    color: 'bg-[#2b5aac]',
+    icon: Package,
+    bgColor: 'bg-white/20',
+  },
+  {
+    title: 'Cancelled',
+    value: '24',
+    color: 'bg-[#da1010]',
+    icon: AlertTriangle,
     bgColor: 'bg-white/20',
   },
 ];

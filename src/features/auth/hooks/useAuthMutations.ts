@@ -120,7 +120,7 @@ export function useLoginMutation() {
 
 export function useVerifyOtpMutation() {
   const navigate = useNavigate();
-  const { setUser, setIsAuthenticated, checkAuth } = useAuthStore();
+  const { setUser, setIsAuthenticated } = useAuthStore();
 
   return useMutation({
     mutationFn: (data: { email: string; otp: string; type: string }) => authService.verifyOtp(data),
@@ -140,9 +140,7 @@ export function useVerifyOtpMutation() {
 
       const profile = response?.data?.user;
 
-      // // Clear session data
-      // sessionStorage.removeItem('signup_email');
-      // localStorage.removeItem('otp_resend_timestamp');
+
       console.log('profile', profile);
       if (!profile) {
         navigate('/auth/login');
@@ -170,25 +168,56 @@ export function useVerifyOtpMutation() {
           createdAt: profile.createdAt || new Date().toISOString(),
         };
 
-        // setUser(user as any);
-        setIsAuthenticated(true);
-        localStorage.setItem('user', JSON.stringify(user));
-
-        // Invalidate queries and show success
-        queryClient.invalidateQueries({ queryKey: ['user'] });
-        toast.success(response.message || 'Email verified successfully!');
-
-        // // Navigate based on role
-        if (profile.role === 'driver') {
-          const hasVehicles = (profile as any).vehicles?.length > 0;
-          console.log('hasVehicles', hasVehicles);
-          navigate(hasVehicles ? '/driver' : '/auth/vehicle-information');
-        } else {
-          setUser(user as any);
-          navigate(profile.role === 'seller' ? '/seller/dashboard' : '/');
-        }
+        // Clean up session storage first
         sessionStorage.removeItem('signup_email');
         localStorage.removeItem('otp_resend_timestamp');
+
+        // Navigate based on role
+        if (profile.role === 'driver') {
+          const hasVehicles = (profile as any).vehicles?.length > 0;
+          const hasLicense = (profile as any).isLicense || false;
+          console.log('hasVehicles', hasVehicles);
+          console.log('hasLicense', hasLicense);
+          
+          // Set user and authentication
+          setUser(user as any);
+          setIsAuthenticated(true);
+          localStorage.setItem('user', JSON.stringify(user));
+          
+          // Show success message
+          toast.success(response.message || 'Email verified successfully!');
+          
+          // Navigate after setting user to ensure AuthLayout has the user
+          setTimeout(() => {
+            if (!hasVehicles) {
+              navigate('/auth/vehicle-information');
+            } else if (!hasLicense) {
+              navigate('/auth/driver-license');
+            } else {
+              navigate('/driver/dashboard');
+            }
+          }, 100);
+  
+          // Invalidate queries
+          queryClient.invalidateQueries({ queryKey: ['user'] });
+  
+        } else {
+          // Set user and authentication
+          setUser(user as any);
+          setIsAuthenticated(true);
+          localStorage.setItem('user', JSON.stringify(user));
+  
+          // Show success message
+          toast.success(response.message || 'Email verified successfully!');
+          
+          // Navigate after setting user
+          setTimeout(() => {
+            navigate(profile.role === 'seller' ? '/seller/dashboard' : '/');
+          }, 100);
+  
+          // Invalidate queries
+          queryClient.invalidateQueries({ queryKey: ['user'] });
+        }
       }
     },
     onError: (error: any) => {

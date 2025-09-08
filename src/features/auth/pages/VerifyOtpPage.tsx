@@ -115,10 +115,35 @@ function VerifyOtpPage() {
           // Start countdown only on successful resend
           setCountdown(OTP_RESEND_COOLDOWN);
         },
-        onError: () => {
-          // Clear the timestamp if resend fails
-          localStorage.removeItem(OTP_RESEND_KEY);
-          setCountdown(0);
+        onError: (error: any) => {
+          // Check if it's a rate limit error
+          const errorMessage = error.response?.data?.message || '';
+          if (errorMessage.includes('Please wait')) {
+            // Extract the seconds from the error message
+            const match = errorMessage.match(/(\d+) seconds/);
+            const seconds = match ? parseInt(match[1], 10) : OTP_RESEND_COOLDOWN;
+            
+            // Set the countdown to the server-specified time
+            setCountdown(seconds);
+            
+            // Update the timestamp to sync with server cooldown
+            const serverCooldownStart = Date.now() - ((OTP_RESEND_COOLDOWN - seconds) * 1000);
+            localStorage.setItem(OTP_RESEND_KEY, serverCooldownStart.toString());
+            
+            toast(`Please wait ${seconds} seconds before requesting another OTP`, {
+              icon: '⏰',
+              style: {
+                background: '#FEF8C6',
+                color: '#000',
+                border: '1px solid #FCE992',
+              },
+            });
+          } else {
+            // Clear the timestamp if resend fails for other reasons
+            localStorage.removeItem(OTP_RESEND_KEY);
+            setCountdown(0);
+            toast.error(errorMessage || 'Failed to resend OTP. Please try again.');
+          }
         },
       }
     );

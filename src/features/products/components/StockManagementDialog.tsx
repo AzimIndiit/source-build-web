@@ -411,7 +411,7 @@ const StockManagementDialog: React.FC<StockManagementDialogProps> = ({
           )}
 
           {/* Quick Actions */}
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+          {/* <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
             <p className="text-xs font-medium text-amber-800 mb-3">Quick Actions</p>
             <div className="flex gap-2">
               <Button
@@ -435,7 +435,7 @@ const StockManagementDialog: React.FC<StockManagementDialogProps> = ({
                 Mark In Stock
               </Button>
             </div>
-          </div>
+          </div> */}
         </div>
 
         <DialogFooter className="gap-2 sm:gap-2">

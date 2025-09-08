@@ -230,46 +230,85 @@ export const FormSelect: React.FC<FormSelectProps> = ({
       return <span className="text-gray-500">{placeholder}</span>;
     }
 
+    // Show 2 badges on mobile, 3 on tablet and desktop
+    const mobileMaxBadges = 2;
+    const desktopMaxBadges = 3;
+    
+    // Get labels for both mobile and desktop views
+    const mobileLabels = selectedLabels.slice(0, mobileMaxBadges);
+    const desktopLabels = selectedLabels.slice(0, desktopMaxBadges);
+    const mobileRemainingCount = selectedValues.length - mobileMaxBadges;
+    const desktopRemainingCount = selectedValues.length - desktopMaxBadges;
+
     return (
-      <div className="flex items-center justify-between w-full">
-        <div className="flex flex-wrap gap-1 flex-1 min-w-0 pr-8">
-          {selectedLabels.slice(0, 3).map((label, index) => (
-            <Badge
-              key={selectedValues[index]}
-              variant="secondary"
-              className={`text-xs flex items-center gap-1 pr-1 p-2 rounded-full bg-primary/10 ${
-                selectedValues.length > 3
-                  ? 'max-w-[5rem] sm:max-w-[6rem]'
-                  : 'max-w-[6rem] sm:max-w-[7rem]'
-              }`}
-            >
-              <span className="truncate">{label}</span>
-              <button
-                type="button"
-                className="ml-1 p-1.5 hover:bg-red-200 rounded-sm transition-colors duration-150 flex items-center justify-center flex-shrink-0"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleRemoveSelection(selectedValues[index], selectedValues, field.onChange);
-                }}
-                tabIndex={-1}
+      <div className="flex items-center w-full gap-1">
+        <div className="flex flex-wrap gap-1 flex-1 min-w-0 items-center">
+          {/* Mobile view - show 2 badges */}
+          <div className="flex gap-1 items-center sm:hidden">
+            {mobileLabels.map((label, index) => (
+              <Badge
+                key={selectedValues[index]}
+                variant="secondary"
+                className="text-xs inline-flex items-center gap-0.5 px-2 py-1 rounded-md bg-primary/10 max-w-[100px] group"
               >
-                <X size={10} className="text-gray-500 hover:text-red-600 cursor-pointer" />
-              </button>
-            </Badge>
-          ))}
-          {selectedValues.length > 3 && (
-            <Badge variant="outline" className="text-xs p-2 rounded-sm whitespace-nowrap">
-              +{selectedValues.length - 3} more
-            </Badge>
-          )}
+                <span className="truncate flex-1 min-w-0">{label}</span>
+                <button
+                  type="button"
+                  className="ml-0.5 p-0.5 hover:bg-red-200/50 rounded-sm transition-colors duration-150 inline-flex items-center justify-center flex-shrink-0"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleRemoveSelection(selectedValues[index], selectedValues, field.onChange);
+                  }}
+                  tabIndex={-1}
+                >
+                  <X size={12} className="text-gray-500 hover:text-red-600" />
+                </button>
+              </Badge>
+            ))}
+            {mobileRemainingCount > 0 && (
+              <Badge variant="outline" className="text-xs px-2 py-1 rounded-md whitespace-nowrap">
+                +{mobileRemainingCount} more
+              </Badge>
+            )}
+          </div>
+
+          {/* Tablet/Desktop view - show 3 badges */}
+          <div className="hidden sm:flex gap-1 items-center">
+            {desktopLabels.map((label, index) => (
+              <Badge
+                key={selectedValues[index]}
+                variant="secondary"
+                className="text-xs inline-flex items-center gap-0.5 px-2 py-1 rounded-md bg-primary/10 max-w-[120px] group"
+              >
+                <span className="truncate flex-1 min-w-0">{label}</span>
+                <button
+                  type="button"
+                  className="ml-0.5 p-0.5 hover:bg-red-200/50 rounded-sm transition-colors duration-150 inline-flex items-center justify-center flex-shrink-0"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleRemoveSelection(selectedValues[index], selectedValues, field.onChange);
+                  }}
+                  tabIndex={-1}
+                >
+                  <X size={12} className="text-gray-500 hover:text-red-600" />
+                </button>
+              </Badge>
+            ))}
+            {desktopRemainingCount > 0 && (
+              <Badge variant="outline" className="text-xs px-2 py-1 rounded-md whitespace-nowrap">
+                +{desktopRemainingCount} more
+              </Badge>
+            )}
+          </div>
         </div>
 
-        {/* Clear All Button - positioned absolutely to prevent overflow */}
+        {/* Clear All Button */}
         {selectedValues.length > 0 && (
           <button
             type="button"
-            className="absolute right-2 p-1 hover:bg-red-100 rounded-sm transition-colors duration-150 flex items-center justify-center flex-shrink-0 cursor-pointer bg-white"
+            className="p-1 hover:bg-red-100 rounded-sm transition-colors duration-150 flex items-center justify-center flex-shrink-0"
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -278,7 +317,7 @@ export const FormSelect: React.FC<FormSelectProps> = ({
             title="Clear all selections"
             tabIndex={-1}
           >
-            <X size={14} className="text-gray-400 hover:text-red-600 cursor-pointer" />
+            <X size={16} className="text-gray-400 hover:text-red-600" />
           </button>
         )}
       </div>
@@ -318,7 +357,7 @@ export const FormSelect: React.FC<FormSelectProps> = ({
                 <div
                   ref={field.ref}
                   id={name}
-                  className={`${label ? 'mt-2' : ''} rounded-sm w-full min-h-14 px-3 py-2 border cursor-pointer flex items-center relative ${
+                  className={`${label ? 'mt-2' : ''} rounded-sm w-full min-h-[40px] px-3 py-1.5 border cursor-pointer flex items-center ${
                     error ? 'border-red-500' : 'border-gray-300'
                   } ${disabled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white hover:border-gray-400'} ${className}`}
                   onClick={() => !disabled && setIsOpen(!isOpen)}
@@ -401,7 +440,7 @@ export const FormSelect: React.FC<FormSelectProps> = ({
                                   isDisabled
                                     ? 'opacity-50 cursor-not-allowed bg-gray-50'
                                     : 'cursor-pointer hover:bg-gray-50'
-                                } ${isSelected ? 'bg-blue-50 text-blue-700' : ''}`}
+                                } ${isSelected ? 'bg-blue-50 text-primary' : ''}`}
                                 onClick={() => {
                                   if (!isDisabled) {
                                     handleMultiSelectChange(

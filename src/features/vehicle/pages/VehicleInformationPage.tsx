@@ -1,4 +1,4 @@
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState, useCallback } from 'react';
@@ -13,6 +13,7 @@ import { FormSelect } from '@/components/forms/FormSelect';
 import { Upload, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useCreateVehicleMutation } from '../hooks/useVehicleMutations';
+import useAuthStore from '@/stores/authStore';
 
 // Constants
 const MAX_VEHICLE_IMAGES = 5;
@@ -611,10 +612,43 @@ function VehicleInformationPage() {
             </div>
 
             <div className="text-center pt-2">
-              <Link to="/auth/signup" className="text-sm text-gray-500 hover:text-gray-700">
-                Back to <span className="text-primary">Sign Up</span> |{' '}
+              <button
+                type="button"
+                onClick={() => {
+                  // Clear auth state
+                  const { logout } = useAuthStore.getState();
+                  logout();
+                  // Clear all storage
+                  localStorage.clear();
+                  sessionStorage.clear();
+                  // Navigate to signup
+
+                  setTimeout(() => {
+                  navigate('/auth/signup');
+                    
+                  }, 1000);
+                }}
+                className="text-sm text-gray-500 hover:text-gray-700"
+              >
+                Back to <span className="text-primary">Sign Up</span>
+              </button>
+              {' | '}
+              <button
+                type="button"
+                onClick={() => {
+                  // Clear auth state
+                  const { logout } = useAuthStore.getState();
+                  logout();
+                  // Clear all storage
+                  localStorage.clear();
+                  sessionStorage.clear();
+                  // Navigate to login
+                  navigate('/auth/login');
+                }}
+                className="text-sm text-gray-500 hover:text-gray-700"
+              >
                 <span className="text-primary">Login</span>
-              </Link>
+              </button>
             </div>
           </form>
         </FormProvider>

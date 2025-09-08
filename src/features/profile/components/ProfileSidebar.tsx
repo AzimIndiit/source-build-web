@@ -54,6 +54,7 @@ export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
   const isCollapsed = controlledCollapsed !== undefined ? controlledCollapsed : localCollapsed;
   const setIsCollapsed = onCollapsedChange || setLocalCollapsed;
   const { openModal } = useLogoutModal();
+  // Only show "Saved Addresses" if user is a SELLER
   const menuItems: ProfileMenuItem[] = [
     {
       id: 'profile',
@@ -73,12 +74,17 @@ export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
       icon: <Building2 className="w-5 h-5" />,
       path: '/profile/bank',
     },
-    {
-      id: 'address',
-      label: 'Saved Addresses',
-      icon: <MapPin className="w-5 h-5" />,
-      path: '/profile/address',
-    },
+    // Conditionally add "Saved Addresses" for sellers only
+    ...(user?.role === 'seller'
+      ? [
+          {
+            id: 'address',
+            label: 'Saved Addresses',
+            icon: <MapPin className="w-5 h-5" />,
+            path: '/profile/address',
+          } as ProfileMenuItem,
+        ]
+      : []),
     {
       id: 'terms',
       label: 'Terms & Conditions',

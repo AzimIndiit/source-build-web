@@ -3,6 +3,31 @@ import { Button } from '@/components/ui';
 
 const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const;
 
+// Helper function to convert 24-hour time to 12-hour format
+const convertTo12Hour = (time24: string): string => {
+  const [hours, minutes] = time24.split(':').map(Number);
+  const period = hours >= 12 ? 'PM' : 'AM';
+  const hours12 = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+  return `${hours12}:${minutes.toString().padStart(2, '0')} ${period}`;
+};
+
+// Helper function to convert 12-hour time to 24-hour format
+const convertTo24Hour = (time12: string): string => {
+  const match = time12.match(/(\d+):(\d+)\s*(AM|PM)/i);
+  if (!match) return time12;
+  
+  let [, hours, minutes, period] = match;
+  let hours24 = parseInt(hours);
+  
+  if (period.toUpperCase() === 'PM' && hours24 !== 12) {
+    hours24 += 12;
+  } else if (period.toUpperCase() === 'AM' && hours24 === 12) {
+    hours24 = 0;
+  }
+  
+  return `${hours24.toString().padStart(2, '0')}:${minutes}`;
+};
+
 type DayHours = {
   open: string;
   close: string;
@@ -165,12 +190,18 @@ export const PickupHoursSelector: React.FC<PickupHoursSelectorProps> = React.mem
                 result[day] = { open: '09:00', close: '17:00', closed: true };
               });
             } else {
-              const match = segment.match(/^(.+?)\s+(\d{2}:\d{2})[–-](\d{2}:\d{2})$/);
+              // Try matching both 24-hour and 12-hour formats
+              let match = segment.match(/^(.+?)\s+(\d{1,2}:\d{2}(?:\s*[AP]M)?)[–-](\d{1,2}:\d{2}(?:\s*[AP]M)?)$/i);
               if (match) {
                 const [, dayPart, openTime, closeTime] = match;
                 const affectedDays = expandDayRange(dayPart);
+                
+                // Convert to 24-hour format if needed for storage
+                const open24 = openTime.includes('M') ? convertTo24Hour(openTime) : openTime;
+                const close24 = closeTime.includes('M') ? convertTo24Hour(closeTime) : closeTime;
+                
                 affectedDays.forEach((day) => {
-                  result[day] = { open: openTime, close: closeTime, closed: false };
+                  result[day] = { open: open24, close: close24, closed: false };
                 });
               }
             }
@@ -251,7 +282,10 @@ export const PickupHoursSelector: React.FC<PickupHoursSelectorProps> = React.mem
             if (!groups[label]) groups[label] = [];
             groups[label].push(day);
           } else {
-            const label = `${entry.open}–${entry.close}`;
+            // Convert to 12-hour format for display
+            const openTime12 = convertTo12Hour(entry.open);
+            const closeTime12 = convertTo12Hour(entry.close);
+            const label = `${openTime12}–${closeTime12}`;
             if (!groups[label]) groups[label] = [];
             groups[label].push(day);
           }

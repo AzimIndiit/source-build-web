@@ -252,10 +252,12 @@ export function useUpdateProductMutation() {
 
       return await productService.updateProduct(id, payload);
     },
-    onSuccess: (response) => {
+    onSuccess: (response, variables) => {
       // Invalidate both the specific product and the list
       queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: ['product'] });
+      // Also invalidate the specific product by ID query
+      queryClient.invalidateQueries({ queryKey: ['product', 'id', variables.id] });
       toast.success(response.message || 'Product updated successfully');
     },
     onError: (error: any) => {
@@ -366,8 +368,12 @@ export function useSaveDraftMutation() {
         return await productService.saveDraft(payload);
       }
     },
-    onSuccess: (response) => {
+    onSuccess: (response, variables) => {
       queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEY });
+      // If updating an existing draft, also invalidate the specific product query
+      if (variables.id) {
+        queryClient.invalidateQueries({ queryKey: ['product', 'id', variables.id] });
+      }
       toast.success(response.message || 'Draft saved successfully');
     },
     onError: (error: any) => {
@@ -532,7 +538,6 @@ export function useProductByIdQuery(id: string) {
     queryKey: ['product', 'id', id],
     queryFn: () => productService.getProductById(id),
     enabled: !!id,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
+ 
   });
 }

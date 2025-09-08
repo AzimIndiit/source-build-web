@@ -172,8 +172,8 @@ class OrderService {
     return response.data;
   }
 
-  // Get orders for seller
-  async getSellerOrders(filters?: OrderFilters): Promise<OrdersListResponse> {
+  // Get orders for driver
+  async getDriverOrders(filters?: OrderFilters): Promise<OrdersListResponse> {
     const params = new URLSearchParams();
 
     if (filters) {
@@ -184,12 +184,30 @@ class OrderService {
       });
     }
 
-    const response = await axiosInstance.get<OrdersListResponse>('/orders/seller/orders', {
+    const response = await axiosInstance.get<OrdersListResponse>('/orders/driver/deliveries', {
       params,
     });
     return response.data;
   }
 
+    // Get orders for seller
+    async getSellerOrders(filters?: OrderFilters): Promise<OrdersListResponse> {
+      const params = new URLSearchParams();
+  
+      if (filters) {
+        Object.entries(filters).forEach(([key, value]) => {
+          if (value !== undefined && value !== null && value !== '') {
+            params.append(key, String(value));
+          }
+        });
+      }
+  
+      const response = await axiosInstance.get<OrdersListResponse>('/orders/seller/orders', {
+        params,
+      });
+      return response.data;
+    }
+  
   // Get single order by ID
   async getOrderById(orderId: string): Promise<OrderResponse> {
     const response = await axiosInstance.get<OrderResponse>(`/orders/${orderId}`);

@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button';
 import { FormInput } from '@/components/forms/FormInput';
 import { useAuth } from '@/hooks/useAuth';
 import { RoleSelectionModal } from '../components/RoleSelectionModal';
+import { authService } from '../services/authService';
+import useAuthStore from '@/stores/authStore';
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -50,10 +52,120 @@ function LoginPage() {
       await login(data.email, data.password);
 
       // Show success toast
-      toast.success('Login successful!');
-    } catch (error) {
+
+      
+      // Get the user from the store after login
+      const currentUser = useAuthStore.getState().user;
+      
+      // Handle navigation based on user role and status
+      if (currentUser) {
+        if (currentUser.role === 'driver') {
+          // Check driver's vehicle and license status
+          const hasVehicles = (currentUser as any).isVehicles || false;
+          const hasLicense = (currentUser as any).isLicense || false;
+          
+          console.log('Driver login - hasVehicles:', hasVehicles, 'hasLicense:', hasLicense);
+          
+          if (!hasVehicles) {
+            navigate('/auth/vehicle-information');
+            toast.error('Please upload your vehicle information!',{
+              icon: '⚠️',
+              style: {
+                background: '#FEF8C6',
+                color: '#000',
+                border: '1px solid #FCE992',
+              },
+            });
+          } else if (!hasLicense) {
+            navigate('/auth/driving-license');
+            toast.error('Please upload your driving license!',{
+              icon: '⚠️',
+              style: {
+                background: '#FEF8C6',
+                color: '#000',
+                border: '1px solid #FCE992',
+              },
+            });
+          } else {
+            navigate('/driver/dashboard');
+            toast.success('Login successful!');
+          }
+        } else if (currentUser.role === 'seller') {
+          navigate('/seller/dashboard');
+          toast.success('Login successful!');
+        } else {
+          navigate('/');
+          toast.success('Login successful!');
+        }
+      } else {
+        // Default navigation if user is not available
+        navigate('/');
+      }
+    } catch (error: any) {
       console.error('Login error:', error);
-      toast.error('Invalid email or password. Please try again.');
+      
+      // Check if the error is due to unverified account
+      if (error.response?.data?.message === 'Account is not verified') {
+        // Store email in session storage for OTP verification
+        sessionStorage.setItem('signup_email', data.email);
+        
+        // Show warning toast
+        toast('Your account is not verified. Sending OTP to your email...', {
+          icon: '⚠️',
+          style: {
+            background: '#FEF8C6',
+            color: '#000',
+            border: '1px solid #FCE992',
+          },
+        });
+
+        // Create OTP for the user
+        try {
+          await authService.createOtp({
+            email: data.email,
+            type: 'UR', // User Registration type
+          });
+
+          // Store the timestamp for OTP resend cooldown
+          localStorage.setItem('otp_resend_timestamp', Date.now().toString());
+
+          toast.success('OTP sent to your email successfully!');
+          
+          // Navigate to OTP verification page
+          navigate('/auth/verify-otp');
+        } catch (otpError: any) {
+          console.error('Failed to send OTP:', otpError);
+          
+          // Check if it's a rate limit error
+          const errorMessage = otpError.response?.data?.message || '';
+          if (errorMessage.includes('Please wait')) {
+            // Extract the seconds from the error message
+            const match = errorMessage.match(/(\d+) seconds/);
+            const seconds = match ? match[1] : 'a few';
+            
+            toast(`Please wait ${seconds} seconds before requesting another OTP`, {
+              icon: '⏰',
+              style: {
+                background: '#FEF8C6',
+                color: '#000',
+                border: '1px solid #FCE992',
+              },
+            });
+            
+            // Still navigate to OTP page where they can use the resend button after cooldown
+            navigate('/auth/verify-otp');
+          } else {
+            // For other OTP errors
+            toast.error('Failed to send OTP. You can resend it from the next page.');
+            // Still navigate to OTP page even if OTP creation fails
+            // User can use the resend button
+            navigate('/auth/verify-otp');
+          }
+        }
+      } else {
+        // Show generic error for other cases
+        toast.error(error.response?.data?.message || 'Invalid email or password. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }

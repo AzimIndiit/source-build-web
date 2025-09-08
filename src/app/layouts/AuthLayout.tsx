@@ -5,12 +5,12 @@ import { ScrollToTop } from '@/components/common/ScrollToTop';
 export function AuthLayout() {
   const { user } = useAuth();
   const location = useLocation();
-
-  // Allow authenticated drivers to access vehicle-information page
+ console.log('user', user)
+  // Allow authenticated drivers to access vehicle-information and driver-license pages
   if (user) {
-    // If user is on vehicle-information page, allow them to stay
-    if (location.pathname === '/auth/vehicle-information' || location.pathname === '/auth/driver-license') {
-      // Only allow drivers on this page
+    // If user is on vehicle-information or driver-license page, allow them to stay
+    if (location.pathname === '/auth/vehicle-information' || location.pathname === '/auth/driver-license' || location.pathname === '/auth/driving-license') {
+      // Only allow drivers on these pages
       if (user.role === 'driver') {
         return (
           <div className="min-h-screen flex items-center">

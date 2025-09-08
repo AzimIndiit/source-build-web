@@ -19,12 +19,13 @@ import { RevenueData } from '../../types';
 import { CustomTooltip } from './CustomTooltip';
 
 interface RevenueChartProps {
+  title: string;
   data: RevenueData[];
   selectedYear: string;
   onYearChange: (year: string) => void;
 }
 
-export const RevenueChart: React.FC<RevenueChartProps> = ({ data, selectedYear, onYearChange }) => {
+export const RevenueChart: React.FC<RevenueChartProps> = ({ title,data, selectedYear, onYearChange }) => {
   const [date, setDate] = React.useState<Date | undefined>(new Date(parseInt(selectedYear), 0, 1));
 
   const handleDateSelect = (newDate: Date | undefined) => {
@@ -37,7 +38,7 @@ export const RevenueChart: React.FC<RevenueChartProps> = ({ data, selectedYear, 
     <Card className="shadow-sm border-gray-50 relative rounded-4xl h-full flex flex-col">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-semibold">Revenue</CardTitle>
+          <CardTitle className="text-lg font-semibold">{title}</CardTitle>
           <Popover>
             <PopoverTrigger asChild className="border border-gray-200 rounded-md">
               <Button

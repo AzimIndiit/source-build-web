@@ -258,6 +258,27 @@ export const router = createBrowserRouter([
                 Component: module.default,
               })),
           },
+          {
+            path: 'notifications',
+            lazy: () =>
+              import('@/features/notifications/pages/NotificationsPage').then((module) => ({
+                Component: module.default,
+              })),
+          },
+          {
+            path: 'messages',
+            lazy: () =>
+              import('@/features/messages/pages/MessagesPage').then((module) => ({
+                Component: module.default,
+              })),
+          },
+          {
+            path: 'messages/:id',
+            lazy: () =>
+              import('@/features/messages/pages/ChatPage').then((module) => ({
+                Component: module.default,
+              })),
+          },
         ],
       },
     ],

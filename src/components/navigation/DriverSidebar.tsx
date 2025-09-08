@@ -10,13 +10,14 @@ import {
   X,
   ChevronLeft,
   Car,
+  Truck,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
 const navigationItems = [
   { name: 'Dashboard', href: '/driver/dashboard', icon: LayoutGrid },
-  { name: 'Vehicle Management', href: '/driver/vehicles', icon: Car },
+  { name: 'Vehicle Management', href: '/driver/vehicles', icon: Truck },
   { name: 'Orders', href: '/driver/orders', icon: Package },
   { name: 'Notifications', href: '/driver/notifications', icon: Bell },
   { name: 'Messages', href: '/driver/messages', icon: MessageSquare },

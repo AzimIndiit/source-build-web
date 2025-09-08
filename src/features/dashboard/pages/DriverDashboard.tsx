@@ -8,9 +8,9 @@ import { OrdersTable } from '../components/OrdersTable';
 import { OrdersTableSkeleton } from '../components/OrdersTableSkeleton';
 
 // Import data and types
-import { metricsData, weekSalesData, revenueData } from '../data/mockData';
+import { metricsDriverData, weekSalesData, revenueData } from '../data/mockData';
 import { useNavigate } from 'react-router-dom';
-import { useSellerOrdersQuery } from '@/features/orders/hooks/useOrderMutations';
+import { useDriverOrdersQuery } from '@/features/orders/hooks/useOrderMutations';
 
 export const DriverDashboard: React.FC = () => {
   const [selectedYear, setSelectedYear] = useState('2024');
@@ -19,11 +19,12 @@ export const DriverDashboard: React.FC = () => {
   const navigate = useNavigate();
 
   // Fetch orders from API
-  const { data, isLoading, isError, error } = useSellerOrdersQuery({
+  const { data, isLoading, isError, error } = useDriverOrdersQuery({
     page: currentPage,
     limit: itemsPerPage,
   });
   const orders = data?.data || [];
+  const totalOrders=data?.pagination?.totalItems || 0;
   // Transform API orders to match dashboard Order type
   const transformedOrders = orders.map((order: any) => ({
     id: order.orderNumber || order._id,
@@ -71,11 +72,11 @@ export const DriverDashboard: React.FC = () => {
   }));
 
   const handleViewAllOrders = () => {
-    navigate('/seller/orders');
+    navigate('/driver/orders');
   };
 
   const handleViewOrderDetails = (orderId: string) => {
-    navigate(`/seller/orders/${orderId}`);
+    navigate(`/driver/orders/${orderId}`);
   };
 
   return (
@@ -86,15 +87,18 @@ export const DriverDashboard: React.FC = () => {
       </div>
 
       {/* Metrics Grid */}
-      <MetricsGrid metrics={metricsData} />
+      <MetricsGrid metrics={metricsDriverData} />
 
       {/* Charts Row - Stack on mobile, side-by-side on tablet and up */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
         <div className="min-h-[350px] lg:min-h-[400px]">
-          <WeeklySalesChart data={weekSalesData} />
+          <WeeklySalesChart 
+           title='This Week Earnings'
+          data={weekSalesData} />
         </div>
         <div className="min-h-[350px] lg:min-h-[400px]">
           <RevenueChart
+            title="Total Earnings"
             data={revenueData}
             selectedYear={selectedYear}
             onYearChange={setSelectedYear}
@@ -117,11 +121,12 @@ export const DriverDashboard: React.FC = () => {
         </div>
       ) : (
         <OrdersTable
-          title="Latest Orders"
+          title="New Assigned Orders"
           orders={transformedOrders}
           showSort={false}
           onViewAll={handleViewAllOrders}
           onViewDetails={handleViewOrderDetails}
+          totalOrders={totalOrders}
         />
       )}
     </div>

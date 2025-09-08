@@ -138,6 +138,7 @@ const ManageBankAccountsPage: React.FC = () => {
               <BankAccountCard
                 key={account.id}
                 id={account.id}
+                totalBankAccount={accounts.length === 1 ? true : false}
                 accountHolder={account.accountHolderName}
                 accountNumber={`XXXX XXXX XXXX ${account.accountNumber.slice(-4)}`}
                 bankName={account.bankName}

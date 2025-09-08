@@ -38,7 +38,7 @@ interface ExtendedUser {
   cellPhone?: string;
   einNumber?: string;
   salesTaxId?: string;
-  localDelivery?: string  | boolean;
+  localDelivery?: string | boolean;
   profile?: {
     isVehicles?: boolean;
     isLicense?: boolean;
@@ -229,7 +229,7 @@ const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({ onSave }) => 
       localDelivery: 'no',
     },
   });
-  console.log('methods.', methods.formState.errors)
+  console.log('methods.', methods.formState.errors);
 
   // Update form only on initial load or when user data significantly changes
   // Track if form has been initialized to prevent unnecessary resets
@@ -453,7 +453,13 @@ const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({ onSave }) => 
                     disabled
                     placeholder="Enter your email address"
                   />
-                  <FormInput name="region" label="Region" placeholder="Enter your region" />
+                {userRole==='seller' &&  <FormInput name="region" label="Region" placeholder="Enter your region" />}
+                {userRole==='driver' &&        <FormPhoneInput
+                        name="phone"
+                        label="Phone"
+                        placeholder="(123) 456-7890"
+                        disabled={updateProfileMutation.isPending}
+                      />}
                 </div>
 
                 {/* Seller-specific fields */}
@@ -538,14 +544,19 @@ const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({ onSave }) => 
                     {/* Local Delivery Option */}
                   </>
                 )}
-
+                {userRole === 'driver' && (
+                  <>
+               
+                    <div className="grid grid-cols-1 gap-4 sm:gap-6">
+                  <FormInput name="address" label="Address" placeholder="Enter your address" disabled={updateProfileMutation.isPending} />
+                </div>
+                  </>
+                )}
                 {/* Region and Address - Common fields */}
-                {/* <div className="grid grid-cols-1 gap-4 sm:gap-6">
-                  <FormInput name="address" label="Address" placeholder="Enter your address" />
-                </div> */}
+          
 
                 {/* Description */}
-                <FormTextarea
+{userRole==='seller' &&                <FormTextarea
                   name="description"
                   label="Description"
                   placeholder="Tell us about yourself..."
@@ -553,7 +564,7 @@ const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({ onSave }) => 
                   maxLength={500}
                   className="min-h-[120px]"
                   disabled={updateProfileMutation.isPending}
-                />
+                />}
 
                 <div
                   className={`pt-4 sm:pt-6 flex flex-col-reverse sm:flex-row items-center  gap-4 ${userData?.authType === 'email' ? 'justify-between' : 'justify-end'}`}

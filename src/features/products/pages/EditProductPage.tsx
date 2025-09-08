@@ -26,7 +26,7 @@ import {
 } from '../hooks/useProductMutations';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui';
-import { validateImageFile, validateMultipleImages } from '@/utils/imageValidation';
+import { validateMultipleImages } from '@/utils/imageValidation';
 
 // Variant schema
 const variantSchema = z.object({
@@ -964,7 +964,7 @@ function EditProductPage() {
   };
 
   const handleSaveDraft = async () => {
-    // Check if minimal required fields are present
+    // Check if minimal required fields are present (only title, category, price, and images are required)
     const formData = methods.getValues();
 
     // Validate minimal required fields for draft
@@ -974,19 +974,21 @@ function EditProductPage() {
       methods.setError('title', { message: 'Title is required to save as draft' });
       return;
     }
-    // Validate minimal required fields for draft
+    
     if (!formData.category || formData.category.trim().length === 0) {
       toast.error('Category is required to save as draft');
       methods.setFocus('category');
       methods.setError('category', { message: 'Category is required to save as draft' });
       return;
     }
+    
     if (!formData.price || formData.price.trim().length === 0) {
       toast.error('Price is required to save as draft');
       methods.setFocus('price');
       methods.setError('price', { message: 'Price is required to save as draft' });
       return;
     }
+    
     // Check for minimum required images for draft
     const totalImages = existingImages.length + uploadedPhotos.length;
     if (totalImages < 2) {
@@ -1077,21 +1079,26 @@ function EditProductPage() {
     ) {
       draftData.dimensions = formData.dimensions;
     }
-    if (formData.discount && formData.discount.discountType !== 'none') {
-      // For drafts, include discount even if value is empty
+    if (formData.discount && formData.discount.discountType !== 'none' && formData.discount.discountValue && formData.discount.discountValue.trim()) {
+      // Only include discount if it has both a valid type and value
       draftData.discount = {
         discountType: formData.discount.discountType,
-        discountValue: formData.discount.discountValue || '',
+        discountValue: formData.discount.discountValue,
       };
     }
     if (formData.variants && formData.variants.length > 0) {
-      // For drafts, ensure variant discount values are handled properly
+      // Filter out invalid variant discounts
       draftData.variants = formData.variants.map((v) => ({
         ...v,
-        discount: {
-          discountType: v.discount.discountType,
-          discountValue: v.discount.discountValue || '',
-        },
+        discount: (v.discount.discountType !== 'none' && v.discount.discountValue && v.discount.discountValue.trim())
+          ? {
+              discountType: v.discount.discountType,
+              discountValue: v.discount.discountValue,
+            }
+          : {
+              discountType: 'none',
+              discountValue: '',
+            },
       }));
     }
     if (variantFiles.length > 0) {

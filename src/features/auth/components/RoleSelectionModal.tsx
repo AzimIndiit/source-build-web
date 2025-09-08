@@ -244,15 +244,18 @@ export function RoleSelectionModal({ isOpen, userId }: RoleSelectionModalProps) 
   return (
     <Dialog
       open={isOpen}
+    
       onOpenChange={() => {
         // Prevent closing the modal by clicking outside or pressing Escape
         // Modal can only be closed after successful submission
       }}
     >
       <DialogContent
+      hideCloseButton={true}
         className="w-[95vw] max-w-[95vw] sm:max-w-[500px] md:max-w-[600px] bg-white max-h-[90vh] overflow-y-auto"
         onPointerDownOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
+
       >
         <DialogHeader>
           <DialogTitle>Select Your Account Type</DialogTitle>

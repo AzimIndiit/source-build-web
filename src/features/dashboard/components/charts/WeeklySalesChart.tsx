@@ -13,14 +13,15 @@ import { SalesData } from '../../types';
 import { CustomTooltip } from './CustomTooltip';
 
 interface WeeklySalesChartProps {
+  title:string;
   data: SalesData[];
 }
 
-export const WeeklySalesChart: React.FC<WeeklySalesChartProps> = ({ data }) => {
+export const WeeklySalesChart: React.FC<WeeklySalesChartProps> = ({title, data }) => {
   return (
     <Card className="shadow-sm border-gray-50 bg-white rounded-3xl h-full flex flex-col">
       <CardHeader className="pb-4">
-        <CardTitle className="text-xl font-semibold text-gray-900">This Week Sales</CardTitle>
+        <CardTitle className="text-xl font-semibold text-gray-900">{title}</CardTitle>
       </CardHeader>
       <CardContent className="flex-1">
         <ResponsiveContainer width="100%" height="100%" minHeight={250}>

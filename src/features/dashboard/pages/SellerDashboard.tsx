@@ -8,7 +8,7 @@ import { OrdersTable } from '../components/OrdersTable';
 import { OrdersTableSkeleton } from '../components/OrdersTableSkeleton';
 
 // Import data and types
-import { metricsData, weekSalesData, revenueData } from '../data/mockData';
+import { metricsSellerData, weekSalesData, revenueData } from '../data/mockData';
 import { useNavigate } from 'react-router-dom';
 import { useSellerOrdersQuery } from '@/features/orders/hooks/useOrderMutations';
 
@@ -86,15 +86,16 @@ export const SellerDashboard: React.FC = () => {
       </div>
 
       {/* Metrics Grid */}
-      <MetricsGrid metrics={metricsData} />
+      <MetricsGrid metrics={metricsSellerData} />
 
       {/* Charts Row - Stack on mobile, side-by-side on tablet and up */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
         <div className="min-h-[350px] lg:min-h-[400px]">
-          <WeeklySalesChart data={weekSalesData} />
+          <WeeklySalesChart title="This Week Sales" data={weekSalesData} />
         </div>
         <div className="min-h-[350px] lg:min-h-[400px]">
           <RevenueChart
+            title="Revenue"
             data={revenueData}
             selectedYear={selectedYear}
             onYearChange={setSelectedYear}

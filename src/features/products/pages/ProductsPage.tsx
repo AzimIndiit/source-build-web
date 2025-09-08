@@ -181,7 +181,14 @@ const ProductsPage: React.FC = () => {
 
   const handleProductClick = (slug: string, status: string) => {
     if (status === 'draft') {
-      toast.error('Draft products are not available for preview');
+      toast('Draft products are not available for preview', {
+        icon: '⚠️',
+        style: {
+          background: '#FEF8C6',
+          color: '#000',
+          border: '1px solid #FCE992',
+        },
+      });
       return;
     } else {
       navigate(`/seller/products/${slug}`);

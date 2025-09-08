@@ -111,7 +111,7 @@ function SignupPage() {
             options={[
               // { value: 'buyer', label: 'Buyer' },
               { value: 'seller', label: 'Seller' },
-              // { value: 'driver', label: 'Driver' },
+              { value: 'driver', label: 'Driver' },
             ]}
           />
           <div className="grid grid-cols-2 gap-4">

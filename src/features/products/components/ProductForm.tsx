@@ -112,6 +112,11 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       'productTag',
     ];
 
+    // Add main product discount validation if discount type is not 'none'
+    if (formValues.discount?.discountType && formValues.discount.discountType !== 'none') {
+      step1Fields.push('discount.discountValue');
+    }
+
     // Add variant fields to validation if variants exist
     if (variants && variants.length > 0) {
       variants.forEach((_, index) => {
@@ -129,6 +134,13 @@ export const ProductForm: React.FC<ProductFormProps> = ({
     const isValid = await trigger(step1Fields);
 
     if (!isValid) {
+      // Check if error is in discount
+      const discountError = errors.discount as any;
+      if (discountError?.discountValue) {
+        toast.error(`Discount: ${discountError.discountValue.message}`);
+        return false;
+      }
+
       // Check if error is in variants
       const variantsErrors = errors.variants as any;
       const hasVariantError = variants.some((_, index) => {
@@ -493,7 +505,6 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                     }}
                     variant="outline"
                     className="flex items-center gap-2 text-sm h-[48px] border border-primary text-primary hover:text-primary hover:bg-primary/10"
-                    disabled={variants.length >= 5}
                   >
                     <Plus className="h-4 w-4" />
                     Add Location
@@ -515,7 +526,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
               {/* Product Dimensions */}
               <div className="space-y-3">
                 <h4 className="text-sm font-medium text-gray-900">Product Dimensions (Optional)</h4>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   <FormInput
                     name="dimensions.width"
                     label="Width (inches)"
@@ -1104,46 +1115,50 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                   </p>
                 )}
               </div>
-              <hr className="border-gray-200 my-4" />
 
               {/* Conditional Fields based on selected options */}
               {formValues.marketplaceOptions?.pickup && (
-                <div className="mb-4 mt-2">
-                  <label className="block mb-2 text-sm font-medium text-gray-900">
-                    Pickup Hours
-                  </label>
-                  <PickupHoursSelector
-                    value={formValues.pickupHours}
-                    onChange={(value) => setValue('pickupHours', value)}
-                  />
-                </div>
+                <>
+                  <hr className="border-gray-200 my-4" />
+                  <div className="mb-4 mt-2">
+                    <label className="block mb-2 text-sm font-medium text-gray-900">
+                      Pickup Hours
+                    </label>
+                    <PickupHoursSelector
+                      value={formValues.pickupHours}
+                      onChange={(value) => setValue('pickupHours', value)}
+                    />
+                  </div>
+                </>
               )}
-              <hr className="border-gray-200 my-4" />
 
               {formValues.marketplaceOptions?.shipping && (
-                <div className="mb-4">
-                  <FormInput
-                    disabled={isLoading}
-                    name="shippingPrice"
-                    label="Shipping Price ($)"
-                    placeholder="$10.00"
-                    type="text"
-                    className="border-gray-300 h-[53px]"
-                    onInput={(e: React.FormEvent<HTMLInputElement>) => {
-                      const input = e.currentTarget;
-                      const value = input.value;
-                      const cleaned = value.replace(/[^0-9.]/g, '');
-                      const parts = cleaned.split('.');
-                      if (parts.length > 2) {
-                        input.value = parts[0] + '.' + parts.slice(1).join('');
-                      } else if (parts.length === 2 && parts[1].length > 2) {
-                        input.value = parts[0] + '.' + parts[1].substring(0, 2);
-                      } else {
-                        input.value = cleaned;
-                      }
-                    }}
-                  />
-                </div>
+                <>
+                  <hr className="border-gray-200 my-4" />
+                  <div className="mb-4">
+                    <FormInput
+                      disabled={isLoading}
+                      name="shippingPrice"
+                      label="Shipping Price ($)"
+                      placeholder="$10.00"
+                      type="text"
+                      className="border-gray-300 h-[53px]"
+                      onInput={(e: React.FormEvent<HTMLInputElement>) => {
+                        const input = e.currentTarget;
+                        const value = input.value;
+                        const cleaned = value.replace(/[^0-9.]/g, '');
+                        const parts = cleaned.split('.');
+                        if (parts.length > 2) {
+                          input.value = parts[0] + '.' + parts.slice(1).join('');
+                        } else if (parts.length === 2 && parts[1].length > 2) {
+                          input.value = parts[0] + '.' + parts[1].substring(0, 2);
+                        } else {
+                          input.value = cleaned;
+                        }
+                      }}
+                    />
+                  </div>
+                </>
               )}
               <hr className="border-gray-200 my-4" />
 
