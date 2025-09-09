@@ -6,6 +6,7 @@ import { ReviewModal } from './ReviewModal';
 import { Badge } from '@/components/ui';
 import { getStatusBadgeColor } from '@/features/dashboard/utils/orderUtils';
 import { formatDate } from '@/lib/date-utils';
+import { useAuth } from '@/hooks/useAuth';
 
 interface OrderProductCardProps {
   order: Order;
@@ -18,22 +19,13 @@ export const OrderProductCard: React.FC<OrderProductCardProps> = ({
   onViewItem,
   onWriteReview,
 }) => {
+  const {user} = useAuth();
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
 
   // Format the order ID to match the image format (408-2671656-7090703)
   const formattedOrderId = order.id.includes('-')
     ? order.id
     : `408-2671656-${order.id.padStart(7, '0')}`;
-
-  const handleReviewSubmit = (
-    buyerRating: number,
-    buyerComment: string,
-    driverRating: number,
-    driverComment: string
-  ) => {
-    console.log('Review submitted:', { buyerRating, buyerComment, driverRating, driverComment });
-    onWriteReview?.();
-  };
 
   // Calculate total quantity
   const totalQuantity =
@@ -137,7 +129,7 @@ export const OrderProductCard: React.FC<OrderProductCardProps> = ({
                   </p>
                 </div>
                 {/* View Item Button */}
-                <Button
+               {user?.role === 'seller' && <Button
                   variant="outline"
                   onClick={() => {
                     onViewItem?.({ slug: product.productRef?.slug || '' });
@@ -146,7 +138,7 @@ export const OrderProductCard: React.FC<OrderProductCardProps> = ({
                   className="border-primary text-primary hover:bg-blue-50 rounded-lg px-6 py-2 h-auto font-medium"
                 >
                   View your item
-                </Button>
+                </Button>}
               </div>
             </div>
           ))}
@@ -157,7 +149,11 @@ export const OrderProductCard: React.FC<OrderProductCardProps> = ({
           <ReviewModal
             isOpen={isReviewModalOpen}
             onClose={() => setIsReviewModalOpen(false)}
-            onSubmit={handleReviewSubmit}
+            orderId={order?._id}
+            order={order}
+            onSuccess={() => {
+              onWriteReview?.();
+            }}
           />
         )}
       </div>

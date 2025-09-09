@@ -104,6 +104,34 @@ const useAuthStore = create<AuthState>()(
         // Handle socket connection
         if (user) {
           socketService.connect(user.id);
+          
+          // Check if driver needs to complete onboarding
+          if (user.role === 'driver') {
+            // Check both direct properties and profile properties
+            const hasVehicles = (user as any)?.isVehicles || user.profile?.isVehicles;
+            const hasLicense = (user as any)?.isLicense || user.profile?.isLicense;
+            
+            console.log('Driver onboarding check:', { hasVehicles, hasLicense });
+            
+            // Delay navigation slightly to ensure React Router is ready
+            setTimeout(() => {
+              // Priority 1: Complete vehicle information first
+              if (!hasVehicles) {
+                console.log('Redirecting to vehicle information page');
+                if (window.location.pathname !== '/auth/vehicle-information') {
+                  window.location.href = '/auth/vehicle-information';
+                }
+              } 
+              // Priority 2: Complete license information after vehicle
+              else if (!hasLicense) {
+                console.log('Redirecting to driver license page');
+                if (window.location.pathname !== '/auth/driver-license' && 
+                    window.location.pathname !== '/auth/driving-license') {
+                  window.location.href = '/auth/driver-license';
+                }
+              }
+            }, 100);
+          }
         } else {
           socketService.disconnect();
         }
@@ -245,6 +273,16 @@ const useAuthStore = create<AuthState>()(
             if (user) {
               console.log('AuthStore: User profile fetched', user);
               get().setUser(user);
+              
+              // Check if driver needs onboarding after login
+              if (user.role === 'driver') {
+                const hasVehicles = (user as any)?.isVehicles || (user as any)?.profile?.isVehicles;
+                const hasLicense = (user as any)?.isLicense || (user as any)?.profile?.isLicense;
+                
+                // Return early to let setUser handle the navigation
+                // This ensures the navigation happens after state is updated
+                return;
+              }
             } else {
               throw new Error('No user data received from /me');
             }

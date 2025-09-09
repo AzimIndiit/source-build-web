@@ -2,6 +2,9 @@ export interface Customer {
   name: string;
   email: string;
   avatar?: string;
+  rating?:number;
+  review?:string;
+  
 }
 
 export interface OrderProduct {
@@ -18,6 +21,8 @@ export interface Order {
   product: string; // Keep for backward compatibility
   products?: OrderProduct[]; // New field for multiple products
   customer: Customer;
+  driver: Customer;
+  seller:Customer
   date: string;
   amount: string;
   status: 'Delivered' | 'Processing' | 'Pending' | 'Cancelled' | 'Confirm';

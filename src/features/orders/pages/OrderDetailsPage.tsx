@@ -10,13 +10,15 @@ import { OrderStatusUpdater } from '../components/OrderStatusUpdater';
 import { OrderDetailsPageSkeleton } from '../components/OrderDetailsPageSkeleton';
 import { OrderSummary, Customer } from '@/features/dashboard/types';
 import { useOrderByIdQuery } from '../hooks/useOrderMutations';
+import { useAuth } from '@/hooks/useAuth';
 
 const OrderDetailsPage: React.FC = () => {
+  const {user} = useAuth();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
   // Fetch order from API
-  const { data, isLoading, isError } = useOrderByIdQuery(id || '');
+  const { data, isLoading, isError ,refetch } = useOrderByIdQuery(id || '');
 
   // Loading state
   if (isLoading) {
@@ -32,7 +34,7 @@ const OrderDetailsPage: React.FC = () => {
           <p className="text-gray-600 mb-4">The order you're looking for doesn't exist.</p>
           <Button
             className="text-white hover:text-white"
-            onClick={() => navigate('/seller/orders')}
+            onClick={() => navigate(`/${user?.role}/orders`)}
           >
             Back to Orders
           </Button>
@@ -44,7 +46,16 @@ const OrderDetailsPage: React.FC = () => {
   // Transform API data to match expected format
   const apiOrder = data.data;
   const order = {
+    _id: apiOrder._id,
     id: apiOrder.orderNumber || apiOrder._id,
+    seller: {
+      id: apiOrder.seller?.userRef?._id || '',
+      displayName: apiOrder.seller?.userRef?.displayName || 'Seller',
+      email: apiOrder.seller?.userRef?.email || '',
+      avatar: apiOrder.seller?.userRef?.avatar || '',
+      rating: apiOrder.seller?.reviewRef?.rating,
+      review: apiOrder.seller?.reviewRef?.review,
+    } as Customer,
     customer: {
       id: apiOrder.customer?.userRef?._id || '',
       displayName: apiOrder.customer?.userRef?.displayName || 'Customer',
@@ -70,6 +81,7 @@ const OrderDetailsPage: React.FC = () => {
     orderSummary: apiOrder.orderSummary
       ? ({
           shippingAddress: apiOrder.orderSummary.shippingAddress,
+          pickupAddress: apiOrder.orderSummary.pickupAddress || null,
           proofOfDelivery: apiOrder.orderSummary.proofOfDelivery || '',
           paymentMethod: {
             type: apiOrder.orderSummary.paymentMethod.type,
@@ -86,17 +98,18 @@ const OrderDetailsPage: React.FC = () => {
   };
 
   const breadcrumbItems = [
-    { label: 'Orders', href: '/seller/orders' },
+    { label: 'Orders', href: `/${user?.role}/orders`},
     { label: `Order Details`, isCurrentPage: true },
   ];
 
   const handleWriteReview = () => {
-    console.log('Writing review...');
+    // Refetch order data after review submission
+    refetch();
   };
 
   const handleViewItem = ({ slug }: { slug: string }) => {
     console.log('Viewing item...');
-    navigate(`/seller/products/${slug}`);
+    navigate(`/${user?.role}/products/${slug}`);
   };
 
   // Check if either customer or driver has added a review
@@ -130,18 +143,28 @@ const OrderDetailsPage: React.FC = () => {
         {/* Left Column - Order Details */}
         <div className=" space-y-4">
           {/* Customer Details Section */}
+          {order?.seller && user?.role === 'driver' && (
+            <CustomerDetailsSection
+              customerDetails={order.seller}
+              title="Vendor Details"
+              reviewTitle="Reviews & Rating From Vendor"
+            />
+          )}
+
           <CustomerDetailsSection
             customerDetails={order.customer}
             title="Customer Details"
             reviewTitle="Reviews & Rating From Customer"
           />
-          {order?.driver && (
+          {order?.driver && user?.role === 'seller' && (
             <CustomerDetailsSection
               customerDetails={order.driver}
               title="Assign To"
               reviewTitle="Reviews & Rating From Driver"
             />
           )}
+
+   
 
           {/* Order Timeline - Only show if no reviews exist */}
           {shouldShowBookingStatus && <BookingStatus order={order} />}
@@ -150,6 +173,8 @@ const OrderDetailsPage: React.FC = () => {
         {/* Right Column - Order Summary */}
         <div className="lg:col-span-2">
           <OrderSummarySection
+            refetch={refetch}
+            order={order}
             showHelpBtn={showHelpBtn}
             orderSummary={order.orderSummary as OrderSummary}
           />

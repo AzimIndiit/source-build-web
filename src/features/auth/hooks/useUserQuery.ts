@@ -30,10 +30,8 @@ export interface ApiUser {
   currentLocationId?: string;
   currentLocation?: any; // Populated location object
   authType?: string;
-  profile?: {
     isVehicles?: boolean;
     isLicense?: boolean;
-  };
 }
 
 export const transformApiUserToUser = (
@@ -45,7 +43,9 @@ export const transformApiUserToUser = (
   einNumber?: string;
   salesTaxId?: string;
   localDelivery?: boolean;
-} => {
+  isVehicles?: boolean;
+  isLicense?: boolean;
+  } => {
   return {
     id: apiUser.id || apiUser._id || '',
     email: apiUser.email,
@@ -79,6 +79,8 @@ export const transformApiUserToUser = (
     localDelivery: apiUser.localDelivery,
     profile: apiUser.profile,
     authType: apiUser.authType,
+    isVehicles: apiUser?.isVehicles,
+    isLicense: apiUser?.isLicense,
   };
 };
 
@@ -116,7 +118,7 @@ export const useUserQuery = () => {
 
       try {
         const response = await authService.getProfile();
-
+        
         if (response.data && response.data.user) {
           return transformApiUserToUser(response.data.user as ApiUser);
         }

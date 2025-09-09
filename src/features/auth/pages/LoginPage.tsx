@@ -77,7 +77,7 @@ function LoginPage() {
               },
             });
           } else if (!hasLicense) {
-            navigate('/auth/driving-license');
+            navigate('/auth/driver-license');
             toast.error('Please upload your driving license!',{
               icon: '⚠️',
               style: {

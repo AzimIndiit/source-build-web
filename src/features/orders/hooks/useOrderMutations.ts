@@ -1,6 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
 import { orderService, OrderFilters, Order } from '../services/orderService';
+import { queryClient } from '@/lib/queryClient';
 
 export const useOrdersQuery = (filters?: OrderFilters) => {
   return useQuery({
@@ -59,7 +60,7 @@ export const useOrderStatsQuery = (period?: 'day' | 'week' | 'month' | 'year') =
 };
 
 export const useUpdateOrderStatus = () => {
-  const queryClient = useQueryClient();
+
 
   return useMutation({
     mutationFn: ({ orderId, status }: { orderId: string; status: string }) =>
@@ -77,7 +78,7 @@ export const useUpdateOrderStatus = () => {
 };
 
 export const useCancelOrder = () => {
-  const queryClient = useQueryClient();
+  
 
   return useMutation({
     mutationFn: ({ orderId, reason }: { orderId: string; reason: string }) =>
@@ -95,7 +96,7 @@ export const useCancelOrder = () => {
 };
 
 export const useAssignDriver = () => {
-  const queryClient = useQueryClient();
+  
 
   return useMutation({
     mutationFn: ({ orderId, driverId }: { orderId: string; driverId: string }) =>
@@ -113,7 +114,7 @@ export const useAssignDriver = () => {
 };
 
 export const useMarkAsDelivered = () => {
-  const queryClient = useQueryClient();
+  
 
   return useMutation({
     mutationFn: ({ orderId, proofOfDelivery }: { orderId: string; proofOfDelivery?: string }) =>

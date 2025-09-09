@@ -225,7 +225,7 @@ export function RoleSelectionModal({ isOpen, userId }: RoleSelectionModalProps) 
           if (!currentUser?.isVehicles) {
             navigate('/vehicle-information');
           } else if (!currentUser?.isLicense) {
-            navigate('/driving-license');
+            navigate('/driver-license');
           } else {
             navigate('/driver/dashboard');
           }

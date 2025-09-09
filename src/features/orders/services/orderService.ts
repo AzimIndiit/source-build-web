@@ -34,7 +34,9 @@ export interface PaymentDetails {
 
 export interface OrderSummary {
   shippingAddress: ShippingAddress;
+  pickupAddress?: ShippingAddress;
   proofOfDelivery?: string;
+  deliveryMessage?: string;
   paymentMethod: PaymentDetails;
   subTotal: number;
   shippingFee: number;
@@ -47,6 +49,19 @@ export interface Order {
   _id: string;
   id: string;
   orderNumber?: string;
+  seller?: {
+    userRef: {
+      _id: string;
+      displayName: string;
+      email: string;
+      avatar: string;
+    };
+    reviewRef?: {
+      rating: number;
+      review: string;
+      reviewedAt: string;
+    };
+  };
   customer: {
     userRef: {
       _id: string;
@@ -264,9 +279,10 @@ class OrderService {
   }
 
   // Mark order as delivered
-  async markAsDelivered(orderId: string, proofOfDelivery?: string): Promise<OrderResponse> {
+  async markAsDelivered(orderId: string, proofOfDelivery?: string, deliveryMessage?: string): Promise<OrderResponse> {
     const response = await axiosInstance.patch<OrderResponse>(`/orders/${orderId}/deliver`, {
       proofOfDelivery,
+      deliveryMessage,
     });
     return response.data;
   }
@@ -302,6 +318,19 @@ class OrderService {
     const response = await axiosInstance.get<OrdersListResponse>('/orders/driver/deliveries', {
       params,
     });
+    return response.data;
+  }
+
+  // Add review for order (single endpoint for all review types)
+  async addOrderReview(
+    orderId: string, 
+    reviews: {
+      customer?: { rating: number; review: string };
+      driver?: { rating: number; review: string };
+      seller?: { rating: number; review: string };
+    }
+  ): Promise<OrderResponse> {
+    const response = await axiosInstance.post<OrderResponse>(`/orders/${orderId}/review`, reviews);
     return response.data;
   }
 }

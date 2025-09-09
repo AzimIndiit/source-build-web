@@ -47,6 +47,15 @@ export interface OrderSummary {
     country: string;
     zip: string;
   };
+  pickupAddress?: {
+    name: string;
+    phone: string;
+    address: string;
+    city: string;
+    state: string;
+    country: string;
+    zip: string;
+  };
   proofOfDelivery: string;
   paymentMethod: {
     type: string;
