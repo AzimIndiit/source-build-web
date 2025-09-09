@@ -76,6 +76,11 @@ const ManageSavedAddressPage: React.FC = () => {
             setDeleteModalOpen(false);
             setAddressToDelete(null);
           },
+          onError: (error) => {
+            console.error('Failed to delete address:', error);
+            setDeleteModalOpen(false);
+            setAddressToDelete(null);
+          },
         });
       }
     }

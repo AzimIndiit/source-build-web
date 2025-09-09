@@ -230,14 +230,17 @@ export const FormSelect: React.FC<FormSelectProps> = ({
       return <span className="text-gray-500">{placeholder}</span>;
     }
 
-    // Show 2 badges on mobile, 3 on tablet and desktop
-    const mobileMaxBadges = 2;
-    const desktopMaxBadges = 3;
+    // Show different badge counts based on screen size
+    const mobileMaxBadges = 2;   // Mobile: 2 badges
+    const tabletMaxBadges = 5;   // Tablet: 5 badges  
+    const desktopMaxBadges = 3;  // Desktop: 3 badges
     
-    // Get labels for both mobile and desktop views
+    // Get labels for different screen sizes
     const mobileLabels = selectedLabels.slice(0, mobileMaxBadges);
+    const tabletLabels = selectedLabels.slice(0, tabletMaxBadges);
     const desktopLabels = selectedLabels.slice(0, desktopMaxBadges);
     const mobileRemainingCount = selectedValues.length - mobileMaxBadges;
+    const tabletRemainingCount = selectedValues.length - tabletMaxBadges;
     const desktopRemainingCount = selectedValues.length - desktopMaxBadges;
 
     return (
@@ -273,8 +276,38 @@ export const FormSelect: React.FC<FormSelectProps> = ({
             )}
           </div>
 
-          {/* Tablet/Desktop view - show 3 badges */}
-          <div className="hidden sm:flex gap-1 items-center">
+          {/* Tablet view - show 5 badges */}
+          <div className="hidden sm:flex lg:hidden gap-1 items-center">
+            {tabletLabels.map((label, index) => (
+              <Badge
+                key={selectedValues[index]}
+                variant="secondary"
+                className="text-xs inline-flex items-center gap-0.5 px-2 py-1 rounded-md bg-primary/10 max-w-[120px] group"
+              >
+                <span className="truncate flex-1 min-w-0">{label}</span>
+                <button
+                  type="button"
+                  className="ml-0.5 p-0.5 hover:bg-red-200/50 rounded-sm transition-colors duration-150 inline-flex items-center justify-center flex-shrink-0"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleRemoveSelection(selectedValues[index], selectedValues, field.onChange);
+                  }}
+                  tabIndex={-1}
+                >
+                  <X size={12} className="text-gray-500 hover:text-red-600" />
+                </button>
+              </Badge>
+            ))}
+            {tabletRemainingCount > 0 && (
+              <Badge variant="outline" className="text-xs px-2 py-1 rounded-md whitespace-nowrap">
+                +{tabletRemainingCount} more
+              </Badge>
+            )}
+          </div>
+
+          {/* Desktop view - show 3 badges */}
+          <div className="hidden lg:flex gap-1 items-center">
             {desktopLabels.map((label, index) => (
               <Badge
                 key={selectedValues[index]}

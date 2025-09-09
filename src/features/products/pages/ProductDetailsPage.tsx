@@ -12,22 +12,103 @@ import { useProductQuery, useDeleteProductMutation } from '../hooks/useProductMu
 import toast from 'react-hot-toast';
 import { format, parse } from 'date-fns';
 
-// Helper function to ensure pickup hours are displayed in 12-hour format
-const formatPickupHoursDisplay = (hours: string): string => {
-  if (!hours) return '';
+// Helper function to parse and format pickup hours
+const formatPickupHoursDisplay = (hours: string | object): React.ReactNode => {
+  if (!hours) return null;
   
-  // If already in 12-hour format (contains AM/PM), return as is
-  if (hours.includes('AM') || hours.includes('PM')) {
-    return hours;
+  // If it's an object with day-specific hours
+  if (typeof hours === 'object') {
+    const daysOrder = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+    const dayAbbrev: { [key: string]: string } = {
+      monday: 'Mon',
+      tuesday: 'Tue', 
+      wednesday: 'Wed',
+      thursday: 'Thu',
+      friday: 'Fri',
+      saturday: 'Sat',
+      sunday: 'Sun'
+    };
+    
+    return (
+      <div className="space-y-0.5">
+        {daysOrder.map(day => {
+          const dayHours = (hours as any)[day];
+          if (!dayHours) return null;
+          return (
+            <div key={day} className="flex gap-2 text-[11px] leading-tight">
+              <span className="font-medium text-gray-700 w-7">{dayAbbrev[day]}:</span>
+              <span className="text-gray-600">{dayHours.open}-{dayHours.close}</span>
+            </div>
+          );
+        })}
+      </div>
+    );
   }
   
-  // Convert 24-hour format to 12-hour format
-  return hours.replace(/(\d{1,2}):(\d{2})/g, (match, h, m) => {
-    const hour = parseInt(h);
-    const period = hour >= 12 ? 'PM' : 'AM';
-    const hour12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-    return `${hour12}:${m} ${period}`;
-  });
+  // If it's a string, parse it
+  if (typeof hours === 'string') {
+    // Check if already formatted with days
+    if (hours.includes('Mon') || hours.includes('Tue') || hours.includes('Wed')) {
+      // Parse the string into structured format
+      const dayMap: { [key: string]: string } = {
+        'Mon': 'Mon',
+        'Tue': 'Tue',
+        'Wed': 'Wed',
+        'Thu': 'Thu',
+        'Fri': 'Fri',
+        'Sat': 'Sat',
+        'Sun': 'Sun'
+      };
+      
+      // Split by commas to get each day's hours
+      const parts = hours.split(',').map(s => s.trim());
+      const parsedHours: { day: string; hours: string }[] = [];
+      
+      parts.forEach(part => {
+        // Check each day abbreviation
+        for (const [abbrev, displayName] of Object.entries(dayMap)) {
+          if (part.includes(abbrev)) {
+            // Extract the time portion after the day
+            const timeMatch = part.match(new RegExp(`${abbrev}\\s*(.+)`));
+            if (timeMatch) {
+              parsedHours.push({ day: displayName, hours: timeMatch[1].trim() });
+            }
+            break;
+          }
+        }
+      });
+      
+      if (parsedHours.length > 0) {
+        return (
+          <div className="space-y-0.5">
+            {parsedHours.map(({ day, hours: dayHours }) => (
+              <div key={day} className="flex gap-2 text-[11px] leading-tight">
+                <span className="font-medium text-gray-700 w-7">{day}:</span>
+                <span className="text-gray-600">{dayHours}</span>
+              </div>
+            ))}
+          </div>
+        );
+      }
+    }
+    
+    // If already in 12-hour format (contains AM/PM), return as is
+    if (hours.includes('AM') || hours.includes('PM')) {
+      return <span className="text-xs text-gray-500">{hours}</span>;
+    }
+    
+    // Convert 24-hour format to 12-hour format
+    const formatted = hours.replace(/(\d{1,2}):(\d{2})/g, (match, h, m) => {
+      const hour = parseInt(h);
+      const period = hour >= 12 ? 'PM' : 'AM';
+      const hour12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+      return `${hour12}:${m} ${period}`;
+    });
+    
+    return <span className="text-xs text-gray-500">{formatted}</span>;
+  }
+  
+  return null;
 };
 
 const ProductDetailsPage: React.FC = () => {
@@ -140,7 +221,6 @@ const ProductDetailsPage: React.FC = () => {
 
     try {
       await deleteProductMutation.mutateAsync(product.id);
-      P;
       setIsDeleteModalOpen(false);
       navigate('/seller/products');
     } catch (error) {
@@ -172,6 +252,8 @@ const ProductDetailsPage: React.FC = () => {
       </div>
     );
   }
+
+  console.log('selectedVariant', selectedVariant)
 
   return (
     <div className="py-4 md:p-4 space-y-4 md:space-y-6">
@@ -310,7 +392,7 @@ const ProductDetailsPage: React.FC = () => {
               <div className="flex items-center space-x-2 sm:space-x-4 text-xs sm:text-sm">
                 <span className="text-gray-600">Availability:</span>
                 {(() => {
-                  const currentQuantity = selectedVariant?.quantity || product.quantity || 0;
+                  const currentQuantity =selectedVariant ? selectedVariant?.quantity : product.quantity || 0;
                   return currentQuantity > 0 ? (
                     <span className="text-green-600 font-medium">
                       In stock ({currentQuantity} available)
@@ -445,19 +527,19 @@ const ProductDetailsPage: React.FC = () => {
               <h3 className="text-lg sm:text-xl font-semibold mb-4 text-gray-800">Delivery Options</h3>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {product.marketplaceOptions.pickup && (
-                  <div className="group relative p-5 border-2 rounded-xl border-gray-200  transition-all duration-200 bg-gradient-to-br from-white to-gray-50 ">
-                  
-                    
+                  <div className="group relative p-4 border-2 rounded-xl border-gray-200 transition-all duration-200 bg-gradient-to-br from-white to-gray-50">
                     {/* Icon and content */}
                     <div className="flex flex-col items-center text-center">
-                      <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mb-3  transition-transform">
-                        <MapPin className="text-green-600" />
+                      <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mb-2 transition-transform">
+                        <MapPin className="text-green-600 w-5 h-5" />
                       </div>
-                      <p className="text-base font-semibold text-gray-800 mb-3">Pickup</p>
+                      <p className="text-sm font-semibold text-gray-800 mb-2">Pickup</p>
                       {product.pickupHours && (
-                        <div className="space-y-1">
-                          <p className="text-xs font-medium text-gray-600 uppercase tracking-wide">Hours</p>
-                          <p className="text-xs text-gray-500 leading-relaxed">{formatPickupHoursDisplay(product.pickupHours)}</p>
+                        <div className="w-full">
+                          <p className="text-[10px] font-semibold text-gray-600 uppercase tracking-wider mb-1.5">Hours</p>
+                          <div className="mx-auto flex flex-col justify-center items-center w-full px-2 ">
+                            {formatPickupHoursDisplay(product.pickupHours)}
+                          </div>
                         </div>
                       )}
                     </div>
@@ -465,38 +547,34 @@ const ProductDetailsPage: React.FC = () => {
                 )}
                 
                 {product.marketplaceOptions.shipping && (
-                  <div className="group relative p-5 border-2 rounded-xl border-gray-200 transition-all duration-200 bg-gradient-to-br from-white to-gray-50 ">
-                
-                    
+                  <div className="group relative p-4 border-2 rounded-xl border-gray-200 transition-all duration-200 bg-gradient-to-br from-white to-gray-50">
                     {/* Icon and content */}
                     <div className="flex flex-col items-center text-center">
-                      <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-3  transition-transform">
-                        <Package  className="text-blue-600" />
+                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mb-2 transition-transform">
+                        <Package className="text-blue-600 w-5 h-5" />
                       </div>
-                      <p className="text-base font-semibold text-gray-800 mb-3">Shipping</p>
+                      <p className="text-sm font-semibold text-gray-800 mb-2">Shipping</p>
                       {product.shippingPrice ? (
-                        <div className="space-y-1">
-                          <p className="text-xs font-medium text-gray-600 uppercase tracking-wide">Cost</p>
-                          <p className="text-lg font-bold text-blue-600">${product.shippingPrice}</p>
+                        <div className="">
+                          <p className="text-[10px] font-medium text-gray-600 uppercase tracking-wide">Cost</p>
+                          <p className="text-base font-bold text-blue-600">${product.shippingPrice}</p>
                         </div>
                       ) : (
-                        <p className="text-sm text-gray-500">Contact for rates</p>
+                        <p className="text-xs text-gray-500">Contact for rates</p>
                       )}
                     </div>
                   </div>
                 )}
                 
                 {product.marketplaceOptions.delivery && (
-                  <div className="group relative p-5 border-2 rounded-xl border-gray-200 transition-all duration-200 bg-gradient-to-br from-white to-gray-50 ">
-                  
-                    
+                  <div className="group relative p-4 border-2 rounded-xl border-gray-200 transition-all duration-200 bg-gradient-to-br from-white to-gray-50">
                     {/* Icon and content */}
                     <div className="flex flex-col items-center text-center">
-                      <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mb-3  transition-transform">
-                        <Truck  className="text-purple-600" />
+                      <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center mb-2 transition-transform">
+                        <Truck className="text-purple-600 w-5 h-5" />
                       </div>
-                      <p className="text-base font-semibold text-gray-800 mb-3">Delivery</p>
-                      <p className="text-sm text-gray-500">Local delivery available</p>
+                      <p className="text-sm font-semibold text-gray-800 mb-2">Delivery</p>
+                      <p className="text-xs text-gray-500">Local delivery available</p>
                     </div>
                   </div>
                 )}

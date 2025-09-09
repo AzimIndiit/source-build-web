@@ -253,11 +253,11 @@ const StockManagementDialog: React.FC<StockManagementDialogProps> = ({
   return (
     <>
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg bg-white">
-        <DialogHeader className="space-y-3">
+      <DialogContent className="w-[95vw] max-w-[95vw] sm:w-full sm:max-w-2xl lg:max-w-4xl bg-white max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+        <DialogHeader className="sm:space-y-3">
           <DialogTitle className="flex items-center gap-2 text-xl">
             <div className="p-2 bg-blue-50 rounded-lg">
-              <Package className="w-5 h-5 text-blue-600" />
+              <Package className="w-5 h-5 text-primary" />
             </div>
             <span>Inventory Management</span>
           </DialogTitle>
@@ -266,7 +266,7 @@ const StockManagementDialog: React.FC<StockManagementDialogProps> = ({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-5 py-4">
+        <div className="space-y-5 sm:py-4">
           {error && (
             <Alert variant="destructive" className="rounded-lg">
               <AlertCircle className="h-4 w-4" />
@@ -275,7 +275,7 @@ const StockManagementDialog: React.FC<StockManagementDialogProps> = ({
           )}
 
           {/* Main Product Stock */}
-          <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+          <div className="bg-gray-50 rounded-lg sm:rounded-xl p-3 sm:p-4 space-y-3">
             <div className="flex items-center justify-between">
               <Label htmlFor="main-stock" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                 <Box className="h-4 w-4 text-gray-500" />
@@ -295,16 +295,16 @@ const StockManagementDialog: React.FC<StockManagementDialogProps> = ({
               </span>
             </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               <Button
                 type="button"
                 variant="outline"
                 size="icon"
                 onClick={decrementQuantity}
                 disabled={isUpdating || mainQuantity === 0}
-                className="h-12 w-12 rounded-xl border-2 hover:bg-gray-100 hover:border-gray-300 transition-all"
+                className="h-10 w-10 sm:h-12 sm:w-12 rounded-lg sm:rounded-xl border hover:bg-gray-100 hover:border-gray-300 transition-all"
               >
-                <Minus className="h-5 w-5" />
+                <Minus className="h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
               <input
                 id="main-stock"
@@ -314,7 +314,7 @@ const StockManagementDialog: React.FC<StockManagementDialogProps> = ({
                 value={mainQuantity}
                 onChange={(e) => handleQuantityChange(e.target.value)}
                 disabled={isUpdating}
-                className="flex-1 text-center text-2xl font-semibold h-12 rounded-xl border-2 focus:border-blue-500 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-0"
+                className="flex-1 text-center text-lg sm:text-2xl font-semibold h-10 sm:h-12 rounded-lg sm:rounded-xl border focus:border-blue-500 transition-all focus:outline-none focus:ring-1 focus:ring-blue-500 focus:ring-offset-0"
                 onKeyPress={(e) => {
                   // Only allow numbers
                   if (!/[0-9]/.test(e.key)) {
@@ -328,9 +328,9 @@ const StockManagementDialog: React.FC<StockManagementDialogProps> = ({
                 size="icon"
                 onClick={incrementQuantity}
                 disabled={isUpdating}
-                className="h-12 w-12 rounded-xl border-2 hover:bg-gray-100 hover:border-gray-300 transition-all"
+                className="h-10 w-10 sm:h-12 sm:w-12 rounded-lg sm:rounded-xl border hover:bg-gray-100 hover:border-gray-300 transition-all"
               >
-                <Plus className="h-5 w-5" />
+                <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
             </div>
          
@@ -343,40 +343,43 @@ const StockManagementDialog: React.FC<StockManagementDialogProps> = ({
                 <Layers className="h-4 w-4 text-gray-500" />
                 Variant Stock
               </Label>
-              <div className="space-y-3">
+              {/* Desktop: 3 cols, Tablet: 2 cols, Mobile: 1 col */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
                 {product.variants?.map((variant, index) => (
-                  <div key={index} className="bg-white border-2 border-gray-100 rounded-xl p-4 space-y-3 hover:border-gray-200 transition-all">
+                  <div key={index} className="bg-white border border-gray-200 rounded-lg p-3 space-y-2 hover:border-gray-300 transition-all">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2 min-w-0">
                         <div 
-                          className="w-8 h-8 rounded-lg border-2 border-gray-200"
+                          className="w-5 h-5 sm:w-6 sm:h-6 rounded-md border-2 border-gray-200 flex-shrink-0"
                           style={{ backgroundColor: variant.color.toLowerCase() === 'white' ? '#f9fafb' : variant.color.toLowerCase() }}
                         />
-                        <div>
-                          <span className="text-sm font-medium text-gray-900">
-                            {variant.color}
-                          </span>
-                          <span className="text-sm text-gray-500 ml-2">
-                            ${variant.price}
-                          </span>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1">
+                            <span className="text-xs sm:text-sm font-medium text-gray-900 truncate">
+                              {variant.color}
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              ${variant.price}
+                            </span>
+                          </div>
                         </div>
                       </div>
                       {variantQuantities[index] === 0 && (
-                        <Badge variant="destructive" className="text-xs px-2 py-0.5  text-red-500">
+                        <Badge variant="destructive" className="text-xs px-1 py-0.5 text-red-500 ml-1">
                           Out of Stock
                         </Badge>
                       )}
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex  items-center gap-1">
                       <Button
                         type="button"
                         variant="outline"
                         size="icon"
                         onClick={() => decrementVariantQuantity(index)}
                         disabled={isUpdating || variantQuantities[index] === 0}
-                        className="h-10 w-10 rounded-lg hover:bg-gray-50 transition-all"
+                        className="h-8 w-8 rounded-sm hover:bg-gray-50 transition-all p-0"
                       >
-                        <Minus className="h-4 w-4" />
+                        <Minus className="h-3 w-3" />
                       </Button>
                       <input
                         type="text"
@@ -385,9 +388,8 @@ const StockManagementDialog: React.FC<StockManagementDialogProps> = ({
                         value={variantQuantities[index] || 0}
                         onChange={(e) => handleVariantQuantityChange(index, e.target.value)}
                         disabled={isUpdating}
-                        className="flex-1 text-center h-10 text-lg font-medium rounded-lg border-2 focus:border-blue-500 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-0"
+                        className="flex-1 text-center h-8 text-xs sm:text-sm font-medium rounded-sm border focus:border-primary transition-all focus:outline-none focus:ring-1 focus:ring-blue-500 focus:ring-offset-0 min-w-[40px]"
                         onKeyPress={(e) => {
-                          // Only allow numbers
                           if (!/[0-9]/.test(e.key)) {
                             e.preventDefault();
                           }
@@ -399,9 +401,9 @@ const StockManagementDialog: React.FC<StockManagementDialogProps> = ({
                         size="icon"
                         onClick={() => incrementVariantQuantity(index)}
                         disabled={isUpdating}
-                        className="h-10 w-10 rounded-lg hover:bg-gray-50 transition-all"
+                        className="h-8 w-8 rounded-sm hover:bg-gray-50 transition-all p-0"
                       >
-                        <Plus className="h-4 w-4" />
+                        <Plus className="h-3 w-3" />
                       </Button>
                     </div>
                   </div>
@@ -438,13 +440,13 @@ const StockManagementDialog: React.FC<StockManagementDialogProps> = ({
           </div> */}
         </div>
 
-        <DialogFooter className="gap-2 sm:gap-2">
+        <div className="flex justify-center sm:justify-end flex-row gap-2 sm:gap-2 py-4 border-t border-gray-200 ">
           <Button
             type="button"
             variant="outline"
             onClick={onClose}
             disabled={isUpdating}
-            className=' px-6 text-gray-700 hover:text-gray-900 border-gray-300 hover:bg-gray-50 hover:border-gray-400 transition-all rounded-lg flex-1'
+            className=' px-6 text-gray-700 hover:text-gray-900 border-gray-300 hover:bg-gray-50 hover:border-gray-400 transition-all rounded-lg w-[180px] sm:w-[124px]'
           >
             Cancel
           </Button>
@@ -453,7 +455,7 @@ const StockManagementDialog: React.FC<StockManagementDialogProps> = ({
             onClick={handleSubmit}
             disabled={isUpdating}
             className={cn(
-              ' px-6  text-white rounded-lg flex-1 transition-all',
+              ' px-6  text-white rounded-lg  w-[180px] sm:w-[124px] transition-all',
               isUpdating && 'opacity-70'
             )}
           >
@@ -469,7 +471,7 @@ const StockManagementDialog: React.FC<StockManagementDialogProps> = ({
               'Update Stock'
             )}
           </Button>
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
 

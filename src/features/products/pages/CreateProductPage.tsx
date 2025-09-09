@@ -189,7 +189,7 @@ const createProductSchema = z
     pickupHours: z
       .string()
       .trim()
-      .max(100, 'Pickup hours must not exceed 100 characters')
+      // .max(100, 'Pickup hours must not exceed 100 characters')
       .optional(),
 
     shippingPrice: z.string().trim().optional(),
@@ -779,7 +779,11 @@ function CreateProductPage() {
       draftData.readyByTime = formData.readyByTime;
     }
     if (formData.dimensions && (formData.dimensions.width || formData.dimensions.length || formData.dimensions.height)) {
-      draftData.dimensions = formData.dimensions;
+      draftData.dimensions = {
+        width: formData.dimensions.width || '',
+        length: formData.dimensions.length || '',
+        height: formData.dimensions.height || ''
+      };
     }
     if (formData.discount && formData.discount.discountType !== 'none' && formData.discount.discountValue && formData.discount.discountValue.trim()) {
       // Only include discount if it has both a valid type and value

@@ -431,12 +431,17 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                   placeholder="2"
                   type="number"
                   className="border-gray-300 h-[53px]"
-                  min="1"
+                  min="0"
                   step="1"
                   onInput={(e: React.FormEvent<HTMLInputElement>) => {
                     const input = e.currentTarget;
                     const value = input.value.replace(/[^0-9]/g, '');
-                    input.value = value.replace(/^0+/, '') || '';
+                    // Allow "0" but remove leading zeros from other numbers
+                    if (value === '0') {
+                      input.value = '0';
+                    } else {
+                      input.value = value.replace(/^0+/, '') || '';
+                    }
                   }}
                   onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
                     if (['.', '-', '+', 'e', 'E'].includes(e.key)) {
@@ -922,12 +927,17 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                                 placeholder="10"
                                 type="number"
                                 className="text-sm"
-                                min="1"
+                                min="0"
                                 step="1"
                                 onInput={(e: React.FormEvent<HTMLInputElement>) => {
                                   const input = e.currentTarget;
                                   const value = input.value.replace(/[^0-9]/g, '');
-                                  input.value = value.replace(/^0+/, '') || '';
+                                  // Allow "0" but remove leading zeros from other numbers
+                                  if (value === '0') {
+                                    input.value = '0';
+                                  } else {
+                                    input.value = value.replace(/^0+/, '') || '';
+                                  }
                                 }}
                                 onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
                                   if (['.', '-', '+', 'e', 'E'].includes(e.key)) {

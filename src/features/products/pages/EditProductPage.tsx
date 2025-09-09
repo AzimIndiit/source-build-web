@@ -38,9 +38,12 @@ const variantSchema = z.object({
   quantity: z
     .string()
     .trim()
-    .min(0, 'Quantity is required')
-    .regex(/^\d+$/, 'Quantity must be a whole number')
-    .refine((val) => parseInt(val) >= 0, 'Quantity must be at least 0'),
+    .refine((val) => val.length > 0, 'Quantity is required')
+    .regex(/^(0|[1-9]\d*)$/, 'Quantity must be a whole number')
+    .refine((val) => {
+      const num = parseInt(val);
+      return !isNaN(num) && num >= 0;
+    }, 'Quantity must be at least 0'),
   price: z
     .string()
     .trim()
@@ -129,10 +132,16 @@ const editProductSchema = z
     quantity: z
       .string()
       .trim()
-      .min(0, 'Quantity is required')
-      .regex(/^\d+$/, 'Quantity must be a whole number')
-      .refine((val) => parseInt(val) >= 0, 'Quantity must be at least 0')
-      .refine((val) => parseInt(val) <= 99999, 'Quantity must not exceed 99,999'),
+      .refine((val) => val.length > 0, 'Quantity is required')
+      .regex(/^(0|[1-9]\d*)$/, 'Quantity must be a whole number')
+      .refine((val) => {
+        const num = parseInt(val);
+        return !isNaN(num) && num >= 0;
+      }, 'Quantity must be at least 0')
+      .refine((val) => {
+        const num = parseInt(val);
+        return !isNaN(num) && num <= 99999;
+      }, 'Quantity must not exceed 99,999'),
 
     brand: z
       .string()
@@ -197,7 +206,7 @@ const editProductSchema = z
     pickupHours: z
       .string()
       .trim()
-      .max(100, 'Pickup hours must not exceed 100 characters')
+      // .max(100, 'Pickup hours must not exceed 100 characters')
       .optional(),
 
     shippingPrice: z.string().trim().optional(),
@@ -1077,7 +1086,11 @@ function EditProductPage() {
       formData.dimensions &&
       (formData.dimensions.width || formData.dimensions.length || formData.dimensions.height)
     ) {
-      draftData.dimensions = formData.dimensions;
+      draftData.dimensions = {
+        width: formData.dimensions.width || '',
+        length: formData.dimensions.length || '',
+        height: formData.dimensions.height || ''
+      };
     }
     if (formData.discount && formData.discount.discountType !== 'none' && formData.discount.discountValue && formData.discount.discountValue.trim()) {
       // Only include discount if it has both a valid type and value

@@ -49,6 +49,11 @@ interface SaveDraftWithFiles {
   shippingPrice?: number;
   readyByDate?: string;
   readyByTime?: string;
+  dimensions?: {
+    width?: string;
+    length?: string;
+    height?: string;
+  };
   discount?: {
     discountType: 'none' | 'flat' | 'percentage';
     discountValue?: number;
@@ -227,8 +232,8 @@ export function useUpdateProductMutation() {
       // Convert string values to numbers where needed
       const payload: Partial<CreateProductPayload> = {
         ...productData,
-        price: productData.price ? Number(productData.price) : undefined,
-        quantity: productData.quantity ? Number(productData.quantity) : undefined,
+        price: productData.price !== undefined ? Number(productData.price) : undefined,
+        quantity: productData.quantity !== undefined ? Number(productData.quantity) : undefined,
         shippingPrice: productData.shippingPrice ? Number(productData.shippingPrice) : undefined,
         discount: productData.discount
           ? {
@@ -327,7 +332,7 @@ export function useSaveDraftMutation() {
         ...(draftData.description && { description: draftData.description }),
         ...(draftData.category && { category: draftData.category }),
         ...(draftData.subCategory && { subCategory: draftData.subCategory }),
-        ...(draftData.quantity && { quantity: Number(draftData.quantity) }),
+        ...(draftData.quantity !== undefined && { quantity: Number(draftData.quantity) }),
         ...(draftData.brand && { brand: draftData.brand }),
         ...(draftData.color && { color: draftData.color }),
         ...(draftData.locationIds && { locationIds: draftData.locationIds }),
@@ -337,6 +342,13 @@ export function useSaveDraftMutation() {
         ...(draftData.shippingPrice && { shippingPrice: Number(draftData.shippingPrice) }),
         ...(draftData.readyByDate && { readyByDate: draftData.readyByDate }),
         ...(draftData.readyByTime && { readyByTime: draftData.readyByTime }),
+        ...(draftData.dimensions && {
+          dimensions: {
+            width: draftData.dimensions.width ? Number(draftData.dimensions.width) : undefined,
+            length: draftData.dimensions.length ? Number(draftData.dimensions.length) : undefined,
+            height: draftData.dimensions.height ? Number(draftData.dimensions.height) : undefined,
+          },
+        }),
         ...(draftData.discount && {
           discount: {
             ...draftData.discount,
