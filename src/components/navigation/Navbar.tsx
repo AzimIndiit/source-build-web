@@ -300,12 +300,12 @@ export const Navbar: React.FC = () => {
               </Button>
 
               {/* Cart */}
-              <Button variant="ghost" className="relative p-2">
+           {(!user || user?.role === 'buyer') &&    <Button variant="ghost" className="relative p-2">
                 <ShoppingCart className="!w-6 !h-6" />
                 <span className="absolute top-2 -right-1 bg-red-500 min-w-[16px] h-[16px] px-1 rounded-full flex items-center justify-center text-white text-[10px] font-medium">
                   2
                 </span>
-              </Button>
+              </Button>}
 
               {/* Menu Toggle */}
               <Button

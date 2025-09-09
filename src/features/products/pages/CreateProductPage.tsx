@@ -28,11 +28,18 @@ const variantSchema = z.object({
     .min(1, 'Color is required')
     .regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, 'Please enter a valid HEX color code'),
   quantity: z
-    .string()
-    .trim()
-    .min(1, 'Quantity is required')
-    .regex(/^\d+$/, 'Quantity must be a whole number')
-    .refine((val) => parseInt(val) > 0, 'Quantity must be at least 1'),
+  .string()
+  .trim()
+  .regex(/^(0|[1-9]\d*)$/, 'Quantity must be a whole number')
+  .refine((val) => {
+    const num = parseInt(val);
+    return !isNaN(num) && num >= 0;
+  }, 'Quantity must be at least 0')
+  .refine((val) => {
+    const num = parseInt(val);
+    return !isNaN(num) && num <= 99999;
+  }, 'Quantity must not exceed 99,999'),
+  outOfStock: z.boolean().optional(),
   price: z
     .string()
     .trim()
@@ -118,14 +125,21 @@ const createProductSchema = z
       .min(1, 'Sub category is required')
       .max(50, 'Sub category must not exceed 50 characters'),
 
-    quantity: z
+      quantity: z
       .string()
       .trim()
-      .min(1, 'Quantity is required')
-      .regex(/^\d+$/, 'Quantity must be a whole number')
-      .refine((val) => parseInt(val) > 0, 'Quantity must be at least 1')
-      .refine((val) => parseInt(val) <= 99999, 'Quantity must not exceed 99,999'),
+     
+      .regex(/^(0|[1-9]\d*)$/, 'Quantity must be a whole number')
+      .refine((val) => {
+        const num = parseInt(val);
+        return !isNaN(num) && num >= 0;
+      }, 'Quantity must be at least 0')
+      .refine((val) => {
+        const num = parseInt(val);
+        return !isNaN(num) && num <= 99999;
+      }, 'Quantity must not exceed 99,999'),
 
+    outOfStock: z.boolean().optional(),
     brand: z
       .string()
       .trim()
@@ -628,6 +642,7 @@ function CreateProductPage() {
       category: data.category,
       subCategory: data.subCategory,
       quantity: parseInt(data.quantity),
+      outOfStock: data.outOfStock,
       brand: data.brand,
       color: data.color,
       locationIds: data.locationIds,
@@ -652,6 +667,7 @@ function CreateProductPage() {
         color: v.color,
         quantity: parseInt(v.quantity),
         price: parseFloat(v.price),
+        outOfStock: v.outOfStock,
         discount: {
           discountType: v.discount.discountType,
           discountValue: v.discount.discountValue
@@ -748,6 +764,9 @@ function CreateProductPage() {
     if (formData.quantity && formData.quantity.trim()) {
       draftData.quantity = formData.quantity;
     }
+    if (formData.outOfStock !== undefined) {
+      draftData.outOfStock = formData.outOfStock;
+    }
     if (formData.brand && formData.brand.trim()) {
       draftData.brand = formData.brand;
     }
@@ -792,10 +811,14 @@ function CreateProductPage() {
         discountValue: formData.discount.discountValue
       };
     }
+    if (formData.outOfStock !== undefined) {
+      draftData.outOfStock = formData.outOfStock;
+    }
     if (formData.variants && formData.variants.length > 0) {
       // Filter out invalid variant discounts
       draftData.variants = formData.variants.map(v => ({
         ...v,
+        outOfStock: v.outOfStock,
         discount: (v.discount.discountType !== 'none' && v.discount.discountValue && v.discount.discountValue.trim())
           ? {
               discountType: v.discount.discountType,
@@ -812,6 +835,7 @@ function CreateProductPage() {
     }
 
     try {
+      console.log('draftData', draftData)
       await saveDraftMutation.mutateAsync(draftData);
       // Navigate to products page after successful draft save
       navigate('/seller/products');

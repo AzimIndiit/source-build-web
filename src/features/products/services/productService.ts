@@ -12,10 +12,12 @@ export interface CreateProductPayload {
   color: string;
   locationIds: string[];
   productTag: string[];
+  outOfStock: boolean;
   variants?: Array<{
     color: string;
     quantity: number;
     price: number;
+    outOfStock: boolean;
     discount: {
       discountType: 'none' | 'flat' | 'percentage';
       discountValue?: number;
@@ -51,6 +53,7 @@ export interface SaveDraftPayload {
   category?: string;
   subCategory?: string;
   quantity?: number;
+  outOfStock?: boolean;
   brand?: string;
   color?: string;
   locationIds?: string[];
@@ -59,6 +62,7 @@ export interface SaveDraftPayload {
     color: string;
     quantity: number;
     price: number;
+    outOfStock?: boolean;
     discount: {
       discountType: 'none' | 'flat' | 'percentage';
       discountValue?: number;
@@ -99,6 +103,7 @@ export interface Product {
   category: string;
   subCategory: string;
   quantity: number;
+  outOfStock?: boolean;
   brand: string;
   color: string;
   locationIds: any[]; // Changed to any[] to handle location objects
@@ -108,6 +113,7 @@ export interface Product {
     color: string;
     quantity: number;
     price: number;
+    outOfStock?: boolean;
     discount: {
       discountType: 'none' | 'flat' | 'percentage';
       discountValue?: number;
@@ -237,7 +243,11 @@ class ProductService {
 
   async updateProductStock(
     id: string,
-    data: { quantity: number; variants?: Array<{ index: number; quantity: number }> }
+    data: { 
+      quantity: number; 
+      variants?: Array<{ index: number; quantity: number; outOfStock?: boolean }>;
+      outOfStock?: boolean;
+    }
   ): Promise<ProductResponse> {
     const response = await axiosInstance.patch<ProductResponse>(`/products/${id}/stock`, data);
     return response.data;

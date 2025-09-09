@@ -26,6 +26,7 @@ interface SaveDraftWithFiles {
   category?: string;
   subCategory?: string;
   quantity?: number;
+  outOfStock?: boolean;
   brand?: string;
   color?: string;
   locationIds?: string[];
@@ -34,6 +35,7 @@ interface SaveDraftWithFiles {
     color: string;
     quantity: number;
     price: number;
+    outOfStock?: boolean;
     discount: {
       discountType: 'none' | 'flat' | 'percentage';
       discountValue?: number;
@@ -234,6 +236,7 @@ export function useUpdateProductMutation() {
         ...productData,
         price: productData.price !== undefined ? Number(productData.price) : undefined,
         quantity: productData.quantity !== undefined ? Number(productData.quantity) : undefined,
+        outOfStock: productData.outOfStock,
         shippingPrice: productData.shippingPrice ? Number(productData.shippingPrice) : undefined,
         discount: productData.discount
           ? {
@@ -247,6 +250,18 @@ export function useUpdateProductMutation() {
           ...v,
           price: Number(v.price),
           quantity: Number(v.quantity),
+          outOfStock: v.outOfStock || false,
+          discount: v.discount.discountType !== 'none' && v.discount.discountValue && v.discount.discountValue.trim()
+            ? {
+                discountType: v.discount.discountType,
+                discountValue: v.discount.discountValue
+                  ? Number(v.discount.discountValue)
+                  : undefined,
+              }
+            : {
+                discountType: 'none',
+                discountValue: undefined,
+              },
           discount: {
             ...v.discount,
             discountValue: v.discount.discountValue ? Number(v.discount.discountValue) : undefined,
@@ -328,6 +343,7 @@ export function useSaveDraftMutation() {
         title: draftData.title,
         images: imageUrls,
         isDraft: true,
+        outOfStock: draftData.outOfStock,
         ...(draftData.price && { price: Number(draftData.price) }),
         ...(draftData.description && { description: draftData.description }),
         ...(draftData.category && { category: draftData.category }),
@@ -362,6 +378,7 @@ export function useSaveDraftMutation() {
             ...v,
             price: Number(v.price),
             quantity: Number(v.quantity),
+             outOfStock: v.outOfStock,
             discount: {
               ...v.discount,
               discountValue: v.discount.discountValue
@@ -463,14 +480,16 @@ export function useUpdateProductStockMutation() {
     mutationFn: ({ 
       id, 
       quantity, 
-      variants 
+      variants,
+      outOfStock 
     }: { 
       id: string; 
       quantity: number; 
-      variants?: Array<{ index: number; quantity: number }> 
+      variants?: Array<{ index: number; quantity: number; outOfStock?: boolean }>;
+      outOfStock?: boolean;
     }) =>
-      productService.updateProductStock(id, { quantity, variants }),
-    onMutate: async ({ id, quantity }) => {
+      productService.updateProductStock(id, { quantity, variants, outOfStock }),
+    onMutate: async ({ id, quantity, outOfStock }) => {
       // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: PRODUCTS_QUERY_KEY });
 

@@ -44,6 +44,7 @@ const variantSchema = z.object({
       const num = parseInt(val);
       return !isNaN(num) && num >= 0;
     }, 'Quantity must be at least 0'),
+  outOfStock: z.boolean().optional(),
   price: z
     .string()
     .trim()
@@ -142,6 +143,8 @@ const editProductSchema = z
         const num = parseInt(val);
         return !isNaN(num) && num <= 99999;
       }, 'Quantity must not exceed 99,999'),
+
+    outOfStock: z.boolean().optional(),
 
     brand: z
       .string()
@@ -490,6 +493,7 @@ function EditProductPage() {
       category: '',
       subCategory: '',
       quantity: '',
+      outOfStock: false,
       brand: '',
       color: '#000000',
       locationIds: [],
@@ -687,6 +691,7 @@ function EditProductPage() {
         category: categoryValue,
         subCategory: subCategoryValue,
         quantity: product.quantity?.toString() || '',
+        outOfStock: product.outOfStock || false,
         brand: product.brand || '',
         color: product.color || '#000000',
         locationIds:
@@ -699,6 +704,7 @@ function EditProductPage() {
             color: v.color,
             quantity: v.quantity?.toString() || '',
             price: v.price?.toString() || '',
+            outOfStock: v.outOfStock || false,
             discount: {
               discountType: v.discount?.discountType || 'none',
               discountValue: v.discount?.discountValue?.toString() || '',
@@ -918,6 +924,7 @@ function EditProductPage() {
       category: data.category,
       subCategory: data.subCategory,
       quantity: parseInt(data.quantity),
+      outOfStock: data.outOfStock,
       brand: data.brand,
       color: data.color,
       locationIds: data.locationIds,
@@ -948,6 +955,7 @@ function EditProductPage() {
           color: v.color,
           quantity: parseInt(v.quantity),
           price: parseFloat(v.price),
+          outOfStock: v.outOfStock,
           discount: {
             discountType: v.discount.discountType,
             discountValue: v.discount.discountValue
@@ -983,21 +991,21 @@ function EditProductPage() {
       methods.setError('title', { message: 'Title is required to save as draft' });
       return;
     }
-    
+
     if (!formData.category || formData.category.trim().length === 0) {
       toast.error('Category is required to save as draft');
       methods.setFocus('category');
       methods.setError('category', { message: 'Category is required to save as draft' });
       return;
     }
-    
+
     if (!formData.price || formData.price.trim().length === 0) {
       toast.error('Price is required to save as draft');
       methods.setFocus('price');
       methods.setError('price', { message: 'Price is required to save as draft' });
       return;
     }
-    
+
     // Check for minimum required images for draft
     const totalImages = existingImages.length + uploadedPhotos.length;
     if (totalImages < 2) {
@@ -1089,29 +1097,42 @@ function EditProductPage() {
       draftData.dimensions = {
         width: formData.dimensions.width || '',
         length: formData.dimensions.length || '',
-        height: formData.dimensions.height || ''
+        height: formData.dimensions.height || '',
       };
     }
-    if (formData.discount && formData.discount.discountType !== 'none' && formData.discount.discountValue && formData.discount.discountValue.trim()) {
+    if (
+      formData.discount &&
+      formData.discount.discountType !== 'none' &&
+      formData.discount.discountValue &&
+      formData.discount.discountValue.trim()
+    ) {
       // Only include discount if it has both a valid type and value
       draftData.discount = {
         discountType: formData.discount.discountType,
         discountValue: formData.discount.discountValue,
       };
     }
+
+    if (formData.outOfStock !== undefined) {
+      draftData.outOfStock = formData.outOfStock;
+    }
     if (formData.variants && formData.variants.length > 0) {
       // Filter out invalid variant discounts
       draftData.variants = formData.variants.map((v) => ({
         ...v,
-        discount: (v.discount.discountType !== 'none' && v.discount.discountValue && v.discount.discountValue.trim())
-          ? {
-              discountType: v.discount.discountType,
-              discountValue: v.discount.discountValue,
-            }
-          : {
-              discountType: 'none',
-              discountValue: '',
-            },
+        outOfStock: v.outOfStock,
+        discount:
+          v.discount.discountType !== 'none' &&
+          v.discount.discountValue &&
+          v.discount.discountValue.trim()
+            ? {
+                discountType: v.discount.discountType,
+                discountValue: v.discount.discountValue,
+              }
+            : {
+                discountType: 'none',
+                discountValue: '',
+              },
       }));
     }
     if (variantFiles.length > 0) {
@@ -1120,6 +1141,7 @@ function EditProductPage() {
 
     try {
       // Check if this is for updating an existing product draft
+      console.log('draftData', draftData)
       if (id) {
         // For existing products being edited, use the update mutation with status: 'draft'
         const updateData = {
@@ -1128,6 +1150,7 @@ function EditProductPage() {
           // Convert string values to proper types for update
           price: draftData.price ? parseFloat(draftData.price) : undefined,
           quantity: draftData.quantity ? parseInt(draftData.quantity) : undefined,
+          outOfStock: draftData.outOfStock,
           shippingPrice: draftData.shippingPrice ? parseFloat(draftData.shippingPrice) : undefined,
           dimensions: draftData.dimensions
             ? {
@@ -1154,6 +1177,7 @@ function EditProductPage() {
             color: v.color,
             quantity: parseInt(v.quantity || '0'),
             price: parseFloat(v.price || '0'),
+            outOfStock: v.outOfStock,
             discount: {
               discountType: v.discount.discountType,
               discountValue: v.discount.discountValue

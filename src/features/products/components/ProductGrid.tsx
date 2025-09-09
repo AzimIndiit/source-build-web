@@ -16,6 +16,7 @@ interface Variant {
   quantity: number;
   price: number;
   images?: string[];
+  outOfStock?: boolean;
 }
 
 interface Product {
@@ -25,6 +26,7 @@ interface Product {
   slug: string;
   price: number;
   quantity: number;
+  outOfStock?: boolean;
   category: string;
   dimensions?: {
     length: number;
@@ -61,6 +63,47 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   const productId = product.id || product._id || '';
   const isActive = product.status === 'active';
 
+  // Calculate total stock including main product and variants
+  const getTotalStock = () => {
+    let totalStock = 0;
+    let hasAnyStock = false;
+    let isAllOutOfStock = true;
+
+    // Check main product stock
+    // Count quantity if not marked as out of stock
+    if (!product.outOfStock) {
+      isAllOutOfStock = false;
+      if (product.quantity > 0) {
+        totalStock += product.quantity;
+        hasAnyStock = true;
+      }
+    }
+
+    // Check variants stock
+    if (product.variants && product.variants.length > 0) {
+      product.variants.forEach(variant => {
+        // Count variant quantity if not marked as out of stock
+        if (!variant.outOfStock) {
+          isAllOutOfStock = false;
+          if (variant.quantity > 0) {
+            totalStock += variant.quantity;
+            hasAnyStock = true;
+          }
+        }
+      });
+    }
+
+    // If everything is marked as out of stock, we have no stock regardless of quantities
+    if (isAllOutOfStock) {
+      return { totalStock: 0, hasAnyStock: false, isOutOfStock: true };
+    }
+
+    // If not all items are marked out of stock, return actual stock status
+    return { totalStock, hasAnyStock, isOutOfStock: false };
+  };
+
+  const { totalStock, hasAnyStock, isOutOfStock } = getTotalStock();
+
   const handleToggleStatus = async (checked: boolean) => {
     if (isUpdating) return;
 
@@ -77,8 +120,18 @@ const ProductGrid: React.FC<ProductGridProps> = ({
     }
   };
 
-  const handleStockUpdate = async (productId: string, quantity: number, variants?: Array<{ index: number; quantity: number }>) => {
-    await updateStockMutation.mutateAsync({ id: productId, quantity, variants });
+  const handleStockUpdate = async (
+    productId: string, 
+    quantity: number, 
+    variants?: Array<{ index: number; quantity: number; outOfStock?: boolean }>,
+    outOfStock?: boolean
+  ) => {
+    await updateStockMutation.mutateAsync({ 
+      id: productId, 
+      quantity, 
+      variants,
+      outOfStock 
+    });
   };
 
   const handleStockClick = (e: React.MouseEvent) => {
@@ -139,14 +192,13 @@ const ProductGrid: React.FC<ProductGridProps> = ({
             (e.target as HTMLImageElement).src = 'https://placehold.co/300x200.png';
           }}
         />
-        {product.quantity > 0 && (
-          <Badge className="absolute bottom-2 left-2 bg-primary text-white rounded px-2 py-1 text-[11px]">
-            In Stock ({product.quantity})
-          </Badge>
-        )}
-        {product.quantity === 0 && (
+        {isOutOfStock || !hasAnyStock ? (
           <Badge className="absolute bottom-2 left-2 bg-red-500 text-white rounded px-2 py-1 text-[11px]">
             Out of Stock
+          </Badge>
+        ) : (
+          <Badge className="absolute bottom-2 left-2 bg-primary text-white rounded px-2 py-1 text-[11px]">
+            In Stock ({totalStock})
           </Badge>
         )}
 

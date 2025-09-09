@@ -282,13 +282,19 @@ export const ProductPreview: React.FC<ProductPreviewProps> = ({
             )}
 
             {/* Quantity */}
-            {formValues.quantity && (
+            {(formValues.quantity || formValues.outOfStock) && (
               <div className="py-4 border-b border-gray-200">
                 <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">
                   Quantity
                 </h3>
                 <p className="text-xs sm:text-sm md:text-base text-gray-600">
-                  {formValues.quantity}
+                  {formValues.outOfStock ? (
+                    <Badge variant="destructive" className="bg-red-500 text-white">
+                      Out of Stock
+                    </Badge>
+                  ) : (
+                    formValues.quantity
+                  )}
                 </p>
               </div>
             )}
@@ -511,7 +517,7 @@ export const ProductPreview: React.FC<ProductPreviewProps> = ({
                       (_v, i) =>
                         formValues.variants?.[i]?.color &&
                         formValues.variants?.[i]?.price &&
-                        formValues.variants?.[i]?.quantity
+                        (formValues.variants?.[i]?.quantity || formValues.variants?.[i]?.outOfStock)
                     ).length
                   }
                   )
@@ -519,7 +525,7 @@ export const ProductPreview: React.FC<ProductPreviewProps> = ({
                 <div className="grid grid-cols-1 gap-4">
                   {variants.map((variant, index) => {
                     const variantData = formValues.variants?.[index];
-                    if (!variantData?.color || !variantData?.price || !variantData?.quantity) {
+                    if (!variantData?.color || !variantData?.price || (!variantData?.quantity && !variantData?.outOfStock)) {
                       return null;
                     }
 
@@ -573,7 +579,13 @@ export const ProductPreview: React.FC<ProductPreviewProps> = ({
                                   <span className="text-sm font-medium">Variant {index + 1}</span>
                                 </div>
                                 <div className="text-xs text-gray-500">
-                                  Stock: {variantData.quantity} units
+                                  {variantData.outOfStock ? (
+                                    <Badge variant="destructive" className="text-xs bg-red-500 text-white">
+                                      Out of Stock
+                                    </Badge>
+                                  ) : (
+                                    `Stock: ${variantData.quantity} units`
+                                  )}
                                 </div>
                               </div>
 
@@ -612,7 +624,7 @@ export const ProductPreview: React.FC<ProductPreviewProps> = ({
                       (_v, i) =>
                         formValues.variants?.[i]?.color &&
                         formValues.variants?.[i]?.price &&
-                        formValues.variants?.[i]?.quantity
+                        (formValues.variants?.[i]?.quantity || formValues.variants?.[i]?.outOfStock)
                     ) && (
                       <div className="text-sm text-gray-500 text-center py-2">
                         Complete variant details to see them here

@@ -392,7 +392,7 @@ const ProductDetailsPage: React.FC = () => {
               <div className="flex items-center space-x-2 sm:space-x-4 text-xs sm:text-sm">
                 <span className="text-gray-600">Availability:</span>
                 {(() => {
-                  const currentQuantity =selectedVariant ? selectedVariant?.quantity : product.quantity || 0;
+                  const currentQuantity =selectedVariant ? selectedVariant?.outOfStock ? 0 : selectedVariant?.quantity : product.outOfStock ? 0 : product.quantity || 0;
                   return currentQuantity > 0 ? (
                     <span className="text-green-600 font-medium">
                       In stock ({currentQuantity} available)

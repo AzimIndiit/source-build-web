@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, Upload, Plus, Trash2, Calendar, Clock, ChevronLeft } from 'lucide-react';
-import { Button, Card, Checkbox } from '@/components/ui';
+import { Button, Card, Checkbox, Switch, Label } from '@/components/ui';
 import { FormInput } from '@/components/forms/FormInput';
 import { FormTextarea } from '@/components/forms/FormTextarea';
 import { FormSelect } from '@/components/forms/FormSelect';
@@ -425,14 +425,36 @@ export const ProductForm: React.FC<ProductFormProps> = ({
               </div>
 
               <div>
+                <div className="flex items-center justify-between mb-2">
+                  <Label className="text-sm font-medium">Quantity</Label>
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="outOfStock" className="text-sm text-gray-600">
+                      Out of Stock
+                    </Label>
+                    <Switch
+                      id="outOfStock"
+                      className='h-6 w-12'
+                      checked={formValues.outOfStock || false}
+                      onCheckedChange={(checked) => {
+                        setValue('outOfStock', checked);
+
+                        if (formValues?.quantity === '') {
+                          setValue(`quantity`, '0');
+                          clearErrors('quantity');
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
                 <FormInput
                   name="quantity"
-                  label="Quantity"
+                  label=""
                   placeholder="2"
                   type="number"
                   className="border-gray-300 h-[53px]"
                   min="0"
                   step="1"
+                  disabled={formValues.outOfStock}
                   onInput={(e: React.FormEvent<HTMLInputElement>) => {
                     const input = e.currentTarget;
                     const value = input.value.replace(/[^0-9]/g, '');
@@ -919,16 +941,43 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                             </div>
                           </div>
 
-                          <div className="grid grid-cols-2 gap-3">
+                          <div className="grid grid-cols-1 gap-3">
                             <div>
+                              <div className="flex items-center justify-between mb-2">
+                                <Label className="text-sm font-medium">Quantity</Label>
+                                <div className="flex items-center gap-1">
+                                  <Label
+                                    htmlFor={`variant-out-of-stock-${variantIndex}`}
+                                    className="text-xs text-gray-600"
+                                  >
+                                    Out of Stock
+                                  </Label>
+                                  <Switch
+                                    id={`variant-out-of-stock-${variantIndex}`}
+                                    className='h-6 w-12'
+                                    checked={
+                                      formValues.variants?.[variantIndex]?.outOfStock || false
+                                    }
+                                    onCheckedChange={(checked) => {
+                                      setValue(`variants.${variantIndex}.outOfStock`, checked);
+
+                                      if (formValues.variants?.[variantIndex]?.quantity === '') {
+                                        setValue(`variants.${variantIndex}.quantity`, '0');
+                                        clearErrors(`variants.${variantIndex}.quantity`);
+                                      }
+                                    }}
+                                  />
+                                </div>
+                              </div>
                               <FormInput
                                 name={`variants.${variantIndex}.quantity`}
-                                label="Quantity"
+                                label=""
                                 placeholder="10"
                                 type="number"
                                 className="text-sm"
                                 min="0"
                                 step="1"
+                                disabled={formValues.variants?.[variantIndex]?.outOfStock}
                                 onInput={(e: React.FormEvent<HTMLInputElement>) => {
                                   const input = e.currentTarget;
                                   const value = input.value.replace(/[^0-9]/g, '');
