@@ -22,7 +22,6 @@ export function useChatsQuery(
     queryKey: [...CHATS_QUERY_KEY, params],
     queryFn: () => chatService.getChats(params),
     staleTime: 1 * 60 * 1000, // 1 minute
-    gcTime: 5 * 60 * 1000, // 5 minutes
     enabled, // Only run query if enabled is true
   });
 }

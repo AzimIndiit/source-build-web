@@ -38,32 +38,38 @@ const createRoleSchema = (role: string) => {
   }
 
   if (role === 'seller') {
-    return z.object({
-      ...baseSchema,
-      businessName: z.string().min(2, 'Business name must be at least 2 characters').max(70).trim(),
-      businessAddress: z
-        .string()
-        .min(2, 'Business address must be at least 2 characters')
-        .max(255)
-        .trim(),
-      phone: phoneValidation,
-      cellPhone: phoneValidation,
-      einNumber: z.string().min(1, 'EIN number is required'),
-      localDelivery: z.enum(['yes', 'no']),
-      salesTaxId: z.string().optional(),
-    }).refine(
-      (data) => {
-        // salesTaxId is required only when localDelivery is 'no'
-        if (data.localDelivery === 'no') {
-          return data.salesTaxId && data.salesTaxId.length > 0;
+    return z
+      .object({
+        ...baseSchema,
+        businessName: z
+          .string()
+          .min(2, 'Business name must be at least 2 characters')
+          .max(70)
+          .trim(),
+        businessAddress: z
+          .string()
+          .min(2, 'Business address must be at least 2 characters')
+          .max(255)
+          .trim(),
+        phone: phoneValidation,
+        cellPhone: phoneValidation,
+        einNumber: z.string().min(1, 'EIN number is required'),
+        localDelivery: z.enum(['yes', 'no']),
+        salesTaxId: z.string().optional(),
+      })
+      .refine(
+        (data) => {
+          // salesTaxId is required only when localDelivery is 'no'
+          if (data.localDelivery === 'no') {
+            return data.salesTaxId && data.salesTaxId.length > 0;
+          }
+          return true;
+        },
+        {
+          message: 'Sales Tax ID is required when Local Delivery is No',
+          path: ['salesTaxId'],
         }
-        return true;
-      },
-      {
-        message: 'Sales Tax ID is required when Local Delivery is No',
-        path: ['salesTaxId'],
-      }
-    );
+      );
   }
 
   // Buyer doesn't need additional fields
@@ -78,7 +84,7 @@ interface RoleSelectionModalProps {
 
 export function RoleSelectionModal({ isOpen, userId }: RoleSelectionModalProps) {
   const navigate = useNavigate();
-  const { setUser,updateUser, setIsAuthenticated, checkAuth } = useAuthStore();
+  const { setUser, updateUser, setIsAuthenticated, checkAuth } = useAuthStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedRole, setSelectedRole] = useState<string>('');
   const [localDelivery, setLocalDelivery] = useState('no');
@@ -164,7 +170,7 @@ export function RoleSelectionModal({ isOpen, userId }: RoleSelectionModalProps) 
           localStorage.setItem('access_token', tokens.accessToken || tokens.access_token);
           localStorage.setItem('refresh_token', tokens.refreshToken || tokens.refresh_token);
         }
-        
+
         try {
           const user = await queryClient.fetchQuery({
             queryKey: USER_QUERY_KEY,
@@ -187,10 +193,7 @@ export function RoleSelectionModal({ isOpen, userId }: RoleSelectionModalProps) 
             throw new Error('No user data received from /me');
           }
         } catch (meError) {
-          console.error(
-            'AuthStore: Failed to fetch user from /me, using login response',
-            meError
-          );
+          console.error('AuthStore: Failed to fetch user from /me, using login response', meError);
           // Fallback to using the user from login response if /me fails
           if (response.data.data.user) {
             const transformedUser = transformApiUserToUser(response.data.data.user as ApiUser);
@@ -201,7 +204,7 @@ export function RoleSelectionModal({ isOpen, userId }: RoleSelectionModalProps) 
         }
         // // Set user in auth store if user data is present
         // if (user) {
-  
+
         //   // Invalidate queries to refresh user data
         //   queryClient.invalidateQueries({ queryKey: ['user'] });
         //   queryClient.invalidateQueries({ queryKey: ['user-me'] });
@@ -223,9 +226,9 @@ export function RoleSelectionModal({ isOpen, userId }: RoleSelectionModalProps) 
           navigate('/seller/dashboard');
         } else if (data.role === 'driver' || currentUser?.role === 'driver') {
           if (!currentUser?.isVehicles) {
-            navigate('/vehicle-information');
+            navigate('/auth/vehicle-information');
           } else if (!currentUser?.isLicense) {
-            navigate('/driver-license');
+            navigate('/auth/driver-license');
           } else {
             navigate('/driver/dashboard');
           }
@@ -244,18 +247,16 @@ export function RoleSelectionModal({ isOpen, userId }: RoleSelectionModalProps) 
   return (
     <Dialog
       open={isOpen}
-    
       onOpenChange={() => {
         // Prevent closing the modal by clicking outside or pressing Escape
         // Modal can only be closed after successful submission
       }}
     >
       <DialogContent
-      hideCloseButton={true}
+        hideCloseButton={true}
         className="w-[95vw] max-w-[95vw] sm:max-w-[500px] md:max-w-[600px] bg-white max-h-[90vh] overflow-y-auto"
         onPointerDownOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
-
       >
         <DialogHeader>
           <DialogTitle>Select Your Account Type</DialogTitle>
@@ -274,7 +275,7 @@ export function RoleSelectionModal({ isOpen, userId }: RoleSelectionModalProps) 
               options={[
                 // { value: 'buyer', label: 'Buyer' },
                 { value: 'seller', label: 'Seller' },
-                // { value: 'driver', label: 'Driver' },
+                { value: 'driver', label: 'Driver' },
               ]}
             />
 

@@ -14,8 +14,13 @@ const ChatList = () => {
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
-  const { data: chatsResponse, isLoading, error } = useChatsQuery({ page, limit });
+  const { data: chatsResponse, isLoading, error, refetch } = useChatsQuery({ page, limit });
   const [chatList, setChatList] = useState<Chat[]>([]);
+
+  // Refetch chats when component mounts (when navigating back to this route)
+  useEffect(() => {
+    refetch();
+  }, []); // Empty dependency array means this runs only on mount
 
   useEffect(() => {
     if (chatsResponse?.data) {
@@ -25,6 +30,7 @@ const ChatList = () => {
 
   useEffect(() => {
     const handleUpdateChats = (data: any) => {
+      console.log('data', data);
       setChatList((prev) => {
         const index = prev.findIndex((chat) => chat.id === data.id);
 
@@ -78,7 +84,26 @@ const ChatList = () => {
                 lastMessage={content}
                 timestamp={time}
                 unreadCount={unreadCount}
-                onClick={() => navigate(`/${user?.role}/messages/${item._id}`, { state: item })}
+                onClick={() => {
+                  // Clear unread count for this chat before navigating
+                  setChatList((prev) =>
+                    prev.map((chat) => {
+                      if (chat.id === item.id) {
+                        const unreadCounts = {
+                          ...chat.unreadCounts,
+                          [user?.id || '']: 0,
+                        };
+                        console.log('unreadCounts', unreadCounts);
+                        return {
+                          ...chat,
+                          unreadCounts,
+                        };
+                      }
+                      return chat;
+                    })
+                  );
+                  navigate(`/${user?.role}/messages/${item._id}`, { state: item });
+                }}
               />
             );
           })

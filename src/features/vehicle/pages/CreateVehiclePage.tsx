@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState, useCallback } from 'react';
-import { AuthWrapper } from '@/features/auth/components/AuthWrapper';
+
 import {
   vehicleInformationSchema,
   type VehicleInformationFormData,
@@ -12,10 +12,9 @@ import { FormInput } from '@/components/forms/FormInput';
 import { FormSelect } from '@/components/forms/FormSelect';
 import { Upload, X } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { useCreateVehicleMutation } from '../hooks/useVehicleMutations';
-import useAuthStore from '@/stores/authStore';
+import { useCreateVehicleMutation, VEHICLES_QUERY_KEY } from '../hooks/useVehicleMutations';
+
 import { queryClient } from '@/lib/queryClient';
-import { USER_QUERY_KEY } from '@/features/auth/hooks/useUserQuery';
 
 // Constants
 const MAX_VEHICLE_IMAGES = 5;
@@ -81,7 +80,7 @@ const vehicleModels: Record<string, Array<{ value: string; label: string }>> = {
   other: [{ value: 'other', label: 'Other' }],
 };
 
-function VehicleInformationPage() {
+function CreateVehiclePage() {
   const navigate = useNavigate();
   const [vehicleImages, setVehicleImages] = useState<File[]>([]);
   const [insuranceImages, setInsuranceImages] = useState<File[]>([]);
@@ -90,7 +89,7 @@ function VehicleInformationPage() {
   const [vehicleImageError, setVehicleImageError] = useState(false);
   const [insuranceImageError, setInsuranceImageError] = useState(false);
   const createVehicleMutation = useCreateVehicleMutation();
-  
+
   const methods = useForm<VehicleInformationFormData>({
     resolver: zodResolver(vehicleInformationSchema),
     defaultValues: {
@@ -356,50 +355,11 @@ function VehicleInformationPage() {
         vehicleImageFiles: vehicleImages,
         insuranceImageFiles: insuranceImages,
       });
-      console.log('navigating to driver license', response)
 
       // Navigate to driving license page on success
       if (response?.status === 'success') {
-        console.log('navigating to driver license', response?.status);
-        
-        // First invalidate the user query to clear the cache
-        await queryClient.invalidateQueries({ queryKey: USER_QUERY_KEY });
-        
-        // Force refetch the user data
-        try {
-          const updatedUser = await queryClient.fetchQuery({
-            queryKey: USER_QUERY_KEY,
-            queryFn: async () => {
-              const { authService } = await import('@/features/auth/services');
-              const response = await authService.getProfile();
-              
-              if (response.data && response.data.user) {
-                const { transformApiUserToUser } = await import('@/features/auth/hooks/useUserQuery');
-                return transformApiUserToUser(response.data.user);
-              }
-              throw new Error('Failed to fetch updated user profile');
-            },
-            staleTime: 0, // Force fresh fetch
-          });
-          
-          // Update the auth store with the new user data
-          if (updatedUser) {
-            const { useAuthStore } = await import('@/stores/authStore');
-            useAuthStore.getState().setUser(updatedUser);
-            
-            // Small delay to ensure state update is complete
-            setTimeout(() => {
-              navigate('/auth/driver-license');
-            }, 100);
-          } else {
-            // If we couldn't fetch updated user, navigate anyway
-            navigate('/auth/driver-license');
-          }
-        } catch (error) {
-          console.error('Failed to fetch updated user profile:', error);
-          // Navigate anyway even if the fetch failed
-          navigate('/auth/driver-license');
-        }
+        queryClient.invalidateQueries({ queryKey: VEHICLES_QUERY_KEY });
+        navigate('/driver/vehicles');
       }
     } catch (error) {
       // Error is already handled by the mutation's onError callback
@@ -408,45 +368,48 @@ function VehicleInformationPage() {
   };
 
   return (
-    <AuthWrapper>
-      <div className="w-full max-w-2xl mx-auto">
-        <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold mb-2">Vehicle Information</h1>
-          <p className="text-gray-500 text-sm">
-            Provide your vehicle details to ensure smooth delivery assignments and route
-            optimization.
-          </p>
-        </div>
+    <div className="py-4 md:p-4 space-y-4 md:space-y-6 ">
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl md:text-2xl font-bold text-gray-900">Add New Vehicle</h1>
+      </div>
 
-        <FormProvider {...methods}>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <FormProvider {...methods}>
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="space-y-4 flex flex-col justify-between  sm:min-h-[calc(100vh-10px)] lg:min-h-[calc(100vh-260px)] "
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 ">
             <FormSelect
               name="vehicleType"
-              label=""
+              label="Vehicle Type"
               disabled={createVehicleMutation.isPending}
               placeholder="Select Vehicle type"
+              className="bg-white"
               options={vehicleTypes}
             />
 
             <FormInput
               name="vehicleRegistrationNumber"
-              label=""
+              label="Vehicle Registration Number"
               type="text"
+              className="bg-white"
               disabled={createVehicleMutation.isPending}
               placeholder="Vehicle registration number e.g., KA01AB1234"
             />
 
             <FormSelect
+              className="bg-white"
               name="vehicleManufacturer"
-              label=""
+              label="Vehicle Manufacturer"
               disabled={createVehicleMutation.isPending}
               placeholder="Select Manufacturer"
               options={vehicleManufacturers}
             />
 
             <FormSelect
+              className="bg-white"
               name="vehicleModel"
-              label=""
+              label="Vehicle Model"
               disabled={createVehicleMutation.isPending || !selectedManufacturer}
               placeholder="Select Model"
               options={modelOptions}
@@ -456,7 +419,7 @@ function VehicleInformationPage() {
             <div className="space-y-4">
               {vehicleImages.length === 0 ? (
                 <div
-                  className={`border-2 border-dashed rounded-lg p-4 text-center bg-gray-50 ${
+                  className={`border-2 border-dashed rounded-lg p-4 text-center bg-gray-50 h-50 flex justify-center items-center ${
                     vehicleDragActive ? 'border-primary bg-blue-50' : 'border-gray-300'
                   } ${vehicleImageError ? 'border-red-500' : ''}`}
                   onDragEnter={handleVehicleDrag}
@@ -487,7 +450,7 @@ function VehicleInformationPage() {
               ) : (
                 <div className="space-y-2">
                   <div
-                    className={`border-2 border-dashed rounded-lg p-3 text-center bg-gray-50 ${
+                    className={`border-2 border-dashed rounded-lg p-3 text-center bg-gray-50  h-30 flex flex-col justify-center items-center  ${
                       vehicleDragActive ? 'border-primary bg-blue-50' : 'border-gray-300'
                     } ${vehicleImageError ? 'border-red-500' : ''}`}
                     onDragEnter={handleVehicleDrag}
@@ -526,7 +489,7 @@ function VehicleInformationPage() {
                         <img
                           src={URL.createObjectURL(image)}
                           alt={`Vehicle ${imgIndex + 1}`}
-                          className="w-full sm:h-24 md:h-28 h-20 lg:h-16 object-cover rounded-sm"
+                          className="w-full sm:h-24 h-20 lg:h-28 object-cover rounded-sm"
                         />
                         <button
                           type="button"
@@ -540,17 +503,18 @@ function VehicleInformationPage() {
                   </div>
                 </div>
               )}
+              {vehicleImageError && (
+                <p className="text-sm text-red-600 text-left">
+                  Please upload at least one vehicle image
+                </p>
+              )}
             </div>
-            {vehicleImageError && (
-              <p className="text-sm text-red-600 text-center">
-                Please upload at least one vehicle image
-              </p>
-            )}
+
             {/* Insurance Images Upload */}
             <div className="space-y-2">
               {insuranceImages.length === 0 ? (
                 <div
-                  className={`border-2 border-dashed rounded-lg p-4 text-center bg-gray-50 ${
+                  className={`border-2 border-dashed rounded-lg p-4 text-center bg-gray-50 h-50 flex justify-center items-center ${
                     insuranceDragActive ? 'border-primary bg-blue-50' : 'border-gray-300'
                   } ${insuranceImageError ? 'border-red-500' : ''}`}
                   onDragEnter={handleInsuranceDrag}
@@ -581,7 +545,7 @@ function VehicleInformationPage() {
               ) : (
                 <div className="space-y-2">
                   <div
-                    className={`border-2 border-dashed rounded-lg p-3 text-center bg-gray-50 ${
+                    className={`border-2 border-dashed rounded-lg p-3 text-center bg-gray-50  h-30 flex flex-col justify-center items-center  ${
                       insuranceDragActive ? 'border-primary bg-blue-50' : 'border-gray-300'
                     } ${insuranceImageError ? 'border-red-500' : ''}`}
                     onDragEnter={handleInsuranceDrag}
@@ -620,7 +584,7 @@ function VehicleInformationPage() {
                         <img
                           src={URL.createObjectURL(image)}
                           alt={`Insurance ${imgIndex + 1}`}
-                          className="w-full sm:h-24 md:h-28 h-20 lg:h-16 object-cover rounded-sm"
+                          className="w-full sm:h-24  h-20 lg:h-28 object-cover rounded-sm"
                         />
                         <button
                           type="button"
@@ -635,66 +599,26 @@ function VehicleInformationPage() {
                 </div>
               )}
               {insuranceImageError && (
-                <p className="text-sm text-red-600 text-center">
+                <p className="text-sm text-red-600 text-left">
                   Please upload at least one insurance image
                 </p>
               )}
             </div>
-
-            <div className="flex gap-4 pt-4">
-              <Button
-                type="submit"
-                className="flex-1  bg-primary hover:bg-primary/80 text-white"
-                disabled={createVehicleMutation.isPending}
-                loading={createVehicleMutation.isPending}
-              >
-                Continue
-              </Button>
-            </div>
-
-            <div className="text-center pt-2">
-              <button
-                type="button"
-                onClick={() => {
-                  // Clear auth state
-                  const { logout } = useAuthStore.getState();
-                  logout();
-                  // Clear all storage
-                  localStorage.clear();
-                  sessionStorage.clear();
-                  // Navigate to signup
-
-                  setTimeout(() => {
-                    navigate('/auth/signup');
-                  }, 1000);
-                }}
-                className="text-sm text-gray-500 hover:text-gray-700"
-              >
-                Back to <span className="text-primary">Sign Up</span>
-              </button>
-              {' | '}
-              <button
-                type="button"
-                onClick={() => {
-                  // Clear auth state
-                  const { logout } = useAuthStore.getState();
-                  logout();
-                  // Clear all storage
-                  localStorage.clear();
-                  sessionStorage.clear();
-                  // Navigate to login
-                  navigate('/auth/login');
-                }}
-                className="text-sm text-gray-500 hover:text-gray-700"
-              >
-                <span className="text-primary">Login</span>
-              </button>
-            </div>
-          </form>
-        </FormProvider>
-      </div>
-    </AuthWrapper>
+          </div>
+          <div className="flex justify-end pt-6 ">
+            <Button
+              type="submit"
+              className="w-full sm:w-[224px] bg-primary hover:bg-primary/80 text-white"
+              disabled={createVehicleMutation.isPending}
+              loading={createVehicleMutation.isPending}
+            >
+              Submit
+            </Button>
+          </div>
+        </form>
+      </FormProvider>
+    </div>
   );
 }
 
-export default VehicleInformationPage;
+export default CreateVehiclePage;

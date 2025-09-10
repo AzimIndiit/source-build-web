@@ -47,7 +47,7 @@ const getTimelineItems = (status: string, orderDate: string): TimelineItem[] => 
       completed: false,
     },
     {
-      title: 'In-Transit',
+      title: 'In Transit',
       description: 'Shipment arrived at Driver location',
       date: formatDate(new Date(baseDate.getTime() + 8 * 60 * 60 * 1000)), // +8 hours
       completed: false,
@@ -75,7 +75,7 @@ const getTimelineItems = (status: string, orderDate: string): TimelineItem[] => 
       allSteps[0].completed = true; // Order Received
       allSteps[1].completed = true; // Order Confirmed
       break;
-    case 'in-transit':
+    case 'in transit':
       allSteps[0].completed = true; // Order Received
       allSteps[1].completed = true; // Order Confirmed
       allSteps[2].completed = true; // In-Transit

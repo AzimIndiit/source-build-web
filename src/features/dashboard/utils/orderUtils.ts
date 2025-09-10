@@ -15,7 +15,7 @@ export const getStatusBadgeColor = (status: any): string => {
     case 'In Transit':
     case 'draft':
       return 'bg-[#9c27b0] hover:bg-[#9c27b0] text-white';
-  
+
     default:
       return 'bg-gray-500 hover:bg-gray-500 text-white';
   }

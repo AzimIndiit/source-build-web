@@ -144,7 +144,6 @@ const ManageSavedAddressPage: React.FC = () => {
               return (
                 <SavedAddressCard
                   key={addressId}
-                
                   name={address.name}
                   phoneNumber={address.phoneNumber}
                   formattedAddress={address.formattedAddress || ''}

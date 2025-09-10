@@ -433,7 +433,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                     </Label>
                     <Switch
                       id="outOfStock"
-                      className='h-6 w-12'
+                      className="h-6 w-12"
                       checked={formValues.outOfStock || false}
                       onCheckedChange={(checked) => {
                         setValue('outOfStock', checked);
@@ -954,7 +954,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                                   </Label>
                                   <Switch
                                     id={`variant-out-of-stock-${variantIndex}`}
-                                    className='h-6 w-12'
+                                    className="h-6 w-12"
                                     checked={
                                       formValues.variants?.[variantIndex]?.outOfStock || false
                                     }

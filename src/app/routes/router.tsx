@@ -231,9 +231,16 @@ export const router = createBrowserRouter([
               })),
           },
           {
-            path: 'vehicles/:id',
+            path: 'vehicles/create',
             lazy: () =>
-              import('@/features/vehicle/pages/VehicleDetailsPage').then((module) => ({
+              import('@/features/vehicle/pages/CreateVehiclePage').then((module) => ({
+                Component: module.default,
+              })),
+          },
+          {
+            path: 'vehicles/:vehicleId/edit',
+            lazy: () =>
+              import('@/features/vehicle/pages/EditVehiclePage').then((module) => ({
                 Component: module.default,
               })),
           },

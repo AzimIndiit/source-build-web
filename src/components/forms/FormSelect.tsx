@@ -231,10 +231,10 @@ export const FormSelect: React.FC<FormSelectProps> = ({
     }
 
     // Show different badge counts based on screen size
-    const mobileMaxBadges = 2;   // Mobile: 2 badges
-    const tabletMaxBadges = 5;   // Tablet: 5 badges  
-    const desktopMaxBadges = 3;  // Desktop: 3 badges
-    
+    const mobileMaxBadges = 2; // Mobile: 2 badges
+    const tabletMaxBadges = 5; // Tablet: 5 badges
+    const desktopMaxBadges = 3; // Desktop: 3 badges
+
     // Get labels for different screen sizes
     const mobileLabels = selectedLabels.slice(0, mobileMaxBadges);
     const tabletLabels = selectedLabels.slice(0, tabletMaxBadges);
@@ -369,269 +369,280 @@ export const FormSelect: React.FC<FormSelectProps> = ({
           name={name}
           control={control}
           render={({ field }) => {
-          const currentSelectedOption = multiple
-            ? null
-            : localOptions.find((option) => option.value === field.value);
+            const currentSelectedOption = multiple
+              ? null
+              : localOptions.find((option) => option.value === field.value);
 
-          // Compute final visible options without useMemo (can't use hooks in render callback)
-          let finalVisibleOptions = visibleOptions;
-          if (!multiple && currentSelectedOption) {
-            const hasSelectedInVisible = visibleOptions.some(
-              (option) => option.value === field.value
-            );
-            if (!hasSelectedInVisible) {
-              finalVisibleOptions = [currentSelectedOption, ...visibleOptions];
+            // Compute final visible options without useMemo (can't use hooks in render callback)
+            let finalVisibleOptions = visibleOptions;
+            if (!multiple && currentSelectedOption) {
+              const hasSelectedInVisible = visibleOptions.some(
+                (option) => option.value === field.value
+              );
+              if (!hasSelectedInVisible) {
+                finalVisibleOptions = [currentSelectedOption, ...visibleOptions];
+              }
             }
-          }
 
-          if (multiple) {
-            return (
-              <div className="relative">
-                <div
-                  ref={field.ref}
-                  id={name}
-                  className={`${label ? 'mt-2' : ''} rounded-sm w-full min-h-[40px] px-3 py-1.5 border cursor-pointer flex items-center ${
-                    error ? 'border-red-500' : 'border-gray-300'
-                  } ${disabled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white hover:border-gray-400'} ${className}`}
-                  onClick={() => !disabled && setIsOpen(!isOpen)}
-                >
-                  {renderMultiSelectTrigger(field)}
-                </div>
+            if (multiple) {
+              return (
+                <div className="relative">
+                  <div
+                    ref={field.ref}
+                    id={name}
+                    className={`${label ? 'mt-2' : ''} rounded-sm w-full min-h-[40px] px-3 py-1.5 border cursor-pointer flex items-center ${
+                      error ? 'border-red-500' : 'border-gray-300'
+                    } ${disabled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white hover:border-gray-400'} ${className}`}
+                    onClick={() => !disabled && setIsOpen(!isOpen)}
+                  >
+                    {renderMultiSelectTrigger(field)}
+                  </div>
 
-                {isOpen && !disabled && (
-                  <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-sm shadow-lg">
-                    {searchable && (
-                      <div
-                        className="p-2 border-b border-gray-200"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <Input
-                          type="text"
-                          placeholder={searchPlaceholder}
-                          value={searchTerm}
-                          onChange={handleSearchChange}
-                          onKeyDown={handleSearchKeyDown}
-                          className="h-8 rounded-sm"
-                          autoFocus
-                          autoComplete="off"
-                        />
-                      </div>
-                    )}
-
-                    {showSelectAll && filteredOptions.length > 0 && (
-                      <div
-                        className="p-2 border-b border-gray-200 cursor-pointer hover:bg-gray-50 text-sm font-medium"
-                        onClick={() =>
-                          handleSelectAll(
-                            Array.isArray(field.value) ? field.value : [],
-                            field.onChange
-                          )
-                        }
-                      >
-                        {filteredOptions.every((option) =>
-                          (Array.isArray(field.value) ? field.value : []).includes(option.value)
-                        )
-                          ? 'Deselect All'
-                          : 'Select All'}
-                      </div>
-                    )}
-
-                    <div
-                      ref={scrollContainerRef}
-                      onScroll={handleScroll}
-                      className="max-h-60 overflow-y-auto"
-                    >
-                      {creatable && searchTerm && filteredOptions.length === 0 && (
+                  {isOpen && !disabled && (
+                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-sm shadow-lg">
+                      {searchable && (
                         <div
-                          className="p-2 cursor-pointer hover:bg-blue-50 text-blue-600 flex items-center gap-2 border-b"
+                          className="p-2 border-b border-gray-200"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Input
+                            type="text"
+                            placeholder={searchPlaceholder}
+                            value={searchTerm}
+                            onChange={handleSearchChange}
+                            onKeyDown={handleSearchKeyDown}
+                            className="h-8 rounded-sm"
+                            autoFocus
+                            autoComplete="off"
+                          />
+                        </div>
+                      )}
+
+                      {showSelectAll && filteredOptions.length > 0 && (
+                        <div
+                          className="p-2 border-b border-gray-200 cursor-pointer hover:bg-gray-50 text-sm font-medium"
                           onClick={() =>
-                            handleCreateOption(
-                              searchTerm,
+                            handleSelectAll(
                               Array.isArray(field.value) ? field.value : [],
                               field.onChange
                             )
                           }
                         >
-                          <span className="flex-1">
-                            {createPlaceholder.replace('{search}', searchTerm)}
-                          </span>
+                          {filteredOptions.every((option) =>
+                            (Array.isArray(field.value) ? field.value : []).includes(option.value)
+                          )
+                            ? 'Deselect All'
+                            : 'Select All'}
                         </div>
                       )}
-                      {finalVisibleOptions.length > 0 ? (
-                        <>
-                          {finalVisibleOptions.map((option) => {
-                            const currentValues = Array.isArray(field.value) ? field.value : [];
-                            const isSelected = currentValues.includes(option.value);
-                            const isMaxReached =
-                              maxSelections && currentValues.length >= maxSelections;
-                            const isDisabled = !isSelected && isMaxReached;
 
-                            return (
-                              <div
-                                key={option.value}
-                                className={`p-2 flex items-center gap-2 ${
-                                  isDisabled
-                                    ? 'opacity-50 cursor-not-allowed bg-gray-50'
-                                    : 'cursor-pointer hover:bg-gray-50'
-                                } ${isSelected ? 'bg-blue-50 text-primary' : ''}`}
-                                onClick={() => {
-                                  if (!isDisabled) {
-                                    handleMultiSelectChange(
-                                      option.value,
-                                      currentValues,
-                                      field.onChange
-                                    );
-                                  }
-                                }}
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={isSelected}
-                                  disabled={isDisabled ? true : undefined}
-                                  onChange={() => {}} // handled by onClick above
-                                  className="rounded"
-                                />
-                                <span className="flex-1">{option.label}</span>
-                              </div>
-                            );
-                          })}
-                          {hasMoreOptions && (
-                            <div className="p-2 text-xs text-gray-400 text-center border-t">
-                              Scroll for more options... ({filteredOptions.length - visibleCount}{' '}
-                              remaining)
-                            </div>
-                          )}
-                        </>
-                      ) : (
-                        !creatable &&
-                        searchable &&
-                        searchTerm && (
-                          <div className="p-2 text-sm text-gray-500 text-center">
-                            No options found for "{searchTerm}"
+                      <div
+                        ref={scrollContainerRef}
+                        onScroll={handleScroll}
+                        className="max-h-60 overflow-y-auto"
+                      >
+                        {creatable && searchTerm && filteredOptions.length === 0 && (
+                          <div
+                            className="p-2 cursor-pointer hover:bg-blue-50 text-blue-600 flex items-center gap-2 border-b"
+                            onClick={() =>
+                              handleCreateOption(
+                                searchTerm,
+                                Array.isArray(field.value) ? field.value : [],
+                                field.onChange
+                              )
+                            }
+                          >
+                            <span className="flex-1">
+                              {createPlaceholder.replace('{search}', searchTerm)}
+                            </span>
                           </div>
-                        )
+                        )}
+                        {finalVisibleOptions.length > 0 ? (
+                          <>
+                            {finalVisibleOptions.map((option) => {
+                              const currentValues = Array.isArray(field.value) ? field.value : [];
+                              const isSelected = currentValues.includes(option.value);
+                              const isMaxReached =
+                                maxSelections && currentValues.length >= maxSelections;
+                              const isDisabled = !isSelected && isMaxReached;
+
+                              return (
+                                <div
+                                  key={option.value}
+                                  className={`p-2 flex items-center gap-2 ${
+                                    isDisabled
+                                      ? 'opacity-50 cursor-not-allowed bg-gray-50'
+                                      : 'cursor-pointer hover:bg-gray-50'
+                                  } ${isSelected ? 'bg-blue-50 text-primary' : ''}`}
+                                  onClick={() => {
+                                    if (!isDisabled) {
+                                      handleMultiSelectChange(
+                                        option.value,
+                                        currentValues,
+                                        field.onChange
+                                      );
+                                    }
+                                  }}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={isSelected}
+                                    disabled={isDisabled ? true : undefined}
+                                    onChange={() => {}} // handled by onClick above
+                                    className="rounded"
+                                  />
+                                  <span className="flex-1">{option.label}</span>
+                                </div>
+                              );
+                            })}
+                            {hasMoreOptions && (
+                              <div className="p-2 text-xs text-gray-400 text-center border-t">
+                                Scroll for more options... ({filteredOptions.length - visibleCount}{' '}
+                                remaining)
+                              </div>
+                            )}
+                          </>
+                        ) : (
+                          !creatable &&
+                          searchable &&
+                          searchTerm && (
+                            <div className="p-2 text-sm text-gray-500 text-center">
+                              No options found for "{searchTerm}"
+                            </div>
+                          )
+                        )}
+                      </div>
+
+                      {maxSelections && (
+                        <div className="p-2 border-t border-gray-200 text-xs text-gray-500 text-center">
+                          {(() => {
+                            const selectedCount = Array.isArray(field.value)
+                              ? field.value.length
+                              : 0;
+                            const remainingSlots = maxSelections - selectedCount;
+
+                            if (selectedCount === maxSelections) {
+                              return `Maximum ${maxSelections} tags selected`;
+                            } else if (selectedCount > 0) {
+                              return `${selectedCount} selected • ${remainingSlots} more available`;
+                            } else {
+                              return `Select up to ${maxSelections} tags`;
+                            }
+                          })()}
+                        </div>
                       )}
                     </div>
+                  )}
 
-                    {maxSelections && (
-                      <div className="p-2 border-t border-gray-200 text-xs text-gray-500 text-center">
-                        {(() => {
-                          const selectedCount = Array.isArray(field.value) ? field.value.length : 0;
-                          const remainingSlots = maxSelections - selectedCount;
-
-                          if (selectedCount === maxSelections) {
-                            return `Maximum ${maxSelections} tags selected`;
-                          } else if (selectedCount > 0) {
-                            return `${selectedCount} selected • ${remainingSlots} more available`;
-                          } else {
-                            return `Select up to ${maxSelections} tags`;
-                          }
-                        })()}
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Backdrop to close dropdown */}
-                {isOpen && <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />}
-              </div>
-            );
-          }
-
-          console.log('field.value ', field.value, name);
-          console.log('available options:', localOptions);
-
-          // Single select mode (original behavior)
-          // Force the value to be a string and ensure it exists in options
-          const selectValue = field.value ? String(field.value) : '';
-          
-          // For creatable selects, always allow the current value
-          let finalValue = '';
-          if (selectValue) {
-            if (creatable) {
-              // For creatable selects, always use the value even if not in options
-              finalValue = selectValue;
-              // Add to localOptions if not present
-              if (!localOptions.some(opt => opt.value === selectValue)) {
-                localOptions.push({ value: selectValue, label: selectValue });
-              }
-            } else {
-              // For non-creatable, only use if in options
-              const valueExistsInOptions = localOptions.some(opt => opt.value === selectValue);
-              finalValue = valueExistsInOptions ? selectValue : '';
-            }
-          }
-          
-          console.log('Select value:', selectValue, 'final value:', finalValue, 'creatable:', creatable);
-          
-          return (
-            <Select
-              onValueChange={(value) => handleSingleSelectChange(value, field.onChange)}
-              value={finalValue}
-              disabled={disabled}
-              key={`${name}-${finalValue}-${localOptions.length}`} // Force re-render when value or options change
-            >
-              <SelectTrigger
-                id={name}
-                ref={field.ref}
-                className={`${label ? 'mt-2' : ''} rounded-sm w-full ${error ? 'border-red-500' : 'border-gray-300'} ${className}`}
-                disabled={disabled}
-              >
-                <SelectValue placeholder={placeholder || 'Select an option'} />
-              </SelectTrigger>
-              <SelectContent className="w-full bg-white">
-                {searchable && !disabled && (
-                  <div
-                    className="p-2 border-b border-gray-200"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <Input
-                      type="text"
-                      placeholder={searchPlaceholder}
-                      value={searchTerm}
-                      onChange={handleSearchChange}
-                      onKeyDown={handleSearchKeyDown}
-                      className="h-8 rounded-sm"
-                      autoFocus
-                      autoComplete="off"
-                    />
-                  </div>
-                )}
-                <div
-                  ref={scrollContainerRef}
-                  onScroll={handleScroll}
-                  className="max-h-60 overflow-y-auto"
-                >
-                  {finalVisibleOptions.length > 0 ? (
-                    <>
-                      {finalVisibleOptions.map((option) => (
-                        <SelectItem
-                          key={option.value}
-                          value={option.value}
-                          className="hover:bg-gray-100 cursor-pointer"
-                        >
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                      {hasMoreOptions && (
-                        <div className="p-2 text-xs text-gray-400 text-center border-t">
-                          Scroll for more options... ({filteredOptions.length - visibleCount}{' '}
-                          remaining)
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                    searchable &&
-                    searchTerm && (
-                      <div className="p-2 text-sm text-gray-500 text-center">
-                        No options found for "{searchTerm}"
-                      </div>
-                    )
+                  {/* Backdrop to close dropdown */}
+                  {isOpen && (
+                    <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
                   )}
                 </div>
-              </SelectContent>
-            </Select>
-          );
+              );
+            }
+
+            console.log('field.value ', field.value, name);
+            console.log('available options:', localOptions);
+
+            // Single select mode (original behavior)
+            // Force the value to be a string and ensure it exists in options
+            const selectValue = field.value ? String(field.value) : '';
+
+            // For creatable selects, always allow the current value
+            let finalValue = '';
+            if (selectValue) {
+              if (creatable) {
+                // For creatable selects, always use the value even if not in options
+                finalValue = selectValue;
+                // Add to localOptions if not present
+                if (!localOptions.some((opt) => opt.value === selectValue)) {
+                  localOptions.push({ value: selectValue, label: selectValue });
+                }
+              } else {
+                // For non-creatable, only use if in options
+                const valueExistsInOptions = localOptions.some((opt) => opt.value === selectValue);
+                finalValue = valueExistsInOptions ? selectValue : '';
+              }
+            }
+
+            console.log(
+              'Select value:',
+              selectValue,
+              'final value:',
+              finalValue,
+              'creatable:',
+              creatable
+            );
+
+            return (
+              <Select
+                onValueChange={(value) => handleSingleSelectChange(value, field.onChange)}
+                value={finalValue}
+                disabled={disabled}
+                key={`${name}-${finalValue}-${localOptions.length}`} // Force re-render when value or options change
+              >
+                <SelectTrigger
+                  id={name}
+                  ref={field.ref}
+                  className={`${label ? 'mt-2' : ''} rounded-sm w-full ${error ? 'border-red-500' : 'border-gray-300'} ${className}`}
+                  disabled={disabled}
+                >
+                  <SelectValue placeholder={placeholder || 'Select an option'} />
+                </SelectTrigger>
+                <SelectContent className="w-full bg-white">
+                  {searchable && !disabled && (
+                    <div
+                      className="p-2 border-b border-gray-200"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Input
+                        type="text"
+                        placeholder={searchPlaceholder}
+                        value={searchTerm}
+                        onChange={handleSearchChange}
+                        onKeyDown={handleSearchKeyDown}
+                        className="h-8 rounded-sm"
+                        autoFocus
+                        autoComplete="off"
+                      />
+                    </div>
+                  )}
+                  <div
+                    ref={scrollContainerRef}
+                    onScroll={handleScroll}
+                    className="max-h-60 overflow-y-auto"
+                  >
+                    {finalVisibleOptions.length > 0 ? (
+                      <>
+                        {finalVisibleOptions.map((option) => (
+                          <SelectItem
+                            key={option.value}
+                            value={option.value}
+                            className="hover:bg-gray-100 cursor-pointer"
+                          >
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                        {hasMoreOptions && (
+                          <div className="p-2 text-xs text-gray-400 text-center border-t">
+                            Scroll for more options... ({filteredOptions.length - visibleCount}{' '}
+                            remaining)
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      searchable &&
+                      searchTerm && (
+                        <div className="p-2 text-sm text-gray-500 text-center">
+                          No options found for "{searchTerm}"
+                        </div>
+                      )
+                    )}
+                  </div>
+                </SelectContent>
+              </Select>
+            );
           }}
         />
       ) : (

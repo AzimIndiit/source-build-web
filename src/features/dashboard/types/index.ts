@@ -38,7 +38,10 @@ export interface OrderProduct {
 }
 
 export interface OrderSummary {
+  formattedPickupAddress?:string;
+  formattedShippingAddress?:string;
   shippingAddress: {
+  
     name: string;
     phone: string;
     address: string;
@@ -73,6 +76,7 @@ export interface Order {
   id: string;
   customer: Customer;
   driver?: Customer;
+  seller?: Customer;
   date: string;
   amount: number;
   status: 'Delivered' | 'Processing' | 'Pending' | 'Cancelled' | 'Out for Delivery' | 'In Transit';

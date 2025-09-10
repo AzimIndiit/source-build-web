@@ -23,9 +23,16 @@ interface ReviewModalProps {
   order?: Order;
 }
 
-export const ReviewModal: React.FC<ReviewModalProps> = ({ order ,isOpen, onClose, orderId, onSubmit, onSuccess }) => {
+export const ReviewModal: React.FC<ReviewModalProps> = ({
+  order,
+  isOpen,
+  onClose,
+  orderId,
+  onSubmit,
+  onSuccess,
+}) => {
   const { user } = useAuth();
-  console.log('order', order)
+  console.log('order', order);
   const initialReviewState = {
     buyerRating: order?.customer?.rating || 0,
     buyerComment: order?.customer?.review || '',
@@ -46,8 +53,22 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({ order ,isOpen, onClose
     if (!orderId) {
       // Fallback to old behavior if no orderId provided
       if (onSubmit) {
-        const { buyerRating, buyerComment, driverRating, driverComment, sellerRating, sellerComment } = reviewData;
-        onSubmit(buyerRating, buyerComment, driverRating, driverComment, sellerRating, sellerComment);
+        const {
+          buyerRating,
+          buyerComment,
+          driverRating,
+          driverComment,
+          sellerRating,
+          sellerComment,
+        } = reviewData;
+        onSubmit(
+          buyerRating,
+          buyerComment,
+          driverRating,
+          driverComment,
+          sellerRating,
+          sellerComment
+        );
       }
       handleClose();
       return;
@@ -56,37 +77,37 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({ order ,isOpen, onClose
     setIsSubmitting(true);
     try {
       const reviews: any = {};
-      
+
       // Add customer/buyer review if provided
       if (reviewData.buyerRating > 0) {
-        if(reviewData.buyerComment===''){
+        if (reviewData.buyerComment === '') {
           return toast.error('Please enter a comment ');
         }
         reviews.customer = {
           rating: reviewData.buyerRating,
-          review: reviewData.buyerComment || ''
+          review: reviewData.buyerComment || '',
         };
       }
-      
+
       // Add driver review if provided
       if (reviewData.driverRating > 0) {
-        if(reviewData.driverComment===''){
+        if (reviewData.driverComment === '') {
           return toast.error('Please enter a comment ');
         }
         reviews.driver = {
           rating: reviewData.driverRating,
-          review: reviewData.driverComment || ''
+          review: reviewData.driverComment || '',
         };
       }
-      
+
       // Add seller review if provided
       if (reviewData.sellerRating > 0) {
-        if(reviewData.sellerComment===''){
+        if (reviewData.sellerComment === '') {
           return toast.error('Please enter a comment ');
         }
         reviews.seller = {
           rating: reviewData.sellerRating,
-          review: reviewData.sellerComment || ''
+          review: reviewData.sellerComment || '',
         };
       }
 
@@ -96,7 +117,8 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({ order ,isOpen, onClose
       handleClose();
     } catch (error: any) {
       console.error('Failed to submit review:', error);
-      const errorMessage = error?.response?.data?.message || 'Failed to submit review. Please try again.';
+      const errorMessage =
+        error?.response?.data?.message || 'Failed to submit review. Please try again.';
       toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
@@ -209,8 +231,8 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({ order ,isOpen, onClose
               disabled={
                 isSubmitting ||
                 (reviewData.buyerRating === 0 &&
-                reviewData.driverRating === 0 &&
-                reviewData.sellerRating === 0)
+                  reviewData.driverRating === 0 &&
+                  reviewData.sellerRating === 0)
               }
               onClick={handleSubmit}
               className="  bg-primary hover:bg-primary/80 text-white px-6 sm:px-8 py-2 sm:py-2.5 w-[220px] text-sm sm:text-base h-[53px]"

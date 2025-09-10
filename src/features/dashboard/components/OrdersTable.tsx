@@ -14,22 +14,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ChevronRight } from 'lucide-react';
 import { Order } from '../types';
 import { getStatusBadgeColor } from '../utils/orderUtils';
-import {
-  SortDropdown,
-  OrderFilterDropdown,
-  FilterConfig,
-  SortOption,
-} from '@/features/orders/components';
+import { OrderFilterDropdown, FilterConfig } from '@/features/orders/components';
+import { SortDropdown } from '@/components/common/SortDropdown';
 import { formatCurrency } from '@/lib/utils';
 import { formatDate } from '@/lib/date-utils';
-
-const sortOptions: SortOption[] = [
-  { value: 'recent', label: 'Recent' },
-  { value: 'this-week', label: 'This Week' },
-  { value: 'this-month', label: 'This Month' },
-  { value: 'last-3-months', label: 'Last 3 Months' },
-  { value: 'last-6-months', label: 'Last 6 Months' },
-];
+import { useAuth } from '@/hooks/useAuth';
 
 interface OrdersTableProps {
   orders: Order[];
@@ -39,6 +28,10 @@ interface OrdersTableProps {
   showFilter?: boolean;
   showSort?: boolean;
   totalOrders?: number;
+  selectedSort?: string;
+  onSortChange?: (value: string) => void;
+  filters?: FilterConfig;
+  onFilterChange?: (newFilters: FilterConfig) => void;
 }
 
 export const OrdersTable: React.FC<OrdersTableProps> = ({
@@ -48,29 +41,40 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
   title,
   showFilter = true,
   showSort = true,
-  totalOrders
+  totalOrders,
+  selectedSort: propSelectedSort,
+  onSortChange: propOnSortChange,
+  filters: propFilters,
+  onFilterChange: propOnFilterChange,
 }) => {
-  const [selectedSort, setSelectedSort] = useState<string>('this-week');
-  const [filters, setFilters] = useState<FilterConfig>({
+  const { user } = useAuth();
+  // Use props if provided, otherwise use local state
+  const [localSelectedSort, setLocalSelectedSort] = useState<string>('this-week');
+  const [localFilters, setLocalFilters] = useState<FilterConfig>({
     orderStatus: '',
     pricing: '',
   });
 
+  const selectedSort = propSelectedSort !== undefined ? propSelectedSort : localSelectedSort;
+  const filters = propFilters !== undefined ? propFilters : localFilters;
+
   const handleSortChange = (value: string) => {
-    setSelectedSort(value);
-    // TODO: Implement sorting logic
-    console.log('Sort changed to:', value);
+    if (propOnSortChange) {
+      propOnSortChange(value);
+    } else {
+      setLocalSelectedSort(value);
+    }
   };
 
   const handleFilterChange = (newFilters: FilterConfig) => {
-    setFilters(newFilters);
-    // TODO: Implement filtering logic
-    console.log('Filters applied:', newFilters);
+    if (propOnFilterChange) {
+      propOnFilterChange(newFilters);
+    } else {
+      setLocalFilters(newFilters);
+    }
   };
 
-  console.log('orders', orders);
-
-  if(totalOrders===0){
+  if (totalOrders === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
         <p className="text-gray-600 font-semibold mb-2">No orders found</p>
@@ -94,13 +98,7 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
               View All Orders
             </Button>
           )}
-          {showSort && (
-            <SortDropdown
-              sortOptions={sortOptions}
-              selectedSort={selectedSort}
-              onSortChange={handleSortChange}
-            />
-          )}
+          {showSort && <SortDropdown selectedSort={selectedSort} onSortChange={handleSortChange} />}
           {showFilter && (
             <OrderFilterDropdown filters={filters} onFilterChange={handleFilterChange} />
           )}
@@ -132,32 +130,51 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <Avatar className="w-8 h-8 border border-white shadow-sm">
-                    {order.customer?.avatar ? (
-                      <AvatarImage
-                        src={order.customer.avatar}
-                        alt={order.customer?.displayName || 'Customer'}
-                        className="object-cover"
-                      />
-                    ) : null}
-                    <AvatarFallback className="bg-gray-200 text-gray-700 text-xs font-medium">
-                      {order.customer?.displayName
-                        ? order.customer.displayName
-                            .split(' ')
-                            .map((n) => n[0])
-                            .join('')
-                        : 'NA'}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">
-                      {order.customer?.displayName || 'Unknown'}
-                    </p>
-                    <p className="text-xs text-gray-500">{order.customer?.email || 'No email'}</p>
+                {user?.role === 'seller' && (
+                  <div className="flex items-center gap-2">
+                    <Avatar className="w-8 h-8 border border-white shadow-sm">
+                      {order.customer?.avatar ? (
+                        <AvatarImage
+                          src={order.customer.avatar}
+                          alt={order.customer?.displayName || 'Customer'}
+                          className="object-cover"
+                        />
+                      ) : null}
+                      <AvatarFallback className="bg-gray-200 text-gray-700 text-xs font-medium">
+                        {order.customer?.displayName
+                          ? order.customer.displayName
+                              .split(' ')
+                              .map((n) => n[0])
+                              .join('')
+                          : 'NA'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="text-sm font-medium text-gray-900 capitalize">
+                        {order.customer?.displayName || 'Unknown'}
+                      </p>
+                      <p className="text-xs text-gray-500">{order.customer?.email || 'No email'}</p>
+                    </div>
                   </div>
-                </div>
+                )}
 
+                {user?.role === 'driver' && (
+                  <div>
+                    <p className="text-xs text-gray-500">Pick Up Location</p>
+                    <p className="text-sm font-medium text-gray-900 line-clamp-1">
+                      {order.orderSummary?.formattedPickupAddress}
+                    </p>
+                  </div>
+                )}
+
+                {user?.role === 'driver' && (
+                  <div>
+                    <p className="text-xs text-gray-500">Drop Location</p>
+                    <p className="text-sm font-medium text-gray-900 line-clamp-1">
+                      {order.orderSummary?.formattedShippingAddress} 
+                    </p>
+                  </div>
+                )}
                 <div className="flex justify-between items-center pt-2 border-t">
                   <div>
                     <p className="text-xs text-gray-500">{formatDate(order.date)}</p>
@@ -193,9 +210,21 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
                 <TableHead className="text-left font-semibold text-gray-700 text-xs lg:text-sm">
                   Product
                 </TableHead>
-                <TableHead className="text-left font-semibold text-gray-700 text-xs lg:text-sm">
-                  Customer Details
-                </TableHead>
+                {user?.role === 'seller' && (
+                  <TableHead className="text-left font-semibold text-gray-700 text-xs lg:text-sm">
+                    Customer Details
+                  </TableHead>
+                )}
+                {user?.role === 'driver' && (
+                  <TableHead className="text-left font-semibold text-gray-700 text-xs lg:text-sm">
+                    Pick Up Location
+                  </TableHead>
+                )}
+                {user?.role === 'driver' && (
+                  <TableHead className="text-left font-semibold text-gray-700 text-xs lg:text-sm">
+                    Drop Location
+                  </TableHead>
+                )}
                 <TableHead className="text-center font-semibold text-gray-700 text-xs lg:text-sm hidden lg:table-cell">
                   Order Date
                 </TableHead>
@@ -221,35 +250,52 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
                       {order.products?.map((product) => product.title).join(', ')}
                     </span>
                   </TableCell>
-                  <TableCell className="py-3 lg:py-4">
-                    <div className="flex items-center gap-2 lg:gap-3">
-                      <Avatar className="w-8 h-8 lg:w-10 lg:h-10 border-2 border-white shadow-sm">
-                        {order.customer?.avatar ? (
-                          <AvatarImage
-                            src={order.customer.avatar}
-                            alt={order.customer?.displayName || 'Customer'}
-                            className="object-cover"
-                          />
-                        ) : null}
-                        <AvatarFallback className="bg-gray-200 text-gray-700 font-medium text-xs uppercase">
-                          {order.customer?.displayName
-                            ? order.customer.displayName
-                                .split(' ')
-                                .map((n) => n[0])
-                                .join('')
-                            : 'NA'}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="text-left">
-                        <div className="font-medium text-xs lg:text-sm text-gray-900 capitalize">
-                          {order.customer?.displayName || 'Unknown'}
-                        </div>
-                        <div className="text-xs text-gray-500 hidden xl:block">
-                          {order.customer?.email || 'No email'}
+                  {user?.role === 'seller' && (
+                    <TableCell className="py-3 lg:py-4">
+                      <div className="flex items-center gap-2 lg:gap-3">
+                        <Avatar className="w-8 h-8 lg:w-10 lg:h-10 border-2 border-white shadow-sm">
+                          {order.customer?.avatar ? (
+                            <AvatarImage
+                              src={order.customer.avatar}
+                              alt={order.customer?.displayName || 'Customer'}
+                              className="object-cover"
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-gray-200 text-gray-700 font-medium text-xs uppercase">
+                            {order.customer?.displayName
+                              ? order.customer.displayName
+                                  .split(' ')
+                                  .map((n) => n[0])
+                                  .join('')
+                              : 'NA'}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="text-left">
+                          <div className="font-medium text-xs lg:text-sm text-gray-900 capitalize">
+                            {order.customer?.displayName || 'Unknown'}
+                          </div>
+                          <div className="text-xs text-gray-500 hidden xl:block">
+                            {order.customer?.email || 'No email'}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </TableCell>
+                    </TableCell>
+                  )}
+
+                  {user?.role === 'driver' && (
+                    <TableCell className="text-left max-w-[200px] truncate">
+                      <span className="text-gray-700 text-xs lg:text-sm ">
+                        {order.orderSummary?.formattedPickupAddress || '-'} 
+                      </span>
+                    </TableCell>
+                  )}
+                  {user?.role === 'driver' && (
+                    <TableCell className="text-left max-w-[200px] truncate">
+                      <span className="text-gray-700 text-xs lg:text-sm " >
+                        {order.orderSummary?.formattedShippingAddress || '-'}
+                      </span>
+                    </TableCell>
+                  )}
                   <TableCell className="text-center hidden lg:table-cell">
                     <span className="text-gray-700 text-xs lg:text-sm">
                       {formatDate(order.date)}

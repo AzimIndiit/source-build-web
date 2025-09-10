@@ -10,7 +10,7 @@ export interface CreateVehiclePayload {
   insuranceImages: string[];
 }
 
-export interface CreateLicensePayload{
+export interface CreateLicensePayload {
   licenseNumber: string;
   licenseImages: string[];
 }
@@ -36,11 +36,21 @@ export interface VehicleResponse {
   message: string;
   data: Vehicle;
 }
-
+export interface MetaReponse {
+  pagination: {
+    hasNext: boolean;
+    hasPrev: boolean;
+    limit: number;
+    page: number;
+    pages: number;
+    total: number;
+  };
+}
 export interface VehiclesListResponse {
   success: boolean;
   message: string;
   data: Vehicle[];
+  meta?: MetaReponse;
 }
 
 class VehicleService {
@@ -57,8 +67,13 @@ class VehicleService {
     return response.data;
   }
 
-  async getVehicles(): Promise<VehiclesListResponse> {
-    const response = await axiosInstance.get<VehiclesListResponse>('/driver/vehicles');
+  async getVehicles(params?: {
+    page?: number;
+    limit?: number;
+    category?: string;
+    search?: string;
+  }): Promise<VehiclesListResponse> {
+    const response = await axiosInstance.get<VehiclesListResponse>('/driver/vehicles', { params });
     return response.data;
   }
 

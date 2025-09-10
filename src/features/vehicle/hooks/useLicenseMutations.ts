@@ -34,7 +34,6 @@ export function useCreateLicenseMutation() {
         licenseImages: licenseImageUrls,
       };
       return await vehicleService.createLicense(payload);
-   
     },
     onSuccess: (response) => {
       // Invalidate license query

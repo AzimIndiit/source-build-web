@@ -205,24 +205,24 @@ class OrderService {
     return response.data;
   }
 
-    // Get orders for seller
-    async getSellerOrders(filters?: OrderFilters): Promise<OrdersListResponse> {
-      const params = new URLSearchParams();
-  
-      if (filters) {
-        Object.entries(filters).forEach(([key, value]) => {
-          if (value !== undefined && value !== null && value !== '') {
-            params.append(key, String(value));
-          }
-        });
-      }
-  
-      const response = await axiosInstance.get<OrdersListResponse>('/orders/seller/orders', {
-        params,
+  // Get orders for seller
+  async getSellerOrders(filters?: OrderFilters): Promise<OrdersListResponse> {
+    const params = new URLSearchParams();
+
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          params.append(key, String(value));
+        }
       });
-      return response.data;
     }
-  
+
+    const response = await axiosInstance.get<OrdersListResponse>('/orders/seller/orders', {
+      params,
+    });
+    return response.data;
+  }
+
   // Get single order by ID
   async getOrderById(orderId: string): Promise<OrderResponse> {
     const response = await axiosInstance.get<OrderResponse>(`/orders/${orderId}`);
@@ -279,7 +279,11 @@ class OrderService {
   }
 
   // Mark order as delivered
-  async markAsDelivered(orderId: string, proofOfDelivery?: string, deliveryMessage?: string): Promise<OrderResponse> {
+  async markAsDelivered(
+    orderId: string,
+    proofOfDelivery?: string,
+    deliveryMessage?: string
+  ): Promise<OrderResponse> {
     const response = await axiosInstance.patch<OrderResponse>(`/orders/${orderId}/deliver`, {
       proofOfDelivery,
       deliveryMessage,
@@ -323,7 +327,7 @@ class OrderService {
 
   // Add review for order (single endpoint for all review types)
   async addOrderReview(
-    orderId: string, 
+    orderId: string,
     reviews: {
       customer?: { rating: number; review: string };
       driver?: { rating: number; review: string };

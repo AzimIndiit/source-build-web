@@ -1141,7 +1141,7 @@ function EditProductPage() {
 
     try {
       // Check if this is for updating an existing product draft
-      console.log('draftData', draftData)
+      console.log('draftData', draftData);
       if (id) {
         // For existing products being edited, use the update mutation with status: 'draft'
         const updateData = {

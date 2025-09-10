@@ -60,8 +60,6 @@ export const useOrderStatsQuery = (period?: 'day' | 'week' | 'month' | 'year') =
 };
 
 export const useUpdateOrderStatus = () => {
-
-
   return useMutation({
     mutationFn: ({ orderId, status }: { orderId: string; status: string }) =>
       orderService.updateOrderStatus(orderId, status),
@@ -78,8 +76,6 @@ export const useUpdateOrderStatus = () => {
 };
 
 export const useCancelOrder = () => {
-  
-
   return useMutation({
     mutationFn: ({ orderId, reason }: { orderId: string; reason: string }) =>
       orderService.cancelOrder(orderId, reason),
@@ -96,8 +92,6 @@ export const useCancelOrder = () => {
 };
 
 export const useAssignDriver = () => {
-  
-
   return useMutation({
     mutationFn: ({ orderId, driverId }: { orderId: string; driverId: string }) =>
       orderService.assignDriver(orderId, driverId),
@@ -114,8 +108,6 @@ export const useAssignDriver = () => {
 };
 
 export const useMarkAsDelivered = () => {
-  
-
   return useMutation({
     mutationFn: ({ orderId, proofOfDelivery }: { orderId: string; proofOfDelivery?: string }) =>
       orderService.markAsDelivered(orderId, proofOfDelivery),

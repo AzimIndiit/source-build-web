@@ -122,14 +122,14 @@ function VerifyOtpPage() {
             // Extract the seconds from the error message
             const match = errorMessage.match(/(\d+) seconds/);
             const seconds = match ? parseInt(match[1], 10) : OTP_RESEND_COOLDOWN;
-            
+
             // Set the countdown to the server-specified time
             setCountdown(seconds);
-            
+
             // Update the timestamp to sync with server cooldown
-            const serverCooldownStart = Date.now() - ((OTP_RESEND_COOLDOWN - seconds) * 1000);
+            const serverCooldownStart = Date.now() - (OTP_RESEND_COOLDOWN - seconds) * 1000;
             localStorage.setItem(OTP_RESEND_KEY, serverCooldownStart.toString());
-            
+
             toast(`Please wait ${seconds} seconds before requesting another OTP`, {
               icon: '⏰',
               style: {

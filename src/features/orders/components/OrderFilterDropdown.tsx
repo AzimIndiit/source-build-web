@@ -80,7 +80,7 @@ export const OrderFilterDropdown: React.FC<OrderFilterDropdownProps> = ({
               'Processing',
               'Cancelled',
               'In Transit',
-              'Out for Delivery  ',
+              'Out for Delivery',
             ].map((key) => (
               <label
                 key={key}
@@ -104,11 +104,11 @@ export const OrderFilterDropdown: React.FC<OrderFilterDropdownProps> = ({
         {/* Pricing */}
         <div className="space-y-3 mb-6">
           <h3 className="font-semibold text-sm text-gray-900">Pricing</h3>
-          <RadioGroup value={filters.pricing} onValueChange={handlePricingChange}>
+          <RadioGroup value={localFilters.pricing} onValueChange={handlePricingChange}>
             <div className="flex gap-4 mb-4">
               <label
                 className={`flex items-center space-x-2 cursor-pointer ${
-                  filters.pricing === 'high-to-low' ? 'text-primary' : 'text-gray-600'
+                  localFilters.pricing === 'high-to-low' ? 'text-primary' : 'text-gray-600'
                 }`}
               >
                 <RadioGroupItem value="high-to-low" id="high-to-low" />
@@ -116,7 +116,7 @@ export const OrderFilterDropdown: React.FC<OrderFilterDropdownProps> = ({
               </label>
               <label
                 className={`flex items-center space-x-2 cursor-pointer ${
-                  filters.pricing === 'low-to-high' ? 'text-primary' : 'text-gray-600'
+                  localFilters.pricing === 'low-to-high' ? 'text-primary' : 'text-gray-600'
                 }`}
               >
                 <RadioGroupItem value="low-to-high" id="low-to-high" />
@@ -137,7 +137,7 @@ export const OrderFilterDropdown: React.FC<OrderFilterDropdownProps> = ({
             Clear All Filters
           </Button>
           <Button
-            onClick={handleClearFilters}
+            onClick={handleApplyFilters}
             className="w-[126px] h-[48px] !text-sm  bg-primary hover:bg-primary/90 text-white"
           >
             Apply Filter

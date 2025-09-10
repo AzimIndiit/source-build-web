@@ -15,16 +15,16 @@ const convertTo12Hour = (time24: string): string => {
 const convertTo24Hour = (time12: string): string => {
   const match = time12.match(/(\d+):(\d+)\s*(AM|PM)/i);
   if (!match) return time12;
-  
+
   let [, hours, minutes, period] = match;
   let hours24 = parseInt(hours);
-  
+
   if (period.toUpperCase() === 'PM' && hours24 !== 12) {
     hours24 += 12;
   } else if (period.toUpperCase() === 'AM' && hours24 === 12) {
     hours24 = 0;
   }
-  
+
   return `${hours24.toString().padStart(2, '0')}:${minutes}`;
 };
 
@@ -191,15 +191,17 @@ export const PickupHoursSelector: React.FC<PickupHoursSelectorProps> = React.mem
               });
             } else {
               // Try matching both 24-hour and 12-hour formats
-              let match = segment.match(/^(.+?)\s+(\d{1,2}:\d{2}(?:\s*[AP]M)?)[–-](\d{1,2}:\d{2}(?:\s*[AP]M)?)$/i);
+              let match = segment.match(
+                /^(.+?)\s+(\d{1,2}:\d{2}(?:\s*[AP]M)?)[–-](\d{1,2}:\d{2}(?:\s*[AP]M)?)$/i
+              );
               if (match) {
                 const [, dayPart, openTime, closeTime] = match;
                 const affectedDays = expandDayRange(dayPart);
-                
+
                 // Convert to 24-hour format if needed for storage
                 const open24 = openTime.includes('M') ? convertTo24Hour(openTime) : openTime;
                 const close24 = closeTime.includes('M') ? convertTo24Hour(closeTime) : closeTime;
-                
+
                 affectedDays.forEach((day) => {
                   result[day] = { open: open24, close: close24, closed: false };
                 });

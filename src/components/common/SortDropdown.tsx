@@ -44,10 +44,25 @@ export const SortDropdown: React.FC<SortDropdownProps> = ({
   const [tempDateRange, setTempDateRange] = useState<{ from?: Date; to?: Date }>({});
   const [isOpen, setIsOpen] = useState(false);
 
+  // Sync internal state with prop changes
+  React.useEffect(() => {
+    setValue(selectedSort);
+    setTempValue(selectedSort);
+  }, [selectedSort]);
+
+  React.useEffect(() => {
+    if (isOpen) {
+      setTempValue(value);
+      if (value === 'custom' && dateRange.from && dateRange.to) {
+        setTempDateRange(dateRange);
+      }
+    }
+  }, [isOpen, value, dateRange]);
+
   const handleChange = (newValue: string) => {
     setTempValue(newValue);
-    if (newValue !== 'custom') {
-      setTempDateRange({});
+    if (newValue === 'custom' && dateRange.from && dateRange.to) {
+      setTempDateRange(dateRange);
     }
   };
 
@@ -74,6 +89,7 @@ export const SortDropdown: React.FC<SortDropdownProps> = ({
       }
     } else {
       setValue(tempValue);
+      setDateRange(dateRange);
       onSortChange?.(tempValue);
       setIsOpen(false);
     }
@@ -129,7 +145,7 @@ export const SortDropdown: React.FC<SortDropdownProps> = ({
                         mode="single"
                         selected={tempDateRange.from}
                         onSelect={(date) => handleDateSelect('from', date)}
-                        initialFocus
+                        autoFocus
                       />
                     </PopoverContent>
                   </Popover>
@@ -163,7 +179,7 @@ export const SortDropdown: React.FC<SortDropdownProps> = ({
                         disabled={(date) =>
                           tempDateRange.from ? date < tempDateRange.from : false
                         }
-                        initialFocus
+                        autoFocus
                       />
                     </PopoverContent>
                   </Popover>

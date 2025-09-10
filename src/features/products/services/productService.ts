@@ -243,8 +243,8 @@ class ProductService {
 
   async updateProductStock(
     id: string,
-    data: { 
-      quantity: number; 
+    data: {
+      quantity: number;
       variants?: Array<{ index: number; quantity: number; outOfStock?: boolean }>;
       outOfStock?: boolean;
     }

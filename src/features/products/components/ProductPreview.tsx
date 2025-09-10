@@ -525,7 +525,11 @@ export const ProductPreview: React.FC<ProductPreviewProps> = ({
                 <div className="grid grid-cols-1 gap-4">
                   {variants.map((variant, index) => {
                     const variantData = formValues.variants?.[index];
-                    if (!variantData?.color || !variantData?.price || (!variantData?.quantity && !variantData?.outOfStock)) {
+                    if (
+                      !variantData?.color ||
+                      !variantData?.price ||
+                      (!variantData?.quantity && !variantData?.outOfStock)
+                    ) {
                       return null;
                     }
 
@@ -580,7 +584,10 @@ export const ProductPreview: React.FC<ProductPreviewProps> = ({
                                 </div>
                                 <div className="text-xs text-gray-500">
                                   {variantData.outOfStock ? (
-                                    <Badge variant="destructive" className="text-xs bg-red-500 text-white">
+                                    <Badge
+                                      variant="destructive"
+                                      className="text-xs bg-red-500 text-white"
+                                    >
                                       Out of Stock
                                     </Badge>
                                   ) : (

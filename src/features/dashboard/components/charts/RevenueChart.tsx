@@ -25,7 +25,12 @@ interface RevenueChartProps {
   onYearChange: (year: string) => void;
 }
 
-export const RevenueChart: React.FC<RevenueChartProps> = ({ title,data, selectedYear, onYearChange }) => {
+export const RevenueChart: React.FC<RevenueChartProps> = ({
+  title,
+  data,
+  selectedYear,
+  onYearChange,
+}) => {
   const [date, setDate] = React.useState<Date | undefined>(new Date(parseInt(selectedYear), 0, 1));
 
   const handleDateSelect = (newDate: Date | undefined) => {

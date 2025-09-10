@@ -29,7 +29,7 @@ export const BankAccountCard: React.FC<BankAccountCardProps> = ({
   onToggleDefault,
   className,
   isDefault,
-  totalBankAccount
+  totalBankAccount,
 }) => {
   // Local state for tracking update status
   const [isUpdating, setIsUpdating] = useState(false);
@@ -53,7 +53,7 @@ export const BankAccountCard: React.FC<BankAccountCardProps> = ({
       }
     }
   };
-console.log('isDefault && totalBankAccount ', isDefault ,totalBankAccount )
+  console.log('isDefault && totalBankAccount ', isDefault, totalBankAccount);
   return (
     <Card
       className={cn(
@@ -66,13 +66,13 @@ console.log('isDefault && totalBankAccount ', isDefault ,totalBankAccount )
           <h3 className="font-semibold text-gray-900 text-base sm:text-lg line-clamp-1">
             {accountHolder}
           </h3>
-        <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2">
             <Label htmlFor={`default-${accountNumber}`} className="text-xs text-gray-600">
               Default
             </Label>
             <Switch
               id={`default-${accountNumber}`}
-              checked={isDefault }
+              checked={isDefault}
               onCheckedChange={handleToggle}
               // disabled={isDefault}
               className={`h-6 w-12  transition-all duration-200 ${isUpdating ? 'data-[state=checked]:bg-green-500' : isDefault && totalBankAccount ? 'data-[state=checked]:bg-gray-500 opacity-50 cursor-not-allowed' : 'data-[state=checked]:bg-green-500'}`}
@@ -85,7 +85,6 @@ console.log('isDefault && totalBankAccount ', isDefault ,totalBankAccount )
               <Loader2 className="h-4 w-4 animate-spin text-primary" />
             )} */}
           </div>
-       
         </div>
 
         <div className="flex-1 space-y-2">

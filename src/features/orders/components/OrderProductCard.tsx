@@ -19,7 +19,7 @@ export const OrderProductCard: React.FC<OrderProductCardProps> = ({
   onViewItem,
   onWriteReview,
 }) => {
-  const {user} = useAuth();
+  const { user } = useAuth();
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
 
   // Format the order ID to match the image format (408-2671656-7090703)
@@ -129,16 +129,18 @@ export const OrderProductCard: React.FC<OrderProductCardProps> = ({
                   </p>
                 </div>
                 {/* View Item Button */}
-               {user?.role === 'seller' && <Button
-                  variant="outline"
-                  onClick={() => {
-                    onViewItem?.({ slug: product.productRef?.slug || '' });
-                    console.log('Viewing item:', product.title);
-                  }}
-                  className="border-primary text-primary hover:bg-blue-50 rounded-lg px-6 py-2 h-auto font-medium"
-                >
-                  View your item
-                </Button>}
+                {user?.role === 'seller' && (
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      onViewItem?.({ slug: product.productRef?.slug || '' });
+                      console.log('Viewing item:', product.title);
+                    }}
+                    className="border-primary text-primary hover:bg-blue-50 rounded-lg px-6 py-2 h-auto font-medium"
+                  >
+                    View your item
+                  </Button>
+                )}
               </div>
             </div>
           ))}

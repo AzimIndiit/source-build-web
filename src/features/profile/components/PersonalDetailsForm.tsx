@@ -453,13 +453,17 @@ const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({ onSave }) => 
                     disabled
                     placeholder="Enter your email address"
                   />
-                {userRole==='seller' &&  <FormInput name="region" label="Region" placeholder="Enter your region" />}
-                {userRole==='driver' &&        <FormPhoneInput
-                        name="phone"
-                        label="Phone"
-                        placeholder="(123) 456-7890"
-                        disabled={updateProfileMutation.isPending}
-                      />}
+                  {userRole === 'seller' && (
+                    <FormInput name="region" label="Region" placeholder="Enter your region" />
+                  )}
+                  {userRole === 'driver' && (
+                    <FormPhoneInput
+                      name="phone"
+                      label="Phone"
+                      placeholder="(123) 456-7890"
+                      disabled={updateProfileMutation.isPending}
+                    />
+                  )}
                 </div>
 
                 {/* Seller-specific fields */}
@@ -546,25 +550,30 @@ const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({ onSave }) => 
                 )}
                 {userRole === 'driver' && (
                   <>
-               
                     <div className="grid grid-cols-1 gap-4 sm:gap-6">
-                  <FormInput name="address" label="Address" placeholder="Enter your address" disabled={updateProfileMutation.isPending} />
-                </div>
+                      <FormInput
+                        name="address"
+                        label="Address"
+                        placeholder="Enter your address"
+                        disabled={updateProfileMutation.isPending}
+                      />
+                    </div>
                   </>
                 )}
                 {/* Region and Address - Common fields */}
-          
 
                 {/* Description */}
-{userRole==='seller' &&                <FormTextarea
-                  name="description"
-                  label="Description"
-                  placeholder="Tell us about yourself..."
-                  rows={5}
-                  maxLength={500}
-                  className="min-h-[120px]"
-                  disabled={updateProfileMutation.isPending}
-                />}
+                {userRole === 'seller' && (
+                  <FormTextarea
+                    name="description"
+                    label="Description"
+                    placeholder="Tell us about yourself..."
+                    rows={5}
+                    maxLength={500}
+                    className="min-h-[120px]"
+                    disabled={updateProfileMutation.isPending}
+                  />
+                )}
 
                 <div
                   className={`pt-4 sm:pt-6 flex flex-col-reverse sm:flex-row items-center  gap-4 ${userData?.authType === 'email' ? 'justify-between' : 'justify-end'}`}

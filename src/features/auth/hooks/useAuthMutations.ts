@@ -140,7 +140,6 @@ export function useVerifyOtpMutation() {
 
       const profile = response?.data?.user;
 
-
       console.log('profile', profile);
       if (!profile) {
         navigate('/auth/login');
@@ -178,15 +177,15 @@ export function useVerifyOtpMutation() {
           const hasLicense = (profile as any).isLicense || false;
           console.log('hasVehicles', hasVehicles);
           console.log('hasLicense', hasLicense);
-          
+
           // Set user and authentication
           setUser(user as any);
           setIsAuthenticated(true);
           localStorage.setItem('user', JSON.stringify(user));
-          
+
           // Show success message
           toast.success(response.message || 'Email verified successfully!');
-          
+
           // Navigate after setting user to ensure AuthLayout has the user
           setTimeout(() => {
             if (!hasVehicles) {
@@ -197,24 +196,23 @@ export function useVerifyOtpMutation() {
               navigate('/driver/dashboard');
             }
           }, 100);
-  
+
           // Invalidate queries
           queryClient.invalidateQueries({ queryKey: ['user'] });
-  
         } else {
           // Set user and authentication
           setUser(user as any);
           setIsAuthenticated(true);
           localStorage.setItem('user', JSON.stringify(user));
-  
+
           // Show success message
           toast.success(response.message || 'Email verified successfully!');
-          
+
           // Navigate after setting user
           setTimeout(() => {
             navigate(profile.role === 'seller' ? '/seller/dashboard' : '/');
           }, 100);
-  
+
           // Invalidate queries
           queryClient.invalidateQueries({ queryKey: ['user'] });
         }

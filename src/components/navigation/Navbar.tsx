@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   MessageCircle,
   Bell,
@@ -30,17 +30,27 @@ import { DeleteConfirmationModal } from '../ui';
 import { LocationSearch } from '@/components/location/LocationSearch';
 import { useUnreadCountQuery } from '@/features/notifications/hooks/useNotificationMutations';
 import { useUnreadMessageCount } from '@/features/messages/hooks/useUnreadMessageCount';
+import { useSocket } from '@/hooks/useSocket';
 import toast from 'react-hot-toast';
 
 export const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const { openModal, isOpen, closeModal } = useLogoutModal();
+  const { on } = useSocket();
   const isAuthenticated = !!user;
+
+  // Check if current route is messages page
+  const isOnMessagesPage =
+    location.pathname === `/${user?.role}/messages` ||
+    location.pathname.startsWith(`/${user?.role}/messages/`);
   const [isBuyerMode, setIsBuyerMode] = useState(user?.role === 'buyer');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [localMessageCount, setLocalMessageCount] = useState(0);
+  const [chatUnreadCounts, setChatUnreadCounts] = useState<Record<string, number>>({});
   const mobileMenuRef = useRef<HTMLDivElement>(null);
 
   // Get real notification count from API (only when authenticated)
@@ -48,7 +58,10 @@ export const Navbar: React.FC = () => {
   const notificationCount = unreadNotifications?.data?.count || 0;
 
   // Get real message count from API (only when authenticated)
-  const { unreadCount: messageCount } = useUnreadMessageCount(isAuthenticated);
+  const { unreadCount: initialMessageCount } = useUnreadMessageCount(isAuthenticated);
+
+  // Use local state for message count that can be updated via socket
+  const messageCount = localMessageCount || initialMessageCount;
 
   // Mock count for cart - replace with actual data from your backend
   const cartCount = 2; // Example count
@@ -94,9 +107,60 @@ export const Navbar: React.FC = () => {
     };
   }, [isMobileMenuOpen]);
 
+  // Initialize local message count with the initial count from API
+  useEffect(() => {
+    setLocalMessageCount(initialMessageCount);
+  }, [initialMessageCount]);
+
+  // Listen for socket updates to increment/decrement message count
+  useEffect(() => {
+    const handleUpdateUnreadCount = (data: any) => {
+      // Check if the event is for the current logged-in user
+      if (user?.id && data?.id) {
+        // Check if current user is a participant in this chat
+        const isParticipant = data?.participants?.some(
+          (participant: any) => participant?.id === user?.id || participant?._id === user?.id
+        );
+
+        if (!isParticipant) return; // Exit if user is not a participant
+
+        const chatId = data.id;
+        const newUserUnreadCount = data?.unreadCounts?.[user.id] || 0;
+
+        // Update the tracking of individual chat unread counts
+        setChatUnreadCounts((prev) => {
+          const oldCount = prev[chatId] || 0;
+          const updatedCounts = { ...prev, [chatId]: newUserUnreadCount };
+
+          // Calculate the difference and update total count
+          const difference = newUserUnreadCount - oldCount;
+          setLocalMessageCount((prevTotal) => Math.max(0, prevTotal + difference));
+
+          return updatedCounts;
+        });
+
+        // Log for debugging
+        const senderId = data?.lastMessage?.sender;
+        console.log('Socket update:', {
+          chatId,
+          senderId,
+          currentUserId: user?.id,
+          newUnreadCount: newUserUnreadCount,
+          isParticipant,
+        });
+      }
+    };
+
+    const removeListener = on('update_unread_count', handleUpdateUnreadCount);
+
+    return () => {
+      removeListener();
+    };
+  }, [on, user?.id]);
+
   const handleSwitchBuyerMode = (checked: boolean) => {
-    return toast.error('Functionality is not available yet');
-    setIsBuyerMode(checked);
+    toast.error('Functionality is not available yet');
+    // setIsBuyerMode(checked); // TODO: Enable when functionality is available
   };
 
   return (
@@ -223,7 +287,7 @@ export const Navbar: React.FC = () => {
                   onClick={() => navigate(`/${user?.role}/messages`)}
                 >
                   <MessageCircle className="w-5 h-5" />
-                  {messageCount > 0 && (
+                  {messageCount > 0 && !isOnMessagesPage && (
                     <span className="absolute -top-1 -right-1 bg-red-500 min-w-[20px] h-5 px-1 rounded-full flex items-center justify-center text-white text-xs">
                       {messageCount > 9 ? '9+' : messageCount}
                     </span>
@@ -300,12 +364,14 @@ export const Navbar: React.FC = () => {
               </Button>
 
               {/* Cart */}
-           {(!user || user?.role === 'buyer') &&    <Button variant="ghost" className="relative p-2">
-                <ShoppingCart className="!w-6 !h-6" />
-                <span className="absolute top-2 -right-1 bg-red-500 min-w-[16px] h-[16px] px-1 rounded-full flex items-center justify-center text-white text-[10px] font-medium">
-                  2
-                </span>
-              </Button>}
+              {(!user || user?.role === 'buyer') && (
+                <Button variant="ghost" className="relative p-2">
+                  <ShoppingCart className="!w-6 !h-6" />
+                  <span className="absolute top-2 -right-1 bg-red-500 min-w-[16px] h-[16px] px-1 rounded-full flex items-center justify-center text-white text-[10px] font-medium">
+                    2
+                  </span>
+                </Button>
+              )}
 
               {/* Menu Toggle */}
               <Button
@@ -370,9 +436,11 @@ export const Navbar: React.FC = () => {
                     className="flex items-center justify-between py-2"
                   >
                     <span className="text-sm">Messages</span>
-                    <div className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-                      {messageCount > 9 ? '9+' : messageCount}
-                    </div>
+                    {!isOnMessagesPage && messageCount > 0 && (
+                      <div className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                        {messageCount > 9 ? '9+' : messageCount}
+                      </div>
+                    )}
                   </Link>
 
                   {/* Notifications */}

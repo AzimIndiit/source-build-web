@@ -251,17 +251,20 @@ export function useUpdateProductMutation() {
           price: Number(v.price),
           quantity: Number(v.quantity),
           outOfStock: v.outOfStock || false,
-          discount: v.discount.discountType !== 'none' && v.discount.discountValue && v.discount.discountValue.trim()
-            ? {
-                discountType: v.discount.discountType,
-                discountValue: v.discount.discountValue
-                  ? Number(v.discount.discountValue)
-                  : undefined,
-              }
-            : {
-                discountType: 'none',
-                discountValue: undefined,
-              },
+          discount:
+            v.discount.discountType !== 'none' &&
+            v.discount.discountValue &&
+            v.discount.discountValue.trim()
+              ? {
+                  discountType: v.discount.discountType,
+                  discountValue: v.discount.discountValue
+                    ? Number(v.discount.discountValue)
+                    : undefined,
+                }
+              : {
+                  discountType: 'none',
+                  discountValue: undefined,
+                },
           discount: {
             ...v.discount,
             discountValue: v.discount.discountValue ? Number(v.discount.discountValue) : undefined,
@@ -378,7 +381,7 @@ export function useSaveDraftMutation() {
             ...v,
             price: Number(v.price),
             quantity: Number(v.quantity),
-             outOfStock: v.outOfStock,
+            outOfStock: v.outOfStock,
             discount: {
               ...v.discount,
               discountValue: v.discount.discountValue
@@ -477,18 +480,17 @@ export function useToggleProductStatusMutation() {
 
 export function useUpdateProductStockMutation() {
   return useMutation({
-    mutationFn: ({ 
-      id, 
-      quantity, 
+    mutationFn: ({
+      id,
+      quantity,
       variants,
-      outOfStock 
-    }: { 
-      id: string; 
-      quantity: number; 
+      outOfStock,
+    }: {
+      id: string;
+      quantity: number;
       variants?: Array<{ index: number; quantity: number; outOfStock?: boolean }>;
       outOfStock?: boolean;
-    }) =>
-      productService.updateProductStock(id, { quantity, variants, outOfStock }),
+    }) => productService.updateProductStock(id, { quantity, variants, outOfStock }),
     onMutate: async ({ id, quantity, outOfStock }) => {
       // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: PRODUCTS_QUERY_KEY });
@@ -505,8 +507,12 @@ export function useUpdateProductStockMutation() {
             ...old.data,
             products: old.data.products?.map((product: any) => {
               if (product._id === id || product.id === id) {
-                const newStatus = quantity === 0 ? 'out_of_stock' : 
-                                 product.status === 'out_of_stock' ? 'active' : product.status;
+                const newStatus =
+                  quantity === 0
+                    ? 'out_of_stock'
+                    : product.status === 'out_of_stock'
+                      ? 'active'
+                      : product.status;
                 return { ...product, quantity, status: newStatus };
               }
               return product;
@@ -569,6 +575,5 @@ export function useProductByIdQuery(id: string) {
     queryKey: ['product', 'id', id],
     queryFn: () => productService.getProductById(id),
     enabled: !!id,
- 
   });
 }

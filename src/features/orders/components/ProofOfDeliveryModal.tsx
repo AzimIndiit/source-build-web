@@ -68,7 +68,7 @@ export const ProofOfDeliveryModal: React.FC<ProofOfDeliveryModalProps> = ({
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-    
+
     const file = e.dataTransfer.files[0];
     if (file) {
       handleFileSelect(file);
@@ -154,9 +154,7 @@ export const ProofOfDeliveryModal: React.FC<ProofOfDeliveryModalProps> = ({
 
         {/* Message Field */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Message (optional)
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Message (optional)</label>
           <textarea
             value={message}
             onChange={(e) => setMessage(e.target.value)}
@@ -167,16 +165,11 @@ export const ProofOfDeliveryModal: React.FC<ProofOfDeliveryModalProps> = ({
         </div>
 
         <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={handleCancel}
-            disabled={isSubmitting}
-            className="px-8"
-          >
+          <Button variant="outline" onClick={handleCancel} disabled={isSubmitting} className="px-8">
             Cancel
           </Button>
           <Button
-             type='button'
+            type="button"
             variant="default"
             onClick={handleSubmit}
             disabled={isSubmitting || !selectedFile}

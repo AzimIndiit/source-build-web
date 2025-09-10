@@ -53,22 +53,21 @@ function LoginPage() {
 
       // Show success toast
 
-      
       // Get the user from the store after login
       const currentUser = useAuthStore.getState().user;
-      
+
       // Handle navigation based on user role and status
       if (currentUser) {
         if (currentUser.role === 'driver') {
           // Check driver's vehicle and license status
           const hasVehicles = (currentUser as any).isVehicles || false;
           const hasLicense = (currentUser as any).isLicense || false;
-          
+
           console.log('Driver login - hasVehicles:', hasVehicles, 'hasLicense:', hasLicense);
-          
+
           if (!hasVehicles) {
             navigate('/auth/vehicle-information');
-            toast.error('Please upload your vehicle information!',{
+            toast.error('Please upload your vehicle information!', {
               icon: '⚠️',
               style: {
                 background: '#FEF8C6',
@@ -78,7 +77,7 @@ function LoginPage() {
             });
           } else if (!hasLicense) {
             navigate('/auth/driver-license');
-            toast.error('Please upload your driving license!',{
+            toast.error('Please upload your driving license!', {
               icon: '⚠️',
               style: {
                 background: '#FEF8C6',
@@ -103,12 +102,12 @@ function LoginPage() {
       }
     } catch (error: any) {
       console.error('Login error:', error);
-      
+
       // Check if the error is due to unverified account
       if (error.response?.data?.message === 'Account is not verified') {
         // Store email in session storage for OTP verification
         sessionStorage.setItem('signup_email', data.email);
-        
+
         // Show warning toast
         toast('Your account is not verified. Sending OTP to your email...', {
           icon: '⚠️',
@@ -130,19 +129,19 @@ function LoginPage() {
           localStorage.setItem('otp_resend_timestamp', Date.now().toString());
 
           toast.success('OTP sent to your email successfully!');
-          
+
           // Navigate to OTP verification page
           navigate('/auth/verify-otp');
         } catch (otpError: any) {
           console.error('Failed to send OTP:', otpError);
-          
+
           // Check if it's a rate limit error
           const errorMessage = otpError.response?.data?.message || '';
           if (errorMessage.includes('Please wait')) {
             // Extract the seconds from the error message
             const match = errorMessage.match(/(\d+) seconds/);
             const seconds = match ? match[1] : 'a few';
-            
+
             toast(`Please wait ${seconds} seconds before requesting another OTP`, {
               icon: '⏰',
               style: {
@@ -151,7 +150,7 @@ function LoginPage() {
                 border: '1px solid #FCE992',
               },
             });
-            
+
             // Still navigate to OTP page where they can use the resend button after cooldown
             navigate('/auth/verify-otp');
           } else {
@@ -164,7 +163,9 @@ function LoginPage() {
         }
       } else {
         // Show generic error for other cases
-        toast.error(error.response?.data?.message || 'Invalid email or password. Please try again.');
+        toast.error(
+          error.response?.data?.message || 'Invalid email or password. Please try again.'
+        );
       }
     } finally {
       setIsLoading(false);

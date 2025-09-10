@@ -62,11 +62,10 @@ const AuthRedirectPage = () => {
         } else if (transformedUser?.role === 'driver') {
           const isVehicles = transformedUser?.profile?.isVehicles;
           const isLicense = transformedUser?.profile?.isLicense;
-
           if (!isVehicles) {
-            navigate('/vehicle-information', { replace: true });
+            navigate('/auth/vehicle-information', { replace: true });
           } else if (!isLicense) {
-            navigate('/driver-license', { replace: true });
+            navigate('/auth/driver-license', { replace: true });
           } else {
             navigate('/driver/dashboard', { replace: true });
           }

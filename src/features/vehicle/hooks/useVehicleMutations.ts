@@ -7,6 +7,7 @@ import {
   VehiclesListResponse,
 } from '../services/vehicleService';
 import { queryClient } from '@/lib/queryClient';
+import { USER_QUERY_KEY } from '@/features/auth/hooks/useUserQuery';
 
 export const VEHICLES_QUERY_KEY = ['vehicles'];
 export const VEHICLE_QUERY_KEY = (id: string) => ['vehicle', id];
@@ -55,6 +56,9 @@ export function useCreateVehicleMutation() {
     onSuccess: (response) => {
       // Invalidate vehicles list query
       queryClient.invalidateQueries({ queryKey: VEHICLES_QUERY_KEY });
+      
+      // Also invalidate user query to refresh user profile with updated isVehicles flag
+      queryClient.invalidateQueries({ queryKey: USER_QUERY_KEY });
 
       toast.success(response.message || 'Vehicle information submitted successfully!');
     },
@@ -165,10 +169,19 @@ export function useRestoreVehicleMutation() {
 }
 
 // Query hooks
-export function useVehiclesQuery() {
+export function useVehiclesQuery(params?: {
+  page?: number;
+  limit?: number;
+  category?: string;
+  search?: string;
+  location?: string;
+  [key: string]: any;
+}) {
   return useQuery<VehiclesListResponse>({
-    queryKey: VEHICLES_QUERY_KEY,
-    queryFn: () => vehicleService.getVehicles(),
+    queryKey: [...VEHICLES_QUERY_KEY, params],
+    queryFn: () => vehicleService.getVehicles(params),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
   });
 }
 

@@ -13,12 +13,12 @@ import { useOrderByIdQuery } from '../hooks/useOrderMutations';
 import { useAuth } from '@/hooks/useAuth';
 
 const OrderDetailsPage: React.FC = () => {
-  const {user} = useAuth();
+  const { user } = useAuth();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
   // Fetch order from API
-  const { data, isLoading, isError ,refetch } = useOrderByIdQuery(id || '');
+  const { data, isLoading, isError, refetch } = useOrderByIdQuery(id || '');
 
   // Loading state
   if (isLoading) {
@@ -98,7 +98,7 @@ const OrderDetailsPage: React.FC = () => {
   };
 
   const breadcrumbItems = [
-    { label: 'Orders', href: `/${user?.role}/orders`},
+    { label: 'Orders', href: `/${user?.role}/orders` },
     { label: `Order Details`, isCurrentPage: true },
   ];
 
@@ -163,8 +163,6 @@ const OrderDetailsPage: React.FC = () => {
               reviewTitle="Reviews & Rating From Driver"
             />
           )}
-
-   
 
           {/* Order Timeline - Only show if no reviews exist */}
           {shouldShowBookingStatus && <BookingStatus order={order} />}

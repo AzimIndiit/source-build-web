@@ -162,15 +162,14 @@ const StockManagementDialog: React.FC<StockManagementDialogProps> = ({
 
       if (pendingAction === 'update') {
         const variantUpdates = product.variants
-          ? variantQuantities.map((quantity, index) => ({ 
-              index, 
+          ? variantQuantities.map((quantity, index) => ({
+              index,
               quantity,
-              outOfStock: variantOutOfStock[index]
+              outOfStock: variantOutOfStock[index],
             }))
           : undefined;
         await onUpdateStock(productId, mainQuantity, variantUpdates, mainOutOfStock);
       }
-     
 
       onClose();
     } catch (err) {
@@ -304,18 +303,16 @@ const StockManagementDialog: React.FC<StockManagementDialogProps> = ({
                   Main Stock Quantity
                 </Label>
                 <div className="flex items-center justify-end text-xs text-gray-500">
-               
                   <div className="flex items-center gap-2 ml-2">
-                  <Label htmlFor={`main-out-of-stock`} className="text-[10px] text-gray-600">
-                            Out of Stock
-                          </Label>
+                    <Label htmlFor={`main-out-of-stock`} className="text-[10px] text-gray-600">
+                      Out of Stock
+                    </Label>
                     <Switch
                       id="main-out-of-stock"
-                      className='h-6 w-12'
+                      className="h-6 w-12"
                       checked={mainOutOfStock}
                       onCheckedChange={(checked) => {
                         setMainOutOfStock(checked);
-                    
                       }}
                     />
                   </div>
@@ -396,30 +393,34 @@ const StockManagementDialog: React.FC<StockManagementDialogProps> = ({
                           </div>
                         </div>
                         <div className="flex items-center gap-1">
-                          <Label htmlFor={`variant-out-of-stock-${index}`} className="text-[10px] text-gray-600">
+                          <Label
+                            htmlFor={`variant-out-of-stock-${index}`}
+                            className="text-[10px] text-gray-600"
+                          >
                             Out of Stock
                           </Label>
                           <Switch
                             id={`variant-out-of-stock-${index}`}
-                            className='h-6 w-12'
+                            className="h-6 w-12"
                             checked={variantOutOfStock[index] || false}
                             onCheckedChange={(checked) => {
                               const newOutOfStock = [...variantOutOfStock];
                               newOutOfStock[index] = checked;
                               setVariantOutOfStock(newOutOfStock);
-                            
                             }}
                           />
                         </div>
                       </div>
-                 
+
                       <div className="flex items-center gap-1">
                         <Button
                           type="button"
                           variant="outline"
                           size="icon"
                           onClick={() => decrementVariantQuantity(index)}
-                          disabled={isUpdating || variantQuantities[index] === 0 || variantOutOfStock[index]}
+                          disabled={
+                            isUpdating || variantQuantities[index] === 0 || variantOutOfStock[index]
+                          }
                           className="h-8 w-8 rounded-sm hover:bg-gray-50 transition-all p-0"
                         >
                           <Minus className="h-3 w-3" />

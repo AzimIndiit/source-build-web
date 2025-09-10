@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 
 // Import modular components
 import { MetricsGrid } from '../components/MetricsGrid';
@@ -11,64 +11,106 @@ import { OrdersTableSkeleton } from '../components/OrdersTableSkeleton';
 import { metricsSellerData, weekSalesData, revenueData } from '../data/mockData';
 import { useNavigate } from 'react-router-dom';
 import { useSellerOrdersQuery } from '@/features/orders/hooks/useOrderMutations';
+import { transformOrders } from '@/features/orders/utils/orderTransformers';
 
 export const SellerDashboard: React.FC = () => {
   const [selectedYear, setSelectedYear] = useState('2024');
   const [currentPage] = useState(1);
   const [itemsPerPage] = useState(5);
+  const [selectedSort, setSelectedSort] = useState<string>('recent');
+  const [customDateRange, setCustomDateRange] = useState<{ from: Date; to: Date } | undefined>();
+  const [filters, setFilters] = useState<any>({
+    orderStatus: '',
+    pricing: '',
+  });
   const navigate = useNavigate();
 
-  // Fetch orders from API
-  const { data, isLoading, isError, error } = useSellerOrdersQuery({
-    page: currentPage,
-    limit: itemsPerPage,
-  });
+  // Convert sort option to API parameters - matching SellerOrdersPage logic
+  const getSortParams = useCallback((sortValue: string, pricingFilter?: string, dateRange?: { from: Date; to: Date }) => {
+    const now = new Date();
+    let startDate: string | undefined;
+    let endDate: string | undefined;
+    let sort = '-createdAt'; // Default to recent (descending)
+
+    // Handle pricing sort if provided
+    if (pricingFilter) {
+      switch (pricingFilter) {
+        case 'high-to-low':
+          sort = '-amount';
+          break;
+        case 'low-to-high':
+          sort = 'amount';
+          break;
+      }
+    } else {
+      // Handle date-based sorting
+      switch (sortValue) {
+        case 'custom':
+          if (dateRange) {
+            // Format dates in local timezone to avoid UTC conversion issues
+            const fromYear = dateRange.from.getFullYear();
+            const fromMonth = String(dateRange.from.getMonth() + 1).padStart(2, '0');
+            const fromDay = String(dateRange.from.getDate()).padStart(2, '0');
+            startDate = `${fromYear}-${fromMonth}-${fromDay}`;
+            
+            const toYear = dateRange.to.getFullYear();
+            const toMonth = String(dateRange.to.getMonth() + 1).padStart(2, '0');
+            const toDay = String(dateRange.to.getDate()).padStart(2, '0');
+            endDate = `${toYear}-${toMonth}-${toDay}`;
+          }
+          break;
+        case 'this-week':
+          const weekStart = new Date();
+          weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+          weekStart.setHours(0, 0, 0, 0);
+          startDate = weekStart.toISOString().split('T')[0]; // Get only date part
+          break;
+        case 'this-month':
+          const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+          monthStart.setHours(0, 0, 0, 0);
+          startDate = monthStart.toISOString().split('T')[0]; // Get only date part
+          break;
+        case 'last-3-months':
+          const threeMonthsAgo = new Date();
+          threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+          threeMonthsAgo.setHours(0, 0, 0, 0);
+          startDate = threeMonthsAgo.toISOString().split('T')[0]; // Get only date part
+          break;
+        case 'last-6-months':
+          const sixMonthsAgo = new Date();
+          sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+          sixMonthsAgo.setHours(0, 0, 0, 0);
+          startDate = sixMonthsAgo.toISOString().split('T')[0]; // Get only date part
+          break;
+        case 'recent':
+        default:
+          // Just use default sort
+          break;
+      }
+    }
+
+    return { startDate, endDate, sort };
+  }, []);
+
+  // Build query parameters
+  const queryParams = useMemo(() => {
+    const { startDate, endDate, sort } = getSortParams(selectedSort, filters.pricing, customDateRange);
+    
+    return {
+      page: currentPage,
+      limit: itemsPerPage,
+      ...(startDate && { startDate }),
+      ...(endDate && { endDate }),
+      ...(sort && { sort }),
+      ...(filters.orderStatus && { status: filters.orderStatus }),
+    };
+  }, [currentPage, itemsPerPage, selectedSort, filters, customDateRange, getSortParams]);
+
+  // Fetch orders from API with filters
+  const { data, isLoading, isError, error } = useSellerOrdersQuery(queryParams);
   const orders = data?.data || [];
   // Transform API orders to match dashboard Order type
-  const transformedOrders = orders.map((order: any) => ({
-    id: order.orderNumber || order._id,
-    customer: {
-      id: order.customer?.userRef?._id || '',
-      displayName: order.customer?.userRef?.displayName || 'Customer',
-      email: order.customer?.userRef?.email || '',
-      avatar: order.customer?.userRef?.avatar || '',
-    },
-    driver: order.driver
-      ? {
-          id: order.driver?.userRef?._id || '',
-          displayName: order.driver?.userRef?.displayName || 'Driver',
-          email: order.driver?.userRef?.email || '',
-          avatar: order.driver?.userRef?.avatar || '',
-        }
-      : undefined,
-    products: order.products.map((p) => ({
-      id: p.id,
-      title: p.title,
-      quantity: p.quantity,
-      price: p.price,
-      deliveryDate: p.deliveryDate,
-      image: p.image,
-    })),
-    date: order.createdAt,
-    amount: order.amount,
-    status: order.status as any,
-    orderSummary: order.orderSummary
-      ? {
-          shippingAddress: order.orderSummary.shippingAddress,
-          proofOfDelivery: order.orderSummary.proofOfDelivery || '',
-          paymentMethod: {
-            type: order.orderSummary.paymentMethod.type,
-            cardType: order.orderSummary.paymentMethod.cardType || '',
-            cardNumber: order.orderSummary.paymentMethod.cardNumber || '',
-          },
-          subTotal: order.orderSummary.subTotal,
-          shippingFee: order.orderSummary.shippingFee,
-          marketplaceFee: order.orderSummary.marketplaceFee,
-          taxes: order.orderSummary.taxes,
-          total: order.orderSummary.total,
-        }
-      : undefined,
-  }));
+  const transformedOrders = transformOrders(orders);
 
   const handleViewAllOrders = () => {
     navigate('/seller/orders');
@@ -76,6 +118,15 @@ export const SellerDashboard: React.FC = () => {
 
   const handleViewOrderDetails = (orderId: string) => {
     navigate(`/seller/orders/${orderId}`);
+  };
+
+  const handleSortChange = (value: string, dateRange?: { from: Date; to: Date }) => {
+    setSelectedSort(value);
+    setCustomDateRange(dateRange);
+  };
+
+  const handleFilterChange = (newFilters: any) => {
+    setFilters(newFilters);
   };
 
   return (
@@ -121,6 +172,11 @@ export const SellerDashboard: React.FC = () => {
           title="Latest Orders"
           orders={transformedOrders}
           showSort={false}
+          showFilter={true}
+          selectedSort={selectedSort}
+          onSortChange={handleSortChange}
+          filters={filters}
+          onFilterChange={handleFilterChange}
           onViewAll={handleViewAllOrders}
           onViewDetails={handleViewOrderDetails}
         />

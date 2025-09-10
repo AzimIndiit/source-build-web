@@ -162,13 +162,13 @@ function DrivingLicenseInformationPage() {
 
     // Submit license information using the mutation hook
     try {
-      const response:any = await createLicenseMutation.mutateAsync({
+      const response: any = await createLicenseMutation.mutateAsync({
         licenseNumber: data.licenseNumber,
         licenseImageFiles: licenseImages,
       });
 
       // Navigate to driver dashboard on success
-      if (response?.status==='success') {
+      if (response?.status === 'success') {
         navigate('/driver/dashboard');
       }
     } catch (error) {
@@ -337,11 +337,10 @@ function DrivingLicenseInformationPage() {
                     localStorage.clear();
                     sessionStorage.clear();
                     // Navigate to signup
-             
+
                     setTimeout(() => {
                       navigate('/auth/signup');
-                        
-                      }, 1000);
+                    }, 1000);
                   }}
                   className="text-primary hover:underline"
                 >

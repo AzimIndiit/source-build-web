@@ -29,6 +29,8 @@ interface OrderSummaryProps {
       country: string;
       zip: string;
     };
+    formattedShippingAddress?: string;
+    formattedPickupAddress?: string;
     proofOfDelivery?: string;
     deliveryMessage?: string;
     paymentMethod?: {
@@ -67,7 +69,8 @@ export const OrderSummarySection: React.FC<OrderSummaryProps> = ({
       refetch?.();
     } catch (error: any) {
       console.error('Failed to start delivery:', error);
-      const errorMessage = error?.response?.data?.message || 'Failed to start delivery. Please try again.';
+      const errorMessage =
+        error?.response?.data?.message || 'Failed to start delivery. Please try again.';
       toast.error(errorMessage);
     } finally {
       setIsUpdating(false);
@@ -88,7 +91,8 @@ export const OrderSummarySection: React.FC<OrderSummaryProps> = ({
       refetch?.();
     } catch (error: any) {
       console.error('Failed to cancel order:', error);
-      const errorMessage = error?.response?.data?.message || 'Failed to cancel order. Please try again.';
+      const errorMessage =
+        error?.response?.data?.message || 'Failed to cancel order. Please try again.';
       toast.error(errorMessage);
     } finally {
       setIsUpdating(false);
@@ -120,7 +124,8 @@ export const OrderSummarySection: React.FC<OrderSummaryProps> = ({
       refetch?.();
     } catch (error: any) {
       console.error('Failed to mark order as delivered:', error);
-      const errorMessage = error?.response?.data?.message || 'Failed to mark order as delivered. Please try again.';
+      const errorMessage =
+        error?.response?.data?.message || 'Failed to mark order as delivered. Please try again.';
       toast.error(errorMessage);
     } finally {
       setIsUpdating(false);
@@ -143,9 +148,9 @@ export const OrderSummarySection: React.FC<OrderSummaryProps> = ({
                     {orderSummary.pickupAddress.name}, {orderSummary.pickupAddress.phone}
                   </p>
                   <p className="text-sm text-gray-500 leading-relaxed">
-                    {orderSummary.pickupAddress.address}, {orderSummary.pickupAddress.city},{' '}
-                    {orderSummary.pickupAddress.state}, {orderSummary.pickupAddress.country},{' '}
-                    {orderSummary.pickupAddress.zip}
+                    {orderSummary.formattedPickupAddress || 
+                      `${orderSummary.pickupAddress.address}, ${orderSummary.pickupAddress.city}, ${orderSummary.pickupAddress.state}, ${orderSummary.pickupAddress.country}, ${orderSummary.pickupAddress.zip}`
+                    }
                   </p>
                 </>
               ) : (
@@ -169,9 +174,9 @@ export const OrderSummarySection: React.FC<OrderSummaryProps> = ({
                 {orderSummary.shippingAddress.phone || '+1 786 234 5678'}
               </p>
               <p className="text-sm text-gray-500 leading-relaxed">
-                {orderSummary.shippingAddress.address}, {orderSummary.shippingAddress.city},{' '}
-                {orderSummary.shippingAddress.state}, {orderSummary.shippingAddress.country},{' '}
-                {orderSummary.shippingAddress.zip}
+                {orderSummary.formattedShippingAddress || 
+                  `${orderSummary.shippingAddress.address}, ${orderSummary.shippingAddress.city}, ${orderSummary.shippingAddress.state}, ${orderSummary.shippingAddress.country}, ${orderSummary.shippingAddress.zip}`
+                }
               </p>
             </div>
           </div>
@@ -185,9 +190,9 @@ export const OrderSummarySection: React.FC<OrderSummaryProps> = ({
               {orderSummary.shippingAddress.name}, {orderSummary.shippingAddress.phone}
             </p>
             <p className="text-sm text-gray-500 leading-relaxed">
-              {orderSummary.shippingAddress.address}, {orderSummary.shippingAddress.city},{' '}
-              {orderSummary.shippingAddress.state}, {orderSummary.shippingAddress.country},{' '}
-              {orderSummary.shippingAddress.zip}
+              {orderSummary.formattedShippingAddress || 
+                `${orderSummary.shippingAddress.address}, ${orderSummary.shippingAddress.city}, ${orderSummary.shippingAddress.state}, ${orderSummary.shippingAddress.country}, ${orderSummary.shippingAddress.zip}`
+              }
             </p>
           </div>
         </div>
@@ -273,7 +278,7 @@ export const OrderSummarySection: React.FC<OrderSummaryProps> = ({
         </div>
       </div>
 
-      {(order?.status === 'Processing' || order?.status === 'in-transit') &&
+      {(order?.status === 'Processing' || order?.status === 'In Transit') &&
         user?.role === 'driver' && (
           <div className="space-y-2 flex justify-end gap-2">
             <Button
