@@ -482,10 +482,22 @@ export const ProductPreview: React.FC<ProductPreviewProps> = ({
               <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">
                 Ready By
               </h3>
-              {formValues.readyByDate || formValues.readyByTime ? (
+              {formValues.readyByDays !== undefined || formValues.readyByDate || formValues.readyByTime ? (
                 <p className="text-xs sm:text-sm md:text-base text-gray-600">
-                  {formValues.readyByDate && new Date(formValues.readyByDate).toLocaleDateString()}
-                  {formValues.readyByTime && ` at ${formValues.readyByTime}`}
+                  {formValues.readyByDays !== undefined && formValues.readyByDays !== '0' && (
+                    <span className="font-medium">
+                      {formValues.readyByDays === '1' ? '1 Day' : `${formValues.readyByDays} Days`}
+                      {/* {(formValues.readyByDate || formValues.readyByTime) } */}
+                    </span>
+                  )}
+                  {formValues.readyByDays === '0' && (
+                    <span className="font-medium">
+                      Ready Today
+                      {(formValues.readyByDate || formValues.readyByTime) }
+                    </span>
+                  )}
+                  {/* {formValues.readyByDate && new Date(formValues.readyByDate).toLocaleDateString()}
+                  {formValues.readyByTime && ` at ${formValues.readyByTime}`} */}
                 </p>
               ) : (
                 'Ready By will appear here'

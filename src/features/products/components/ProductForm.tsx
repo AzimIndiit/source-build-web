@@ -1225,6 +1225,19 @@ export const ProductForm: React.FC<ProductFormProps> = ({
               <div className="space-y-4">
                 <h4 className="text-sm font-medium text-gray-900">Ready By</h4>
                 <div>
+                  <FormSelect
+                    disabled={isLoading}
+                    name="readyByDays"
+                    label="Ready By Days"
+                    placeholder="Select days"
+                    options={Array.from({ length: 61 }, (_, i) => ({
+                      value: i.toString(),
+                      label: i === 0 ? 'Ready Today' : i === 1 ? '1 Day' : `${i} Days`
+                    }))}
+                    className="border-gray-300 h-[53px]"
+                  />
+                </div>
+                {/* <div>
                   <div className="relative">
                     <FormInput
                       disabled={isLoading}
@@ -1256,7 +1269,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                     />
                     <Clock className="absolute right-3 top-[38px] h-5 w-5 text-gray-400 pointer-events-none" />
                   </div>
-                </div>
+                </div> */}
               </div>
             </div>
           )}

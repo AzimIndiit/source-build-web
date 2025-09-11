@@ -214,9 +214,11 @@ const editProductSchema = z
 
     shippingPrice: z.string().trim().optional(),
 
-    readyByDate: z.string().min(1, 'Date is required'),
+    // readyByDate: z.string().min(1, 'Date is required'),
 
-    readyByTime: z.string().min(1, 'Time is required'),
+    // readyByTime: z.string().min(1, 'Time is required'),
+    
+    readyByDays: z.string().optional(),
 
     dimensions: z
       .object({
@@ -506,8 +508,9 @@ function EditProductPage() {
       },
       pickupHours: '',
       shippingPrice: '',
-      readyByDate: '',
-      readyByTime: '',
+      // readyByDate: '',
+      // readyByTime: '',
+      readyByDays: '0',
       dimensions: {
         width: '',
         length: '',
@@ -719,6 +722,7 @@ function EditProductPage() {
         shippingPrice: product.shippingPrice?.toString() || '',
         readyByDate,
         readyByTime,
+        readyByDays: product.readyByDays?.toString() || '0',
         dimensions: {
           width: product.dimensions?.width?.toString() || '',
           length: product.dimensions?.length?.toString() || '',
@@ -912,12 +916,12 @@ function EditProductPage() {
       }));
 
     let readyByDate: string | undefined;
-    if (data.readyByDate) {
-      const time = data.readyByTime || '00:00';
-      readyByDate = new Date(`${data.readyByDate}T${time}:00`).toISOString();
-    }
+    // if (data.readyByDate) {
+    //   const time = data.readyByTime || '00:00';
+    //   readyByDate = new Date(`${data.readyByDate}T${time}:00`).toISOString();
+    // }
 
-    const mutationData = {
+    const mutationData :any = {
       title: data.title,
       price: parseFloat(data.price),
       description: data.description,
@@ -932,8 +936,9 @@ function EditProductPage() {
       marketplaceOptions: data.marketplaceOptions,
       pickupHours: data.pickupHours,
       shippingPrice: data.shippingPrice ? parseFloat(data.shippingPrice) : undefined,
-      readyByDate,
-      readyByTime: data.readyByTime,
+      // readyByDate,
+      // readyByTime: data.readyByTime,
+      readyByDays: data.readyByDays ? parseInt(data.readyByDays) : undefined,
       dimensions:
         data.dimensions &&
         (data.dimensions.width || data.dimensions.length || data.dimensions.height)
@@ -1030,10 +1035,10 @@ function EditProductPage() {
 
     // Convert readyByDate if provided
     let readyByDate: string | undefined;
-    if (formData.readyByDate) {
-      const time = formData.readyByTime || '00:00';
-      readyByDate = new Date(`${formData.readyByDate}T${time}:00`).toISOString();
-    }
+    // if (formData.readyByDate) {
+    //   const time = formData.readyByTime || '00:00';
+    //   readyByDate = new Date(`${formData.readyByDate}T${time}:00`).toISOString();
+    // }
 
     // For editing existing product, use different approach for draft
     // First prepare basic draft data
@@ -1086,9 +1091,12 @@ function EditProductPage() {
     if (formData.shippingPrice && formData.shippingPrice.trim()) {
       draftData.shippingPrice = formData.shippingPrice;
     }
-    if (readyByDate) {
-      draftData.readyByDate = readyByDate;
-      draftData.readyByTime = formData.readyByTime;
+    // if (readyByDate) {
+      // draftData.readyByDate = readyByDate;
+      // draftData.readyByTime = formData.readyByTime;
+    // }
+    if (formData.readyByDays && formData.readyByDays.trim()) {
+      draftData.readyByDays = parseInt(formData.readyByDays);
     }
     if (
       formData.dimensions &&

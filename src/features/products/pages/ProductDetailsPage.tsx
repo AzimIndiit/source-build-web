@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Package, Truck, MapPin, Clock, Check } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Package, Truck, MapPin, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import ReadMore from '@/components/ui/ReadMore';
@@ -10,7 +10,7 @@ import { StarRating } from '@/components/common/StarRating';
 import { ProductDetailsPageSkeleton } from '../components/ProductDetailsPageSkeleton';
 import { useProductQuery, useDeleteProductMutation } from '../hooks/useProductMutations';
 import toast from 'react-hot-toast';
-import { format, parse } from 'date-fns';
+import { format } from 'date-fns';
 
 // Helper function to parse and format pickup hours
 const formatPickupHoursDisplay = (hours: string | object): React.ReactNode => {
@@ -108,7 +108,7 @@ const formatPickupHoursDisplay = (hours: string | object): React.ReactNode => {
     }
 
     // Convert 24-hour format to 12-hour format
-    const formatted = hours.replace(/(\d{1,2}):(\d{2})/g, (match, h, m) => {
+    const formatted = hours.replace(/(\d{1,2}):(\d{2})/g, (_, h, m) => {
       const hour = parseInt(h);
       const period = hour >= 12 ? 'PM' : 'AM';
       const hour12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
@@ -146,45 +146,45 @@ const ProductDetailsPage: React.FC = () => {
     setSelectedImageIndex(0);
   }, [selectedVariant]);
 
-  // Sample reviews data
-  const reviews: ReviewData[] = [
-    {
-      id: 1,
-      userName: 'Aspen Siphron',
-      date: new Date('2025-05-12'),
-      rating: 4.9,
-      comment:
-        "The six lights provide ample brightness while adding a touch of elegance and warmth to any room. Whether you're redecorating or building from scratch, this chandelier is praised for its timeless appeal and reliable performance.",
-      avatar: 'https://placehold.co/50x50/FF6B6B/ffffff?text=AS',
-    },
-    {
-      id: 2,
-      userName: 'Aspen Siphron',
-      date: new Date('2025-05-12'),
-      rating: 4.9,
-      comment:
-        "The six lights provide ample brightness while adding a touch of elegance and warmth to any room. Whether you're redecorating or building from scratch, this chandelier is praised for its timeless appeal and reliable performance.",
-      avatar: 'https://placehold.co/50x50/FF6B6B/ffffff?text=AS',
-    },
-    {
-      id: 3,
-      userName: 'Aspen Siphron',
-      date: new Date('2025-05-12'),
-      rating: 4.9,
-      comment:
-        "The six lights provide ample brightness while adding a touch of elegance and warmth to any room. Whether you're redecorating or building from scratch, this chandelier is praised for its timeless appeal and reliable performance.",
-      avatar: 'https://placehold.co/50x50/FF6B6B/ffffff?text=AS',
-    },
-    {
-      id: 4,
-      userName: 'Aspen Siphron',
-      date: new Date('2025-05-12'),
-      rating: 4.9,
-      comment:
-        "The six lights provide ample brightness while adding a touch of elegance and warmth to any room. Whether you're redecorating or building from scratch, this chandelier is praised for its timeless appeal and reliable performance.",
-      avatar: 'https://placehold.co/50x50/FF6B6B/ffffff?text=AS',
-    },
-  ];
+  // Sample reviews data (currently unused - for future implementation)
+  // const reviews: ReviewData[] = [
+  //   {
+  //     id: 1,
+  //     userName: 'Aspen Siphron',
+  //     date: new Date('2025-05-12'),
+  //     rating: 4.9,
+  //     comment:
+  //       "The six lights provide ample brightness while adding a touch of elegance and warmth to any room. Whether you're redecorating or building from scratch, this chandelier is praised for its timeless appeal and reliable performance.",
+  //     avatar: 'https://placehold.co/50x50/FF6B6B/ffffff?text=AS',
+  //   },
+  //   {
+  //     id: 2,
+  //     userName: 'Aspen Siphron',
+  //     date: new Date('2025-05-12'),
+  //     rating: 4.9,
+  //     comment:
+  //       "The six lights provide ample brightness while adding a touch of elegance and warmth to any room. Whether you're redecorating or building from scratch, this chandelier is praised for its timeless appeal and reliable performance.",
+  //     avatar: 'https://placehold.co/50x50/FF6B6B/ffffff?text=AS',
+  //   },
+  //   {
+  //     id: 3,
+  //     userName: 'Aspen Siphron',
+  //     date: new Date('2025-05-12'),
+  //     rating: 4.9,
+  //     comment:
+  //       "The six lights provide ample brightness while adding a touch of elegance and warmth to any room. Whether you're redecorating or building from scratch, this chandelier is praised for its timeless appeal and reliable performance.",
+  //     avatar: 'https://placehold.co/50x50/FF6B6B/ffffff?text=AS',
+  //   },
+  //   {
+  //     id: 4,
+  //     userName: 'Aspen Siphron',
+  //     date: new Date('2025-05-12'),
+  //     rating: 4.9,
+  //     comment:
+  //       "The six lights provide ample brightness while adding a touch of elegance and warmth to any room. Whether you're redecorating or building from scratch, this chandelier is praised for its timeless appeal and reliable performance.",
+  //     avatar: 'https://placehold.co/50x50/FF6B6B/ffffff?text=AS',
+  //   },
+  // ];
 
   const reviewst: ReviewData[] = [];
 
@@ -605,19 +605,36 @@ const ProductDetailsPage: React.FC = () => {
                 )}
               </div>
 
-              {(product.readyByDate || product.readyByTime) && (
+              {(product.readyByDays !== undefined || product.readyByDate || product.readyByTime) && (
                 <div className="mt-4 p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200">
                   <div className="flex items-start gap-3">
                     <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
                       <Clock size={16} className="text-amber-600" />
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-gray-800 mb-1">Ready for Pickup</p>
+                      <p className="text-sm font-semibold text-gray-800 mb-1">Ready By Date</p>
                       <p className="text-sm text-gray-600">
-                        {product.readyByDate &&
-                          format(new Date(product.readyByDate), 'EEEE, MMMM d, yyyy')}
-                        {product.readyByTime &&
-                          ` at ${format(parse(product.readyByTime, 'HH:mm', new Date()), 'h:mm a')}`}
+                        {product.readyByDays !== undefined && (
+                          <>
+                            {product.readyByDays === 0 ? (
+                              <span className="font-medium">Today</span>
+                            ) : product.readyByDays === 1 ? (
+                              <span className="font-medium">By Tomorrow</span>
+                            ) : (
+                              <span className="font-medium">By {product.readyByDays} Days</span>
+                            )}
+                            {' • '}
+                            {(() => {
+                              const readyDate = new Date();
+                              const daysToAdd = typeof product.readyByDays === 'string' 
+                                ? parseInt(product.readyByDays, 10) 
+                                : product.readyByDays;
+                              readyDate.setDate(readyDate.getDate() + daysToAdd);
+                              return format(readyDate, 'EEEE, MMMM d, yyyy');
+                            })()}
+                          </>
+                        )}
+                       
                       </p>
                     </div>
                   </div>

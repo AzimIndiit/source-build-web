@@ -208,9 +208,11 @@ const createProductSchema = z
 
     shippingPrice: z.string().trim().optional(),
 
-    readyByDate: z.string().min(1, 'Date is required'),
+    // readyByDate: z.string().min(1, 'Date is required'),
 
-    readyByTime: z.string().min(1, 'Time is required'),
+    // readyByTime: z.string().min(1, 'Time is required'),
+    
+    readyByDays: z.string().optional(),
 
     dimensions: z
       .object({
@@ -481,6 +483,7 @@ function CreateProductPage() {
       shippingPrice: '',
       readyByDate: '',
       readyByTime: '',
+      readyByDays: '0',
       dimensions: {
         width: '',
         length: '',
@@ -651,6 +654,7 @@ function CreateProductPage() {
       shippingPrice: data.shippingPrice ? parseFloat(data.shippingPrice) : undefined,
       readyByDate,
       readyByTime: data.readyByTime,
+      readyByDays: data.readyByDays ? parseInt(data.readyByDays) : undefined,
       dimensions:
         data.dimensions &&
         (data.dimensions.width || data.dimensions.length || data.dimensions.height)
@@ -799,6 +803,9 @@ function CreateProductPage() {
     if (readyByDate) {
       draftData.readyByDate = readyByDate;
       draftData.readyByTime = formData.readyByTime;
+    }
+    if (formData.readyByDays && formData.readyByDays.trim()) {
+      draftData.readyByDays = parseInt(formData.readyByDays);
     }
     if (
       formData.dimensions &&

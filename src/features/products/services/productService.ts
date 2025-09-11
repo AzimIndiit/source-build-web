@@ -78,6 +78,7 @@ export interface SaveDraftPayload {
   shippingPrice?: number;
   readyByDate?: string;
   readyByTime?: string;
+  readyByDays?: string | number;
   discount?: {
     discountType: 'none' | 'flat' | 'percentage';
     discountValue?: number;
@@ -129,6 +130,7 @@ export interface Product {
   shippingPrice?: number;
   readyByDate?: string;
   readyByTime?: string;
+   readyByDays?: number | string;
   discount: {
     discountType: 'none' | 'flat' | 'percentage';
     discountValue?: number;

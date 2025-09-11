@@ -72,6 +72,7 @@ export const SavedCard: React.FC<SavedCardProps> = ({
   }, [isDefault]);
 
   const handleToggle = async (checked: boolean) => {
+
     // Don't allow toggle if already updating
     if (isUpdating) return;
 
@@ -132,9 +133,9 @@ export const SavedCard: React.FC<SavedCardProps> = ({
                   disabled={isUpdating || (optimisticIsDefault && totalCards)}
                   className={`h-6 w-12 transition-all duration-200 ${
                     isUpdating 
-                      ? 'opacity-70 data-[state=checked]:bg-green-400' 
+                      ? 'data-[state=checked]:bg-primary' 
                       : optimisticIsDefault && totalCards 
-                      ? 'data-[state=checked]:bg-green-500 opacity-80 cursor-not-allowed' 
+                      ? 'data-[state=checked]:bg-green-500  opacity-80 cursor-not-allowed' 
                       : 'data-[state=checked]:bg-green-500 hover:data-[state=checked]:bg-green-600'
                   }`}
                 />

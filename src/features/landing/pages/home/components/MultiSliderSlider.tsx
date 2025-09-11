@@ -121,7 +121,7 @@ const MultiSliderSlider: React.FC<MultiSliderSliderProps> = ({ slides }) => {
             <div className="rounded-sm sm:rounded-lg overflow-hidden duration-300 bg-white">
               <div className="relative">
                 <div
-                  onClick={() => navigate('/product-details')}
+                  onClick={() => navigate('/#')}
                   className="relative h-28 sm:h-36 md:h-44 lg:h-48 bg-cover bg-center cursor-pointer group"
                   style={{ backgroundImage: `url(${slide.image})` }}
                 >
@@ -153,7 +153,7 @@ const MultiSliderSlider: React.FC<MultiSliderSliderProps> = ({ slides }) => {
 
               <div className="p-1.5 sm:p-2 md:p-3 lg:p-4">
                 <h2
-                  onClick={() => navigate('/product')}
+                  onClick={() => navigate('/#')}
                   className="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-gray-900 cursor-pointer hover:text-primary transition-colors duration-200 mb-1"
                 >
                   ${slide.price}

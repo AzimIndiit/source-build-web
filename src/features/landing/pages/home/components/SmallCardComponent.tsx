@@ -63,7 +63,7 @@ const SmallCardComponent: React.FC = () => {
                   {deal.items.map((item, idx) => (
                     <div key={idx} className=" ">
                       <div
-                        onClick={() => navigate('/product')}
+                        onClick={() => navigate('/#')}
                         className="cursor-pointer rounded-lg relative  transition-colors duration-200"
                       >
                         <div

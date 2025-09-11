@@ -51,6 +51,7 @@ interface SaveDraftWithFiles {
   shippingPrice?: number;
   readyByDate?: string;
   readyByTime?: string;
+  readyByDays?: string | number;
   dimensions?: {
     width?: string;
     length?: string;
@@ -249,14 +250,14 @@ export function useUpdateProductMutation() {
         variants: variants?.map((v) => {
           // Ensure discount object exists
           const discount = v.discount || { discountType: 'none', discountValue: undefined };
-          const discountValue = discount.discountValue;
+          const discountValue :any = discount?.discountValue || '' ;
           
           const hasValidDiscount =
             discount.discountType !== 'none' &&
             discountValue !== undefined &&
             discountValue !== null &&
             discountValue !== '' &&
-            (typeof discountValue === 'string' ? discountValue.trim() !== '' : Number(discountValue) > 0);
+            (typeof discountValue === 'string' ? discountValue?.trim() !== '' : Number(discountValue) > 0);
 
           return {
             ...v,
@@ -363,8 +364,9 @@ export function useSaveDraftMutation() {
         ...(draftData.marketplaceOptions && { marketplaceOptions: draftData.marketplaceOptions }),
         ...(draftData.pickupHours && { pickupHours: draftData.pickupHours }),
         ...(draftData.shippingPrice && { shippingPrice: Number(draftData.shippingPrice) }),
-        ...(draftData.readyByDate && { readyByDate: draftData.readyByDate }),
-        ...(draftData.readyByTime && { readyByTime: draftData.readyByTime }),
+        ...(draftData.readyByDays && { readyByDays: Number(draftData.readyByDays) }),
+          // ...(draftData.readyByDate && { readyByDate: draftData.readyByDate }),
+        // ...(draftData.readyByTime && { readyByTime: draftData.readyByTime }),
         ...(draftData.dimensions && {
           dimensions: {
             width: draftData.dimensions.width ? Number(draftData.dimensions.width) : undefined,
