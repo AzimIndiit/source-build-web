@@ -8,6 +8,7 @@ import { ProfileLayout } from '@/features/profile';
 import { RouterErrorBoundary } from '@/features/error/pages/RouterErrorBoundary';
 import SuspenseLoader from '@/components/common/SuspenseLoader';
 import { DriverLayout } from '../layouts/DriverLayout';
+import { BuyerLayout } from '../layouts/BuyerLayout';
 
 export const router = createBrowserRouter([
   {
@@ -41,6 +42,13 @@ export const router = createBrowserRouter([
           })),
       },
       {
+        path: 'contact-us',
+        lazy: () =>
+          import('@/features/landing/pages/ContactPage').then((module) => ({
+            Component: module.default,
+          })),
+      },
+      {
         path: 'terms',
         lazy: () =>
           import('@/features/profile/pages/TermsAndConditionsPage').then((module) => ({
@@ -51,6 +59,32 @@ export const router = createBrowserRouter([
         path: 'privacy',
         lazy: () =>
           import('@/features/profile/pages/TermsAndConditionsPage').then((module) => ({
+            Component: module.default,
+          })),
+      },
+    ],
+  },
+  {
+    path: '/',
+    element: (
+      <Suspense fallback={<SuspenseLoader fullScreen />}>
+        <BuyerLayout />
+      </Suspense>
+    ),
+    errorElement: <RouterErrorBoundary />,
+    children: [
+      { 
+        path:'marketplace',
+        index: true,
+        lazy: () =>
+          import('@/features/dashboard/pages/MarketplacePage').then((module) => ({
+            Component: module.default,
+          })),
+      },
+      {
+        path: 'products/:slug',
+        lazy: () =>
+          import('@/features/dashboard/pages/MarketplaceProductDetailPage').then((module) => ({
             Component: module.default,
           })),
       },
@@ -272,6 +306,69 @@ export const router = createBrowserRouter([
                 Component: module.default,
               })),
           },
+          {
+            path: 'notifications',
+            lazy: () =>
+              import('@/features/notifications/pages/NotificationsPage').then((module) => ({
+                Component: module.default,
+              })),
+          },
+          {
+            path: 'messages',
+            lazy: () =>
+              import('@/features/messages/pages/MessagesPage').then((module) => ({
+                Component: module.default,
+              })),
+          },
+          {
+            path: 'messages/:id',
+            lazy: () =>
+              import('@/features/messages/pages/ChatPage').then((module) => ({
+                Component: module.default,
+              })),
+          },
+        ],
+      },
+    ],
+  },
+  {
+    path: '/',
+    element: (
+      <Suspense fallback={<SuspenseLoader fullScreen />}>
+        <ProtectedRoute allowedRoles={['buyer']} redirectTo="/auth/login" />
+      </Suspense>
+    ),
+    errorElement: <RouterErrorBoundary />,
+    children: [
+      {
+        element: (
+          <Suspense fallback={<SuspenseLoader />}>
+            <BuyerLayout />
+          </Suspense>
+        ),
+        children: [
+          {
+            path: 'buying',
+            lazy: () =>
+              import('@/features/orders/pages/BuyerOrdersPage').then((module) => ({
+                Component: module.default,
+              })),
+          },
+          {
+            path: 'buying/:id',
+            lazy: () =>
+              import('@/features/orders/pages/OrderDetailsPage').then((module) => ({
+                Component: module.default,
+              })),
+          },
+          {
+            path: 'wishlists',
+            lazy: () =>
+              import('@/features/wishlists/pages/WishlistsPage').then((module) => ({
+                Component: module.default,
+              })),
+          },
+
           {
             path: 'notifications',
             lazy: () =>

@@ -207,6 +207,7 @@ class ProductService {
     return response.data;
   }
 
+  
   async getProducts(params?: {
     page?: number;
     limit?: number;

@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Navbar } from '@/components/navigation/Navbar';
-import { SellerSidebar, SellerSidebarToggle } from '@/components/navigation/SellerSidebar';
 import { Footer } from '@/components/common/Footer';
 import { ScrollToTop } from '@/components/common/ScrollToTop';
+import { BuyerSidebar, BuyerSidebarToggle } from '@/components/navigation/BuyerSidebar';
+import HomeFooter from '@/features/landing/pages/home/components/HomeFooter';
+import HeaderMenu from '@/components/navigation/HeaderMenu';
 
-export const SellerLayout: React.FC = () => {
+export const BuyerLayout: React.FC = () => {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   // Initialize based on current window width to prevent flickering
@@ -50,12 +52,13 @@ export const SellerLayout: React.FC = () => {
       {/* Header */}
       <div className="fixed top-0 left-0 right-0 z-50">
         <Navbar />
+        <HeaderMenu />
       </div>
       {/* Main Content */}
-      <div className="flex pt-[60px]">
+      <div className="flex mt-[135px]">
         {/* Desktop/Tablet Sidebar */}
         <div className="hidden md:block fixed left-0 z-40">
-          <SellerSidebar
+          <BuyerSidebar
             isCollapsed={isSidebarCollapsed}
             onCollapsedChange={setIsSidebarCollapsed}
           />
@@ -64,19 +67,19 @@ export const SellerLayout: React.FC = () => {
         {/* Mobile Sidebar - Only render on mobile */}
         {isMobile && (
           <>
-            <SellerSidebar
+            <BuyerSidebar
               isOpen={isMobileSidebarOpen}
               onClose={() => setIsMobileSidebarOpen(false)}
               isMobile={true}
             />
-            <SellerSidebarToggle onClick={() => setIsMobileSidebarOpen(true)} />
+            <BuyerSidebarToggle onClick={() => setIsMobileSidebarOpen(true)} />
           </>
         )}
 
         {/* Content Area */}
         <div className="flex-1">
           <div
-            className=" p-4 pt-8 md:px-6 md:pt-6 transition-all duration-300  min-h-[700px] md:min-h-[890px] lg:min-h-[780px] xl:min-h-[calc(100vh-140px)]"
+            className="  md:px-6  transition-all duration-300  min-h-[700px] md:min-h-[890px] lg:min-h-[780px] xl:min-h-[calc(100vh-140px)]"
             style={{
               marginLeft: isMobile ? '0' : sidebarWidth,
             }}
@@ -89,7 +92,7 @@ export const SellerLayout: React.FC = () => {
             }}
           >
             {/* Footer - Responsive */}
-            <Footer />
+            <HomeFooter className="bg-[#f7f7f7] text-gray-700" />
           </div>
         </div>
       </div>

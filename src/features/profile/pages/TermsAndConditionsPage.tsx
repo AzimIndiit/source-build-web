@@ -8,6 +8,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Edit2, Save, X } from 'lucide-react';
 import { formatDate } from '@/lib/date-utils';
+import { useLocation } from 'react-router';
 
 const defaultTermsAndConditions = `
 Last Updated: 27 Aug 2025
@@ -75,6 +76,7 @@ For questions, contact us at:
 
 const TermsAndConditionsPage: React.FC = () => {
   const { user } = useAuth();
+  const location =useLocation()
   const isSeller = user?.role === 'seller';
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState('');
@@ -173,7 +175,7 @@ const TermsAndConditionsPage: React.FC = () => {
               </span>
             )}
           </div>
-          <div className="flex items-center gap-2">
+         {location.pathname !== '/terms' && <div className="flex items-center gap-2">
             {isSeller && !isEditing && (
               <Button
                 onClick={handleEdit}
@@ -183,7 +185,7 @@ const TermsAndConditionsPage: React.FC = () => {
                 Edit
               </Button>
             )}
-          </div>
+          </div>}
         </div>
 
         {/* Main Content */}

@@ -56,6 +56,9 @@ function LoginPage() {
       // Get the user from the store after login
       const currentUser = useAuthStore.getState().user;
 
+      // Get the intended destination from location state
+      const from = location.state?.from?.pathname || null;
+
       // Handle navigation based on user role and status
       if (currentUser) {
         if (currentUser.role === 'driver') {
@@ -86,19 +89,26 @@ function LoginPage() {
               },
             });
           } else {
-            navigate('/driver/dashboard');
+            // If there's a saved location and user has completed setup, go there
+            navigate(from || '/driver/dashboard');
             toast.success('Login successful!');
           }
         } else if (currentUser.role === 'seller') {
-          navigate('/seller/dashboard');
+          // If there's a saved location for seller, go there, otherwise default to seller dashboard
+          navigate(from || '/seller/dashboard');
+          toast.success('Login successful!');
+        } else if (currentUser.role === 'buyer') {
+          // For buyer role, redirect to the intended destination or home
+          navigate(from || '/');
           toast.success('Login successful!');
         } else {
-          navigate('/');
+          // Default navigation for other roles
+          navigate(from || '/');
           toast.success('Login successful!');
         }
       } else {
         // Default navigation if user is not available
-        navigate('/');
+        navigate(from || '/');
       }
     } catch (error: any) {
       console.error('Login error:', error);

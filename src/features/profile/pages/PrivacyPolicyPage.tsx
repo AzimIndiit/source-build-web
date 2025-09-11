@@ -8,6 +8,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Edit2, Save, X } from 'lucide-react';
 import { formatDate } from '@/lib/date-utils';
+import { useLocation } from 'react-router';
 
 const defaultPrivacyPolicy = `
 Last Updated: 27 Aug 2025
@@ -108,6 +109,7 @@ Effective date: [Date]`;
 
 const PrivacyPolicyPage: React.FC = () => {
   const { user } = useAuth();
+  const location =useLocation()
   const isSeller = user?.role === 'seller';
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState('');
@@ -211,7 +213,7 @@ const PrivacyPolicyPage: React.FC = () => {
               </span>
             )}
           </div>
-          <div className="flex items-center gap-2">
+         {location.pathname !== '/privacy' &&  <div className="flex items-center gap-2">
             {isSeller && !isEditing && (
               <Button
                 onClick={handleEdit}
@@ -221,7 +223,7 @@ const PrivacyPolicyPage: React.FC = () => {
                 Edit
               </Button>
             )}
-          </div>
+          </div>}
         </div>
 
         {/* Main Content */}
