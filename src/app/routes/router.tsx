@@ -176,6 +176,13 @@ export const router = createBrowserRouter([
               })),
           },
           {
+            path: 'cards',
+            lazy: () =>
+              import('@/features/profile/pages/ManageSavedCardsPage').then((module) => ({
+                Component: module.default,
+              })),
+          },
+          {
             path: 'terms',
             lazy: () =>
               import('@/features/profile/pages/TermsAndConditionsPage').then((module) => ({

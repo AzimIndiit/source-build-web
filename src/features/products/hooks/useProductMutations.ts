@@ -246,30 +246,34 @@ export function useUpdateProductMutation() {
                 : undefined,
             }
           : undefined,
-        variants: variants?.map((v) => ({
-          ...v,
-          price: Number(v.price),
-          quantity: Number(v.quantity),
-          outOfStock: v.outOfStock || false,
-          discount:
-            v.discount.discountType !== 'none' &&
-            v.discount.discountValue &&
-            v.discount.discountValue.trim()
+        variants: variants?.map((v) => {
+          // Ensure discount object exists
+          const discount = v.discount || { discountType: 'none', discountValue: undefined };
+          const discountValue = discount.discountValue;
+          
+          const hasValidDiscount =
+            discount.discountType !== 'none' &&
+            discountValue !== undefined &&
+            discountValue !== null &&
+            discountValue !== '' &&
+            (typeof discountValue === 'string' ? discountValue.trim() !== '' : Number(discountValue) > 0);
+
+          return {
+            ...v,
+            price: Number(v.price),
+            quantity: Number(v.quantity),
+            outOfStock: v.outOfStock || false,
+            discount: hasValidDiscount
               ? {
-                  discountType: v.discount.discountType,
-                  discountValue: v.discount.discountValue
-                    ? Number(v.discount.discountValue)
-                    : undefined,
+                  discountType: discount.discountType,
+                  discountValue: Number(discountValue),
                 }
               : {
                   discountType: 'none',
                   discountValue: undefined,
                 },
-          discount: {
-            ...v.discount,
-            discountValue: v.discount.discountValue ? Number(v.discount.discountValue) : undefined,
-          },
-        })),
+          };
+        }),
         images: imageUrls,
       };
 

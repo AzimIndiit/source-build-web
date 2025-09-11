@@ -109,7 +109,7 @@ function SignupPage() {
             disabled={signupMutation.isPending}
             placeholder="Select account type"
             options={[
-              // { value: 'buyer', label: 'Buyer' },
+              { value: 'buyer', label: 'Buyer' },
               { value: 'seller', label: 'Seller' },
               { value: 'driver', label: 'Driver' },
             ]}

@@ -15,6 +15,7 @@ import {
   Menu,
   X,
   MapPin,
+  CreditCard,
 } from 'lucide-react';
 import { cn, getInitials } from '@/lib/helpers';
 import { Link, useNavigate } from 'react-router';
@@ -62,26 +63,41 @@ export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
       icon: <User className="w-5 h-5" />,
       path: '/profile',
     },
-    {
-      id: 'my-earnings',
-      label: 'My Earnings',
-      icon: <DollarSign className="w-5 h-5" />,
-      path: '/profile/my-earnings',
-    },
-    {
-      id: 'bank',
-      label: 'Manage Bank Acccounts',
-      icon: <Building2 className="w-5 h-5" />,
-      path: '/profile/bank',
-    },
+    ...(['seller','driver'].includes(user?.role || '')
+      ? [
+        {
+          id: 'my-earnings',
+          label: 'My Earnings',
+          icon: <DollarSign className="w-5 h-5" />,
+          path: '/profile/my-earnings',
+        },
+        {
+          id: 'bank',
+          label: 'Manage Bank Acccounts',
+          icon: <Building2 className="w-5 h-5" />,
+          path: '/profile/bank',
+        } as ProfileMenuItem,
+      ]
+      : []),
+   
     // Conditionally add "Saved Addresses" for sellers only
-    ...(user?.role === 'seller'
+    ...(['seller','buyer'].includes(user?.role || '')
       ? [
           {
             id: 'address',
             label: 'Saved Addresses',
             icon: <MapPin className="w-5 h-5" />,
             path: '/profile/address',
+          } as ProfileMenuItem,
+        ]
+      : []),
+      ...(['buyer'].includes(user?.role || '')
+      ? [
+          {
+            id: 'cards',
+            label: 'Saved Cards',
+            icon: <CreditCard className="w-5 h-5" />,
+            path: '/profile/cards',
           } as ProfileMenuItem,
         ]
       : []),

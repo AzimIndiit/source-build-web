@@ -453,7 +453,7 @@ const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({ onSave }) => 
                     disabled
                     placeholder="Enter your email address"
                   />
-                  {userRole === 'seller' && (
+                  {['seller','buyer'].includes(userRole || '') && (
                     <FormInput name="region" label="Region" placeholder="Enter your region" />
                   )}
                   {userRole === 'driver' && (
@@ -563,7 +563,7 @@ const PersonalDetailsForm: React.FC<PersonalDetailsFormProps> = ({ onSave }) => 
                 {/* Region and Address - Common fields */}
 
                 {/* Description */}
-                {userRole === 'seller' && (
+                {['seller','buyer'].includes(userRole || '') && (
                   <FormTextarea
                     name="description"
                     label="Description"
