@@ -27,7 +27,7 @@ export const MarketplaceProductDetailPageSkeleton = () => {
 
               {/* Thumbnails */}
               <div className="flex gap-2 sm:gap-3 mx-10 sm:mx-12 md:mx-14">
-                {Array.from({ length: 4 }).map((_, index) => (
+                {Array.from({ length: 3 }).map((_, index) => (
                   <Skeleton
                     key={index}
                     className="flex-shrink-0 w-[80px] h-[60px] sm:w-[120px] sm:h-[80px] md:w-[150px] md:h-[100px] lg:w-[180px] lg:h-[120px] rounded-lg"

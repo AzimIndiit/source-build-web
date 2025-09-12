@@ -57,54 +57,82 @@ const formatPickupHoursDisplay = (hours: string | object): React.ReactNode => {
 
   // If it's a string, parse it
   if (typeof hours === 'string') {
-    // Check if already formatted with days
-    if (hours.includes('Mon') || hours.includes('Tue') || hours.includes('Wed')) {
-      // Parse the string into structured format
-      const dayMap: { [key: string]: string } = {
-        Mon: 'Mon',
-        Tue: 'Tue',
-        Wed: 'Wed',
-        Thu: 'Thu',
-        Fri: 'Fri',
-        Sat: 'Sat',
-        Sun: 'Sun',
-      };
-
-      // Split by commas to get each day's hours
-      const parts = hours.split(',').map((s) => s.trim());
-      const parsedHours: { day: string; hours: string }[] = [];
-
-      parts.forEach((part) => {
-        // Check each day abbreviation
-        for (const [abbrev, displayName] of Object.entries(dayMap)) {
-          if (part.includes(abbrev)) {
-            // Extract the time portion after the day
-            const timeMatch = part.match(new RegExp(`${abbrev}\\s*(.+)`));
-            if (timeMatch) {
-              parsedHours.push({ day: displayName, hours: timeMatch[1].trim() });
-            }
-            break;
+    // Parse string like "Mon–Fri, Sun 9:00 AM–5:00 PM, Sat 9:02 AM–5:00 PM"
+    if (hours.includes('AM') || hours.includes('PM')) {
+      // Parse the schedule into day-time pairs
+      const schedule: { days: string; time: string }[] = [];
+      
+      // Handle the complex format by finding all time patterns and their associated days
+      const timePattern = /(\d{1,2}:\d{2}\s*[AP]M)[–\-](\d{1,2}:\d{2}\s*[AP]M)/g;
+      let remainingStr = hours;
+      let match;
+      
+      // Find all time ranges in the string
+      const timeRanges: string[] = [];
+      while ((match = timePattern.exec(hours)) !== null) {
+        timeRanges.push(match[0]);
+      }
+      
+      // Split by the time ranges to get day parts
+      timeRanges.forEach(timeRange => {
+        const parts = remainingStr.split(timeRange);
+        if (parts.length >= 1) {
+          const daysPart = parts[0].trim().replace(/,\s*$/, '');
+          if (daysPart) {
+            // Clean up the time range format
+            const cleanTime = timeRange.replace(/–/g, '-').replace(/\s+/g, ' ');
+            
+            // Split multiple day specifications
+            const dayGroups = daysPart.split(',').map(d => d.trim()).filter(d => d);
+            dayGroups.forEach(dayGroup => {
+              schedule.push({ 
+                days: dayGroup.replace(/–/g, '-'), 
+                time: cleanTime 
+              });
+            });
           }
+          // Update remaining string for next iteration
+          remainingStr = parts.slice(1).join(timeRange);
         }
       });
-
-      if (parsedHours.length > 0) {
-        return (
-          <div className="space-y-0.5">
-            {parsedHours.map(({ day, hours: dayHours }) => (
-              <div key={day} className="flex gap-2 text-[11px] leading-tight">
-                <span className="font-medium text-gray-700 w-7">{day}:</span>
-                <span className="text-gray-600">{dayHours}</span>
-              </div>
-            ))}
-          </div>
-        );
-      }
-    }
-
-    // If already in 12-hour format (contains AM/PM), return as is
-    if (hours.includes('AM') || hours.includes('PM')) {
-      return <span className="text-xs text-gray-500">{hours}</span>;
+      
+      // Group by time
+      const timeGroups = new Map<string, string[]>();
+      schedule.forEach(({ days, time }) => {
+        if (!timeGroups.has(time)) {
+          timeGroups.set(time, []);
+        }
+        timeGroups.get(time)!.push(days);
+      });
+      
+      // Create display groups
+      const displayGroups: { days: string; hours: string }[] = [];
+      timeGroups.forEach((daysList, time) => {
+        // Join all days with same time
+        const daysStr = daysList.join(', ');
+        displayGroups.push({ days: daysStr, hours: time });
+      });
+      
+      // Sort to maintain a logical order
+      displayGroups.sort((a, b) => {
+        // Put entries with Mon-Fri first
+        const aHasWeekday = a.days.includes('Mon-Fri');
+        const bHasWeekday = b.days.includes('Mon-Fri');
+        if (aHasWeekday && !bHasWeekday) return -1;
+        if (!aHasWeekday && bHasWeekday) return 1;
+        return 0;
+      });
+      
+      return (
+        <div className="space-y-1">
+          {displayGroups.map(({ days, hours }, index) => (
+            <div key={index} className="flex text-[11px] leading-tight">
+              <span className="font-medium text-gray-700">{days}:</span>
+              <span className="text-gray-600 ml-2">{hours}</span>
+            </div>
+          ))}
+        </div>
+      );
     }
 
     // Convert 24-hour format to 12-hour format

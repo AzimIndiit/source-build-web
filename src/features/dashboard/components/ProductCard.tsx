@@ -1,63 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Heart } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/Card';
-import { cn } from '@/lib/helpers';
-import {
-  useToggleProductStatusMutation,
-  useUpdateProductStockMutation,
-} from '@/features/products/hooks/useProductMutations';
+import { cn, formatCurrency } from '@/lib/helpers';
+import { Product } from '@/features/products/hooks/useProductMutations';
 import { motion } from 'framer-motion';
 import LazyImage from '@/components/common/LazyImage';
-
-interface Variant {
-  color: string;
-  quantity: number;
-  price: number;
-  images?: string[];
-  outOfStock?: boolean;
-}
-
-interface Product {
-  id?: string;
-  _id?: string;
-  title: string;
-  slug: string;
-  price: number;
-  quantity: number;
-  outOfStock?: boolean;
-  category: string;
-  dimensions?: {
-    length: number;
-    width: number;
-    height: number;
-  };
-  images?: string[];
-  locationIds?: Array<{
-    city: string;
-    state?: string;
-  }>;
-  createdAt: string;
-  status: string;
-  variants?: Variant[];
-  seller?: {
-    profile?: {
-      businessName?: string;
-    };
-  };
-  readyByDays?: string | number;
-}
+import { useAddToWishlist, useRemoveFromWishlist } from '@/features/wishlist/hooks/useWishlist';
+import toast from 'react-hot-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 interface ProductCardProps {
-  product: Product;
+  product: Product & { isInWishlist?: boolean };
   onProductClick: (slug: string, status: string) => void;
 }
 
-const getReadyByDate = (product: Product) => {
-  switch (Number(product.readyByDays)) {
+export const getReadyByDate = (product: Product) => {
+  switch (Number(product?.readyByDays)) {
     case 0:
       return (
-        <Badge className="absolute bottom-2 left-2 bg-primary/80 text-white rounded px-2 py-1 text-[11px]">
+        <Badge className=" absolute bottom-2 left-2 bg-primary/80 text-white rounded px-2 py-1 text-[11px]">
           Same Day Delivery
         </Badge>
       );
@@ -73,82 +35,54 @@ const getReadyByDate = (product: Product) => {
 };
 
 const ProductCard: React.FC<ProductCardProps> = ({ product, onProductClick }) => {
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [isWishlisted, setIsWishlisted] = useState(false);
-
-  const toggleStatusMutation = useToggleProductStatusMutation();
+  const { isAuthenticated } = useAuth();
   const productId = product.id || product._id || '';
+  const addToWishlist = useAddToWishlist();
+  const removeFromWishlist = useRemoveFromWishlist();
+
+  // Use local state for optimistic UI updates
+  const [optimisticWishlist, setOptimisticWishlist] = useState(product.isInWishlist || false);
+  const isLoading = addToWishlist.isPending || removeFromWishlist.isPending;
+
+  // Sync with product prop when it changes
+  useEffect(() => {
+    setOptimisticWishlist(product.isInWishlist || false);
+  }, [product.isInWishlist]);
 
   const handleWishlistClick = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent card click
-    setIsWishlisted(!isWishlisted);
-    // TODO: Add API call here to save wishlist state
-  };
+    e.stopPropagation();
+    if (!isAuthenticated) {
+      toast.error('Please login to add to wishlist');
+      return;
+    }
+    if (!isLoading) {
+      // Optimistically update the UI immediately
+      const newWishlistState = !optimisticWishlist;
+      setOptimisticWishlist(newWishlistState);
 
-  // Calculate total stock including main product and variants
-  const getTotalStock = () => {
-    let totalStock = 0;
-    let hasAnyStock = false;
-    let isAllOutOfStock = true;
-
-    // Check main product stock
-    // Count quantity if not marked as out of stock
-    if (!product.outOfStock) {
-      isAllOutOfStock = false;
-      if (product.quantity > 0) {
-        totalStock += product.quantity;
-        hasAnyStock = true;
+      // Then perform the actual mutation
+      if (newWishlistState) {
+        addToWishlist.mutate(
+          { productId },
+          {
+            onError: () => {
+              // Revert on error
+              setOptimisticWishlist(false);
+            },
+          }
+        );
+      } else {
+        removeFromWishlist.mutate(
+          { productId },
+          {
+            onError: () => {
+              // Revert on error
+              setOptimisticWishlist(true);
+            },
+          }
+        );
       }
     }
-
-    // Check variants stock
-    if (product.variants && product.variants.length > 0) {
-      product.variants.forEach((variant) => {
-        // Count variant quantity if not marked as out of stock
-        if (!variant.outOfStock) {
-          isAllOutOfStock = false;
-          if (variant.quantity > 0) {
-            totalStock += variant.quantity;
-            hasAnyStock = true;
-          }
-        }
-      });
-    }
-
-    // If everything is marked as out of stock, we have no stock regardless of quantities
-    if (isAllOutOfStock) {
-      return { totalStock: 0, hasAnyStock: false, isOutOfStock: true };
-    }
-
-    // If not all items are marked out of stock, return actual stock status
-    return { totalStock, hasAnyStock, isOutOfStock: false };
-  };
-
-  const { totalStock, hasAnyStock, isOutOfStock } = getTotalStock();
-
-  const handleToggleStatus = async (checked: boolean) => {
-    if (isUpdating) return;
-
-    setIsUpdating(true);
-    try {
-      await toggleStatusMutation.mutateAsync({
-        id: productId,
-        status: checked ? 'active' : 'inactive',
-      });
-    } catch (error) {
-      console.error('Failed to update product status:', error);
-    } finally {
-      setIsUpdating(false);
-    }
-  };
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 2,
-    }).format(price);
   };
 
   const getLocationDisplay = (product: Product) => {
@@ -200,14 +134,17 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onProductClick }) =>
           >
             <motion.div
               animate={{
-                scale: isWishlisted ? [1, 1.2, 1] : 1,
+                scale: optimisticWishlist ? [1, 1.2, 1] : 1,
               }}
               transition={{ duration: 0.3 }}
             >
               <Heart
                 className={cn(
                   'h-5 w-5 transition-colors duration-200 cursor-pointer',
-                  isWishlisted ? 'text-red-500 fill-red-500' : 'text-white hover:text-red-400'
+                  optimisticWishlist
+                    ? 'text-red-500 fill-red-500'
+                    : 'text-white hover:text-red-400',
+                  isLoading && 'opacity-50'
                 )}
               />
             </motion.div>
@@ -218,7 +155,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onProductClick }) =>
           <div className="flex justify-between items-center gap-2">
             {/* Price */}
             <div className="text-[16px] font-semibold mb-1">
-              {formatPrice(product.price)} / sq ft
+              {formatCurrency(product.price)} / sq ft
             </div>
           </div>
           {/* Title + Description */}

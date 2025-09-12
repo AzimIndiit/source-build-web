@@ -1,196 +1,157 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Package, Truck, MapPin, Clock } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Minus, Plus, ShoppingCart, Heart, Edit2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import ReadMore from '@/components/ui/ReadMore';
 import { BreadcrumbWrapper } from '@/components/ui';
 import { ReviewCard, type ReviewData } from '@/components/ui/ReviewCard';
+import { ReviewCardSkeleton } from '@/components/ui/ReviewCardSkeleton';
 import { StarRating } from '@/components/common/StarRating';
 import { MarketplaceProductDetailPageSkeleton } from '../components/MarketplaceProductDetailPageSkeleton';
-import {
-  useProductQuery,
-  useDeleteProductMutation,
-} from '@/features/products/hooks/useProductMutations';
-import toast from 'react-hot-toast';
-import { format } from 'date-fns';
+import { useQueries } from '@tanstack/react-query';
+import { productService } from '@/features/products/services/productService';
+import { reviewService } from '@/features/reviews/services/reviewService';
 import LazyImage from '@/components/common/LazyImage';
-
-// Helper function to parse and format pickup hours
-const formatPickupHoursDisplay = (hours: string | object): React.ReactNode => {
-  if (!hours) return null;
-
-  // If it's an object with day-specific hours
-  if (typeof hours === 'object') {
-    const daysOrder = [
-      'monday',
-      'tuesday',
-      'wednesday',
-      'thursday',
-      'friday',
-      'saturday',
-      'sunday',
-    ];
-    const dayAbbrev: { [key: string]: string } = {
-      monday: 'Mon',
-      tuesday: 'Tue',
-      wednesday: 'Wed',
-      thursday: 'Thu',
-      friday: 'Fri',
-      saturday: 'Sat',
-      sunday: 'Sun',
-    };
-
-    return (
-      <div className="space-y-0.5">
-        {daysOrder.map((day) => {
-          const dayHours = (hours as any)[day];
-          if (!dayHours) return null;
-          return (
-            <div key={day} className="flex gap-2 text-[11px] leading-tight">
-              <span className="font-medium text-gray-700 w-7">{dayAbbrev[day]}:</span>
-              <span className="text-gray-600">
-                {dayHours.open}-{dayHours.close}
-              </span>
-            </div>
-          );
-        })}
-      </div>
-    );
-  }
-
-  // If it's a string, parse it
-  if (typeof hours === 'string') {
-    // Check if already formatted with days
-    if (hours.includes('Mon') || hours.includes('Tue') || hours.includes('Wed')) {
-      // Parse the string into structured format
-      const dayMap: { [key: string]: string } = {
-        Mon: 'Mon',
-        Tue: 'Tue',
-        Wed: 'Wed',
-        Thu: 'Thu',
-        Fri: 'Fri',
-        Sat: 'Sat',
-        Sun: 'Sun',
-      };
-
-      // Split by commas to get each day's hours
-      const parts = hours.split(',').map((s) => s.trim());
-      const parsedHours: { day: string; hours: string }[] = [];
-
-      parts.forEach((part) => {
-        // Check each day abbreviation
-        for (const [abbrev, displayName] of Object.entries(dayMap)) {
-          if (part.includes(abbrev)) {
-            // Extract the time portion after the day
-            const timeMatch = part.match(new RegExp(`${abbrev}\\s*(.+)`));
-            if (timeMatch) {
-              parsedHours.push({ day: displayName, hours: timeMatch[1].trim() });
-            }
-            break;
-          }
-        }
-      });
-
-      if (parsedHours.length > 0) {
-        return (
-          <div className="space-y-0.5">
-            {parsedHours.map(({ day, hours: dayHours }) => (
-              <div key={day} className="flex gap-2 text-[11px] leading-tight">
-                <span className="font-medium text-gray-700 w-7">{day}:</span>
-                <span className="text-gray-600">{dayHours}</span>
-              </div>
-            ))}
-          </div>
-        );
-      }
-    }
-
-    // If already in 12-hour format (contains AM/PM), return as is
-    if (hours.includes('AM') || hours.includes('PM')) {
-      return <span className="text-xs text-gray-500">{hours}</span>;
-    }
-
-    // Convert 24-hour format to 12-hour format
-    const formatted = hours.replace(/(\d{1,2}):(\d{2})/g, (_, h, m) => {
-      const hour = parseInt(h);
-      const period = hour >= 12 ? 'PM' : 'AM';
-      const hour12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-      return `${hour12}:${m} ${period}`;
-    });
-
-    return <span className="text-xs text-gray-500">{formatted}</span>;
-  }
-
-  return null;
-};
+import useCartStore from '@/stores/cartStore';
+import { motion } from 'framer-motion';
+import { cn } from '@/lib/helpers';
+import { useAddToWishlist, useRemoveFromWishlist } from '@/features/wishlist/hooks/useWishlist';
+import ReviewModal from '@/features/reviews/components/ReviewModal';
+import { useAuth } from '@/hooks/useAuth';
+import { getReadyByDate } from '../components/ProductCard';
+import ProductCard from '../components/ProductCard';
+import ProductCardSkeleton from '../components/ProductCardSkeleton';
+import toast from 'react-hot-toast';
 
 const MarketplaceProductDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  console.log('slug', slug);
-  const { data: productResponse, isLoading, error } = useProductQuery(slug || '');
-  const deleteProductMutation = useDeleteProductMutation();
+  const { user, isAuthenticated } = useAuth();
 
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [selectedVariant, setSelectedVariant] = useState<any>(null);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [quantity, setQuantity] = useState(1);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const thumbnailContainerRef = useRef<HTMLDivElement>(null);
   const thumbnailRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
-  // Get product data from API response
-  const product = productResponse?.data;
+  // First fetch the product
+  const productQuery = useQueries({
+    queries: [
+      {
+        queryKey: ['product', slug],
+        queryFn: () => productService.getProductBySlug(slug || ''),
+        enabled: !!slug,
+      },
+    ],
+  })[0];
+
+  // Extract product data
+  const product: any = productQuery.data?.data;
+  const productId = product?.id || product?._id || '';
+
+  // Then fetch related products and reviews in parallel once we have the product ID
+  const dependentQueries = useQueries({
+    queries: [
+      {
+        queryKey: ['related-products', productId],
+        queryFn: () => productService.getRelatedProducts(productId, 4),
+        enabled: !!productId,
+      },
+      {
+        queryKey: ['product-reviews', productId],
+        queryFn: () => reviewService.getProductReviews(productId),
+        enabled: !!productId,
+      },
+    ],
+  });
+
+  const [relatedProductsQuery, reviewsQuery] = dependentQueries;
+
+  // Extract loading states and data
+  const isLoading = productQuery.isLoading;
+  const error = productQuery.error;
+  const relatedProductsResponse = relatedProductsQuery.data;
+  const isLoadingRelated = relatedProductsQuery.isLoading;
+  const reviewsResponse = reviewsQuery.data;
+  const isLoadingReviews = reviewsQuery.isLoading;
+
+  // Wishlist functionality
+  const addToWishlist = useAddToWishlist();
+  const removeFromWishlist = useRemoveFromWishlist();
+
+  // Use local state for optimistic UI updates
+  const [optimisticWishlist, setOptimisticWishlist] = useState(product?.isInWishlist || false);
+  const isWishlistLoading = addToWishlist.isPending || removeFromWishlist.isPending;
+
+  // Sync with product prop when it changes
+  useEffect(() => {
+    setOptimisticWishlist(product?.isInWishlist || false);
+  }, [product?.isInWishlist]);
+
+  const handleWishlistClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!isAuthenticated) {
+      toast.error('Please login to add to wishlist');
+      return;
+    }
+    if (!isWishlistLoading && productId) {
+      // Optimistically update the UI immediately
+      const newWishlistState = !optimisticWishlist;
+      setOptimisticWishlist(newWishlistState);
+
+      // Then perform the actual mutation
+      if (newWishlistState) {
+        addToWishlist.mutate(
+          { productId },
+          {
+            onError: () => {
+              // Revert on error
+              setOptimisticWishlist(false);
+            },
+          }
+        );
+      } else {
+        removeFromWishlist.mutate(
+          { productId },
+          {
+            onError: () => {
+              // Revert on error
+              setOptimisticWishlist(true);
+            },
+          }
+        );
+      }
+    }
+  };
 
   // Get current images based on selected variant
   const currentImages =
     selectedVariant?.images?.length > 0 ? selectedVariant.images : product?.images || [];
 
-  // Reset image index when variant changes
+  // Reset image index and quantity when variant changes
   useEffect(() => {
     setSelectedImageIndex(0);
+    setQuantity(1); // Reset quantity to 1 when variant changes
   }, [selectedVariant]);
 
-  // Sample reviews data (currently unused - for future implementation)
-  // const reviews: ReviewData[] = [
-  //   {
-  //     id: 1,
-  //     userName: 'Aspen Siphron',
-  //     date: new Date('2025-05-12'),
-  //     rating: 4.9,
-  //     comment:
-  //       "The six lights provide ample brightness while adding a touch of elegance and warmth to any room. Whether you're redecorating or building from scratch, this chandelier is praised for its timeless appeal and reliable performance.",
-  //     avatar: 'https://placehold.co/50x50/FF6B6B/ffffff?text=AS',
-  //   },
-  //   {
-  //     id: 2,
-  //     userName: 'Aspen Siphron',
-  //     date: new Date('2025-05-12'),
-  //     rating: 4.9,
-  //     comment:
-  //       "The six lights provide ample brightness while adding a touch of elegance and warmth to any room. Whether you're redecorating or building from scratch, this chandelier is praised for its timeless appeal and reliable performance.",
-  //     avatar: 'https://placehold.co/50x50/FF6B6B/ffffff?text=AS',
-  //   },
-  //   {
-  //     id: 3,
-  //     userName: 'Aspen Siphron',
-  //     date: new Date('2025-05-12'),
-  //     rating: 4.9,
-  //     comment:
-  //       "The six lights provide ample brightness while adding a touch of elegance and warmth to any room. Whether you're redecorating or building from scratch, this chandelier is praised for its timeless appeal and reliable performance.",
-  //     avatar: 'https://placehold.co/50x50/FF6B6B/ffffff?text=AS',
-  //   },
-  //   {
-  //     id: 4,
-  //     userName: 'Aspen Siphron',
-  //     date: new Date('2025-05-12'),
-  //     rating: 4.9,
-  //     comment:
-  //       "The six lights provide ample brightness while adding a touch of elegance and warmth to any room. Whether you're redecorating or building from scratch, this chandelier is praised for its timeless appeal and reliable performance.",
-  //     avatar: 'https://placehold.co/50x50/FF6B6B/ffffff?text=AS',
-  //   },
-  // ];
-
-  const reviewst: ReviewData[] = [];
+  // Get reviews from API response
+  const reviews: ReviewData[] =
+    reviewsResponse?.data?.reviews?.map((review: any) => ({
+      id: review._id || review.id,
+      userName:
+        `${review.reviewer?.firstName || ''} ${review.reviewer?.lastName || ''}`.trim() ||
+        'Anonymous',
+      date: new Date(review.createdAt),
+      rating: review.rating,
+      comment: review.comment,
+      avatar:
+        review.reviewer?.profile?.avatar ||
+        `https://placehold.co/50x50/FF6B6B/ffffff?text=${(review.reviewer?.firstName?.[0] || 'A').toUpperCase()}${(review.reviewer?.lastName?.[0] || '').toUpperCase()}`,
+      helpfulCount: review.helpfulCount,
+      response: review.response,
+    })) || [];
 
   // Auto-scroll selected thumbnail into view
   useEffect(() => {
@@ -226,20 +187,151 @@ const MarketplaceProductDetailPage: React.FC = () => {
     setSelectedImageIndex(index);
   };
 
-  const handleDeleteClick = () => {
-    setIsDeleteModalOpen(true);
+  const handleQuantityChange = (increment: boolean) => {
+    const currentQuantity = selectedVariant
+      ? selectedVariant?.outOfStock
+        ? 0
+        : selectedVariant?.quantity
+      : product?.outOfStock
+        ? 0
+        : product?.quantity || 0;
+
+    if (increment) {
+      if (quantity < currentQuantity) {
+        setQuantity(quantity + 1);
+      }
+    } else {
+      if (quantity > 1) {
+        setQuantity(quantity - 1);
+      }
+    }
   };
 
-  const handleConfirmDelete = async () => {
-    if (!product?.id) return;
+  const { addItem: addToCart } = useCartStore();
 
-    try {
-      await deleteProductMutation.mutateAsync(product.id);
-      setIsDeleteModalOpen(false);
-      navigate('/products');
-    } catch (error) {
-      toast.error('Failed to delete product');
+  const handleAddToCart = (directCheckout = false) => {
+    if (!product) return;
+
+    const currentPrice = selectedVariant?.price || product.price || 0;
+    const currentQuantity = selectedVariant
+      ? selectedVariant?.outOfStock
+        ? 0
+        : selectedVariant?.quantity
+      : product?.outOfStock
+        ? 0
+        : product?.quantity || 0;
+
+    // Determine the actual color being added (from variant or base product)
+    const actualColor = selectedVariant?.color || product.color;
+
+    // Include color in title if available
+    const variantSuffix = actualColor ? ` - ${actualColor}` : '';
+    const cartItemTitle = `${product.title}${variantSuffix}`;
+
+    // For "Buy Now" - navigate directly to checkout with product data
+    if (directCheckout) {
+      // Check if user is logged in for checkout
+      if (!user) {
+        navigate('/auth/login', {
+          state: {
+            from: { pathname: '/checkout' },
+            buyNowItem: {
+              productId: product.id || '',
+              variantId: (selectedVariant && (selectedVariant?._id || selectedVariant?.id)) || '',
+              title: cartItemTitle,
+              slug: product.slug,
+              price: currentPrice,
+              quantity: quantity,
+              image: currentImages[0] || 'https://placehold.co/300x200.png',
+              color: actualColor,
+              seller: (product.seller as any)?.profile?.businessName
+                ? {
+                    id: (product.seller as any)?._id || '',
+                    businessName: (product.seller as any).profile.businessName,
+                  }
+                : undefined,
+              maxQuantity: currentQuantity,
+              selectedOptions: selectedVariant
+                ? {
+                    color: selectedVariant.color,
+                  }
+                : product.color
+                  ? {
+                      color: product.color,
+                    }
+                  : undefined,
+            },
+          },
+        });
+        return;
+      }
+
+      // Navigate to checkout with the buy now item (not adding to cart)
+      navigate('/checkout', {
+        state: {
+          buyNowItem: {
+            id: `${product.id}-${selectedVariant?.id || 'base'}-${Date.now()}`, // Unique ID for this buy now item
+            productId: product.id || '',
+            variantId: (selectedVariant && (selectedVariant?._id || selectedVariant?.id)) || '',
+            title: cartItemTitle,
+            slug: product.slug,
+            price: currentPrice,
+            quantity: quantity,
+            image: currentImages[0] || 'https://placehold.co/300x200.png',
+            color: actualColor,
+            seller: (product.seller as any)?.profile?.businessName
+              ? {
+                  id: (product.seller as any)?._id || '',
+                  businessName: (product.seller as any).profile.businessName,
+                }
+              : undefined,
+            maxQuantity: currentQuantity,
+            marketplaceOptions: product.marketplaceOptions,
+            shippingPrice: product.shippingPrice,
+            selectedOptions: selectedVariant
+              ? {
+                  color: selectedVariant.color,
+                }
+              : product.color
+                ? {
+                    color: product.color,
+                  }
+                : undefined,
+          },
+        },
+      });
+      return;
     }
+
+    // For "Add to Cart" - add to cart store
+    addToCart({
+      productId: product.id || '',
+      variantId: (selectedVariant && (selectedVariant?._id || selectedVariant?.id)) || '',
+      title: cartItemTitle,
+      slug: product.slug,
+      price: currentPrice,
+      quantity: quantity,
+      image: currentImages[0] || 'https://placehold.co/300x200.png',
+      color: actualColor,
+      seller: (product.seller as any)?.profile?.businessName
+        ? {
+            id: (product.seller as any)?._id || '',
+            businessName: (product.seller as any).profile.businessName,
+          }
+        : undefined,
+      maxQuantity: currentQuantity,
+      marketplaceOptions: product.marketplaceOptions,
+      shippingPrice: product.shippingPrice,
+      selectedOptions: selectedVariant
+        ? {
+            color: selectedVariant.color,
+          }
+        : product.color
+          ? {
+              color: product.color,
+            }
+          : undefined,
+    });
   };
 
   const breadcrumbItems = [
@@ -267,8 +359,6 @@ const MarketplaceProductDetailPage: React.FC = () => {
     );
   }
 
-  console.log('selectedVariant', selectedVariant);
-
   return (
     <div className="py-4 md:p-4 space-y-4 md:space-y-6">
       {/* Breadcrumb Navigation */}
@@ -281,15 +371,45 @@ const MarketplaceProductDetailPage: React.FC = () => {
         {/* Left Column - Image Gallery */}
         <div className="space-y-3 sm:space-y-4">
           {/* Main Image Display */}
-          <div className="rounded-md">
+          <div className="rounded-md relative">
+            <div className="w-full absolute bottom-2 left-2 z-10 justify-end">
+              {getReadyByDate(product)}
+            </div>
+            {/* Wishlist Button */}
+            <motion.button
+              className="absolute top-2 right-2 rounded-full bg-black/20 backdrop-blur-sm p-2 transition-all duration-200 hover:bg-black/30 z-10"
+              onClick={handleWishlistClick}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.2 }}
+            >
+              <motion.div
+                animate={{
+                  scale: optimisticWishlist ? [1, 1.2, 1] : 1,
+                }}
+                transition={{ duration: 0.3 }}
+              >
+                <Heart
+                  className={cn(
+                    'h-5 w-5 transition-colors duration-200 cursor-pointer',
+                    optimisticWishlist
+                      ? 'text-red-500 fill-red-500'
+                      : 'text-white hover:text-red-400',
+                    isWishlistLoading && 'opacity-50'
+                  )}
+                />
+              </motion.div>
+            </motion.button>
             <LazyImage
               src={
                 currentImages[selectedImageIndex] ||
                 'https://placehold.co/600x600/e5e7eb/6b7280?text=No+Image'
               }
               alt={product?.title || 'Product image'}
-              className="rounded-sm"
-              wrapperClassName="w-full h-[250px] sm:h-[350px] md:h-[700px] bg-gray-100 rounded-sm"
+              className="rounded-sm bg-white border-gray-200 shadow-md border"
+              wrapperClassName="w-full h-[250px] sm:h-[350px] md:h-[450px] bg-gray-100 rounded-sm"
               fallbackSrc="https://placehold.co/600x600/e5e7eb/6b7280?text=No+Image"
               objectFit="cover"
               showSkeleton={true}
@@ -323,7 +443,7 @@ const MarketplaceProductDetailPage: React.FC = () => {
                       thumbnailRefs.current[index] = el;
                     }}
                     onClick={() => handleThumbnailClick(index)}
-                    className={`flex-shrink-0 w-[80px] h-[60px] sm:w-[120px] sm:h-[80px] md:w-[150px] md:h-[100px] lg:w-[180px] lg:h-[120px] rounded-lg overflow-hidden border-2 transition-all ${
+                    className={`flex-shrink-0 w-[80px] h-[60px cursor-pointer bg-white sm:w-[120px] sm:h-[80px] md:w-[150px] md:h-[100px] lg:w-[180px] lg:h-[120px] rounded-lg overflow-hidden border-2 transition-all ${
                       selectedImageIndex === index
                         ? 'border-primary shadow-md'
                         : 'border-gray-200 hover:border-gray-300'
@@ -332,7 +452,7 @@ const MarketplaceProductDetailPage: React.FC = () => {
                     <LazyImage
                       src={image}
                       alt={`${product?.title} ${index + 1}`}
-                      className="rounded-lg"
+                      className="rounded-lg  border-gray-200 shadow-md border"
                       wrapperClassName="w-full h-full"
                       fallbackSrc="https://placehold.co/180x120/e5e7eb/6b7280?text=No+Image"
                       objectFit="cover"
@@ -553,139 +673,138 @@ const MarketplaceProductDetailPage: React.FC = () => {
                 ))}
             </div>
           </div>
-
-          {/* Marketplace Options */}
-          {product.marketplaceOptions && (
-            <div className="border-t border-gray-200 pt-4">
-              <h3 className="text-lg sm:text-xl font-semibold mb-4 text-gray-800">
-                Delivery Options
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {product.marketplaceOptions.pickup && (
-                  <div className="group relative p-4 border-2 rounded-xl border-gray-200 transition-all duration-200 bg-gradient-to-br from-white to-gray-50">
-                    {/* Icon and content */}
-                    <div className="flex flex-col items-center text-center">
-                      <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mb-2 transition-transform">
-                        <MapPin className="text-green-600 w-5 h-5" />
-                      </div>
-                      <p className="text-sm font-semibold text-gray-800 mb-2">Pickup</p>
-                      {product.pickupHours && (
-                        <div className="w-full">
-                          <p className="text-[10px] font-semibold text-gray-600 uppercase tracking-wider mb-1.5">
-                            Hours
-                          </p>
-                          <div className="mx-auto flex flex-col justify-center items-center w-full px-2 ">
-                            {formatPickupHoursDisplay(product.pickupHours)}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {product.marketplaceOptions.shipping && (
-                  <div className="group relative p-4 border-2 rounded-xl border-gray-200 transition-all duration-200 bg-gradient-to-br from-white to-gray-50">
-                    {/* Icon and content */}
-                    <div className="flex flex-col items-center text-center">
-                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mb-2 transition-transform">
-                        <Package className="text-blue-600 w-5 h-5" />
-                      </div>
-                      <p className="text-sm font-semibold text-gray-800 mb-2">Shipping</p>
-                      {product.shippingPrice ? (
-                        <div className="">
-                          <p className="text-[10px] font-medium text-gray-600 uppercase tracking-wide">
-                            Cost
-                          </p>
-                          <p className="text-base font-bold text-blue-600">
-                            ${product.shippingPrice}
-                          </p>
-                        </div>
-                      ) : (
-                        <p className="text-xs text-gray-500">Contact for rates</p>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {product.marketplaceOptions.delivery && (
-                  <div className="group relative p-4 border-2 rounded-xl border-gray-200 transition-all duration-200 bg-gradient-to-br from-white to-gray-50">
-                    {/* Icon and content */}
-                    <div className="flex flex-col items-center text-center">
-                      <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center mb-2 transition-transform">
-                        <Truck className="text-purple-600 w-5 h-5" />
-                      </div>
-                      <p className="text-sm font-semibold text-gray-800 mb-2">Delivery</p>
-                      <p className="text-xs text-gray-500">Local delivery available</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {(product.readyByDays !== undefined ||
-                product.readyByDate ||
-                product.readyByTime) && (
-                <div className="mt-4 p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200">
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
-                      <Clock size={16} className="text-amber-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-gray-800 mb-1">Ready By Date</p>
-                      <p className="text-sm text-gray-600">
-                        {product.readyByDays !== undefined && (
-                          <>
-                            {product.readyByDays === 0 ? (
-                              <span className="font-medium">Today</span>
-                            ) : product.readyByDays === 1 ? (
-                              <span className="font-medium">By Tomorrow</span>
-                            ) : (
-                              <span className="font-medium">By {product.readyByDays} Days</span>
-                            )}
-                            {' • '}
-                            {(() => {
-                              const readyDate = new Date();
-                              const daysToAdd =
-                                typeof product.readyByDays === 'string'
-                                  ? parseInt(product.readyByDays, 10)
-                                  : product.readyByDays;
-                              readyDate.setDate(readyDate.getDate() + daysToAdd);
-                              return format(readyDate, 'EEEE, MMMM d, yyyy');
-                            })()}
-                          </>
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
+          {/* Add to Cart Section */}
+          <div className="flex items-center gap-4 pt-6">
+            {/* Quantity Selector */}
+            <div className="flex items-center bg-white shadow rounded-lg overflow-hidden">
+              <button
+                onClick={() => handleQuantityChange(false)}
+                disabled={quantity <= 1}
+                className="p-3  hover:bg-gray-200 transition-colors cursor-pointer  disabled:opacity-50 disabled:cursor-not-allowed h-[56px]"
+              >
+                <Minus className="h-5 w-5 text-gray-600" />
+              </button>
+              <span className="px-6 py-3 text-lg font-semibold min-w-[60px] text-center">
+                {quantity}
+              </span>
+              <button
+                onClick={() => handleQuantityChange(true)}
+                disabled={
+                  quantity >=
+                  (selectedVariant
+                    ? selectedVariant?.outOfStock
+                      ? 0
+                      : selectedVariant?.quantity
+                    : product?.outOfStock
+                      ? 0
+                      : product?.quantity || 0)
+                }
+                className="p-3 hover:bg-gray-200 transition-colors cursor-pointer  disabled:opacity-50 disabled:cursor-not-allowed h-[56px]"
+              >
+                <Plus className="h-5 w-5 text-gray-600" />
+              </button>
             </div>
-          )}
 
-       
+            {/* Add to Cart / Go to Cart Button */}
+
+            <div className="flex-1 flex gap-2">
+              <Button
+                onClick={() => handleAddToCart(false)}
+                disabled={
+                  selectedVariant
+                    ? selectedVariant?.outOfStock || selectedVariant?.quantity === 0
+                    : product?.outOfStock || product?.quantity === 0
+                }
+                className="flex-1 bg-primary hover:bg-primary/90 text-white font-semibold py-3 text-base h-[56px] rounded-xl flex items-center justify-center gap-2"
+              >
+                <ShoppingCart className="h-5 w-5" />
+                Add to Cart
+              </Button>
+              <Button
+                onClick={() => {
+                  handleAddToCart(true);
+                }}
+                variant="outline"
+                className="flex-1 border-primary text-primary hover:bg-primary/10 font-semibold py-3 text-base h-[56px] rounded-xl"
+              >
+                Buy Now
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* Related Products */}
+      {(isLoadingRelated ||
+        (relatedProductsResponse?.data && relatedProductsResponse.data.length > 0)) && (
+        <div className="mt-8 sm:mt-12 border-t border-gray-200 pt-6 sm:pt-8">
+          <div className="">
+            {/* Section Header */}
+            <div className="mb-6 sm:mb-8">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Related Products</h2>
+            </div>
+
+            {/* Products Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4 sm:gap-6">
+              {isLoadingRelated
+                ? // Show skeleton loaders while loading
+                  [...Array(8)].map((_, index) => <ProductCardSkeleton key={`skeleton-${index}`} />)
+                : // Show actual products when loaded
+                  relatedProductsResponse?.data?.slice(0, 8).map((relatedProduct: any) => (
+                    <ProductCard
+                      key={relatedProduct._id || relatedProduct.id}
+                      product={relatedProduct}
+                      onProductClick={(slug: string) => {
+                        navigate(`/marketplace/${slug}`);
+                        // Scroll to top when navigating to new product
+                        window.scrollTo(0, 0);
+                      }}
+                    />
+                  ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Reviews & Rating Section */}
       <div className="mt-8 sm:mt-12 border-t border-gray-200 pt-6 sm:pt-8">
         <div className="">
           {/* Section Header */}
-          <div className="mb-6 sm:mb-8">
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">
-              Reviews & Rating
-            </h2>
+          <div className="mb-6 sm:mb-8 flex justify-between gap-2">
+            <div>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 ">Reviews & Rating</h2>
 
-            {/* Overall Rating */}
-            <StarRating
-              rating={product?.rating || 0}
-              showValue={true}
-              totalReviews={product?.totalReviews || 0}
-            />
+              {/* Overall Rating */}
+              <StarRating
+                rating={product?.rating || 0}
+                showValue={true}
+                totalReviews={product?.totalReviews || 0}
+              />
+            </div>
+            <Button
+              variant={'link'}
+              leftIcon={Edit2}
+              onClick={() => {
+                if (!isAuthenticated) {
+                  toast.error('Please login to write a review');
+                  navigate('/auth/login');
+                  return;
+                }
+                setIsReviewModalOpen(true);
+              }}
+              className=" underline text-sm sm:text-base h-[40px]"
+            >
+              {product?.hasUserReviewed ? 'Edit Review' : 'Write a review'}
+            </Button>
           </div>
 
           {/* Reviews List */}
           <div className="space-y-4 sm:space-y-6">
-            {reviewst.length > 0 ? (
-              reviewst.map((review) => <ReviewCard key={review.id} review={review} />)
+            {isLoadingReviews ? (
+              // Show skeleton loaders while loading
+              [...Array(3)].map((_, index) => <ReviewCardSkeleton key={`skeleton-${index}`} />)
+            ) : reviews.length > 0 ? (
+              reviews.map((review: ReviewData) => <ReviewCard key={review.id} review={review} />)
             ) : (
               <div className="text-gray-500 w-full text-center text-lg flex justify-center items-center min-h-[400px]">
                 No reviews yet!
@@ -694,7 +813,7 @@ const MarketplaceProductDetailPage: React.FC = () => {
           </div>
 
           {/* View All Button */}
-          {reviewst.length > 10 && (
+          {reviews.length > 10 && (
             <div className="mt-6 sm:mt-8 text-center">
               <Button
                 variant="outline"
@@ -706,6 +825,21 @@ const MarketplaceProductDetailPage: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Review Modal */}
+      <ReviewModal
+        isOpen={isReviewModalOpen}
+        onClose={() => {
+          setIsReviewModalOpen(false);
+        }}
+        productId={productId}
+        existingReview={product?.userReview}
+        onSuccess={() => {
+          // Refetch reviews after successful submission
+          productQuery?.refetch();
+          reviewsQuery?.refetch();
+        }}
+      />
     </div>
   );
 };

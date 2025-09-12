@@ -58,6 +58,7 @@ function LoginPage() {
 
       // Get the intended destination from location state
       const from = location.state?.from?.pathname || null;
+      const buyNowItem = location.state?.buyNowItem || null;
 
       // Handle navigation based on user role and status
       if (currentUser) {
@@ -90,20 +91,36 @@ function LoginPage() {
             });
           } else {
             // If there's a saved location and user has completed setup, go there
-            navigate(from || '/driver/dashboard');
+            if (buyNowItem && from === '/checkout') {
+              navigate(from, { state: { buyNowItem } });
+            } else {
+              navigate(from || '/driver/dashboard');
+            }
             toast.success('Login successful!');
           }
         } else if (currentUser.role === 'seller') {
           // If there's a saved location for seller, go there, otherwise default to seller dashboard
-          navigate(from || '/seller/dashboard');
+          if (buyNowItem && from === '/checkout') {
+            navigate(from, { state: { buyNowItem } });
+          } else {
+            navigate(from || '/seller/dashboard');
+          }
           toast.success('Login successful!');
         } else if (currentUser.role === 'buyer') {
           // For buyer role, redirect to the intended destination or home
-          navigate(from || '/');
+          if (buyNowItem && from === '/checkout') {
+            navigate(from, { state: { buyNowItem } });
+          } else {
+            navigate(from || '/');
+          }
           toast.success('Login successful!');
         } else {
           // Default navigation for other roles
-          navigate(from || '/');
+          if (buyNowItem && from === '/checkout') {
+            navigate(from, { state: { buyNowItem } });
+          } else {
+            navigate(from || '/');
+          }
           toast.success('Login successful!');
         }
       } else {

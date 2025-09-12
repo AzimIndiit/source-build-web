@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import { getStatusBadgeColor } from '@/features/dashboard/utils/orderUtils';
-import { cn } from '@/lib/helpers';
+import { cn, formatCurrency } from '@/lib/helpers';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import {
@@ -142,14 +142,6 @@ const ProductGrid: React.FC<ProductGridProps> = ({
     setShowStockDialog(true);
   };
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 2,
-    }).format(price);
-  };
 
   const formatDate = (dateString: string) => {
     try {
@@ -218,7 +210,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
           <div className="flex justify-between items-center gap-2">
             {/* Price */}
             <div className="text-[16px] font-semibold mb-1">
-              {formatPrice(product.price)} / sq ft
+              {formatCurrency(product.price)} / sq ft
             </div>
             <div className="flex gap-2 justify-end">
               <Button

@@ -2,6 +2,7 @@ import React from 'react';
 import { Star } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { formatDate } from '@/lib/date-utils';
+import { getInitials } from '@/lib/helpers';
 
 export interface ReviewData {
   id: number | string;
@@ -23,13 +24,10 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
         {/* Header with Avatar and User Info */}
         <div className="flex items-start gap-3 sm:gap-4">
           {/* User Avatar */}
-          <Avatar className="h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0">
-            <AvatarImage src={review.avatar} alt={review.userName} />
+          <Avatar className="h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0 border border-gray-200">
+            <AvatarImage src={review.avatar} alt={review.userName} className='object-cover' />
             <AvatarFallback className="bg-orange-500 text-white text-sm sm:text-base">
-              {review.userName
-                .split(' ')
-                .map((n) => n[0])
-                .join('')}
+              {getInitials(review.userName)}
             </AvatarFallback>
           </Avatar>
 
@@ -61,7 +59,7 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
 
       {/* Review Content */}
       <div className="mt-3 sm:mt-4 sm:ml-16">
-        <p className="text-gray-700 leading-relaxed text-sm sm:text-base">{review.comment}</p>
+        <p className="text-gray-700 leading-relaxed text-sm sm:text-base whitespace-pre-wrap">{review.comment}</p>
       </div>
     </div>
   );

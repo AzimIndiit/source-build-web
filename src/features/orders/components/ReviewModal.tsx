@@ -112,7 +112,7 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
       }
 
       await orderService.addOrderReview(orderId, reviews);
-      toast.success('Review submitted successfully!');
+      // toast.success('Review submitted successfully!');
       onSuccess?.();
       handleClose();
     } catch (error: any) {

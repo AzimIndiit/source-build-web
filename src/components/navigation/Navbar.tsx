@@ -28,6 +28,7 @@ import { GlobalSearch } from '@/components/search/GlobalSearch';
 import { useLogoutModal } from '@/stores/useLogoutModal';
 import { DeleteConfirmationModal } from '../ui';
 import { LocationSearch } from '@/components/location/LocationSearch';
+import useCartStore from '@/stores/cartStore';
 import { useUnreadCountQuery } from '@/features/notifications/hooks/useNotificationMutations';
 import { useUnreadMessageCount } from '@/features/messages/hooks/useUnreadMessageCount';
 import { useSocket } from '@/hooks/useSocket';
@@ -64,7 +65,7 @@ export const Navbar: React.FC = () => {
   const messageCount = localMessageCount || initialMessageCount;
 
   // Mock count for cart - replace with actual data from your backend
-  const cartCount = 2; // Example count
+  const cartCount = useCartStore((state) => state.getTotalItems());
 
   const handleLogoutConfirmation = () => {
     openModal();
@@ -328,12 +329,21 @@ export const Navbar: React.FC = () => {
               <Button
                 variant="ghost"
                 className="flex gap-2 lg:gap-6 items-center hover:bg-gray-50 p-2 h-auto"
+                onClick={() => {
+                  if (!user) {
+                    // If not logged in, redirect to login with cart as return location
+                    navigate('/auth/login', { state: { from: { pathname: '/cart' } } });
+                  } else {
+                    // If logged in as buyer, go directly to cart
+                    navigate('/cart');
+                  }
+                }}
               >
                 <div className="relative">
                   <ShoppingCart className="!w-[24px] !h-[24px]" />
                   {cartCount > 0 && (
                     <span className="absolute -top-2 -right-2 bg-red-500 min-w-[18px] h-[18px] px-1 rounded-full flex items-center justify-center text-white text-xs font-medium">
-                      {cartCount > 9 ? '9+' : cartCount}
+                      {cartCount > 99 ? '99+' : cartCount}
                     </span>
                   )}
                 </div>
@@ -438,7 +448,7 @@ export const Navbar: React.FC = () => {
                     <span className="text-sm">Messages</span>
                     {!isOnMessagesPage && messageCount > 0 && (
                       <div className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-                        {messageCount > 9 ? '9+' : messageCount}
+                        {messageCount > 99 ? '99+' : messageCount}
                       </div>
                     )}
                   </Link>
@@ -450,7 +460,7 @@ export const Navbar: React.FC = () => {
                   >
                     <span className="text-sm">Notifications</span>
                     <div className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-                      {notificationCount > 9 ? '9+' : notificationCount}
+                      {notificationCount > 99 ? '99+' : notificationCount}
                     </div>
                   </Link>
 

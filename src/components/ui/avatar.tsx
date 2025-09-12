@@ -17,8 +17,8 @@ function AvatarImage({ className, ...props }: React.ComponentProps<typeof Avatar
   return (
     <AvatarPrimitive.Image
       data-slot="avatar-image"
-      className={cn('aspect-square sizel', className)}
-      {...props}
+      className={cn('aspect-square sizel object-cover shadow border border-gray-200', className)}
+    {...props}
     />
   );
 }

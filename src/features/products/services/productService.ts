@@ -261,6 +261,13 @@ class ProductService {
     const responses = await Promise.all(uploadPromises);
     return responses.map((response) => response.data.url);
   }
+
+  async getRelatedProducts(productId: string, limit: number = 8): Promise<ProductsListResponse> {
+    const response = await axiosInstance.get<ProductsListResponse>(
+      `/products/${productId}/related?limit=${limit}`
+    );
+    return response.data;
+  }
 }
 
 export const productService = new ProductService();

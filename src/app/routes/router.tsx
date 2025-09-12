@@ -62,6 +62,26 @@ export const router = createBrowserRouter([
             Component: module.default,
           })),
       },
+      {
+        path: 'cart',
+        lazy: () =>
+          import('@/features/cart/pages/CartPage').then((module) => ({
+            Component: module.default,
+          })),
+      },
+      {
+        path: 'checkout',
+        element: <ProtectedRoute redirectTo="/auth/login" />,
+        children: [
+          {
+            index: true,
+            lazy: () =>
+              import('@/features/cart/pages/CheckoutPage').then((module) => ({
+                Component: module.default,
+              })),
+          },
+        ],
+      },
     ],
   },
   {
@@ -88,6 +108,7 @@ export const router = createBrowserRouter([
             Component: module.default,
           })),
       },
+    
     ],
   },
   {
@@ -368,6 +389,7 @@ export const router = createBrowserRouter([
                 Component: module.default,
               })),
           },
+       
 
           {
             path: 'notifications',

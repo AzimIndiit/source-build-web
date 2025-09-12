@@ -2,6 +2,7 @@ import React from 'react';
 import { Edit, Trash2, MapPin, SquarePen } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/button';
+import { formatPhoneNumber } from '@/lib/utils';
 
 interface SavedAddressCardProps {
   name: string;
@@ -37,7 +38,7 @@ export const SavedAddressCard: React.FC<SavedAddressCardProps> = ({
         </div>
 
         <div className="flex-1 space-y-1 overflow-hidden">
-          <p className="text-sm text-gray-600">{phoneNumber}</p>
+          <p className="text-sm text-gray-600">{formatPhoneNumber(phoneNumber)}</p>
           <p className="text-sm text-gray-700 line-clamp-2">{formattedAddress}</p>
         </div>
         <div className="flex gap-2 justify-end mt-auto pt-3">

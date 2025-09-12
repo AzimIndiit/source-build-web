@@ -55,7 +55,7 @@ export const BuyerLayout: React.FC = () => {
         <HeaderMenu />
       </div>
       {/* Main Content */}
-      <div className="flex mt-[135px]">
+      <div className="flex mt-[105px]">
         {/* Desktop/Tablet Sidebar */}
         <div className="hidden md:block fixed left-0 z-40">
           <BuyerSidebar

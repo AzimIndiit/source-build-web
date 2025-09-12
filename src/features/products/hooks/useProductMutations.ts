@@ -11,6 +11,46 @@ import { queryClient } from '@/lib/queryClient';
 export const PRODUCTS_QUERY_KEY = ['products'];
 export const PRODUCT_QUERY_KEY = (slug: string) => ['product', slug];
 
+
+export interface Variant {
+  color: string;
+  quantity: number;
+  price: number;
+  images?: string[];
+  outOfStock?: boolean;
+}
+
+export interface Product {
+  id?: string;
+  _id?: string;
+  title: string;
+  slug: string;
+  price: number;
+  quantity: number;
+  outOfStock?: boolean;
+  category: string;
+  dimensions?: {
+    length: number;
+    width: number;
+    height: number;
+  };
+  images?: string[];
+  locationIds?: Array<{
+    city: string;
+    state?: string;
+  }>;
+  createdAt: string;
+  status: string;
+  variants?: Variant[];
+  seller?: {
+    profile?: {
+      businessName?: string;
+    };
+  };
+  readyByDays?: string | number;
+}
+
+
 interface CreateProductWithFiles extends Omit<CreateProductPayload, 'images'> {
   imageFiles: File[];
   variantFiles?: Array<{ variantId: string; variantIndex: number; files: File[] }>;
@@ -581,5 +621,15 @@ export function useProductByIdQuery(id: string) {
     queryKey: ['product', 'id', id],
     queryFn: () => productService.getProductById(id),
     enabled: !!id,
+  });
+}
+
+export function useRelatedProductsQuery(productId: string, limit: number = 8) {
+  return useQuery({
+    queryKey: ['relatedProducts', productId, limit],
+    queryFn: () => productService.getRelatedProducts(productId, limit),
+    enabled: !!productId,
+    staleTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 15 * 60 * 1000, // 15 minutes
   });
 }
