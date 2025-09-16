@@ -47,7 +47,7 @@ export const BuyerLayout: React.FC = () => {
   const sidebarWidth = isSidebarCollapsed ? '80px' : '260px';
 
   return (
-    <div className=" relative size-full min-h-screen">
+    <div className=" relative size-full">
       <ScrollToTop />
       {/* Header */}
       <div className="fixed top-0 left-0 right-0 z-50">
@@ -79,7 +79,7 @@ export const BuyerLayout: React.FC = () => {
         {/* Content Area */}
         <div className="flex-1">
           <div
-            className="  md:px-6  transition-all duration-300  min-h-[700px] md:min-h-[890px] lg:min-h-[780px] xl:min-h-[calc(100vh-140px)]"
+            className="  md:px-6  transition-all duration-300 min-h-[calc(100vh-180px)] mt-3"
             style={{
               marginLeft: isMobile ? '0' : sidebarWidth,
             }}
@@ -90,6 +90,7 @@ export const BuyerLayout: React.FC = () => {
             style={{
               marginLeft: isMobile ? '0' : sidebarWidth,
             }}
+            className='mt-auto'
           >
             {/* Footer - Responsive */}
             <HomeFooter className="bg-[#f7f7f7] text-gray-700" />

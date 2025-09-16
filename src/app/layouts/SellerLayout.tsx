@@ -76,7 +76,7 @@ export const SellerLayout: React.FC = () => {
         {/* Content Area */}
         <div className="flex-1">
           <div
-            className=" p-4 pt-8 md:px-6 md:pt-6 transition-all duration-300  min-h-[700px] md:min-h-[890px] lg:min-h-[780px] xl:min-h-[calc(100vh-140px)]"
+            className="  md:px-6  transition-all duration-300 min-h-[calc(100vh-150px)] mt-3 "
             style={{
               marginLeft: isMobile ? '0' : sidebarWidth,
             }}

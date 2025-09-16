@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { BankAccountCard } from '../components/BankAccountCard';
 import { AddBankAccountModal } from '../components/AddBankAccountModal';
 import { DeleteConfirmationModal } from '@/components/common/DeleteConfirmationModal';
-import { Plus, CreditCard } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import ManageBankAccountsSkeleton from '../components/ManageBankAccountsSkeleton';
 import { Card, CardContent } from '@/components/ui/Card';
 import { BankAccount, CreateBankAccountPayload } from '../services/bankAccountService';
@@ -14,6 +14,8 @@ import {
   useDeleteBankAccountMutation,
   useSetDefaultBankAccountMutation,
 } from '../hooks/useBankAccountMutations';
+import { EmptyState } from '@/components/common/EmptyState';
+import BankAccountEmptyIcon from '@/assets/svg/bankAccountEmptyState.svg';
 
 const ManageBankAccountsPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -149,9 +151,17 @@ const ManageBankAccountsPage: React.FC = () => {
               />
             ))
           ) : (
-            <div className="col-span-full flex flex-col items-center justify-center min-h-[400px]">
-              <CreditCard className="h-12 w-12 mb-4 text-gray-300" />
-              <p className="text-gray-500 mb-4">No bank accounts added yet</p>
+            <div className="col-span-full">
+              <EmptyState
+                title="No bank accounts added yet"
+                description="Add your bank account to start receiving payments"
+                icon={<img src={BankAccountEmptyIcon} className="w-64 h-56" />}
+                action={{
+                  label: 'Add Bank Account',
+                  onClick: () => setIsModalOpen(true)
+                }}
+                className="min-h-[400px]"
+              />
             </div>
           )}
         </div>

@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { SavedAddressCard } from '../components/SavedAddressCard';
 import { AddSavedAddressModal } from '../components/AddSavedAddressModal';
 import { DeleteConfirmationModal } from '@/components/common/DeleteConfirmationModal';
-import { Plus, MapPin } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import ManageSavedAddressSkeleton from '../components/ManageSavedAddressSkeleton';
 import { Card, CardContent } from '@/components/ui/Card';
 import { SavedAddress, CreateSavedAddressPayload } from '../services/addressService';
@@ -14,6 +14,8 @@ import {
   useDeleteSavedAddressMutation,
   useSetDefaultSavedAddressMutation,
 } from '../hooks/useSavedAddressMutations';
+import { EmptyState } from '@/components/common/EmptyState';
+import AddressEmptyIcon from '@/assets/svg/addressEmptyState.svg';
 
 const ManageSavedAddressPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -155,9 +157,17 @@ const ManageSavedAddressPage: React.FC = () => {
               );
             })
           ) : (
-            <div className="col-span-full flex flex-col items-center justify-center min-h-[400px]">
-              <MapPin className="h-12 w-12 mb-4 text-gray-300" />
-              <p className="text-gray-500 mb-4">No addresses added yet</p>
+            <div className="col-span-full">
+              <EmptyState
+                title="No addresses added yet"
+                description="Add your addresses for quick access during checkout"
+                icon={<img src={AddressEmptyIcon} className="w-64 h-56" />}
+                action={{
+                  label: 'Add New Address',
+                  onClick: () => setIsModalOpen(true)
+                }}
+                className="min-h-[400px]"
+              />
             </div>
           )}
         </div>

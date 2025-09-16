@@ -33,7 +33,7 @@ export function getAssetUrl(path: string): string {
  *
  * @example
  * // Import SVG as React component (requires vite-plugin-svgr):
- * import VectorIcon from '@/assets/auth/vector.svg?react';
+ * import VectorIcon from '@/assets/auth/vector.svg';
  *
  * // Import image with metadata:
  * import logoUrl from '@/assets/logo.png';

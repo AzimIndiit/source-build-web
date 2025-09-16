@@ -37,6 +37,9 @@ import { AddCardModalStripe } from '@/features/profile/components/AddCardModalSt
 import { SavedCardNormal } from '@/features/profile/components/SavedCardNormal';
 import { useCreatePaymentIntent, useConfirmPayment } from '@/features/checkout/hooks/useCheckout';
 import { getColorName } from '@/utils/colorUtils';
+import { EmptyState } from '@/components/common/EmptyState';
+import CartEmptyIcon from '@/assets/svg/cartItemEmptyState.svg';
+import { queryClient } from '@/lib/queryClient';
 
 const CheckoutPage: React.FC = () => {
   const navigate = useNavigate();
@@ -479,16 +482,18 @@ const CheckoutPage: React.FC = () => {
 
   if (items.length === 0) {
     return (
-      <div className="min-h-[600px] flex flex-col items-center justify-center px-4">
-        <h2 className="text-2xl font-bold text-gray-900 mb-3">Your cart is empty</h2>
-        <p className="text-gray-500 mb-8">Please add items to your cart before checkout.</p>
-        <Button
-          onClick={() => navigate('/marketplace')}
-          className="bg-primary hover:bg-primary/90 text-white"
-        >
-          Continue Shopping
-        </Button>
-      </div>
+     <div className='min-h-[calc(100vh-140px))] flex items-center justify-center'>
+       <EmptyState
+        title="Your cart is empty"
+        description="Please add items to your cart before checkout."
+        icon={<img src={CartEmptyIcon} alt="Cart empty" className="h-64 w-auto" />}
+        action={{
+          label: 'Continue Shopping',
+          onClick: () => navigate('/marketplace')
+        }}
+        className="min-h-[600px]"
+      />
+     </div>
     );
   }
 
@@ -1172,6 +1177,8 @@ const CheckoutPage: React.FC = () => {
             if (!isBuyNow) {
               clearCart();
             }
+            queryClient.invalidateQueries({ queryKey: ['orders'] });
+            queryClient.invalidateQueries({ queryKey: ['my-orders'] });
             navigate('/buying');
             // Don't navigate immediately - let the success dialog handle navigation
           }}

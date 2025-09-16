@@ -12,11 +12,7 @@ import {
 const WISHLIST_QUERY_KEY = ['wishlist'];
 const WISHLIST_COUNT_QUERY_KEY = ['wishlist', 'count'];
 const WISHLIST_CHECK_QUERY_KEY = (productId: string) => ['wishlist', 'check', productId];
-const WISHLIST_BATCH_CHECK_QUERY_KEY = (productIds: string[]) => [
-  'wishlist',
-  'batch-check',
-  productIds,
-];
+const WISHLIST_BATCH_CHECK_QUERY_KEY = (productIds: string[]) => ['wishlist', 'batch-check', productIds];
 
 export const useWishlist = () => {
   return useQuery({
@@ -123,12 +119,14 @@ export const useAddToWishlist = () => {
         queryClient.setQueryData(WISHLIST_COUNT_QUERY_KEY, context.previousCount);
       }
       queryClient.setQueryData(WISHLIST_CHECK_QUERY_KEY(payload.productId), false);
-
+      
       toast.error('Failed to add to wishlist');
     },
     onSuccess: (data) => {
       queryClient.setQueryData(WISHLIST_QUERY_KEY, data.data);
       queryClient.invalidateQueries({ queryKey: WISHLIST_COUNT_QUERY_KEY });
+      // Invalidate products queries to update wishlist status
+      queryClient.invalidateQueries({ queryKey: ['products'] });
       toast.success('Product added to wishlist');
     },
   });
@@ -156,9 +154,7 @@ export const useRemoveFromWishlist = () => {
         };
       });
 
-      queryClient.setQueryData<number>(WISHLIST_COUNT_QUERY_KEY, (old) =>
-        Math.max(0, (old || 0) - 1)
-      );
+      queryClient.setQueryData<number>(WISHLIST_COUNT_QUERY_KEY, (old) => Math.max(0, (old || 0) - 1));
       queryClient.setQueryData(WISHLIST_CHECK_QUERY_KEY(payload.productId), false);
 
       return { previousWishlist, previousCount };
@@ -171,12 +167,14 @@ export const useRemoveFromWishlist = () => {
         queryClient.setQueryData(WISHLIST_COUNT_QUERY_KEY, context.previousCount);
       }
       queryClient.setQueryData(WISHLIST_CHECK_QUERY_KEY(payload.productId), true);
-
+      
       toast.error('Failed to remove from wishlist');
     },
     onSuccess: (data) => {
       queryClient.setQueryData(WISHLIST_QUERY_KEY, data.data);
       queryClient.invalidateQueries({ queryKey: WISHLIST_COUNT_QUERY_KEY });
+      // Invalidate products queries to update wishlist status and refetch if filtering by wishlist
+      queryClient.invalidateQueries({ queryKey: ['products'] });
       toast.success('Product removed from wishlist');
     },
   });
@@ -201,8 +199,7 @@ export const useUpdateWishlistItem = () => {
               return {
                 ...item,
                 notificationEnabled: payload.notificationEnabled ?? item.notificationEnabled,
-                priceAlert:
-                  payload.priceAlert === null ? undefined : (payload.priceAlert ?? item.priceAlert),
+                priceAlert: payload.priceAlert === null ? undefined : payload.priceAlert ?? item.priceAlert,
               };
             }
             return item;
@@ -264,6 +261,8 @@ export const useClearWishlist = () => {
       queryClient.setQueryData(WISHLIST_QUERY_KEY, data.data);
       queryClient.setQueryData(WISHLIST_COUNT_QUERY_KEY, 0);
       queryClient.invalidateQueries({ queryKey: ['wishlist', 'check'] });
+      // Invalidate products queries to update wishlist status
+      queryClient.invalidateQueries({ queryKey: ['products'] });
       toast.success('Wishlist cleared');
     },
   });

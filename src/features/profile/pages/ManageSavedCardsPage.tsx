@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { AddCardModalStripe } from '../components/AddCardModalStripe';
 import { DeleteConfirmationModal } from '@/components/common/DeleteConfirmationModal';
-import { Plus, CreditCard } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import ManageBankAccountsSkeleton from '../components/ManageBankAccountsSkeleton';
 import { Card as UICard, CardContent } from '@/components/ui/Card';
 import { Card, CreateCardWithTokenPayload } from '../services/cardService';
@@ -14,6 +14,8 @@ import {
   useSetDefaultCardMutation,
 } from '../hooks/useCardMutations';
 import { SavedCard } from '../components/SavedCard';
+import { EmptyState } from '@/components/common/EmptyState';
+import CardEmptyIcon from '@/assets/svg/cardEmptyState.svg';
 
 const ManageSavedCardsPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -162,9 +164,17 @@ const ManageSavedCardsPage: React.FC = () => {
               );
             })
           ) : (
-            <div className="col-span-full flex flex-col items-center justify-center min-h-[400px]">
-              <CreditCard className="h-12 w-12 mb-4 text-gray-300" />
-              <p className="text-gray-500 mb-4">No cards added yet</p>
+            <div className="col-span-full">
+              <EmptyState
+                title="No cards added yet"
+                description="Add your payment card for quick and secure checkout"
+                icon={<img src={CardEmptyIcon} className="w-64 h-56" />}
+                action={{
+                  label: 'Add Card',
+                  onClick: () => setIsModalOpen(true)
+                }}
+                className="min-h-[400px]"
+              />
             </div>
           )}
         </div>

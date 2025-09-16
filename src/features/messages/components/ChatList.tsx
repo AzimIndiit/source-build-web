@@ -7,6 +7,8 @@ import { useSocket } from '@/hooks/useSocket';
 import { useEffect, useState } from 'react';
 import { useChatsQuery } from '../hooks/useChatQueries';
 import { Chat } from '../services/chatService';
+import { EmptyState } from '@/components/common/EmptyState';
+import ChatNotificationIcon from '@/assets/svg/chatNotification.svg';
 
 const ChatList = () => {
   const { user } = useAuth();
@@ -119,9 +121,13 @@ const ChatList = () => {
             <p className="text-red-500">Failed to load messages. Please try again.</p>
           </div>
         ) : (
-          <div className="flex items-center justify-center h-96">
-            <p className="text-gray-500">No Messages Found</p>
-          </div>
+          <EmptyState
+            title="No Messages Found"
+            description="Start a conversation to see your messages here"
+ 
+            icon={<img src={ChatNotificationIcon} alt="Chat empty" className="w-48 h-48 " />}
+            className="h-96"
+          />
         )}
       </div>
     </div>

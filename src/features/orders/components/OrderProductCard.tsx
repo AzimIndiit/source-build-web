@@ -8,25 +8,29 @@ import { getStatusBadgeColor } from '@/features/dashboard/utils/orderUtils';
 import { formatDate } from '@/lib/date-utils';
 import { useAuth } from '@/hooks/useAuth';
 import { getColorName } from '@/utils/colorUtils';
+import { useNavigate } from 'react-router-dom';
 
 interface OrderProductCardProps {
   order: Order;
   onViewItem?: ({ slug }: { slug: string }) => void;
   onWriteReview?: () => void;
+  onBuyAgain?: (productId: string) => void;
+  viewOrderDetailes?: boolean;  
 }
 
 export const OrderProductCard: React.FC<OrderProductCardProps> = ({
   order,
   onViewItem,
   onWriteReview,
+  onBuyAgain,
+  viewOrderDetailes,
 }) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
 
   // Format the order ID to match the image format (408-2671656-7090703)
-  const formattedOrderId = order.id.includes('-')
-    ? order.id
-    : `408-2671656-${order.id.padStart(7, '0')}`;
+const formattedOrderId = order.id;
 
   // Calculate total quantity
   const totalQuantity =
@@ -39,7 +43,9 @@ export const OrderProductCard: React.FC<OrderProductCardProps> = ({
     }, 0) ||
     order.amount ||
     0;
-
+  const onViewDetails = (id: string) => {
+    navigate(`/buying/${id}`);
+  };
   // If there are multiple products, render a single card with common header
   if (order.products && order.products.length > 0) {
     return (
@@ -77,6 +83,14 @@ export const OrderProductCard: React.FC<OrderProductCardProps> = ({
               <p className="text-xs text-gray-500 uppercase tracking-wide">
                 Order # {formattedOrderId}
               </p>
+              {viewOrderDetailes && (
+                <button
+                  onClick={() => onViewDetails(order.id)}
+                  className="text-primary hover:text-primary text-sm font-medium underline block cursor-pointer"
+                >
+                  View Order Details
+                </button>
+              )}
               {/* Common Write Review Button - Only show on last item */}
 
               {order.status === 'Delivered' && (
@@ -135,19 +149,48 @@ export const OrderProductCard: React.FC<OrderProductCardProps> = ({
                     Delivery on {formatDate(product.deliveryDate || '12 October 2024')}
                   </p>
                 </div>
-                {/* View Item Button */}
-                {user?.role === 'seller' && (
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      onViewItem?.({ slug: product.productRef?.slug || '' });
-                      console.log('Viewing item:', product.title);
-                    }}
-                    className="border-primary text-primary hover:bg-blue-50 rounded-lg px-6 py-2 h-auto font-medium"
-                  >
-                    View your item
-                  </Button>
-                )}
+                {/* Action Buttons */}
+                <div className="flex flex-col gap-2">
+                  {/* View Item Button */}
+                  {user?.role === 'seller' && (
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        onViewItem?.({ slug: product.productRef?.slug || '' });
+                        console.log('Viewing item:', product.title);
+                      }}
+                      className="border-primary text-primary hover:bg-blue-50 rounded-lg px-6 py-2 h-auto font-medium"
+                    >
+                      View your item
+                    </Button>
+                  )}
+
+                  {/* Buy It Again Button - Only for delivered/cancelled orders and first product */}
+                  {user?.role === 'buyer' &&
+                    index === 0 &&
+                    (order.status === 'Delivered' || order.status === 'Cancelled') && (
+                      <Button
+                        variant="outline"
+                        onClick={() => onBuyAgain?.(product.id || '')}
+                        className="border-blue-600 text-blue-600 hover:bg-blue-50 rounded-lg px-6 py-2 h-auto font-medium inline-flex items-center gap-2"
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                          />
+                        </svg>
+                        Buy It Again
+                      </Button>
+                    )}
+                </div>
               </div>
             </div>
           ))}

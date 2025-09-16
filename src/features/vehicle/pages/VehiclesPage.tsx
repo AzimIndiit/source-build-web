@@ -1,20 +1,13 @@
 import React, { useState } from 'react';
-import { MapPin, ChevronDown, AlertCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { PaginationWrapper } from '@/components/ui/pagination-wrapper';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { DropdownMenuSeparator } from '@radix-ui/react-dropdown-menu';
-
 import { DeleteConfirmationModal } from '@/components/ui';
-import toast from 'react-hot-toast';
 import VehicleGrid from '../components/VehicleGrid';
 import { VehiclePageSkeleton } from '../components/VehiclePageSkeleton';
 import { useDeleteVehicleMutation, useVehiclesQuery } from '../hooks/useVehicleMutations';
+import { EmptyState } from '@/components/common/EmptyState';
+import VehicleEmptyIcon from '@/assets/svg/vehicleEmptyState.svg';
 
 interface FilterOption {
   id: string;
@@ -115,9 +108,12 @@ const VehiclesPage: React.FC = () => {
         <div className="flex items-center justify-between">
           <h1 className="text-xl md:text-2xl font-bold text-gray-900">My Listing</h1>
         </div>
-        <div className="flex flex-col items-center justify-center h-64 space-y-4">
-          <p className="text-gray-600">No vehicles found</p>
-        </div>
+        <EmptyState
+          title="No vehicles found"
+          description="Add a vehicle to get started with your deliveries"
+          icon={<img src={VehicleEmptyIcon} className="w-64 h-56" />}
+          className="h-64"
+        />
       </div>
     );
   }

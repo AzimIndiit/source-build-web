@@ -1,11 +1,14 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { OrdersTable } from '@/features/dashboard/components/OrdersTable';
 import { useNavigate } from 'react-router-dom';
 import { PaginationWrapper } from '@/components/ui';
 import { useOrdersQuery } from '../hooks/useOrderMutations';
 import { SellerOrdersPageSkeleton } from '../components/SellerOrdersPageSkeleton';
 import { SortDropdown, OrderFilterDropdown, FilterConfig } from '../components';
 import { transformOrders } from '../utils/orderTransformers';
+import { EmptyState } from '@/components/common/EmptyState';
+import BuyingEmptyIcon from '@/assets/svg/buyingEmptyState.svg';
+import { OrdersList } from '../components/OrdersList';
+import toast from 'react-hot-toast';
 
 const BuyerOrdersPage: React.FC = () => {
   const navigate = useNavigate();
@@ -113,6 +116,18 @@ const BuyerOrdersPage: React.FC = () => {
     navigate(`/buying/${orderId}`);
   };
 
+  const handleBuyAgain = (productId: string) => {
+    // Navigate to the product page or add to cart
+    toast.success('Redirecting to product...');
+    // You can implement the actual buy again logic here
+    // For example: navigate(`/dashboard/products/${productId}`);
+  };
+
+  const handleWriteReview = () => {
+    // Refetch orders after review submission
+    // This can be implemented based on your review system
+  };
+
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
@@ -162,10 +177,12 @@ const BuyerOrdersPage: React.FC = () => {
             <OrderFilterDropdown filters={filters} onFilterChange={handleFilterChange} />
           </div>
         </div>
-        <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
-          <p className="text-gray-600 font-semibold mb-2">No orders found</p>
-          <p className="text-gray-500 text-sm">You don't have any orders yet.</p>
-        </div>
+        <EmptyState
+          title="No orders found"
+          description="You don't have any orders yet. Start shopping to see your orders here."
+          icon={<img src={BuyingEmptyIcon} className="w-64 h-56" />}
+          className="min-h-[400px]"
+        />
       </div>
     );
   }
@@ -181,12 +198,12 @@ const BuyerOrdersPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Orders Table */}
-      <OrdersTable
+      {/* Orders List */}
+      <OrdersList
         orders={transformedOrders}
         onViewDetails={handleViewOrderDetails}
-        showSort={false}
-        showFilter={false}
+        onWriteReview={handleWriteReview}
+        onBuyAgain={handleBuyAgain}
       />
 
       {/* Pagination */}

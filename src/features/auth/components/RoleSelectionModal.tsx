@@ -273,9 +273,9 @@ export function RoleSelectionModal({ isOpen, userId }: RoleSelectionModalProps) 
               disabled={isSubmitting}
               placeholder="Select account type"
               options={[
-                { value: 'buyer', label: 'Buyer' },
+                // { value: 'buyer', label: 'Buyer' },
                 { value: 'seller', label: 'Seller' },
-                { value: 'driver', label: 'Driver' },
+                // { value: 'driver', label: 'Driver' },
               ]}
             />
 

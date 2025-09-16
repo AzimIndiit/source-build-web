@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft } from 'lucide-react';
+import { Trash2, Plus, Minus, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/Card';
 import useCartStore from '@/stores/cartStore';
@@ -9,6 +9,8 @@ import { cn, formatCurrency } from '@/lib/helpers';
 import { BreadcrumbWrapper } from '@/components/ui';
 import { useAuth } from '@/hooks/useAuth';
 import { getColorName } from '@/utils/colorUtils';
+import { EmptyState } from '@/components/common/EmptyState';
+import CartEmptyIcon from '@/assets/svg/cartItemEmptyState.svg';
 
 const CartPage: React.FC = () => {
   const navigate = useNavigate();
@@ -43,20 +45,18 @@ const CartPage: React.FC = () => {
 
   if (items.length === 0) {
     return (
-      <div className="min-h-[600px] flex flex-col items-center justify-center px-4 text-center">
-        <ShoppingBag className="h-24 w-24 text-gray-300 mx-auto mb-6" />
-        <h2 className="text-2xl font-bold text-gray-900 mb-3">Your cart is empty</h2>
-        <p className="text-gray-500 mb-8 max-w-md">
-          Looks like you haven't added anything to your cart yet. Start shopping to find amazing
-          products!
-        </p>
-        <Button
-          onClick={() => navigate('/marketplace')}
-          className="bg-primary hover:bg-primary/90 text-white px-8 py-3"
-        >
-          Continue Shopping
-        </Button>
-      </div>
+    <div className='min-h-[calc(100vh-140px))] flex items-center justify-center'>
+        <EmptyState
+        title="Your cart is empty"
+        description="Looks like you haven't added anything to your cart yet. Start shopping to find amazing products!"
+        icon={<img src={CartEmptyIcon} alt="Cart empty" className="h-64 w-auto" />}
+        action={{
+          label: 'Continue Shopping',
+          onClick: () => navigate('/marketplace')
+        }}
+        className="min-h-[600px]"
+      />
+    </div>
     );
   }
 

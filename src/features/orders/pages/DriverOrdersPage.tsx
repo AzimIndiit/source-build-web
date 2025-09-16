@@ -6,6 +6,8 @@ import { useDriverOrdersQuery } from '../hooks/useOrderMutations';
 import { SellerOrdersPageSkeleton } from '../components/SellerOrdersPageSkeleton';
 import { SortDropdown, OrderFilterDropdown, FilterConfig } from '../components';
 import { transformOrders } from '../utils/orderTransformers';
+import { EmptyState } from '@/components/common/EmptyState';
+import OrderEmptyIcon from '@/assets/svg/orderEmptyState.svg';
 
 const DriverOrdersPage: React.FC = () => {
   const navigate = useNavigate();
@@ -162,10 +164,12 @@ const DriverOrdersPage: React.FC = () => {
             <OrderFilterDropdown filters={filters} onFilterChange={handleFilterChange} />
           </div>
         </div>
-        <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
-          <p className="text-gray-600 font-semibold mb-2">No orders found</p>
-          <p className="text-gray-500 text-sm">You don't have any orders yet.</p>
-        </div>
+        <EmptyState
+          title="No orders found"
+          description="You don't have any orders yet."
+          icon={<img src={OrderEmptyIcon} className="w-64 h-56" />}
+          className="min-h-[400px]"
+        />
       </div>
     );
   }
