@@ -156,10 +156,10 @@ const ManageBankAccountsPage: React.FC = () => {
                 title="No bank accounts added yet"
                 description="Add your bank account to start receiving payments"
                 icon={<img src={BankAccountEmptyIcon} className="w-64 h-56" />}
-                action={{
-                  label: 'Add Bank Account',
-                  onClick: () => setIsModalOpen(true)
-                }}
+                // action={{
+                //   label: 'Add Bank Account',
+                //   onClick: () => setIsModalOpen(true)
+                // }}
                 className="min-h-[400px]"
               />
             </div>

@@ -162,10 +162,10 @@ const ManageSavedAddressPage: React.FC = () => {
                 title="No addresses added yet"
                 description="Add your addresses for quick access during checkout"
                 icon={<img src={AddressEmptyIcon} className="w-64 h-56" />}
-                action={{
-                  label: 'Add New Address',
-                  onClick: () => setIsModalOpen(true)
-                }}
+                // action={{
+                //   label: 'Add New Address',
+                //   onClick: () => setIsModalOpen(true)
+                // }}
                 className="min-h-[400px]"
               />
             </div>

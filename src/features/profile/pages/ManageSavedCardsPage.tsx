@@ -169,10 +169,10 @@ const ManageSavedCardsPage: React.FC = () => {
                 title="No cards added yet"
                 description="Add your payment card for quick and secure checkout"
                 icon={<img src={CardEmptyIcon} className="w-64 h-56" />}
-                action={{
-                  label: 'Add Card',
-                  onClick: () => setIsModalOpen(true)
-                }}
+                // action={{
+                //   label: 'Add Card',
+                //   onClick: () => setIsModalOpen(true)
+                // }}
                 className="min-h-[400px]"
               />
             </div>

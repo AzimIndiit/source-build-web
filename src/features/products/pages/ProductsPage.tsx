@@ -15,6 +15,8 @@ import { ProductGrid } from '../components';
 import { ProductsPageSkeleton } from '../components/ProductsPageSkeleton';
 import { DeleteConfirmationModal } from '@/components/ui';
 import toast from 'react-hot-toast';
+import ProductEmptyIcon from '@/assets/svg/productEmptyState.svg';
+import { EmptyState } from '@/components/common/EmptyState';
 
 interface FilterOption {
   id: string;
@@ -323,9 +325,17 @@ const ProductsPage: React.FC = () => {
             />
           </div>
         </div>
-        <div className="flex flex-col items-center justify-center h-64 space-y-4">
-          <p className="text-gray-600">No products found</p>
-        </div>
+       
+          <div className="flex flex-col items-center justify-center space-y-4">
+          <EmptyState
+          title="No products found"
+          description="Check back later for new products"
+          icon={<img src={ProductEmptyIcon} alt="Product empty" className="h-64 w-auto" />}
+       
+          // className="h-64"
+        />
+          </div>
+       
       </div>
     );
   }

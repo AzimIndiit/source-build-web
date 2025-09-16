@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MapPin, ChevronDown, AlertCircle } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { PaginationWrapper } from '@/components/ui/pagination-wrapper';
 import FilterDropdown from '@/components/ui/FilterDropdown';
 import {
@@ -28,6 +28,7 @@ interface FilterOption {
 
 const MarketPlacePage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [currentPage, setCurrentPage] = useState(1);
   const [activeFilters, setActiveFilters] = useState<any>({
     sorting: 'ascending',
@@ -81,6 +82,19 @@ const MarketPlacePage: React.FC = () => {
     productTitle: '',
   });
   const itemsPerPage = 10;
+
+  // Read category filters from URL
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const categoryParam = searchParams.get('category');
+    const subCategoryParam = searchParams.get('subCategory');
+    
+    setActiveFilters((prev: any) => ({
+      ...prev,
+      category: categoryParam || undefined,
+      subCategory: subCategoryParam || undefined,
+    }));
+  }, [location.search]);
 
   // Fetch products from API
   const { data, isLoading, isError, refetch } = useProductsQuery({
