@@ -178,7 +178,7 @@ const ManageSavedAddressPage: React.FC = () => {
           onClose={handleCloseModal}
           onSubmit={handleAddAddress}
           isSubmitting={createMutation.isPending || updateMutation.isPending}
-          totalAddress={addresses.length !== 0}
+          totalAddress={addresses.length > 1}
           initialData={
             editingAddress
               ? {

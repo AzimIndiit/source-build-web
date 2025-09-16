@@ -90,6 +90,7 @@ export const AddSavedAddressModal: React.FC<AddSavedAddressModalProps> = ({
   totalAddress = false,
   isSubmitting = false,
 }) => {
+  console.log('totalAddress', totalAddress)
   const locationInputRef = useRef<HTMLInputElement>(null);
   const autocompleteRef = useRef<any>(null);
   const [, setIsGoogleLoaded] = useState(false);
