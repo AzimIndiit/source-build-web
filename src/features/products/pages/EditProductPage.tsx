@@ -1125,23 +1125,28 @@ function EditProductPage() {
       draftData.outOfStock = formData.outOfStock;
     }
     if (formData.variants && formData.variants.length > 0) {
-      // Filter out invalid variant discounts
-      draftData.variants = formData.variants.map((v) => ({
-        ...v,
-        outOfStock: v.outOfStock,
-        discount:
-          v.discount.discountType !== 'none' &&
-          v.discount.discountValue &&
-          v.discount.discountValue.trim()
-            ? {
-                discountType: v.discount.discountType,
-                discountValue: v.discount.discountValue,
-              }
-            : {
-                discountType: 'none',
-                discountValue: '',
-              },
-      }));
+      // Filter out invalid variant discounts and preserve existing images
+      draftData.variants = formData.variants.map((v, index) => {
+        const variantState = variants[index];
+        return {
+          ...v,
+          outOfStock: v.outOfStock,
+          // Preserve existing images for each variant
+          images: variantState?.existingImages || [],
+          discount:
+            v.discount.discountType !== 'none' &&
+            v.discount.discountValue &&
+            v.discount.discountValue.trim()
+              ? {
+                  discountType: v.discount.discountType,
+                  discountValue: v.discount.discountValue,
+                }
+              : {
+                  discountType: 'none',
+                  discountValue: '',
+                },
+        };
+      });
     }
     if (variantFiles.length > 0) {
       draftData.variantFiles = variantFiles;
@@ -1181,18 +1186,23 @@ function EditProductPage() {
                   : undefined,
               }
             : undefined,
-          variants: draftData.variants?.map((v: any) => ({
-            color: v.color,
-            quantity: parseInt(v.quantity || '0'),
-            price: parseFloat(v.price || '0'),
-            outOfStock: v.outOfStock,
-            discount: {
-              discountType: v.discount.discountType,
-              discountValue: v.discount.discountValue
-                ? parseFloat(v.discount.discountValue)
-                : undefined,
-            },
-          })),
+          variants: draftData.variants?.map((v: any, index: number) => {
+            const variantState = variants[index];
+            return {
+              color: v.color,
+              quantity: parseInt(v.quantity || '0'),
+              price: parseFloat(v.price || '0'),
+              outOfStock: v.outOfStock,
+              // Include existing images from variant state
+              images: variantState?.existingImages || v.images || [],
+              discount: {
+                discountType: v.discount.discountType,
+                discountValue: v.discount.discountValue
+                  ? parseFloat(v.discount.discountValue)
+                  : undefined,
+              },
+            };
+          }),
         };
 
         // Remove the id from updateData as it's passed separately
