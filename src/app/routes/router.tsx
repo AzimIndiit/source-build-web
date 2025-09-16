@@ -93,8 +93,8 @@ export const router = createBrowserRouter([
     ),
     errorElement: <RouterErrorBoundary />,
     children: [
-      { 
-        path:'marketplace',
+      {
+        path: 'marketplace',
         index: true,
         lazy: () =>
           import('@/features/dashboard/pages/MarketplacePage').then((module) => ({
@@ -108,7 +108,6 @@ export const router = createBrowserRouter([
             Component: module.default,
           })),
       },
-    
     ],
   },
   {
@@ -389,7 +388,6 @@ export const router = createBrowserRouter([
                 Component: module.default,
               })),
           },
-       
 
           {
             path: 'notifications',

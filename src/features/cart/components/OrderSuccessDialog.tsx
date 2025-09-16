@@ -10,6 +10,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { getAssetUrl } from '@/lib/assets';
+import LazyImage from '@/components/common/LazyImage';
+import OrderSuccessSVG from '@/assets/svg/orderSuccess.svg';
 
 interface OrderSuccessDialogProps {
   isOpen: boolean;
@@ -38,8 +40,8 @@ const OrderSuccessDialog: React.FC<OrderSuccessDialogProps> = ({
       <DialogContent className="sm:max-w-[500px] text-center bg-white">
         {/* Success Illustration */}
         <div className="flex justify-center mb-6">
-          <img
-            src={getAssetUrl('/svg/orderSuccess.svg')}
+          <LazyImage
+            src={OrderSuccessSVG}
             alt="Order placed successfully"
             className="w-40 h-40 object-contain"
             loading="lazy"

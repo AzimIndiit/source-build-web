@@ -211,7 +211,7 @@ const createProductSchema = z
     // readyByDate: z.string().min(1, 'Date is required'),
 
     // readyByTime: z.string().min(1, 'Time is required'),
-    
+
     readyByDays: z.string().optional(),
 
     dimensions: z

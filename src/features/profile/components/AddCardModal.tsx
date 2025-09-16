@@ -50,7 +50,7 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [cardType, setCardType] = useState<string>('unknown');
-  const [expiryInput, setExpiryInput] = useState('');  
+  const [expiryInput, setExpiryInput] = useState('');
   const [displayCardNumber, setDisplayCardNumber] = useState('');
 
   useEffect(() => {
@@ -66,29 +66,29 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    
+
     if (name === 'cardNumber') {
       // Remove all non-digits
       const cleanedValue = value.replace(/\D/g, '');
-      
+
       // Limit to 19 digits max (for longest card numbers)
       const limitedValue = cleanedValue.slice(0, 19);
-      
+
       // Detect card type
       const detectedType = detectCardType(limitedValue);
       setCardType(detectedType);
-      
+
       // Format the card number based on card type
       const formattedValue = formatCardNumber(limitedValue, detectedType);
       setDisplayCardNumber(formattedValue);
-      
+
       // Store clean number in form data
       setFormData((prev) => ({ ...prev, cardNumber: limitedValue }));
     } else if (name === 'expiry') {
       // Format MM/YY
       const formattedValue = formatExpiryDate(value);
       setExpiryInput(formattedValue);
-      
+
       // Parse month and year
       const cleanValue = value.replace(/\D/g, '');
       if (cleanValue.length >= 2) {
@@ -115,7 +115,7 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
-    
+
     // Clear error for this field
     if (name === 'expiry') {
       setErrors((prev) => ({ ...prev, expiry: '' }));
@@ -130,7 +130,7 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
-    
+
     // Validate card number
     if (!formData.cardNumber) {
       newErrors.cardNumber = 'Card number is required';
@@ -139,14 +139,14 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({
     } else if (!validateCardNumber(formData.cardNumber)) {
       newErrors.cardNumber = 'Invalid card number';
     }
-    
+
     // Validate expiry
     if (!formData.expiryMonth || !formData.expiryYear) {
       newErrors.expiry = 'Expiry date is required';
     } else if (!validateExpiryDate(formData.expiryMonth, formData.expiryYear)) {
       newErrors.expiry = 'Card has expired or invalid date';
     }
-    
+
     // Validate CVV
     const cvvLength = cardType === 'amex' ? 4 : 3;
     if (!formData.cvv) {
@@ -154,12 +154,12 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({
     } else if (formData.cvv.length !== cvvLength) {
       newErrors.cvv = `CVV must be ${cvvLength} digits`;
     }
-    
+
     // Validate cardholder name
     if (!formData.cardholderName || formData.cardholderName.trim().length < 2) {
       newErrors.cardholderName = 'Cardholder name is required';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -170,7 +170,6 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({
       onSubmit(formData);
     }
   };
-
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -199,9 +198,7 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({
                 <CardBrandIcon cardType={cardType} className="h-6 w-10" />
               </div>
             </div>
-            {errors.cardNumber && (
-              <p className="text-sm text-red-500">{errors.cardNumber}</p>
-            )}
+            {errors.cardNumber && <p className="text-sm text-red-500">{errors.cardNumber}</p>}
           </div>
 
           {/* Cardholder Name */}
@@ -237,9 +234,7 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({
                 disabled={isSubmitting || isEdit}
                 className={errors.expiry ? 'border-red-500' : ''}
               />
-              {errors.expiry && (
-                <p className="text-sm text-red-500">{errors.expiry}</p>
-              )}
+              {errors.expiry && <p className="text-sm text-red-500">{errors.expiry}</p>}
             </div>
 
             <div className="space-y-2">
@@ -256,9 +251,7 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({
                 className={errors.cvv ? 'border-red-500' : ''}
                 autoComplete="cc-csc"
               />
-              {errors.cvv && (
-                <p className="text-sm text-red-500">{errors.cvv}</p>
-              )}
+              {errors.cvv && <p className="text-sm text-red-500">{errors.cvv}</p>}
             </div>
           </div>
 
@@ -268,7 +261,7 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({
               <Label htmlFor="isDefault">Set as default card</Label>
               <Switch
                 id="isDefault"
-                className='h-6 w-12'
+                className="h-6 w-12"
                 checked={formData.isDefault}
                 onCheckedChange={handleSwitchChange}
                 disabled={isSubmitting}

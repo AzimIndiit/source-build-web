@@ -11,7 +11,6 @@ import { queryClient } from '@/lib/queryClient';
 export const PRODUCTS_QUERY_KEY = ['products'];
 export const PRODUCT_QUERY_KEY = (slug: string) => ['product', slug];
 
-
 export interface Variant {
   color: string;
   quantity: number;
@@ -49,7 +48,6 @@ export interface Product {
   };
   readyByDays?: string | number;
 }
-
 
 interface CreateProductWithFiles extends Omit<CreateProductPayload, 'images'> {
   imageFiles: File[];
@@ -290,14 +288,16 @@ export function useUpdateProductMutation() {
         variants: variants?.map((v) => {
           // Ensure discount object exists
           const discount = v.discount || { discountType: 'none', discountValue: undefined };
-          const discountValue :any = discount?.discountValue || '' ;
-          
+          const discountValue: any = discount?.discountValue || '';
+
           const hasValidDiscount =
             discount.discountType !== 'none' &&
             discountValue !== undefined &&
             discountValue !== null &&
             discountValue !== '' &&
-            (typeof discountValue === 'string' ? discountValue?.trim() !== '' : Number(discountValue) > 0);
+            (typeof discountValue === 'string'
+              ? discountValue?.trim() !== ''
+              : Number(discountValue) > 0);
 
           return {
             ...v,
@@ -405,7 +405,7 @@ export function useSaveDraftMutation() {
         ...(draftData.pickupHours && { pickupHours: draftData.pickupHours }),
         ...(draftData.shippingPrice && { shippingPrice: Number(draftData.shippingPrice) }),
         ...(draftData.readyByDays && { readyByDays: Number(draftData.readyByDays) }),
-          // ...(draftData.readyByDate && { readyByDate: draftData.readyByDate }),
+        // ...(draftData.readyByDate && { readyByDate: draftData.readyByDate }),
         // ...(draftData.readyByTime && { readyByTime: draftData.readyByTime }),
         ...(draftData.dimensions && {
           dimensions: {

@@ -12,12 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
-import {
-  Elements,
-  CardElement,
-  useStripe,
-  useElements,
-} from '@stripe/react-stripe-js';
+import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { stripePromise } from '@/lib/stripe';
 import { CreateCardPayload } from '../services/cardService';
 
@@ -96,9 +91,9 @@ const CardForm: React.FC<{
   const cardElementOptions = {
     style: {
       base: {
-        borderRadius:"8px",
+        borderRadius: '8px',
         fontSize: '16px',
-        lineHeight: '2.5', 
+        lineHeight: '2.5',
         color: '#424770',
         '::placeholder': {
           color: '#aab7c4',
@@ -146,9 +141,7 @@ const CardForm: React.FC<{
             }}
           />
         </div>
-        <p className="text-xs text-gray-500">
-          Enter your card number, expiry date, and CVC
-        </p>
+        <p className="text-xs text-gray-500">Enter your card number, expiry date, and CVC</p>
       </div>
 
       {/* Error Message */}
@@ -176,7 +169,8 @@ const CardForm: React.FC<{
       {/* Test Card Info */}
       <div className="bg-blue-50 p-3 rounded-md">
         <p className="text-sm text-blue-800">
-          <strong>Test Mode:</strong> Use card number <code>4242 4242 4242 4242</code> with any future expiry date and any 3-digit CVC.
+          <strong>Test Mode:</strong> Use card number <code>4242 4242 4242 4242</code> with any
+          future expiry date and any 3-digit CVC.
         </p>
       </div>
 

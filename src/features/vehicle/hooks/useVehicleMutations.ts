@@ -56,7 +56,7 @@ export function useCreateVehicleMutation() {
     onSuccess: (response) => {
       // Invalidate vehicles list query
       queryClient.invalidateQueries({ queryKey: VEHICLES_QUERY_KEY });
-      
+
       // Also invalidate user query to refresh user profile with updated isVehicles flag
       queryClient.invalidateQueries({ queryKey: USER_QUERY_KEY });
 

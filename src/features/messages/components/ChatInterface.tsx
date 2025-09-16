@@ -509,7 +509,7 @@ const ChatInterface = () => {
     return <Check className="w-4 h-4 text-gray-400" />;
   };
   const breadcrumbItems = [
-    { label: 'Messages', href: '/seller/messages' },
+    { label: 'Messages', href: user?.role === 'buyer' ? '/messages' : `/${user?.role}/messages` },
     { label: `Chat Details`, isCurrentPage: true },
   ];
   // Show loading state while chat is being fetched

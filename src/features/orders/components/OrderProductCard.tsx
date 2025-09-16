@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui';
 import { getStatusBadgeColor } from '@/features/dashboard/utils/orderUtils';
 import { formatDate } from '@/lib/date-utils';
 import { useAuth } from '@/hooks/useAuth';
+import { getColorName } from '@/utils/colorUtils';
 
 interface OrderProductCardProps {
   order: Order;
@@ -123,6 +124,12 @@ export const OrderProductCard: React.FC<OrderProductCardProps> = ({
                     <p className="text-sm text-gray-600">
                       <span className="font-medium">Qty:</span> {product.quantity || 1}
                     </p>
+                    {product.color && (
+                      <p className="text-sm text-gray-600">
+                        <span className="font-medium">Color:</span>{' '}
+                        <span className="capitalize">{getColorName(product.color).name}</span>
+                      </p>
+                    )}
                   </div>
                   <p className="text-sm text-gray-500 mb-3 sm:mb-4">
                     Delivery on {formatDate(product.deliveryDate || '12 October 2024')}

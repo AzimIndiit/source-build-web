@@ -1,2 +1,0 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/SlowLoadingPage-BP-6TJz2.js","assets/index-BCiIUrXb.js","assets/index-BIgSGoq8.css"])))=>i.map(i=>d[i]);
-import{r as o,bC as a}from"./index-BCiIUrXb.js";function i(e,t=2e3){return o.lazy(()=>new Promise(r=>{setTimeout(()=>{e().then(r)},t)}))}const l=i(()=>a(()=>import("./SlowLoadingPage-BP-6TJz2.js"),__vite__mapDeps([0,1,2])),3e3);export{l as default};

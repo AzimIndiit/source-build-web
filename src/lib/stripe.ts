@@ -29,11 +29,11 @@ export const stripePromise = getStripe();
  */
 export const createCardToken = async (stripe: any, cardElement: any) => {
   const { error, token } = await stripe.createToken(cardElement);
-  
+
   if (error) {
     throw new Error(error.message || 'Failed to create card token');
   }
-  
+
   return token;
 };
 
@@ -55,10 +55,10 @@ export const createPaymentMethod = async (
     card: cardElement,
     billing_details: billingDetails,
   });
-  
+
   if (error) {
     throw new Error(error.message || 'Failed to create payment method');
   }
-  
+
   return paymentMethod;
 };

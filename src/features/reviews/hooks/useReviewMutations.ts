@@ -5,7 +5,6 @@ import { queryClient } from '@/lib/queryClient';
 
 // Create review mutation
 export const useCreateReview = () => {
-
   return useMutation({
     mutationFn: reviewService.createReview,
     onSuccess: (data) => {
@@ -40,8 +39,6 @@ export const useUserReviews = (params?: any) => {
 
 // Update review mutation
 export const useUpdateReview = () => {
-  
-
   return useMutation({
     mutationFn: ({ reviewId, data }: { reviewId: string; data: any }) =>
       reviewService.updateReview(reviewId, data),
@@ -60,8 +57,6 @@ export const useUpdateReview = () => {
 
 // Delete review mutation
 export const useDeleteReview = () => {
-  
-
   return useMutation({
     mutationFn: reviewService.deleteReview,
     onSuccess: () => {
@@ -79,8 +74,6 @@ export const useDeleteReview = () => {
 
 // Mark review as helpful mutation
 export const useMarkReviewHelpful = () => {
-  
-
   return useMutation({
     mutationFn: ({ reviewId, helpful }: { reviewId: string; helpful: boolean }) =>
       reviewService.markReviewHelpful(reviewId, helpful),
@@ -96,8 +89,6 @@ export const useMarkReviewHelpful = () => {
 
 // Add response to review mutation (for sellers)
 export const useAddReviewResponse = () => {
-  
-
   return useMutation({
     mutationFn: ({ reviewId, comment }: { reviewId: string; comment: string }) =>
       reviewService.addReviewResponse(reviewId, comment),

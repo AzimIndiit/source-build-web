@@ -33,7 +33,7 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
   const [comment, setComment] = useState('');
 
   const createReviewMutation = useCreateReview();
-  
+
   // Update form when modal opens or existingReview changes
   React.useEffect(() => {
     if (isOpen) {
@@ -67,15 +67,17 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
         comment,
       });
 
-      toast.success(existingReview ? 'Review updated successfully!' : 'Review submitted successfully!');
-      
+      toast.success(
+        existingReview ? 'Review updated successfully!' : 'Review submitted successfully!'
+      );
+
       // Reset form after successful submission
       setRating(0);
       setComment('');
-      
+
       // Call onSuccess callback to trigger refetch
       onSuccess?.();
-      
+
       // Close the modal
       handleClose();
     } catch (error) {
@@ -124,7 +126,11 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
 
         {/* Footer Buttons */}
         <div className="flex gap-3 justify-end">
-          <Button variant="outline" onClick={handleClose} className="px-6 w-[220px] border-gray-200 text-gray-600 ">
+          <Button
+            variant="outline"
+            onClick={handleClose}
+            className="px-6 w-[220px] border-gray-200 text-gray-600 "
+          >
             Cancel
           </Button>
           <Button
@@ -132,7 +138,11 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
             disabled={createReviewMutation.isPending || rating === 0 || comment.length < 10}
             className="bg-primary hover:bg-primary/90 text-white px-6 w-[220px]"
           >
-            {createReviewMutation.isPending ? 'Submitting...' : (existingReview ? 'Update Review' : 'Add Review')}
+            {createReviewMutation.isPending
+              ? 'Submitting...'
+              : existingReview
+                ? 'Update Review'
+                : 'Add Review'}
           </Button>
         </div>
       </DialogContent>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Badge } from '@/components/ui';
+import { getColorName } from '@/utils/colorUtils';
 import {
   Carousel,
   CarouselContent,
@@ -330,8 +331,8 @@ export const ProductPreview: React.FC<ProductPreviewProps> = ({
                         className="w-6 h-6 rounded-full border border-gray-300 shadow-sm"
                         style={{ backgroundColor: formValues.color }}
                       />
-                      <span className="text-xs sm:text-sm md:text-base text-gray-600">
-                        {formValues.color}
+                      <span className="text-xs sm:text-sm md:text-base text-gray-600 capitalize">
+                        {getColorName(formValues.color).name}
                       </span>
                     </div>
                   )}
@@ -346,8 +347,8 @@ export const ProductPreview: React.FC<ProductPreviewProps> = ({
                             className="w-6 h-6 rounded-full border border-gray-300 shadow-sm"
                             style={{ backgroundColor: v.color }}
                           />
-                          <span className="text-xs sm:text-sm md:text-base text-gray-600">
-                            {v.color}
+                          <span className="text-xs sm:text-sm md:text-base text-gray-600 capitalize">
+                            {getColorName(v.color).name}
                           </span>
                         </div>
                       ))}
@@ -482,7 +483,9 @@ export const ProductPreview: React.FC<ProductPreviewProps> = ({
               <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">
                 Ready By
               </h3>
-              {formValues.readyByDays !== undefined || formValues.readyByDate || formValues.readyByTime ? (
+              {formValues.readyByDays !== undefined ||
+              formValues.readyByDate ||
+              formValues.readyByTime ? (
                 <p className="text-xs sm:text-sm md:text-base text-gray-600">
                   {formValues.readyByDays !== undefined && formValues.readyByDays !== '0' && (
                     <span className="font-medium">
@@ -493,7 +496,7 @@ export const ProductPreview: React.FC<ProductPreviewProps> = ({
                   {formValues.readyByDays === '0' && (
                     <span className="font-medium">
                       Ready Today
-                      {(formValues.readyByDate || formValues.readyByTime) }
+                      {formValues.readyByDate || formValues.readyByTime}
                     </span>
                   )}
                   {/* {formValues.readyByDate && new Date(formValues.readyByDate).toLocaleDateString()}
@@ -588,9 +591,9 @@ export const ProductPreview: React.FC<ProductPreviewProps> = ({
                               <div>
                                 <div className="flex items-center gap-2 mb-1">
                                   <div
-                                    className="w-6 h-6 rounded-full border-2 border-gray-300"
+                                    className="w-6 h-6 rounded-full border-2 border-gray-300 capitalize"
                                     style={{ backgroundColor: variantData.color }}
-                                    title={variantData.color}
+                                    title={getColorName(variantData.color).name}
                                   />
                                   <span className="text-sm font-medium">Variant {index + 1}</span>
                                 </div>

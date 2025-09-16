@@ -50,15 +50,19 @@ const ManageSavedCardsPage: React.FC = () => {
     }
   };
 
-  const handleAddCard = async (data: { token: string; cardholderName: string; isDefault: boolean }) => {
+  const handleAddCard = async (data: {
+    token: string;
+    cardholderName: string;
+    isDefault: boolean;
+  }) => {
     try {
       if (editingCard) {
-        await updateMutation.mutateAsync({ 
-          id: editingCard.id, 
+        await updateMutation.mutateAsync({
+          id: editingCard.id,
           data: {
             cardholderName: data.cardholderName,
             isDefault: data.isDefault,
-          }
+          },
         });
       } else {
         await createMutation.mutateAsync(data);
@@ -193,8 +197,8 @@ const ManageSavedCardsPage: React.FC = () => {
             description={
               <>
                 Are you sure you want to delete the card ending in{' '}
-                <strong className="font-semibold">****{cardToDelete?.last4}</strong>? This
-                action cannot be undone.
+                <strong className="font-semibold">****{cardToDelete?.last4}</strong>? This action
+                cannot be undone.
               </>
             }
             confirmText="Yes, I'm Sure"

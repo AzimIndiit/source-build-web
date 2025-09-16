@@ -90,7 +90,7 @@ function VehicleInformationPage() {
   const [vehicleImageError, setVehicleImageError] = useState(false);
   const [insuranceImageError, setInsuranceImageError] = useState(false);
   const createVehicleMutation = useCreateVehicleMutation();
-  
+
   const methods = useForm<VehicleInformationFormData>({
     resolver: zodResolver(vehicleInformationSchema),
     defaultValues: {
@@ -356,15 +356,15 @@ function VehicleInformationPage() {
         vehicleImageFiles: vehicleImages,
         insuranceImageFiles: insuranceImages,
       });
-      console.log('navigating to driver license', response)
+      console.log('navigating to driver license', response);
 
       // Navigate to driving license page on success
       if (response?.status === 'success') {
         console.log('navigating to driver license', response?.status);
-        
+
         // First invalidate the user query to clear the cache
         await queryClient.invalidateQueries({ queryKey: USER_QUERY_KEY });
-        
+
         // Force refetch the user data
         try {
           const updatedUser = await queryClient.fetchQuery({
@@ -372,21 +372,23 @@ function VehicleInformationPage() {
             queryFn: async () => {
               const { authService } = await import('@/features/auth/services');
               const response = await authService.getProfile();
-              
+
               if (response.data && response.data.user) {
-                const { transformApiUserToUser } = await import('@/features/auth/hooks/useUserQuery');
+                const { transformApiUserToUser } = await import(
+                  '@/features/auth/hooks/useUserQuery'
+                );
                 return transformApiUserToUser(response.data.user);
               }
               throw new Error('Failed to fetch updated user profile');
             },
             staleTime: 0, // Force fresh fetch
           });
-          
+
           // Update the auth store with the new user data
           if (updatedUser) {
             const { useAuthStore } = await import('@/stores/authStore');
             useAuthStore.getState().setUser(updatedUser);
-            
+
             // Small delay to ensure state update is complete
             setTimeout(() => {
               navigate('/auth/driver-license');

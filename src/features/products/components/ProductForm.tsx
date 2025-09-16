@@ -8,6 +8,7 @@ import { PickupHoursSelector } from './PickupHoursSelector';
 import { UseFormReturn } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import { DeleteConfirmationModal } from '@/components/common/DeleteConfirmationModal';
+import { getColorName } from '@/utils/colorUtils';
 
 interface ProductFormProps {
   methods: UseFormReturn<any>;
@@ -85,6 +86,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   const formValues = watch();
   const [currentStep, setCurrentStep] = useState(1);
   const [variantToDelete, setVariantToDelete] = useState<string | null>(null);
+
+ 
 
   // Validate Step 1 fields
   const validateStep1 = async () => {
@@ -483,39 +486,48 @@ export const ProductForm: React.FC<ProductFormProps> = ({
               </div>
 
               <div>
-                <div className="flex gap-2 items-center">
-                  <FormInput
-                    name="color"
-                    label="Color (HEX)"
-                    type="text"
-                    placeholder="#FF0000"
-                    className="flex-1 h-[53px]"
-                    pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
-                    maxLength={7}
-                    onInput={(e: React.FormEvent<HTMLInputElement>) => {
-                      const input = e.currentTarget;
-                      let value = input.value.toUpperCase();
+                <div>
+                  <div className="flex gap-2 items-center">
+                    <FormInput
+                      name="color"
+                      label="Color (HEX)"
+                      type="text"
+                      placeholder="#FF0000"
+                      className="flex-1 h-[53px]"
+                      pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
+                      maxLength={7}
+                      onInput={(e: React.FormEvent<HTMLInputElement>) => {
+                        const input = e.currentTarget;
+                        let value = input.value.toUpperCase();
 
-                      if (value.length === 1 && value !== '#' && /[A-Fa-f0-9]/.test(value)) {
-                        value = '#' + value;
-                      }
+                        if (value.length === 1 && value !== '#' && /[A-Fa-f0-9]/.test(value)) {
+                          value = '#' + value;
+                        }
 
-                      value = value.replace(/[^#A-Fa-f0-9]/g, '');
+                        value = value.replace(/[^#A-Fa-f0-9]/g, '');
 
-                      if (value.indexOf('#') > 0) {
-                        value = '#' + value.replace(/#/g, '');
-                      }
+                        if (value.indexOf('#') > 0) {
+                          value = '#' + value.replace(/#/g, '');
+                        }
 
-                      input.value = value;
-                      clearErrors('color');
-                    }}
-                  />
-                  <input
-                    type="color"
-                    value={formValues.color || '#000000'}
-                    onChange={(e) => setValue(`color`, e.target.value)}
-                    className={`w-[53px] h-[53px] ${errors.color ? 'mt-0' : 'mt-5'} rounded border border-gray-300 cursor-pointer flex-shrink-0`}
-                  />
+                        input.value = value;
+                        clearErrors('color');
+
+                        // Color name will be computed from formValues.color
+                      }}
+                    />
+                    <input
+                      type="color"
+                      value={formValues.color || '#000000'}
+                      onChange={(e) => setValue(`color`, e.target.value)}
+                      className={`w-[53px] h-[53px] ${errors.color ? 'mt-0' : 'mt-5'} rounded border border-gray-300 cursor-pointer flex-shrink-0`}
+                    />
+                  </div>
+                  {formValues.color && formValues.color.length >= 4 && (
+                    <p className="text-sm text-gray-600 mt-1 ml-1 capitalize">
+                      Color: {getColorName(formValues.color).name}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -900,44 +912,54 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                         {/* Variant Form Fields */}
                         <div className="space-y-3">
                           <div>
-                            <div className="flex gap-2">
-                              <FormInput
-                                name={`variants.${variantIndex}.color`}
-                                label="Color (HEX)"
-                                type="text"
-                                placeholder="#FF0000"
-                                className="flex-1 h-[53px]"
-                                pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
-                                maxLength={7}
-                                onInput={(e: React.FormEvent<HTMLInputElement>) => {
-                                  const input = e.currentTarget;
-                                  let value = input.value.toUpperCase();
+                            <div>
+                              <div className="flex gap-2">
+                                <FormInput
+                                  name={`variants.${variantIndex}.color`}
+                                  label="Color (HEX)"
+                                  type="text"
+                                  placeholder="#FF0000"
+                                  className="flex-1 h-[53px]"
+                                  pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
+                                  maxLength={7}
+                                  onInput={(e: React.FormEvent<HTMLInputElement>) => {
+                                    const input = e.currentTarget;
+                                    let value = input.value.toUpperCase();
 
-                                  if (
-                                    value.length === 1 &&
-                                    value !== '#' &&
-                                    /[A-Fa-f0-9]/.test(value)
-                                  ) {
-                                    value = '#' + value;
+                                    if (
+                                      value.length === 1 &&
+                                      value !== '#' &&
+                                      /[A-Fa-f0-9]/.test(value)
+                                    ) {
+                                      value = '#' + value;
+                                    }
+
+                                    value = value.replace(/[^#A-Fa-f0-9]/g, '');
+
+                                    if (value.indexOf('#') > 0) {
+                                      value = '#' + value.replace(/#/g, '');
+                                    }
+
+                                    input.value = value;
+
+                                    // Color name will be computed from formValues
+                                  }}
+                                />
+                                <input
+                                  type="color"
+                                  value={formValues.variants?.[variantIndex]?.color || '#000000'}
+                                  onChange={(e) =>
+                                    setValue(`variants.${variantIndex}.color`, e.target.value)
                                   }
-
-                                  value = value.replace(/[^#A-Fa-f0-9]/g, '');
-
-                                  if (value.indexOf('#') > 0) {
-                                    value = '#' + value.replace(/#/g, '');
-                                  }
-
-                                  input.value = value;
-                                }}
-                              />
-                              <input
-                                type="color"
-                                value={formValues.variants?.[variantIndex]?.color || '#000000'}
-                                onChange={(e) =>
-                                  setValue(`variants.${variantIndex}.color`, e.target.value)
-                                }
-                                className={`w-[53px] h-[53px] mt-5 rounded border border-gray-300 cursor-pointer flex-shrink-0`}
-                              />
+                                  className={`w-[53px] h-[53px] mt-5 rounded border border-gray-300 cursor-pointer flex-shrink-0`}
+                                />
+                              </div>
+                              {formValues.variants?.[variantIndex]?.color &&
+                                formValues.variants[variantIndex].color.length >= 4 && (
+                                  <p className="text-sm text-gray-600 mt-1 ml-1 capitalize">
+                                    Color: {getColorName(formValues.variants[variantIndex].color).name}
+                                  </p>
+                                )}
                             </div>
                           </div>
 
@@ -1232,7 +1254,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                     placeholder="Select days"
                     options={Array.from({ length: 61 }, (_, i) => ({
                       value: i.toString(),
-                      label: i === 0 ? 'Ready Today' : i === 1 ? '1 Day' : `${i} Days`
+                      label: i === 0 ? 'Ready Today' : i === 1 ? '1 Day' : `${i} Days`,
                     }))}
                     className="border-gray-300 h-[53px]"
                   />

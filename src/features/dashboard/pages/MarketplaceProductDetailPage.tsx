@@ -23,6 +23,7 @@ import { getReadyByDate } from '../components/ProductCard';
 import ProductCard from '../components/ProductCard';
 import ProductCardSkeleton from '../components/ProductCardSkeleton';
 import toast from 'react-hot-toast';
+import { getColorName } from '@/utils/colorUtils';
 
 const MarketplaceProductDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -212,7 +213,22 @@ const MarketplaceProductDetailPage: React.FC = () => {
   const handleAddToCart = (directCheckout = false) => {
     if (!product) return;
 
-    const currentPrice = selectedVariant?.price || product.price || 0;
+    // Calculate the base price (from variant or product)
+    const basePrice = selectedVariant?.price || product.price || 0;
+
+    // Get discount info (from variant or product)
+    const discountInfo = selectedVariant?.discount || product.discount;
+
+    // Calculate the discounted price
+    let currentPrice = basePrice;
+    if (discountInfo && discountInfo.discountType !== 'none' && discountInfo.discountValue) {
+      if (discountInfo.discountType === 'flat') {
+        currentPrice = Math.max(0, basePrice - discountInfo.discountValue);
+      } else if (discountInfo.discountType === 'percentage') {
+        currentPrice = basePrice * (1 - discountInfo.discountValue / 100);
+      }
+    }
+
     const currentQuantity = selectedVariant
       ? selectedVariant?.outOfStock
         ? 0
@@ -224,8 +240,9 @@ const MarketplaceProductDetailPage: React.FC = () => {
     // Determine the actual color being added (from variant or base product)
     const actualColor = selectedVariant?.color || product.color;
 
-    // Include color in title if available
-    const variantSuffix = actualColor ? ` - ${actualColor}` : '';
+    // Include color name in title if available
+    const colorName = actualColor ? getColorName(actualColor).name : '';
+    const variantSuffix = colorName ? ` - ${colorName}` : '';
     const cartItemTitle = `${product.title}${variantSuffix}`;
 
     // For "Buy Now" - navigate directly to checkout with product data
@@ -241,6 +258,8 @@ const MarketplaceProductDetailPage: React.FC = () => {
               title: cartItemTitle,
               slug: product.slug,
               price: currentPrice,
+              originalPrice: basePrice,
+              discount: discountInfo,
               quantity: quantity,
               image: currentImages[0] || 'https://placehold.co/300x200.png',
               color: actualColor,
@@ -276,6 +295,8 @@ const MarketplaceProductDetailPage: React.FC = () => {
             title: cartItemTitle,
             slug: product.slug,
             price: currentPrice,
+            originalPrice: basePrice,
+            discount: discountInfo,
             quantity: quantity,
             image: currentImages[0] || 'https://placehold.co/300x200.png',
             color: actualColor,
@@ -310,6 +331,8 @@ const MarketplaceProductDetailPage: React.FC = () => {
       title: cartItemTitle,
       slug: product.slug,
       price: currentPrice,
+      originalPrice: basePrice, // Include original price for display
+      discount: discountInfo, // Include discount information
       quantity: quantity,
       image: currentImages[0] || 'https://placehold.co/300x200.png',
       color: actualColor,
@@ -572,6 +595,7 @@ const MarketplaceProductDetailPage: React.FC = () => {
                     : 'border-gray-300 hover:border-gray-400'
                 }`}
                 style={{ backgroundColor: product.color }}
+                title={product.color ? getColorName(product.color).name : ''}
               />
 
               {product.variants &&
@@ -586,6 +610,7 @@ const MarketplaceProductDetailPage: React.FC = () => {
                         : 'ring-1 ring-gray-300 ring-offset-2 hover:ring-gray-400'
                     }`}
                     style={{ backgroundColor: variant.color }}
+                    title={variant.color ? getColorName(variant.color).name : ''}
                   />
                 ))}
             </div>
@@ -655,6 +680,7 @@ const MarketplaceProductDetailPage: React.FC = () => {
                     : 'ring-1 ring-gray-300 ring-offset-2 hover:ring-gray-400 '
                 }`}
                 style={{ backgroundColor: product.color }}
+                title={product.color ? getColorName(product.color).name : ''}
               />
 
               {product.variants &&
@@ -669,6 +695,7 @@ const MarketplaceProductDetailPage: React.FC = () => {
                         : 'ring-1 ring-gray-300 ring-offset-2 hover:ring-gray-400'
                     }`}
                     style={{ backgroundColor: variant.color }}
+                    title={variant.color ? getColorName(variant.color).name : ''}
                   />
                 ))}
             </div>
@@ -724,6 +751,11 @@ const MarketplaceProductDetailPage: React.FC = () => {
                 onClick={() => {
                   handleAddToCart(true);
                 }}
+                disabled={
+                  selectedVariant
+                    ? selectedVariant?.outOfStock || selectedVariant?.quantity === 0
+                    : product?.outOfStock || product?.quantity === 0
+                }
                 variant="outline"
                 className="flex-1 border-primary text-primary hover:bg-primary/10 font-semibold py-3 text-base h-[56px] rounded-xl"
               >
@@ -755,7 +787,7 @@ const MarketplaceProductDetailPage: React.FC = () => {
                       key={relatedProduct._id || relatedProduct.id}
                       product={relatedProduct}
                       onProductClick={(slug: string) => {
-                        navigate(`/marketplace/${slug}`);
+                        navigate(`/products/${slug}`);
                         // Scroll to top when navigating to new product
                         window.scrollTo(0, 0);
                       }}

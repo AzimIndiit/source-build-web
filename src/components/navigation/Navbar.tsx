@@ -285,7 +285,9 @@ export const Navbar: React.FC = () => {
                   variant="ghost"
                   size="icon"
                   className="hidden lg:flex relative rounded-full w-[42px] h-[42px] bg-gray-100 hover:bg-gray-200"
-                  onClick={() => navigate(`/${user?.role}/messages`)}
+                  onClick={() =>
+                    navigate(user?.role === 'buyer' ? '/messages' : `/${user?.role}/messages`)
+                  }
                 >
                   <MessageCircle className="w-5 h-5" />
                   {messageCount > 0 && !isOnMessagesPage && (
@@ -299,7 +301,11 @@ export const Navbar: React.FC = () => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => navigate(`/${user?.role}/notifications`)}
+                  onClick={() =>
+                    navigate(
+                      user?.role === 'buyer' ? '/notifications' : `/${user?.role}/notifications`
+                    )
+                  }
                   className="relative rounded-full w-[42px] h-[42px] bg-gray-100 hover:bg-gray-200"
                 >
                   <Bell className="w-5 h-5" />
@@ -442,7 +448,7 @@ export const Navbar: React.FC = () => {
 
                   {/* Messages */}
                   <Link
-                    to={`/${user?.role}/messages`}
+                    to={user?.role === 'buyer' ? '/messages' : `/${user?.role}/messages`}
                     className="flex items-center justify-between py-2"
                   >
                     <span className="text-sm">Messages</span>
@@ -455,7 +461,7 @@ export const Navbar: React.FC = () => {
 
                   {/* Notifications */}
                   <Link
-                    to={`/${user?.role}/notifications`}
+                    to={user?.role === 'buyer' ? '/notifications' : `/${user?.role}/notifications`}
                     className="flex items-center justify-between py-2"
                   >
                     <span className="text-sm">Notifications</span>

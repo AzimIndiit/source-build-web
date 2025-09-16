@@ -171,7 +171,7 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
                   <div>
                     <p className="text-xs text-gray-500">Drop Location</p>
                     <p className="text-sm font-medium text-gray-900 line-clamp-1">
-                      {order.orderSummary?.formattedShippingAddress} 
+                      {order.orderSummary?.formattedShippingAddress}
                     </p>
                   </div>
                 )}
@@ -285,13 +285,13 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
                   {user?.role === 'driver' && (
                     <TableCell className="text-left max-w-[200px] truncate">
                       <span className="text-gray-700 text-xs lg:text-sm ">
-                        {order.orderSummary?.formattedPickupAddress || '-'} 
+                        {order.orderSummary?.formattedPickupAddress || '-'}
                       </span>
                     </TableCell>
                   )}
                   {user?.role === 'driver' && (
                     <TableCell className="text-left max-w-[200px] truncate">
-                      <span className="text-gray-700 text-xs lg:text-sm " >
+                      <span className="text-gray-700 text-xs lg:text-sm ">
                         {order.orderSummary?.formattedShippingAddress || '-'}
                       </span>
                     </TableCell>

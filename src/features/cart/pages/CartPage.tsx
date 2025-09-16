@@ -8,6 +8,7 @@ import LazyImage from '@/components/common/LazyImage';
 import { cn, formatCurrency } from '@/lib/helpers';
 import { BreadcrumbWrapper } from '@/components/ui';
 import { useAuth } from '@/hooks/useAuth';
+import { getColorName } from '@/utils/colorUtils';
 
 const CartPage: React.FC = () => {
   const navigate = useNavigate();
@@ -18,8 +19,6 @@ const CartPage: React.FC = () => {
   const shippingCost = 0; // Free shipping or calculate based on items
   const tax = totalPrice * 0.08; // 8% tax rate
   const finalTotal = totalPrice + shippingCost + tax;
-
-
 
   const breadcrumbItems = [
     { label: 'Home', href: '/' },
@@ -79,12 +78,12 @@ const CartPage: React.FC = () => {
             {/* Clear Cart Button */}
             <div className="">
               <Button
-               leftIcon={Trash2}
+                leftIcon={Trash2}
                 variant="outline"
                 onClick={clearCart}
                 className="text-red-600 bg-white h-10 hover:text-red-700 border-red-200 hover:border-red-300"
               >
-              Clear Cart
+                Clear Cart
               </Button>
             </div>
           </div>
@@ -125,9 +124,10 @@ const CartPage: React.FC = () => {
                                 <div
                                   className="w-5 h-5 rounded-full border-2 border-gray-300"
                                   style={{ backgroundColor: item.color }}
+                                  title={getColorName(item.color).name}
                                 />
                                 <span className="text-sm text-gray-700 capitalize">
-                                  {item.color}
+                                  {getColorName(item.color).name}
                                 </span>
                               </div>
                             </div>
@@ -166,11 +166,29 @@ const CartPage: React.FC = () => {
 
                     {/* Price and Quantity */}
                     <div className="flex items-center justify-between mt-4">
-                      <div className="flex items-center gap-1">
-                        <span className="text-xl font-bold text-primary">
-                          {formatCurrency(item.price)}
-                        </span>
-                        <span className="text-sm text-gray-500">/ each</span>
+                      <div className="flex items-center gap-2">
+                        {/* Show original price with strikethrough if there's a discount */}
+                        {item.originalPrice && item.originalPrice > item.price && (
+                          <span className="text-base line-through text-gray-400">
+                            {formatCurrency(item.originalPrice)}
+                          </span>
+                        )}
+                        <div className="flex items-center gap-1">
+                          <span className="text-xl font-bold text-primary">
+                            {formatCurrency(item.price)}
+                          </span>
+                          <span className="text-sm text-gray-500">/ each</span>
+                        </div>
+                        {/* Show discount percentage if applicable */}
+                        {item.discount &&
+                          item.discount.discountType !== 'none' &&
+                          item.discount.discountValue && (
+                            <span className="text-sm font-semibold text-primary bg-primary/10 px-2 py-1 rounded">
+                              {item.discount.discountType === 'percentage'
+                                ? `${item.discount.discountValue}% OFF`
+                                : `$${item.discount.discountValue} OFF`}
+                            </span>
+                          )}
                       </div>
 
                       {/* Quantity Selector */}
@@ -227,7 +245,7 @@ const CartPage: React.FC = () => {
                 <span>Subtotal</span>
                 <span className="font-medium">{formatCurrency(totalPrice)}</span>
               </div>
-              <div className="flex justify-between text-gray-600">
+              {/* <div className="flex justify-between text-gray-600">
                 <span>Shipping</span>
                 <span className="font-medium">
                   {shippingCost === 0 ? 'Free' : formatCurrency(shippingCost)}
@@ -236,11 +254,13 @@ const CartPage: React.FC = () => {
               <div className="flex justify-between text-gray-600">
                 <span>Tax</span>
                 <span className="font-medium">{formatCurrency(tax)}</span>
-              </div>
-              <div className="border-t pt-3">
+              </div> */}
+              <div className="border-t pt-3 border-gray-200">
                 <div className="flex justify-between">
                   <span className="text-lg font-bold text-gray-900">Total</span>
-                  <span className="text-lg font-bold text-primary">{formatCurrency(finalTotal)}</span>
+                  <span className="text-lg font-bold text-primary">
+                    {formatCurrency(finalTotal)}
+                  </span>
                 </div>
               </div>
             </div>

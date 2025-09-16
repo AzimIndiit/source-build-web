@@ -148,9 +148,8 @@ export const OrderSummarySection: React.FC<OrderSummaryProps> = ({
                     {orderSummary.pickupAddress.name}, {orderSummary.pickupAddress.phone}
                   </p>
                   <p className="text-sm text-gray-500 leading-relaxed">
-                    {orderSummary.formattedPickupAddress || 
-                      `${orderSummary.pickupAddress.address}, ${orderSummary.pickupAddress.city}, ${orderSummary.pickupAddress.state}, ${orderSummary.pickupAddress.country}, ${orderSummary.pickupAddress.zip}`
-                    }
+                    {orderSummary.formattedPickupAddress ||
+                      `${orderSummary.pickupAddress.address}, ${orderSummary.pickupAddress.city}, ${orderSummary.pickupAddress.state}, ${orderSummary.pickupAddress.country}, ${orderSummary.pickupAddress.zip}`}
                   </p>
                 </>
               ) : (
@@ -174,9 +173,8 @@ export const OrderSummarySection: React.FC<OrderSummaryProps> = ({
                 {orderSummary.shippingAddress.phone || '+1 786 234 5678'}
               </p>
               <p className="text-sm text-gray-500 leading-relaxed">
-                {orderSummary.formattedShippingAddress || 
-                  `${orderSummary.shippingAddress.address}, ${orderSummary.shippingAddress.city}, ${orderSummary.shippingAddress.state}, ${orderSummary.shippingAddress.country}, ${orderSummary.shippingAddress.zip}`
-                }
+                {orderSummary.formattedShippingAddress ||
+                  `${orderSummary.shippingAddress.address}, ${orderSummary.shippingAddress.city}, ${orderSummary.shippingAddress.state}, ${orderSummary.shippingAddress.country}, ${orderSummary.shippingAddress.zip}`}
               </p>
             </div>
           </div>
@@ -190,9 +188,8 @@ export const OrderSummarySection: React.FC<OrderSummaryProps> = ({
               {orderSummary.shippingAddress.name}, {orderSummary.shippingAddress.phone}
             </p>
             <p className="text-sm text-gray-500 leading-relaxed">
-              {orderSummary.formattedShippingAddress || 
-                `${orderSummary.shippingAddress.address}, ${orderSummary.shippingAddress.city}, ${orderSummary.shippingAddress.state}, ${orderSummary.shippingAddress.country}, ${orderSummary.shippingAddress.zip}`
-              }
+              {orderSummary.formattedShippingAddress ||
+                `${orderSummary.shippingAddress.address}, ${orderSummary.shippingAddress.city}, ${orderSummary.shippingAddress.state}, ${orderSummary.shippingAddress.country}, ${orderSummary.shippingAddress.zip}`}
             </p>
           </div>
         </div>

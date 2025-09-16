@@ -130,7 +130,7 @@ export interface Product {
   shippingPrice?: number;
   readyByDate?: string;
   readyByTime?: string;
-   readyByDays?: number | string;
+  readyByDays?: number | string;
   discount: {
     discountType: 'none' | 'flat' | 'percentage';
     discountValue?: number;
@@ -207,7 +207,6 @@ class ProductService {
     return response.data;
   }
 
-  
   async getProducts(params?: {
     page?: number;
     limit?: number;

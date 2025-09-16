@@ -19,76 +19,83 @@ const SellerOrdersPage: React.FC = () => {
   });
 
   // Convert sort option to API parameters
-  const getSortParams = useCallback((sortValue: string, pricingFilter?: string, dateRange?: { from: Date; to: Date }) => {
-    const now = new Date();
-    let startDate: string | undefined;
-    let endDate: string | undefined;
-    let sort = '-createdAt'; // Default to recent (descending)
+  const getSortParams = useCallback(
+    (sortValue: string, pricingFilter?: string, dateRange?: { from: Date; to: Date }) => {
+      const now = new Date();
+      let startDate: string | undefined;
+      let endDate: string | undefined;
+      let sort = '-createdAt'; // Default to recent (descending)
 
-    // Handle pricing sort if provided
-    if (pricingFilter) {
-      switch (pricingFilter) {
-        case 'high-to-low':
-          sort = '-amount';
-          break;
-        case 'low-to-high':
-          sort = 'amount';
-          break;
-      }
-    } else {
-      // Handle date-based sorting
-      switch (sortValue) {
-        case 'custom':
-          if (dateRange) {
-            // Format dates in local timezone to avoid UTC conversion issues
-            const fromYear = dateRange.from.getFullYear();
-            const fromMonth = String(dateRange.from.getMonth() + 1).padStart(2, '0');
-            const fromDay = String(dateRange.from.getDate()).padStart(2, '0');
-            startDate = `${fromYear}-${fromMonth}-${fromDay}`;
-            
-            const toYear = dateRange.to.getFullYear();
-            const toMonth = String(dateRange.to.getMonth() + 1).padStart(2, '0');
-            const toDay = String(dateRange.to.getDate()).padStart(2, '0');
-            endDate = `${toYear}-${toMonth}-${toDay}`;
-          }
-          break;
-        case 'this-week':
-          const weekStart = new Date();
-          weekStart.setDate(weekStart.getDate() - weekStart.getDay());
-          weekStart.setHours(0, 0, 0, 0);
-          startDate = weekStart.toISOString().split('T')[0]; // Get only date part
-          break;
-        case 'this-month':
-          const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-          monthStart.setHours(0, 0, 0, 0);
-          startDate = monthStart.toISOString().split('T')[0]; // Get only date part
-          break;
-        case 'last-3-months':
-          const threeMonthsAgo = new Date();
-          threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
-          threeMonthsAgo.setHours(0, 0, 0, 0);
-          startDate = threeMonthsAgo.toISOString().split('T')[0]; // Get only date part
-          break;
-        case 'last-6-months':
-          const sixMonthsAgo = new Date();
-          sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-          sixMonthsAgo.setHours(0, 0, 0, 0);
-          startDate = sixMonthsAgo.toISOString().split('T')[0]; // Get only date part
-          break;
-        case 'recent':
-        default:
-          // Just use default sort
-          break;
-      }
-    }
+      // Handle pricing sort if provided
+      if (pricingFilter) {
+        switch (pricingFilter) {
+          case 'high-to-low':
+            sort = '-amount';
+            break;
+          case 'low-to-high':
+            sort = 'amount';
+            break;
+        }
+      } else {
+        // Handle date-based sorting
+        switch (sortValue) {
+          case 'custom':
+            if (dateRange) {
+              // Format dates in local timezone to avoid UTC conversion issues
+              const fromYear = dateRange.from.getFullYear();
+              const fromMonth = String(dateRange.from.getMonth() + 1).padStart(2, '0');
+              const fromDay = String(dateRange.from.getDate()).padStart(2, '0');
+              startDate = `${fromYear}-${fromMonth}-${fromDay}`;
 
-    return { startDate, endDate, sort };
-  }, []);
+              const toYear = dateRange.to.getFullYear();
+              const toMonth = String(dateRange.to.getMonth() + 1).padStart(2, '0');
+              const toDay = String(dateRange.to.getDate()).padStart(2, '0');
+              endDate = `${toYear}-${toMonth}-${toDay}`;
+            }
+            break;
+          case 'this-week':
+            const weekStart = new Date();
+            weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+            weekStart.setHours(0, 0, 0, 0);
+            startDate = weekStart.toISOString().split('T')[0]; // Get only date part
+            break;
+          case 'this-month':
+            const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+            monthStart.setHours(0, 0, 0, 0);
+            startDate = monthStart.toISOString().split('T')[0]; // Get only date part
+            break;
+          case 'last-3-months':
+            const threeMonthsAgo = new Date();
+            threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+            threeMonthsAgo.setHours(0, 0, 0, 0);
+            startDate = threeMonthsAgo.toISOString().split('T')[0]; // Get only date part
+            break;
+          case 'last-6-months':
+            const sixMonthsAgo = new Date();
+            sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+            sixMonthsAgo.setHours(0, 0, 0, 0);
+            startDate = sixMonthsAgo.toISOString().split('T')[0]; // Get only date part
+            break;
+          case 'recent':
+          default:
+            // Just use default sort
+            break;
+        }
+      }
+
+      return { startDate, endDate, sort };
+    },
+    []
+  );
 
   // Build query parameters
   const queryParams = useMemo(() => {
-    const { startDate, endDate, sort } = getSortParams(selectedSort, filters.pricing, customDateRange);
-    
+    const { startDate, endDate, sort } = getSortParams(
+      selectedSort,
+      filters.pricing,
+      customDateRange
+    );
+
     return {
       page: currentPage,
       limit: itemsPerPage,
@@ -173,7 +180,7 @@ const SellerOrdersPage: React.FC = () => {
           <OrderFilterDropdown filters={filters} onFilterChange={handleFilterChange} />
         </div>
       </div>
-      
+
       {/* Orders Table */}
       <OrdersTable
         orders={transformedOrders}
@@ -181,7 +188,7 @@ const SellerOrdersPage: React.FC = () => {
         showSort={false}
         showFilter={false}
       />
-      
+
       {/* Pagination */}
       {totalPages > 1 && (
         <PaginationWrapper

@@ -11,6 +11,7 @@ import { ProductDetailsPageSkeleton } from '../components/ProductDetailsPageSkel
 import { useProductQuery, useDeleteProductMutation } from '../hooks/useProductMutations';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
+import { getColorName } from '@/utils/colorUtils';
 
 // Helper function to parse and format pickup hours
 const formatPickupHoursDisplay = (hours: string | object): React.ReactNode => {
@@ -61,33 +62,36 @@ const formatPickupHoursDisplay = (hours: string | object): React.ReactNode => {
     if (hours.includes('AM') || hours.includes('PM')) {
       // Parse the schedule into day-time pairs
       const schedule: { days: string; time: string }[] = [];
-      
+
       // Handle the complex format by finding all time patterns and their associated days
       const timePattern = /(\d{1,2}:\d{2}\s*[AP]M)[–\-](\d{1,2}:\d{2}\s*[AP]M)/g;
       let remainingStr = hours;
       let match;
-      
+
       // Find all time ranges in the string
       const timeRanges: string[] = [];
       while ((match = timePattern.exec(hours)) !== null) {
         timeRanges.push(match[0]);
       }
-      
+
       // Split by the time ranges to get day parts
-      timeRanges.forEach(timeRange => {
+      timeRanges.forEach((timeRange) => {
         const parts = remainingStr.split(timeRange);
         if (parts.length >= 1) {
           const daysPart = parts[0].trim().replace(/,\s*$/, '');
           if (daysPart) {
             // Clean up the time range format
             const cleanTime = timeRange.replace(/–/g, '-').replace(/\s+/g, ' ');
-            
+
             // Split multiple day specifications
-            const dayGroups = daysPart.split(',').map(d => d.trim()).filter(d => d);
-            dayGroups.forEach(dayGroup => {
-              schedule.push({ 
-                days: dayGroup.replace(/–/g, '-'), 
-                time: cleanTime 
+            const dayGroups = daysPart
+              .split(',')
+              .map((d) => d.trim())
+              .filter((d) => d);
+            dayGroups.forEach((dayGroup) => {
+              schedule.push({
+                days: dayGroup.replace(/–/g, '-'),
+                time: cleanTime,
               });
             });
           }
@@ -95,7 +99,7 @@ const formatPickupHoursDisplay = (hours: string | object): React.ReactNode => {
           remainingStr = parts.slice(1).join(timeRange);
         }
       });
-      
+
       // Group by time
       const timeGroups = new Map<string, string[]>();
       schedule.forEach(({ days, time }) => {
@@ -104,7 +108,7 @@ const formatPickupHoursDisplay = (hours: string | object): React.ReactNode => {
         }
         timeGroups.get(time)!.push(days);
       });
-      
+
       // Create display groups
       const displayGroups: { days: string; hours: string }[] = [];
       timeGroups.forEach((daysList, time) => {
@@ -112,7 +116,7 @@ const formatPickupHoursDisplay = (hours: string | object): React.ReactNode => {
         const daysStr = daysList.join(', ');
         displayGroups.push({ days: daysStr, hours: time });
       });
-      
+
       // Sort to maintain a logical order
       displayGroups.sort((a, b) => {
         // Put entries with Mon-Fri first
@@ -122,7 +126,7 @@ const formatPickupHoursDisplay = (hours: string | object): React.ReactNode => {
         if (!aHasWeekday && bHasWeekday) return 1;
         return 0;
       });
-      
+
       return (
         <div className="space-y-1">
           {displayGroups.map(({ days, hours }, index) => (
@@ -458,12 +462,13 @@ const ProductDetailsPage: React.FC = () => {
 
               <div
                 onClick={() => setSelectedVariant(null)}
-                className={`w-12 h-12 rounded-full border-2transition-all cursor-pointer ${
+                className={`w-12 h-12 rounded-full border-2 transition-all cursor-pointer ${
                   selectedVariant === null
                     ? 'border-black bg-primary/5 border-3'
                     : 'border-gray-300 hover:border-gray-400'
                 }`}
                 style={{ backgroundColor: product.color }}
+                title={product.color ? getColorName(product.color).name : ''}
               />
 
               {product.variants &&
@@ -478,6 +483,7 @@ const ProductDetailsPage: React.FC = () => {
                         : 'ring-1 ring-gray-300 ring-offset-2 hover:ring-gray-400'
                     }`}
                     style={{ backgroundColor: variant.color }}
+                    title={variant.color ? getColorName(variant.color).name : ''}
                   />
                 ))}
             </div>
@@ -547,6 +553,7 @@ const ProductDetailsPage: React.FC = () => {
                     : 'ring-1 ring-gray-300 ring-offset-2 hover:ring-gray-400 '
                 }`}
                 style={{ backgroundColor: product.color }}
+                title={product.color ? getColorName(product.color).name : ''}
               />
 
               {product.variants &&
@@ -561,6 +568,7 @@ const ProductDetailsPage: React.FC = () => {
                         : 'ring-1 ring-gray-300 ring-offset-2 hover:ring-gray-400'
                     }`}
                     style={{ backgroundColor: variant.color }}
+                    title={variant.color ? getColorName(variant.color).name : ''}
                   />
                 ))}
             </div>
@@ -633,7 +641,9 @@ const ProductDetailsPage: React.FC = () => {
                 )}
               </div>
 
-              {(product.readyByDays !== undefined || product.readyByDate || product.readyByTime) && (
+              {(product.readyByDays !== undefined ||
+                product.readyByDate ||
+                product.readyByTime) && (
                 <div className="mt-4 p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200">
                   <div className="flex items-start gap-3">
                     <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
@@ -654,15 +664,15 @@ const ProductDetailsPage: React.FC = () => {
                             {' • '}
                             {(() => {
                               const readyDate = new Date();
-                              const daysToAdd = typeof product.readyByDays === 'string' 
-                                ? parseInt(product.readyByDays, 10) 
-                                : product.readyByDays;
+                              const daysToAdd =
+                                typeof product.readyByDays === 'string'
+                                  ? parseInt(product.readyByDays, 10)
+                                  : product.readyByDays;
                               readyDate.setDate(readyDate.getDate() + daysToAdd);
                               return format(readyDate, 'EEEE, MMMM d, yyyy');
                             })()}
                           </>
                         )}
-                       
                       </p>
                     </div>
                   </div>

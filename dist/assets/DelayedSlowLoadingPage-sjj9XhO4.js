@@ -1,0 +1,2 @@
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/SlowLoadingPage-BeQAFHas.js","assets/index-BiCr9dd_.js","assets/index-CFu2upes.css"])))=>i.map(i=>d[i]);
+import{r as a,aD as o}from"./index-BiCr9dd_.js";function i(e,t=2e3){return a.lazy(()=>new Promise(r=>{setTimeout(()=>{e().then(r)},t)}))}const l=i(()=>o(()=>import("./SlowLoadingPage-BeQAFHas.js"),__vite__mapDeps([0,1,2])),3e3);export{l as default};

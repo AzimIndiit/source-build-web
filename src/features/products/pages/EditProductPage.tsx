@@ -217,7 +217,7 @@ const editProductSchema = z
     // readyByDate: z.string().min(1, 'Date is required'),
 
     // readyByTime: z.string().min(1, 'Time is required'),
-    
+
     readyByDays: z.string().optional(),
 
     dimensions: z
@@ -921,7 +921,7 @@ function EditProductPage() {
     //   readyByDate = new Date(`${data.readyByDate}T${time}:00`).toISOString();
     // }
 
-    const mutationData :any = {
+    const mutationData: any = {
       title: data.title,
       price: parseFloat(data.price),
       description: data.description,
@@ -1092,8 +1092,8 @@ function EditProductPage() {
       draftData.shippingPrice = formData.shippingPrice;
     }
     // if (readyByDate) {
-      // draftData.readyByDate = readyByDate;
-      // draftData.readyByTime = formData.readyByTime;
+    // draftData.readyByDate = readyByDate;
+    // draftData.readyByTime = formData.readyByTime;
     // }
     if (formData.readyByDays && formData.readyByDays.trim()) {
       draftData.readyByDays = parseInt(formData.readyByDays);

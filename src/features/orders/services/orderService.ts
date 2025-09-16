@@ -183,7 +183,7 @@ class OrderService {
       });
     }
 
-    const response = await axiosInstance.get<OrdersListResponse>('/orders', { params });
+    const response = await axiosInstance.get<OrdersListResponse>('/orders/my-orders', { params });
     return response.data;
   }
 

@@ -98,7 +98,7 @@ const OrderDetailsPage: React.FC = () => {
   };
 
   const breadcrumbItems = [
-    { label: 'Orders', href: `/${user?.role}/orders` },
+    { label: 'Orders', href: user?.role === 'buyer' ? '/buying' : `/${user?.role}/orders` },
     { label: `Order Details`, isCurrentPage: true },
   ];
 

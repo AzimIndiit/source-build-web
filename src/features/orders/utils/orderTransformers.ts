@@ -11,12 +11,12 @@ export interface TransformedOrder {
     email: string;
     avatar: string;
   };
-  seller:{
+  seller: {
     id: string;
     displayName: string;
     email: string;
     avatar: string;
-  }
+  };
   driver?: {
     id: string;
     displayName: string;
@@ -76,12 +76,12 @@ export function transformOrder(order: any): TransformedOrder {
           avatar: order.driver?.userRef?.avatar || '',
         }
       : undefined,
-      seller: {
-        id: order.seller?.userRef?._id || '',
-        displayName: order.seller?.userRef?.displayName || 'Seller',
-        email: order.seller?.userRef?.email || '',
-        avatar: order.seller?.userRef?.avatar || '',
-      },
+    seller: {
+      id: order.seller?.userRef?._id || '',
+      displayName: order.seller?.userRef?.displayName || 'Seller',
+      email: order.seller?.userRef?.email || '',
+      avatar: order.seller?.userRef?.avatar || '',
+    },
     products: order.products.map((p: any) => ({
       id: p.id,
       title: p.title,

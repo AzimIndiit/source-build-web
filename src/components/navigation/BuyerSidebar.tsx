@@ -22,7 +22,6 @@ const navigationItems = [
   { name: 'Messages', href: '/messages', icon: MessageSquare },
   { name: 'Buying', href: '/buying', icon: Package },
   { name: 'Saved', href: '/wishlists', icon: Heart },
-
 ];
 
 interface BuyerSidebarProps {
@@ -109,9 +108,8 @@ export const BuyerSidebar: React.FC<BuyerSidebarProps> = ({
 
         <div className="flex flex-col gap-1">
           {navigationItems.map((item) => {
-            const isActive = location.pathname === item.href;
+            const isActive = location.pathname.includes(item.href);
             const Icon = item.icon;
-
             return (
               <Link
                 key={item.name}
@@ -148,8 +146,6 @@ export const BuyerSidebar: React.FC<BuyerSidebarProps> = ({
               </Link>
             );
           })}
-
-     
         </div>
       </div>
     </>

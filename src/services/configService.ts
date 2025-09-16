@@ -23,9 +23,9 @@ class ConfigService {
     }
 
     try {
-      const response :any = await axiosInstance.get('/config/public');
+      const response: any = await axiosInstance.get('/config/public');
       this.config = response.data.data;
-      return this.config ;
+      return this.config;
     } catch (error) {
       console.error('Failed to fetch config from backend:', error);
       // Fallback to environment variables if backend fails

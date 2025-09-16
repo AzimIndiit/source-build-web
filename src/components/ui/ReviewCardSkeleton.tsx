@@ -6,7 +6,7 @@ export const ReviewCardSkeleton: React.FC = () => {
       <div className="flex items-start gap-4">
         {/* Avatar skeleton */}
         <div className="w-12 h-12 rounded-full bg-gray-200" />
-        
+
         <div className="flex-1 space-y-3">
           {/* Header with name and date */}
           <div className="flex items-start justify-between">
@@ -17,21 +17,21 @@ export const ReviewCardSkeleton: React.FC = () => {
             {/* Helpful count skeleton */}
             <div className="h-8 bg-gray-200 rounded w-20" />
           </div>
-          
+
           {/* Star rating skeleton */}
           <div className="flex gap-1">
             {[...Array(5)].map((_, i) => (
               <div key={i} className="w-4 h-4 bg-gray-200 rounded" />
             ))}
           </div>
-          
+
           {/* Comment skeleton */}
           <div className="space-y-2 pt-2">
             <div className="h-3 bg-gray-200 rounded w-full" />
             <div className="h-3 bg-gray-200 rounded w-full" />
             <div className="h-3 bg-gray-200 rounded w-3/4" />
           </div>
-          
+
           {/* Response skeleton (optional) */}
           <div className="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-100">
             <div className="flex items-center gap-2 mb-2">

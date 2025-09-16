@@ -102,7 +102,12 @@ const ChatList = () => {
                       return chat;
                     })
                   );
-                  navigate(`/${user?.role}/messages/${item._id}`, { state: item });
+                  navigate(
+                    user?.role === 'buyer'
+                      ? `/messages/${item._id}`
+                      : `/${user?.role}/messages/${item._id}`,
+                    { state: item }
+                  );
                 }}
               />
             );

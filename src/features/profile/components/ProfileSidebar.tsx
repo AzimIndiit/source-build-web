@@ -63,25 +63,25 @@ export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
       icon: <User className="w-5 h-5" />,
       path: '/profile',
     },
-    ...(['seller','driver'].includes(user?.role || '')
+    ...(['seller', 'driver'].includes(user?.role || '')
       ? [
-        {
-          id: 'my-earnings',
-          label: 'My Earnings',
-          icon: <DollarSign className="w-5 h-5" />,
-          path: '/profile/my-earnings',
-        },
-        {
-          id: 'bank',
-          label: 'Manage Bank Acccounts',
-          icon: <Building2 className="w-5 h-5" />,
-          path: '/profile/bank',
-        } as ProfileMenuItem,
-      ]
+          {
+            id: 'my-earnings',
+            label: 'My Earnings',
+            icon: <DollarSign className="w-5 h-5" />,
+            path: '/profile/my-earnings',
+          },
+          {
+            id: 'bank',
+            label: 'Manage Bank Acccounts',
+            icon: <Building2 className="w-5 h-5" />,
+            path: '/profile/bank',
+          } as ProfileMenuItem,
+        ]
       : []),
-   
+
     // Conditionally add "Saved Addresses" for sellers only
-    ...(['seller','buyer'].includes(user?.role || '')
+    ...(['seller', 'buyer'].includes(user?.role || '')
       ? [
           {
             id: 'address',
@@ -91,7 +91,7 @@ export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
           } as ProfileMenuItem,
         ]
       : []),
-      ...(['buyer'].includes(user?.role || '')
+    ...(['buyer'].includes(user?.role || '')
       ? [
           {
             id: 'cards',

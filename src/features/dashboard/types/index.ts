@@ -32,16 +32,16 @@ export interface OrderProduct {
   price?: number;
   deliveryDate?: string;
   image?: string;
+  color?: string;
   productRef?: {
     slug: string;
   };
 }
 
 export interface OrderSummary {
-  formattedPickupAddress?:string;
-  formattedShippingAddress?:string;
+  formattedPickupAddress?: string;
+  formattedShippingAddress?: string;
   shippingAddress: {
-  
     name: string;
     phone: string;
     address: string;

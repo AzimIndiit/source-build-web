@@ -109,7 +109,7 @@ Effective date: [Date]`;
 
 const PrivacyPolicyPage: React.FC = () => {
   const { user } = useAuth();
-  const location =useLocation()
+  const location = useLocation();
   const isSeller = user?.role === 'seller';
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState('');
@@ -213,17 +213,19 @@ const PrivacyPolicyPage: React.FC = () => {
               </span>
             )}
           </div>
-         {location.pathname !== '/privacy' &&  <div className="flex items-center gap-2">
-            {isSeller && !isEditing && (
-              <Button
-                onClick={handleEdit}
-                className="flex items-center gap-1 h-12   text-white hover:text-white"
-              >
-                <Edit2 className="w-4 h-4" />
-                Edit
-              </Button>
-            )}
-          </div>}
+          {location.pathname !== '/privacy' && (
+            <div className="flex items-center gap-2">
+              {isSeller && !isEditing && (
+                <Button
+                  onClick={handleEdit}
+                  className="flex items-center gap-1 h-12   text-white hover:text-white"
+                >
+                  <Edit2 className="w-4 h-4" />
+                  Edit
+                </Button>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Main Content */}

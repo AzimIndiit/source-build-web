@@ -25,7 +25,7 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
         <div className="flex items-start gap-3 sm:gap-4">
           {/* User Avatar */}
           <Avatar className="h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0 border border-gray-200">
-            <AvatarImage src={review.avatar} alt={review.userName} className='object-cover' />
+            <AvatarImage src={review.avatar} alt={review.userName} className="object-cover" />
             <AvatarFallback className="bg-orange-500 text-white text-sm sm:text-base">
               {getInitials(review.userName)}
             </AvatarFallback>
@@ -59,7 +59,9 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
 
       {/* Review Content */}
       <div className="mt-3 sm:mt-4 sm:ml-16">
-        <p className="text-gray-700 leading-relaxed text-sm sm:text-base whitespace-pre-wrap">{review.comment}</p>
+        <p className="text-gray-700 leading-relaxed text-sm sm:text-base whitespace-pre-wrap">
+          {review.comment}
+        </p>
       </div>
     </div>
   );

@@ -8,7 +8,12 @@ export interface CartItem {
   variantId?: string;
   title: string;
   slug: string;
-  price: number;
+  price: number; // This is the final price after discount
+  originalPrice?: number; // Original price before discount
+  discount?: {
+    discountType: 'none' | 'flat' | 'percentage';
+    discountValue?: number;
+  };
   quantity: number;
   image: string;
   color?: string;
@@ -33,14 +38,14 @@ export interface CartItem {
 interface CartStore {
   items: CartItem[];
   isOpen: boolean;
-  
+
   // Actions
   addItem: (item: Omit<CartItem, 'id'>) => void;
   removeItem: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
   toggleCart: () => void;
-  
+
   // Computed values
   getTotalItems: () => number;
   getTotalPrice: () => number;
@@ -86,8 +91,8 @@ const useCartStore = create<CartStore>()(
           } else {
             // New item or different variant - add as separate item
             // Use consistent ID based on product and variant/color (no timestamp for same items)
-            const cartItemId = `${item.productId}${item.variantId ? `-${item.variantId}` : (item.color ? `-${item.color}` : '')}-${Date.now()}`;
-            
+            const cartItemId = `${item.productId}${item.variantId ? `-${item.variantId}` : item.color ? `-${item.color}` : ''}-${Date.now()}`;
+
             const newItem: CartItem = {
               ...item,
               id: cartItemId,
@@ -95,7 +100,7 @@ const useCartStore = create<CartStore>()(
 
             const variantInfo = item.color ? ` (${item.color})` : '';
             // toast.success(`Added ${item.title}${variantInfo} to cart`);
-            
+
             return { items: [...state.items, newItem] };
           }
         });
@@ -113,7 +118,7 @@ const useCartStore = create<CartStore>()(
 
       updateQuantity: (id, quantity) => {
         if (quantity < 1) return;
-        
+
         set((state) => {
           const updatedItems = state.items.map((item) => {
             if (item.id === id) {

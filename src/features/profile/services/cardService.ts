@@ -2,7 +2,7 @@ import axiosInstance from '@/lib/axios';
 
 export interface Card {
   id: string;
-  _id?:string;
+  _id?: string;
   paymentMethodId: string;
   last4: string;
   brand: string;
@@ -88,28 +88,28 @@ class CardService {
 
     let sum = 0;
     let isEven = false;
-    
+
     for (let i = cleanedNumber.length - 1; i >= 0; i--) {
       let digit = parseInt(cleanedNumber[i], 10);
-      
+
       if (isEven) {
         digit *= 2;
         if (digit > 9) {
           digit -= 9;
         }
       }
-      
+
       sum += digit;
       isEven = !isEven;
     }
-    
+
     return sum % 10 === 0;
   }
 
   // Helper method to detect card brand
   static detectCardBrand(cardNumber: string): string {
     const cleanedNumber = cardNumber.replace(/\s/g, '');
-    
+
     const patterns = {
       visa: /^4[0-9]{12}(?:[0-9]{3})?$/,
       mastercard: /^5[1-5][0-9]{14}$/,
@@ -119,13 +119,13 @@ class CardService {
       jcb: /^(?:2131|1800|35\d{3})\d{11}$/,
       unionpay: /^(62[0-9]{14,17})$/,
     };
-    
+
     for (const [brand, pattern] of Object.entries(patterns)) {
       if (pattern.test(cleanedNumber)) {
         return brand;
       }
     }
-    
+
     return 'unknown';
   }
 

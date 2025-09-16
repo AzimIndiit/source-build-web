@@ -36,7 +36,14 @@ const NotificationsPage: React.FC = () => {
 
       // Navigate to action URL if available
       if (notification?.actionUrl) {
-        navigate(notification.actionUrl);
+        try {
+          // If it's a full URL, extract just the pathname
+          const url = new URL(notification.actionUrl);
+          navigate(url.pathname);
+        } catch {
+          // If it's already a relative path, use it directly
+          navigate(notification.actionUrl);
+        }
       }
     },
     [data, markAsReadMutation, navigate]

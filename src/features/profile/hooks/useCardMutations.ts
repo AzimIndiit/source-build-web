@@ -1,5 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { cardService, CreateCardPayload, CreateCardWithTokenPayload, UpdateCardPayload } from '../services/cardService';
+import {
+  cardService,
+  CreateCardPayload,
+  CreateCardWithTokenPayload,
+  UpdateCardPayload,
+} from '../services/cardService';
 import toast from 'react-hot-toast';
 
 const CARDS_QUERY_KEY = ['user', 'cards'];

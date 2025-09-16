@@ -80,7 +80,7 @@ const LazyImage: React.FC<LazyImageProps> = ({
     if (!isInView || hasError) return;
 
     const img = new Image();
-    
+
     img.onload = () => {
       setCurrentSrc(src);
       setIsLoaded(true);
@@ -134,11 +134,7 @@ const LazyImage: React.FC<LazyImageProps> = ({
   return (
     <div
       ref={containerRef}
-      className={cn(
-        'relative overflow-hidden',
-        getAspectRatioClass(),
-        wrapperClassName
-      )}
+      className={cn('relative overflow-hidden', getAspectRatioClass(), wrapperClassName)}
     >
       <AnimatePresence mode="wait">
         {/* Skeleton/Placeholder */}
@@ -158,10 +154,7 @@ const LazyImage: React.FC<LazyImageProps> = ({
             key="placeholder"
             src={placeholderSrc}
             alt=""
-            className={cn(
-              'absolute inset-0 w-full h-full filter blur-sm',
-              getObjectFitClass()
-            )}
+            className={cn('absolute inset-0 w-full h-full filter blur-sm', getObjectFitClass())}
             initial={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: fadeInDuration }}

@@ -94,7 +94,9 @@ class WishlistService {
     return response.data;
   }
 
-  async checkProductInWishlist(productId: string): Promise<{ success: boolean; data: { isInWishlist: boolean } }> {
+  async checkProductInWishlist(
+    productId: string
+  ): Promise<{ success: boolean; data: { isInWishlist: boolean } }> {
     const response = await axiosInstance.get<{ success: boolean; data: { isInWishlist: boolean } }>(
       `/wishlists/check/${productId}`
     );
@@ -102,19 +104,26 @@ class WishlistService {
   }
 
   async getWishlistCount(): Promise<{ success: boolean; data: { count: number } }> {
-    const response = await axiosInstance.get<{ success: boolean; data: { count: number } }>('/wishlists/count');
+    const response = await axiosInstance.get<{ success: boolean; data: { count: number } }>(
+      '/wishlists/count'
+    );
     return response.data;
   }
 
   async getPopularWishlistItems(limit?: number): Promise<{ success: boolean; data: any[] }> {
-    const response = await axiosInstance.get<{ success: boolean; data: any[] }>('/wishlists/popular', {
-      params: { limit },
-    });
+    const response = await axiosInstance.get<{ success: boolean; data: any[] }>(
+      '/wishlists/popular',
+      {
+        params: { limit },
+      }
+    );
     return response.data;
   }
 
   async batchCheckProducts(productIds: string[]): Promise<BatchCheckResponse> {
-    const response = await axiosInstance.post<BatchCheckResponse>('/wishlists/batch-check', { productIds });
+    const response = await axiosInstance.post<BatchCheckResponse>('/wishlists/batch-check', {
+      productIds,
+    });
     return response.data;
   }
 }

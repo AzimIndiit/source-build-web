@@ -33,7 +33,6 @@ const getCardBrandImage = (brandName: string): string | null => {
   return cardBrandImages[normalizedBrand] || null;
 };
 
-
 interface SavedCardProps {
   id: string;
   accountHolder: string;
@@ -72,14 +71,13 @@ export const SavedCard: React.FC<SavedCardProps> = ({
   }, [isDefault]);
 
   const handleToggle = async (checked: boolean) => {
-
     // Don't allow toggle if already updating
     if (isUpdating) return;
 
     // Only allow toggling on (setting as default)
     if (!checked) return;
 
-    console.log('id', id)
+    console.log('id', id);
 
     // Optimistic update - immediately update the UI
     setOptimisticIsDefault(checked);
@@ -118,39 +116,39 @@ export const SavedCard: React.FC<SavedCardProps> = ({
           </div>
 
           <div className="flex items-center space-x-2 absolute right-6 top-6">
-                <Label 
-                  htmlFor={`default-${accountNumber}`} 
-                  className={`text-xs text-white transition-opacity duration-200 ${
-                    isUpdating ? 'opacity-50' : 'opacity-80'
-                  }`}
-                >
-                  Default
-                </Label>
-                <Switch
-                  id={`default-${accountNumber}`}
-                  checked={optimisticIsDefault}
-                  onCheckedChange={handleToggle}
-                  disabled={isUpdating || (optimisticIsDefault && totalCards)}
-                  className={`h-6 w-12 transition-all duration-200 ${
-                    isUpdating 
-                      ? 'data-[state=checked]:bg-primary' 
-                      : optimisticIsDefault && totalCards 
-                      ? 'data-[state=checked]:bg-green-500  opacity-80 cursor-not-allowed' 
-                      : 'data-[state=checked]:bg-green-500 hover:data-[state=checked]:bg-green-600'
-                  }`}
-                />
-              </div>
-          
+            <Label
+              htmlFor={`default-${accountNumber}`}
+              className={`text-xs text-white transition-opacity duration-200 ${
+                isUpdating ? 'opacity-50' : 'opacity-80'
+              }`}
+            >
+              Default
+            </Label>
+            <Switch
+              id={`default-${accountNumber}`}
+              checked={optimisticIsDefault}
+              onCheckedChange={handleToggle}
+              disabled={isUpdating || (optimisticIsDefault && totalCards)}
+              className={`h-6 w-12 transition-all duration-200 ${
+                isUpdating
+                  ? 'data-[state=checked]:bg-primary'
+                  : optimisticIsDefault && totalCards
+                    ? 'data-[state=checked]:bg-green-500  opacity-80 cursor-not-allowed'
+                    : 'data-[state=checked]:bg-green-500 hover:data-[state=checked]:bg-green-600'
+              }`}
+            />
+          </div>
+
           {/* Brand name/logo on the right */}
           <div className="flex flex-col items-end mt-4">
             {(() => {
               const brandImage = getCardBrandImage(bankName);
               if (brandImage) {
                 return (
-                  <img 
-                    src={brandImage} 
-                    alt={`${bankName} logo`} 
-                    className="h-12 w-auto object-contain" 
+                  <img
+                    src={brandImage}
+                    alt={`${bankName} logo`}
+                    className="h-12 w-auto object-contain"
                   />
                 );
               } else {
@@ -167,9 +165,7 @@ export const SavedCard: React.FC<SavedCardProps> = ({
 
         {/* Card number */}
         <div className="flex-1">
-          <p className="text-lg font-mono tracking-[0.2em] ">
-            {accountNumber}
-          </p>
+          <p className="text-lg font-mono tracking-[0.2em] ">{accountNumber}</p>
         </div>
 
         {/* Bottom section with name, expiry and controls */}
@@ -181,7 +177,7 @@ export const SavedCard: React.FC<SavedCardProps> = ({
                 <p className="text-base font-medium">{accountHolder}</p>
               </div>
             </div>
-            
+
             {isCard && (
               <div className="mr-4">
                 <p className="text-xs uppercase tracking-wider opacity-80">Expiry Date</p>
@@ -191,8 +187,6 @@ export const SavedCard: React.FC<SavedCardProps> = ({
 
             {/* Default switch and delete button */}
             <div className="flex items-center space-x-3">
-            
-              
               <Button
                 title="Delete"
                 variant="ghost"

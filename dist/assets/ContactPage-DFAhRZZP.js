@@ -1,1 +1,0 @@
-import{j as t}from"./index-BCiIUrXb.js";function e(){return t.jsxs("div",{className:"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12",children:[t.jsx("h1",{className:"text-4xl font-bold mb-8",children:"Contact Us"}),t.jsx("p",{className:"text-lg text-gray-600 dark:text-gray-300",children:"Get in touch with our team for support or inquiries."})]})}export{e as default};
