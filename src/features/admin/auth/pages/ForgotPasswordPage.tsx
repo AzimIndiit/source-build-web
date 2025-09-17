@@ -3,11 +3,11 @@ import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
-import { AuthWrapper } from '../components/AuthWrapper';
+import { AdminAuthWrapper } from '../components/AdminAuthWrapper';
 import { forgotPasswordSchema, type ForgotPasswordFormData } from '../schemas/authSchemas';
 import { Button } from '@/components/ui/button';
 import { FormInput } from '@/components/forms/FormInput';
-import { authService } from '../services/authService';
+import { adminAuthService } from '../services/adminAuthService';
 
 function ForgotPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -24,7 +24,7 @@ function ForgotPasswordPage() {
   const onSubmit = async (data: ForgotPasswordFormData) => {
     setIsLoading(true);
     try {
-      const response: any = await authService.forgotPassword(data.email);
+      const response: any = await adminAuthService.forgotPassword(data.email);
 
       if (response.status === 'success') {
         toast.success(
@@ -51,7 +51,7 @@ function ForgotPasswordPage() {
   };
 
   return (
-    <AuthWrapper>
+    <AdminAuthWrapper>
       <FormProvider {...methods}>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div className="text-center space-y-2">
@@ -80,14 +80,17 @@ function ForgotPasswordPage() {
           <div className="text-center">
             <p className="text-gray-600">
               Back to{' '}
-              <Link to="/auth/login" className="text-primary hover:text-primary/80 font-medium">
+              <Link
+                to="/admin/auth/login"
+                className="text-primary hover:text-primary/80 font-medium"
+              >
                 Login
               </Link>
             </p>
           </div>
         </form>
       </FormProvider>
-    </AuthWrapper>
+    </AdminAuthWrapper>
   );
 }
 

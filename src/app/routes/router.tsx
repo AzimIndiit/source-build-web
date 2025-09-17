@@ -10,6 +10,7 @@ import { RouterErrorBoundary } from '@/features/error/pages/RouterErrorBoundary'
 import SuspenseLoader from '@/components/common/SuspenseLoader';
 import { DriverLayout } from '../layouts/DriverLayout';
 import { BuyerLayout } from '../layouts/BuyerLayout';
+import { AdminLayout } from '../layouts/AdminLayout';
 
 export const router = createBrowserRouter([
   {
@@ -137,6 +138,48 @@ export const router = createBrowserRouter([
       },
     ],
   },
+
+  {
+    path: '/admin/auth',
+    element: (
+      <Suspense fallback={<SuspenseLoader fullScreen />}>
+        <AuthLayout />
+      </Suspense>
+    ),
+    errorElement: <RouterErrorBoundary />,
+    children: [
+      {
+        index: true,
+        lazy: () =>
+          import('@/features/admin/auth/pages/LoginPage').then((module) => ({
+            Component: module.default,
+          })),
+      },
+      {
+        path: 'login',
+        lazy: () =>
+          import('@/features/admin/auth/pages/LoginPage').then((module) => ({
+            Component: module.default,
+          })),
+      },
+
+      {
+        path: 'forgot-password',
+        lazy: () =>
+          import('@/features/admin/auth/pages/ForgotPasswordPage').then((module) => ({
+            Component: module.default,
+          })),
+      },
+      {
+        path: 'reset-password',
+        lazy: () =>
+          import('@/features/admin/auth/pages/ResetPasswordPage').then((module) => ({
+            Component: module.default,
+          })),
+      },
+    ],
+  },
+
   {
     path: '/auth',
     element: (
@@ -552,6 +595,47 @@ export const router = createBrowserRouter([
             path: 'test-suspense',
             lazy: () =>
               import('@/features/test/pages/TestSuspensePage').then((module) => ({
+                Component: module.default,
+              })),
+          },
+        ],
+      },
+    ],
+  },
+  {
+    path: '/admin',
+    element: (
+      <Suspense fallback={<SuspenseLoader fullScreen />}>
+        <ProtectedRoute allowedRoles={['admin']} redirectTo="/admin/auth/login" />
+      </Suspense>
+    ),
+    errorElement: <RouterErrorBoundary />,
+    children: [
+      {
+        element: (
+          <Suspense fallback={<SuspenseLoader />}>
+            <AdminLayout />
+          </Suspense>
+        ),
+        children: [
+          {
+            index: true,
+            lazy: () =>
+              import('@/features/dashboard/pages/AdminDashboard').then((module) => ({
+                Component: module.default,
+              })),
+          },
+          {
+            path: 'dashboard',
+            lazy: () =>
+              import('@/features/dashboard/pages/AdminDashboard').then((module) => ({
+                Component: module.default,
+              })),
+          },
+          {
+            path: 'profile',
+            lazy: () =>
+              import('@/features/profile/pages/ProfilePage').then((module) => ({
                 Component: module.default,
               })),
           },

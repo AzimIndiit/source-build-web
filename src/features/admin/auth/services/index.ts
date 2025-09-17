@@ -1,0 +1,21 @@
+export { authService } from './adminAuthService';
+export type {
+  SignupPayload,
+  RegisterResponse,
+  LoginResponse,
+  VerifyOtpPayload,
+  VerifyOtpResponse,
+  ResendOtpPayload,
+  ResendOtpResponse,
+  CreateOtpPayload,
+  CreateOtpResponse,
+  ForgotPasswordResponse,
+  VerifyResetTokenResponse,
+  ResetPasswordResponse,
+  RefreshTokenPayload,
+  RefreshTokenResponse,
+  ProfileResponse,
+  LogoutResponse,
+  ChangePasswordPayload,
+  ChangePasswordResponse,
+} from './adminAuthService';
