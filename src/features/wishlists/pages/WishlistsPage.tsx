@@ -2,9 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PaginationWrapper } from '@/components/ui/pagination-wrapper';
 
-import {
-  useProductsQuery,
-} from '@/features/products/hooks/useProductMutations';
+import { useProductsQuery } from '@/features/products/hooks/useProductMutations';
 import { EmptyState } from '@/components/common/EmptyState';
 import ProductEmptyIcon from '@/assets/svg/productEmptyState.svg';
 import ProductCard from '@/features/dashboard/components/ProductCard';
@@ -24,8 +22,6 @@ const WishListPage: React.FC = () => {
   });
   const [selectedLocation, setSelectedLocation] = useState<string>('all');
 
-
-  
   const itemsPerPage = 10;
 
   // Fetch products from API
@@ -40,7 +36,6 @@ const WishListPage: React.FC = () => {
   const handleProductClick = (slug: string, status: string) => {
     navigate(`/products/${slug}`);
   };
-
 
   // Loading state
   if (isLoading) {

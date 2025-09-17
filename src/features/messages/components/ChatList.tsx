@@ -124,7 +124,6 @@ const ChatList = () => {
           <EmptyState
             title="No Messages Found"
             description="Start a conversation to see your messages here"
- 
             icon={<img src={ChatNotificationIcon} alt="Chat empty" className="w-48 h-48 " />}
             className="h-96"
           />

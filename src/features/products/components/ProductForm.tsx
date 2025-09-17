@@ -87,8 +87,6 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   const [currentStep, setCurrentStep] = useState(1);
   const [variantToDelete, setVariantToDelete] = useState<string | null>(null);
 
- 
-
   // Validate Step 1 fields
   const validateStep1 = async () => {
     // Check for minimum required images (existing + uploaded)
@@ -957,7 +955,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                               {formValues.variants?.[variantIndex]?.color &&
                                 formValues.variants[variantIndex].color.length >= 4 && (
                                   <p className="text-sm text-gray-600 mt-1 ml-1 capitalize">
-                                    Color: {getColorName(formValues.variants[variantIndex].color).name}
+                                    Color:{' '}
+                                    {getColorName(formValues.variants[variantIndex].color).name}
                                   </p>
                                 )}
                             </div>

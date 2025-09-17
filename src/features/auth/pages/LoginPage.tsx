@@ -57,7 +57,11 @@ function LoginPage() {
       const currentUser = useAuthStore.getState().user;
 
       // Get the intended destination from location state
-      const from = location.state?.from?.pathname || null;
+      // Handle both string and object formats for 'from'
+      const from =
+        typeof location.state?.from === 'string'
+          ? location.state.from
+          : location.state?.from?.pathname || null;
       const buyNowItem = location.state?.buyNowItem || null;
 
       // Handle navigation based on user role and status

@@ -39,7 +39,6 @@ export const OrdersList: React.FC<OrdersListProps> = ({
         const orderId = (order as any)._id || order.id;
         return (
           <div key={orderId} className="relative">
-      
             {/* Order Card */}
             <OrderProductCard
               order={order}
@@ -48,7 +47,6 @@ export const OrdersList: React.FC<OrdersListProps> = ({
               onWriteReview={onWriteReview}
               onBuyAgain={onBuyAgain}
             />
-            
           </div>
         );
       })}

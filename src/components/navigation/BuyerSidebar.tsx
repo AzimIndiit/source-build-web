@@ -59,20 +59,20 @@ export const BuyerSidebar: React.FC<BuyerSidebarProps> = ({
       const categoryParam = searchParams.get('category');
       const subCategoryParam = searchParams.get('subCategory');
       const initialCategories: string[] = [];
-      
+
       // Add categories
       if (categoryParam) {
-        categoryParam.split(',').forEach(cat => {
+        categoryParam.split(',').forEach((cat) => {
           if (cat) initialCategories.push(cat);
         });
       }
-      
+
       // Add subcategories with their parent category prefix
       if (subCategoryParam) {
         // Note: We'd need to map subcategories back to their parent categories
         // For now, we'll assume the backend handles this mapping
       }
-      
+
       setSelectedCategories(initialCategories);
     }
   }, [isMarketplacePage, location.pathname]);
@@ -80,42 +80,38 @@ export const BuyerSidebar: React.FC<BuyerSidebarProps> = ({
   // Handle category selection
   const handleCategorySelect = (category: string, subcategory?: string) => {
     const key = subcategory ? `${category}:${subcategory}` : category;
-    
+
     setSelectedCategories((prev) => {
-      const newCategories = prev.includes(key)
-        ? prev.filter((id) => id !== key)
-        : [...prev, key];
-      
+      const newCategories = prev.includes(key) ? prev.filter((id) => id !== key) : [...prev, key];
+
       // Update URL with selected categories as query params
       if (isMarketplacePage) {
         const searchParams = new URLSearchParams(location.search);
-        
+
         // Extract categories and subcategories separately for the API
-        const categories = newCategories
-          .filter(cat => !cat.includes(':'))
-          .join(',');
+        const categories = newCategories.filter((cat) => !cat.includes(':')).join(',');
         const subcategories = newCategories
-          .filter(cat => cat.includes(':'))
-          .map(cat => cat.split(':')[1])
+          .filter((cat) => cat.includes(':'))
+          .map((cat) => cat.split(':')[1])
           .join(',');
-        
+
         // Set or delete category parameter
         if (categories) {
           searchParams.set('category', categories);
         } else {
           searchParams.delete('category');
         }
-        
+
         // Set or delete subcategory parameter
         if (subcategories) {
           searchParams.set('subCategory', subcategories);
         } else {
           searchParams.delete('subCategory');
         }
-        
+
         navigate(`${location.pathname}?${searchParams.toString()}`, { replace: true });
       }
-      
+
       return newCategories;
     });
   };
@@ -183,45 +179,45 @@ export const BuyerSidebar: React.FC<BuyerSidebarProps> = ({
         {/* Scrollable Content Area */}
         <div className="flex-1 overflow-y-auto py-6">
           <div className="flex flex-col gap-1 px-3">
-          {navigationItems.map((item) => {
-            const isActive = location.pathname.includes(item.href);
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.name}
-                to={item.href}
-                onClick={() => {
-                  if (isMobile && onClose) {
-                    onClose();
-                  }
-                }}
-                className={cn(
-                  'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all group relative',
-                  isActive ? 'bg-blue-50 text-primary' : 'text-gray-800 hover:bg-gray-50',
-                  isCollapsed && !isMobile && 'justify-center px-2'
-                )}
-                title={isCollapsed ? item.name : undefined}
-              >
-                <div
+            {navigationItems.map((item) => {
+              const isActive = location.pathname.includes(item.href);
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  onClick={() => {
+                    if (isMobile && onClose) {
+                      onClose();
+                    }
+                  }}
                   className={cn(
-                    'flex items-center justify-center rounded-full',
-                    isActive ? 'bg-primary' : 'bg-gray-100',
-                    isCollapsed && !isMobile ? 'w-10 h-10' : 'w-9 h-9'
+                    'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all group relative',
+                    isActive ? 'bg-blue-50 text-primary' : 'text-gray-800 hover:bg-gray-50',
+                    isCollapsed && !isMobile && 'justify-center px-2'
                   )}
+                  title={isCollapsed ? item.name : undefined}
                 >
-                  <Icon size={20} className={cn(isActive ? 'text-white' : 'text-gray-600')} />
-                </div>
-                {(!isCollapsed || isMobile) && <span>{item.name}</span>}
-
-                {/* Tooltip for collapsed state */}
-                {isCollapsed && !isMobile && (
-                  <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50">
-                    {item.name}
+                  <div
+                    className={cn(
+                      'flex items-center justify-center rounded-full',
+                      isActive ? 'bg-primary' : 'bg-gray-100',
+                      isCollapsed && !isMobile ? 'w-10 h-10' : 'w-9 h-9'
+                    )}
+                  >
+                    <Icon size={20} className={cn(isActive ? 'text-white' : 'text-gray-600')} />
                   </div>
-                )}
-              </Link>
-            );
-          })}
+                  {(!isCollapsed || isMobile) && <span>{item.name}</span>}
+
+                  {/* Tooltip for collapsed state */}
+                  {isCollapsed && !isMobile && (
+                    <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50">
+                      {item.name}
+                    </div>
+                  )}
+                </Link>
+              );
+            })}
           </div>
 
           {/* Category Filter - Only show on marketplace page */}

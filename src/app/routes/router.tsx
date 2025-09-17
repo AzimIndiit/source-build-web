@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import { createBrowserRouter } from 'react-router-dom';
 import { ProtectedRoute } from './ProtectedRoute';
+import { BuyerOrPublicRoute } from './BuyerOrPublicRoute';
 import { AuthLayout } from '@/app/layouts/AuthLayout';
 import { PublicLayout } from '@/app/layouts/PublicLayout';
 import { SellerLayout } from '@/app/layouts/SellerLayout';
@@ -82,6 +83,20 @@ export const router = createBrowserRouter([
           },
         ],
       },
+      {
+        path: 'cabinets-collection',
+        lazy: () =>
+          import('@/features/cabinets/pages/CabinetsCollectionPage').then((module) => ({
+            Component: module.default,
+          })),
+      },
+      {
+        path: 'cabinets-collection/:id',
+        lazy: () =>
+          import('@/features/cabinets/pages/CabinetsDetailPage').then((module) => ({
+            Component: module.default,
+          })),
+      },
     ],
   },
   {
@@ -94,19 +109,31 @@ export const router = createBrowserRouter([
     errorElement: <RouterErrorBoundary />,
     children: [
       {
-        path: 'marketplace',
-        index: true,
-        lazy: () =>
-          import('@/features/dashboard/pages/MarketplacePage').then((module) => ({
-            Component: module.default,
-          })),
-      },
-      {
-        path: 'products/:slug',
-        lazy: () =>
-          import('@/features/dashboard/pages/MarketplaceProductDetailPage').then((module) => ({
-            Component: module.default,
-          })),
+        element: <BuyerOrPublicRoute />,
+        children: [
+          {
+            path: 'marketplace',
+            index: true,
+            lazy: () =>
+              import('@/features/dashboard/pages/MarketplacePage').then((module) => ({
+                Component: module.default,
+              })),
+          },
+          {
+            path: 'products/:slug',
+            lazy: () =>
+              import('@/features/dashboard/pages/MarketplaceProductDetailPage').then((module) => ({
+                Component: module.default,
+              })),
+          },
+          {
+            path: 'get-quote',
+            lazy: () =>
+              import('@/features/quotes/pages/GetQuotePage').then((module) => ({
+                Component: module.GetQuotePage,
+              })),
+          },
+        ],
       },
     ],
   },

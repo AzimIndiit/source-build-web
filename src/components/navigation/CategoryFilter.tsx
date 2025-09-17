@@ -56,9 +56,7 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
 
   const toggleCategory = (categoryId: string) => {
     setExpandedCategories((prev) =>
-      prev.includes(categoryId)
-        ? prev.filter((id) => id !== categoryId)
-        : [...prev, categoryId]
+      prev.includes(categoryId) ? prev.filter((id) => id !== categoryId) : [...prev, categoryId]
     );
   };
 
@@ -81,12 +79,12 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
   return (
     <div className="flex flex-col">
       <h3 className="text-base font-bold text-gray-900 px-3 mb-4">Categories</h3>
-      
+
       <div className="flex flex-col">
         {categories.map((category) => {
           const isExpanded = expandedCategories.includes(category.id);
           const categoryChecked = isCategoryChecked(category.id);
-          
+
           return (
             <div key={category.id} className="flex flex-col">
               {/* Category Item */}
@@ -103,16 +101,12 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
                     onClick={() => handleCategoryCheck(category.id)}
                     className={cn(
                       'w-5 h-5 rounded flex items-center justify-center transition-all',
-                      categoryChecked
-                        ? 'bg-blue-600'
-                        : 'border-2 border-blue-400 bg-white'
+                      categoryChecked ? 'bg-blue-600' : 'border-2 border-blue-400 bg-white'
                     )}
                   >
-                    {categoryChecked && (
-                      <Check className="w-3 h-3 text-white" strokeWidth={3} />
-                    )}
+                    {categoryChecked && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
                   </button>
-                  
+
                   {/* Category Name */}
                   <span
                     onClick={() => handleCategoryCheck(category.id)}
@@ -124,7 +118,7 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
                     {category.name}
                   </span>
                 </div>
-                
+
                 {/* Expand Button */}
                 {category.subcategories && category.subcategories.length > 0 && (
                   <button
@@ -136,21 +130,18 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
                     )}
                   >
                     <Plus
-                      className={cn(
-                        'w-5 h-5 transition-transform',
-                        isExpanded && 'rotate-45'
-                      )}
+                      className={cn('w-5 h-5 transition-transform', isExpanded && 'rotate-45')}
                     />
                   </button>
                 )}
               </div>
-              
+
               {/* Subcategories */}
               {isExpanded && category.subcategories && (
                 <div className="ml-10 mr-3 mb-2 flex flex-col gap-1">
                   {category.subcategories.map((subcategory) => {
                     const subcategoryChecked = isSubcategoryChecked(category.id, subcategory);
-                    
+
                     return (
                       <div
                         key={subcategory}
@@ -165,16 +156,14 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
                         <button
                           className={cn(
                             'w-4 h-4 rounded flex items-center justify-center transition-all',
-                            subcategoryChecked
-                              ? 'bg-blue-600'
-                              : 'border-2 border-blue-400 bg-white'
+                            subcategoryChecked ? 'bg-blue-600' : 'border-2 border-blue-400 bg-white'
                           )}
                         >
                           {subcategoryChecked && (
                             <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />
                           )}
                         </button>
-                        
+
                         <span
                           className={cn(
                             'text-sm',

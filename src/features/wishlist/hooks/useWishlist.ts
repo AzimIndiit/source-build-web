@@ -12,7 +12,11 @@ import {
 const WISHLIST_QUERY_KEY = ['wishlist'];
 const WISHLIST_COUNT_QUERY_KEY = ['wishlist', 'count'];
 const WISHLIST_CHECK_QUERY_KEY = (productId: string) => ['wishlist', 'check', productId];
-const WISHLIST_BATCH_CHECK_QUERY_KEY = (productIds: string[]) => ['wishlist', 'batch-check', productIds];
+const WISHLIST_BATCH_CHECK_QUERY_KEY = (productIds: string[]) => [
+  'wishlist',
+  'batch-check',
+  productIds,
+];
 
 export const useWishlist = () => {
   return useQuery({
@@ -119,7 +123,7 @@ export const useAddToWishlist = () => {
         queryClient.setQueryData(WISHLIST_COUNT_QUERY_KEY, context.previousCount);
       }
       queryClient.setQueryData(WISHLIST_CHECK_QUERY_KEY(payload.productId), false);
-      
+
       toast.error('Failed to add to wishlist');
     },
     onSuccess: (data) => {
@@ -154,7 +158,9 @@ export const useRemoveFromWishlist = () => {
         };
       });
 
-      queryClient.setQueryData<number>(WISHLIST_COUNT_QUERY_KEY, (old) => Math.max(0, (old || 0) - 1));
+      queryClient.setQueryData<number>(WISHLIST_COUNT_QUERY_KEY, (old) =>
+        Math.max(0, (old || 0) - 1)
+      );
       queryClient.setQueryData(WISHLIST_CHECK_QUERY_KEY(payload.productId), false);
 
       return { previousWishlist, previousCount };
@@ -167,7 +173,7 @@ export const useRemoveFromWishlist = () => {
         queryClient.setQueryData(WISHLIST_COUNT_QUERY_KEY, context.previousCount);
       }
       queryClient.setQueryData(WISHLIST_CHECK_QUERY_KEY(payload.productId), true);
-      
+
       toast.error('Failed to remove from wishlist');
     },
     onSuccess: (data) => {
@@ -199,7 +205,8 @@ export const useUpdateWishlistItem = () => {
               return {
                 ...item,
                 notificationEnabled: payload.notificationEnabled ?? item.notificationEnabled,
-                priceAlert: payload.priceAlert === null ? undefined : payload.priceAlert ?? item.priceAlert,
+                priceAlert:
+                  payload.priceAlert === null ? undefined : (payload.priceAlert ?? item.priceAlert),
               };
             }
             return item;

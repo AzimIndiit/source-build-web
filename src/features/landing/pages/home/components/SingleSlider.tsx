@@ -2,10 +2,11 @@ import React from 'react';
 import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { ReactElement } from 'react';
 import { Button } from '@/components/ui';
+import { useAuth } from '@/hooks/useAuth';
 
 interface Slide {
   image: string;
@@ -40,6 +41,18 @@ const CustomNextArrow: React.FC<CustomArrowProps> = ({ onClick }) => (
 );
 
 const CustomSlider: React.FC<CustomSliderProps> = ({ slides }) => {
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+
+  const handleGetDesignClick = () => {
+    if (!isAuthenticated) {
+      // Navigate to login with the intended destination
+      navigate('/auth/login', { state: { from: '/get-quote' } });
+    } else {
+      navigate('/get-quote');
+    }
+  };
+
   const customSettings = {
     dots: false,
     infinite: false,
@@ -76,11 +89,17 @@ const CustomSlider: React.FC<CustomSliderProps> = ({ slides }) => {
                     <p className="text-sm sm:text-base md:text-lg lg:text-xl leading-relaxed max-w-2xl">
                       {slide.description}
                     </p>
-                    <div className="flex gap-4 flex-row">
+                    <div
+                      className="flex gap-4 flex-row"
+                      onClick={() => navigate('/cabinets-collection')}
+                    >
                       <Button className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base font-semibold text-white transition-all duration-300 hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2  h-10 sm:h-[69px]">
                         Shop cabinets
                       </Button>
-                      <Button className="bg-white text-gray-800 px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base font-semibold transition-all duration-300 hover:bg-white hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2   h-10 sm:h-[69px]">
+                      <Button
+                        onClick={handleGetDesignClick}
+                        className="bg-white text-gray-800 px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base font-semibold transition-all duration-300 hover:bg-white hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2   h-10 sm:h-[69px]"
+                      >
                         Get a design
                       </Button>
                     </div>

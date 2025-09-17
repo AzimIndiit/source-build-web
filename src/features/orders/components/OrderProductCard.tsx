@@ -15,7 +15,7 @@ interface OrderProductCardProps {
   onViewItem?: ({ slug }: { slug: string }) => void;
   onWriteReview?: () => void;
   onBuyAgain?: (productId: string) => void;
-  viewOrderDetailes?: boolean;  
+  viewOrderDetailes?: boolean;
 }
 
 export const OrderProductCard: React.FC<OrderProductCardProps> = ({
@@ -30,7 +30,7 @@ export const OrderProductCard: React.FC<OrderProductCardProps> = ({
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
 
   // Format the order ID to match the image format (408-2671656-7090703)
-const formattedOrderId = order.id;
+  const formattedOrderId = order.id;
 
   // Calculate total quantity
   const totalQuantity =

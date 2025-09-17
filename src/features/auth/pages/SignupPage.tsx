@@ -109,9 +109,9 @@ function SignupPage() {
             disabled={signupMutation.isPending}
             placeholder="Select account type"
             options={[
-              // { value: 'buyer', label: 'Buyer' },
+              { value: 'buyer', label: 'Buyer' },
               { value: 'seller', label: 'Seller' },
-              // { value: 'driver', label: 'Driver' },
+              { value: 'driver', label: 'Driver' },
             ]}
           />
           <div className="grid grid-cols-2 gap-4">

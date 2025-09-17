@@ -451,7 +451,7 @@ const CheckoutPage: React.FC = () => {
       await refetchCards();
       setShowCardModal(false);
       setEditingCard(null);
-      toast.success('Card added successfully');
+      // toast.success('Card added successfully');
     } catch (error) {
       console.error('Failed to add card:', error);
       toast.error('Failed to add card');
@@ -482,18 +482,18 @@ const CheckoutPage: React.FC = () => {
 
   if (items.length === 0) {
     return (
-     <div className='min-h-[calc(100vh-140px))] flex items-center justify-center'>
-       <EmptyState
-        title="Your cart is empty"
-        description="Please add items to your cart before checkout."
-        icon={<img src={CartEmptyIcon} alt="Cart empty" className="h-64 w-auto" />}
-        action={{
-          label: 'Continue Shopping',
-          onClick: () => navigate('/marketplace')
-        }}
-        className="min-h-[600px]"
-      />
-     </div>
+      <div className="min-h-[calc(100vh-140px))] flex items-center justify-center">
+        <EmptyState
+          title="Your cart is empty"
+          description="Please add items to your cart before checkout."
+          icon={<img src={CartEmptyIcon} alt="Cart empty" className="h-64 w-auto" />}
+          action={{
+            label: 'Continue Shopping',
+            onClick: () => navigate('/marketplace'),
+          }}
+          className="min-h-[600px]"
+        />
+      </div>
     );
   }
 
@@ -1021,7 +1021,8 @@ const CheckoutPage: React.FC = () => {
                         )}
                         {item.color && (
                           <p className="text-sm text-gray-500 mt-1">
-                            Color: <span className="capitalize">{getColorName(item.color).name}</span>
+                            Color:{' '}
+                            <span className="capitalize">{getColorName(item.color).name}</span>
                           </p>
                         )}
                         <p className="text-sm text-gray-600 mt-1">Quantity: {item.quantity}</p>

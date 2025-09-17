@@ -90,7 +90,7 @@ export const BuyerLayout: React.FC = () => {
             style={{
               marginLeft: isMobile ? '0' : sidebarWidth,
             }}
-            className='mt-auto'
+            className="mt-auto"
           >
             {/* Footer - Responsive */}
             <HomeFooter className="bg-[#f7f7f7] text-gray-700" />

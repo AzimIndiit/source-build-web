@@ -88,9 +88,9 @@ const NotificationsPage: React.FC = () => {
         <EmptyState
           title="No notifications yet"
           description="You'll see your notifications here when you receive them"
-          icon={<img src={NotificationEmptyIcon} alt="Notification empty" className="h-64 w-auto" />}
-         
-          
+          icon={
+            <img src={NotificationEmptyIcon} alt="Notification empty" className="h-64 w-auto" />
+          }
           className="py-12"
         />
       )}

@@ -5,6 +5,7 @@ import { Toaster } from 'react-hot-toast';
 import { queryClient } from '@/lib/queryClient';
 import { AuthProvider } from './AuthProvider';
 import { ThemeProvider } from './ThemeProvider';
+import { CartSyncProvider } from './CartSyncProvider';
 import { GoogleMapsLoader } from '@/components/location/GoogleMapsLoader';
 
 interface ProvidersProps {
@@ -29,8 +30,9 @@ export function Providers({ children }: ProvidersProps) {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="system" storageKey="source-build-theme">
         <AuthProvider>
-          <GoogleMapsLoader>
-            {children}
+          <CartSyncProvider>
+            <GoogleMapsLoader>
+              {children}
             <Toaster
               position={isMobile ? 'top-center' : 'top-right'}
               toastOptions={{
@@ -61,7 +63,8 @@ export function Providers({ children }: ProvidersProps) {
                 },
               }}
             />
-          </GoogleMapsLoader>
+            </GoogleMapsLoader>
+          </CartSyncProvider>
         </AuthProvider>
       </ThemeProvider>
       {/* <ReactQueryDevtools initialIsOpen={false} /> */}

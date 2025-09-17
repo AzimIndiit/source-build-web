@@ -88,7 +88,7 @@ const MarketPlacePage: React.FC = () => {
     const searchParams = new URLSearchParams(location.search);
     const categoryParam = searchParams.get('category');
     const subCategoryParam = searchParams.get('subCategory');
-    
+
     setActiveFilters((prev: any) => ({
       ...prev,
       category: categoryParam || undefined,
@@ -333,7 +333,6 @@ const MarketPlacePage: React.FC = () => {
           title="No products found"
           description="Check back later for new products"
           icon={<img src={ProductEmptyIcon} alt="Product empty" className="h-64 w-auto" />}
-       
           className="h-64"
         />
       </div>

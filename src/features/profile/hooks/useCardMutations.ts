@@ -6,6 +6,7 @@ import {
   UpdateCardPayload,
 } from '../services/cardService';
 import toast from 'react-hot-toast';
+import { queryClient } from '@/lib/queryClient';
 
 const CARDS_QUERY_KEY = ['user', 'cards'];
 
@@ -19,7 +20,7 @@ export function useCardsQuery() {
 
 // Mutation to create a new card with token
 export function useCreateCardMutation() {
-  const queryClient = useQueryClient();
+   
 
   return useMutation({
     mutationFn: (data: CreateCardWithTokenPayload) => cardService.createCardWithToken(data),
@@ -36,7 +37,7 @@ export function useCreateCardMutation() {
 
 // Legacy mutation to create a new card (for backwards compatibility)
 export function useCreateCardLegacyMutation() {
-  const queryClient = useQueryClient();
+   
 
   return useMutation({
     mutationFn: (data: CreateCardPayload) => cardService.createCard(data),
@@ -53,7 +54,7 @@ export function useCreateCardLegacyMutation() {
 
 // Mutation to update a card
 export function useUpdateCardMutation() {
-  const queryClient = useQueryClient();
+   
 
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateCardPayload }) =>
@@ -71,7 +72,7 @@ export function useUpdateCardMutation() {
 
 // Mutation to set a card as default
 export function useSetDefaultCardMutation() {
-  const queryClient = useQueryClient();
+   
 
   return useMutation({
     mutationFn: (id: string) => cardService.setDefaultCard(id),
@@ -88,7 +89,7 @@ export function useSetDefaultCardMutation() {
 
 // Mutation to delete a card
 export function useDeleteCardMutation() {
-  const queryClient = useQueryClient();
+   
 
   return useMutation({
     mutationFn: (id: string) => cardService.deleteCard(id),

@@ -325,9 +325,21 @@ const MarketplaceProductDetailPage: React.FC = () => {
     }
 
     // For "Add to Cart" - add to cart store
+    // Extract variant ID - use color as identifier if no ID exists
+    const variantId = selectedVariant 
+      ? (selectedVariant._id || selectedVariant.id || selectedVariant.color || '') 
+      : '';
+    
+    console.log('Adding to cart with:', { 
+      productId: product.id, 
+      variantId, 
+      selectedVariant,
+      color: actualColor 
+    });
+    
     addToCart({
       productId: product.id || '',
-      variantId: (selectedVariant && (selectedVariant?._id || selectedVariant?.id)) || '',
+      variantId: variantId,
       title: cartItemTitle,
       slug: product.slug,
       price: currentPrice,

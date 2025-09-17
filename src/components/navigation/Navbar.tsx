@@ -319,10 +319,10 @@ export const Navbar: React.FC = () => {
             ) : (
               /* Login/Signup buttons for unauthenticated users */
               <div className="flex items-center gap-3">
-                <Button variant="ghost" asChild className="hidden md:inline-flex">
+                <Button variant="ghost" asChild className="hidden md:inline-flex h-10">
                   <Link to="/auth/login">Login</Link>
                 </Button>
-                <Button asChild>
+                <Button asChild className="h-10">
                   <Link className="text-white hover:text-white" to="/auth/signup">
                     Sign Up
                   </Link>
