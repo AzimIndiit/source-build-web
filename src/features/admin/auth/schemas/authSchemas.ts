@@ -4,6 +4,7 @@ export const loginSchema = z.object({
   email: z.string().email('Please enter valid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
   rememberMe: z.boolean().optional(),
+  role: z.string().optional(),
 });
 
 // Helper to validate required phone numbers (accepts formatted or unformatted)

@@ -3,6 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { subscribeWithSelector } from 'zustand/middleware';
 import { cartService, CartItem as APICartItem, Cart } from '@/services/cart.service';
 import toast from 'react-hot-toast';
+import { useAuthStore } from '@/stores/authStore';
 
 // Map API cart item to local cart item format for backward compatibility
 export interface CartItem {
@@ -158,9 +159,17 @@ const useCartStore = create<CartStore>()(
         syncInterval: null,
 
         fetchCart: async () => {
+          // Check if user is a buyer
+          const user = useAuthStore.getState().user;
+          if (user?.role !== 'buyer') {
+            set({ isLoading: false, isSynced: false });
+            return;
+          }
+          
           set({ isLoading: true });
           try {
             const cart = await cartService.getCart();
+       
             get().syncWithAPI(cart, 'merge');
             set({ isSynced: true, lastServerSync: Date.now() });
           } catch (error: any) {
@@ -219,6 +228,12 @@ const useCartStore = create<CartStore>()(
         },
 
         mergeCartsOnLogin: async () => {
+          // Check if user is a buyer
+          const user = useAuthStore.getState().user;
+          if (user?.role !== 'buyer') {
+            return;
+          }
+          
           const { items: localItems } = get();
           
           if (localItems.length === 0) {
@@ -262,6 +277,10 @@ const useCartStore = create<CartStore>()(
         },
 
         processSyncQueue: async () => {
+          // Check if user is a buyer
+          const user = useAuthStore.getState().user;
+          if (user?.role !== 'buyer') return;
+          
           const { syncQueue, isSynced } = get();
           if (!isSynced || syncQueue.length === 0) return;
 
@@ -301,6 +320,12 @@ const useCartStore = create<CartStore>()(
 
           // Sync every 60 seconds (reduced from 30 to avoid excessive calls)
           const interval = setInterval(async () => {
+            // Check if user is a buyer
+            const user = useAuthStore.getState().user;
+            if (user?.role !== 'buyer') {
+              return;
+            }
+            
             const { isSynced } = get();
             if (isSynced) {
               // Only fetch if tab is visible
@@ -365,8 +390,9 @@ const useCartStore = create<CartStore>()(
           // toast.success('Product added to cart');
 
           // BACKGROUND SYNC: Try to sync with API
+          const user = useAuthStore.getState().user;
           const { isSynced } = get();
-          if (isSynced) {
+          if (isSynced && user?.role === 'buyer') {
             try {
               const cart = await cartService.addToCart({
                 productId: item.productId,
@@ -428,8 +454,9 @@ const useCartStore = create<CartStore>()(
           // toast.success('Product removed from cart');
 
           // BACKGROUND SYNC
+          const user = useAuthStore.getState().user;
           const { isSynced } = get();
-          if (isSynced && item.productId) {
+          if (isSynced && item.productId && user?.role === 'buyer') {
             try {
               const cart = await cartService.removeFromCart(item.productId, item.variantId);
               // Update with fresh server data
@@ -479,8 +506,9 @@ const useCartStore = create<CartStore>()(
           }));
 
           // BACKGROUND SYNC
+          const user = useAuthStore.getState().user;
           const { isSynced } = get();
-          if (isSynced && item.productId) {
+          if (isSynced && item.productId && user?.role === 'buyer') {
             try {
               const cart = await cartService.updateCartItem({
                 productId: item.productId,
@@ -535,8 +563,9 @@ const useCartStore = create<CartStore>()(
           // toast.success('Cart cleared');
 
           // BACKGROUND SYNC
+          const user = useAuthStore.getState().user;
           const { isSynced } = get();
-          if (isSynced) {
+          if (isSynced && user?.role === 'buyer') {
             try {
               const cart = await cartService.clearCart();
               set({ cartData: cart });

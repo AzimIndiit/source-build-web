@@ -1,6 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/Card';
-import { Button } from '@/components/ui/button';
 import IMAGES from '@/config/constants';
 
 interface DealItem {
@@ -63,7 +62,7 @@ const SmallCardComponent: React.FC = () => {
                   {deal.items.map((item, idx) => (
                     <div key={idx} className=" ">
                       <div
-                        onClick={() => navigate('/#')}
+                        onClick={() => navigate('/marketplace')}
                         className="cursor-pointer rounded-lg relative  transition-colors duration-200"
                       >
                         <div
@@ -88,7 +87,7 @@ const SmallCardComponent: React.FC = () => {
                   ))}
                 </div>
                 <Link
-                  to={'/#'}
+                  to={'/marketplace'}
                   className="w-full text-primary underline font-semibold transition-colors duration-200"
                 >
                   Explore All

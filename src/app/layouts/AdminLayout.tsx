@@ -75,7 +75,7 @@ export const AdminLayout: React.FC = () => {
         <div className="flex-1">
           {/* Header */}
           <div
-            className="fixed top-0 left-0 right-0  transition-all duration-300 "
+            className="fixed top-0 left-0 right-0  transition-all duration-300  z-12"
             style={{
               marginLeft: isMobile ? '0' : sidebarWidth,
             }}
@@ -83,7 +83,7 @@ export const AdminLayout: React.FC = () => {
             <AdminNavbar />
           </div>
           <div
-            className="  md:px-6  transition-all duration-300 min-h-[calc(100vh-180px)] mt-[115px]"
+            className="px-2  md:px-6  transition-all duration-300 min-h-[calc(100vh-180px)] mt-20 sm:mt-[115px]"
             style={{
               marginLeft: isMobile ? '0' : sidebarWidth,
             }}

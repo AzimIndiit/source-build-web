@@ -122,9 +122,8 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
       >
         {/* Mobile Header */}
         {isMobile && (
-          <div className="flex items-center justify-between mb-6 px-6 pt-6">
-            <h2 className="text-lg font-semibold">Menu</h2>
-            <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full w-8 h-8">
+          <div className="flex items-center justify-end  px-6  pt-4  bg-primary">
+            <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full w-8 h-8 bg-white">
               <X className="w-5 h-5" />
             </Button>
           </div>

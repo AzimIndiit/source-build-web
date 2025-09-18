@@ -639,6 +639,79 @@ export const router = createBrowserRouter([
                 Component: module.default,
               })),
           },
+          {
+            path: 'buyers',
+            lazy: () =>
+              import('@/features/admin/user-management/pages/BuyersPage').then((module) => ({
+                Component: module.default,
+              })),
+          },
+          {
+            path: 'sellers',
+            lazy: () =>
+              import('@/features/admin/user-management/pages/SellersPage').then((module) => ({
+                Component: module.default,
+              })),
+          },
+          {
+            path: 'drivers',
+            lazy: () =>
+              import('@/features/admin/user-management/pages/DriversPage').then((module) => ({
+                Component: module.default,
+              })),
+          },
+
+          {
+            path: 'quote',
+            lazy: () =>
+              import('@/features/admin/quotes/pages/QuotePage').then((module) => ({
+                Component: module.default,
+              })),
+          },
+
+          {
+            path: 'quote/:id',
+            lazy: () =>
+              import('@/features/admin/quotes/pages/ViewQuotePage').then((module) => ({
+                Component: module.default,
+              })),
+          },
+          {
+            path: 'products',
+            lazy: () =>
+              import('@/features/products/pages/ProductsPage').then((module) => ({
+                Component: module.default,
+              })),
+          },
+
+          {
+            path: 'orders',
+            lazy: () =>
+              import('@/features/orders/pages/AdminOrdersPage').then((module) => ({
+                Component: module.default,
+              })),
+          },
+          {
+            path: 'orders/:id',
+            lazy: () =>
+              import('@/features/orders/pages/OrderDetailsPage').then((module) => ({
+                Component: module.default,
+              })),
+          },
+          {
+            path: 'messages',
+            lazy: () =>
+              import('@/features/messages/pages/MessagesPage').then((module) => ({
+                Component: module.default,
+              })),
+          },
+          {
+            path: 'messages/:id',
+            lazy: () =>
+              import('@/features/messages/pages/ChatPage').then((module) => ({
+                Component: module.default,
+              })),
+          },
         ],
       },
     ],

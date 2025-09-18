@@ -21,6 +21,7 @@ function LoginPage() {
     defaultValues: {
       email: '',
       password: '', // Default password for testing
+      role: 'admin',
     },
   });
 
@@ -35,7 +36,7 @@ function LoginPage() {
       console.log('Starting login process...');
 
       // Call the actual login function from AuthProvider
-      await login(data.email, data.password);
+      await login(data.email, data.password, data.role);
 
       // Show success toast
 
@@ -60,6 +61,8 @@ function LoginPage() {
         navigate(from || '/');
       }
     } catch (error: any) {
+      toast.error(error.response.data.message);
+      console.error('Login error:', error);
     } finally {
       setIsLoading(false);
     }
@@ -70,7 +73,9 @@ function LoginPage() {
       <FormProvider {...methods}>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div className="text-start">
-          <h2 className="text-4xl font-bold text-gray-900"><strong> Welcome To </strong> Source Build</h2>
+            <h2 className="text-4xl font-bold text-gray-900">
+              <strong> Welcome To </strong> Source Build
+            </h2>
           </div>
           <FormInput
             name="email"
@@ -87,7 +92,7 @@ function LoginPage() {
             placeholder="Enter your password"
             className="text-base px-4 border-gray-300"
           />
-           <div className="text-end">
+          <div className="text-end">
             <Link
               to="/admin/auth/forgot-password"
               className="text-primary hover:text-primary/80 font-medium"
@@ -103,8 +108,6 @@ function LoginPage() {
           >
             Login
           </Button>
-
-         
         </form>
       </FormProvider>
     </AdminAuthWrapper>

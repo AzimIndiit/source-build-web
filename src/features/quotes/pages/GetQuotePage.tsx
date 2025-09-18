@@ -181,6 +181,7 @@ export const GetQuotePage: React.FC = () => {
 
   const onSubmit = async (data: GetQuoteForm) => {
     try {
+      
       // Upload images first if any
       let imageUrls: string[] = [];
 

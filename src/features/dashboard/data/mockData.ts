@@ -135,6 +135,8 @@ export const metricsAdminData: MetricData[] = [
   },
 ];
 
+
+
 export const weekSalesData: SalesData[] = [
   { day: 'Mon', sales: 200 },
   { day: 'Tue', sales: 450 },

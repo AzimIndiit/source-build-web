@@ -14,6 +14,55 @@ import { getInitials } from '@/lib/helpers';
 import { useLogoutModal } from '@/stores/useLogoutModal';
 import { BreadcrumbWrapper, DeleteConfirmationModal } from '../ui';
 
+
+
+const breadcrumbNameMap = {
+  '/admin/dashboard': 'Dashboard',
+  '/admin/messages': 'Messages',
+  '/admin/messages/:id': 'Chat Details',
+  '/admin/quote': 'Quote',
+  '/admin/quote/:id': 'Quote Details',
+  '/admin/quote/:id/edit': 'Edit Quote',
+};
+
+export function useBreadcrumbs() {
+  const location = useLocation();
+  const pathnames = location.pathname.split('/').filter(Boolean);
+
+  const items = pathnames.map((value, index, filtered) => {
+    const to = `/${filtered.slice(0, index + 1).join('/')}`;
+
+    const isId = /^[0-9a-fA-F]{16,24}$/.test(value);
+
+    let label: string;
+    if (isId) {
+      // look at parent to decide
+      const parent = `/${filtered.slice(0, index).join('/')}`;
+      if (parent === '/admin/messages') {
+        label = 'Chat Details';
+      } else if (parent === '/admin/quote') {
+        label = 'Quote Details';
+      } else {
+        label = 'Details'; // fallback
+      }
+    } else {
+      label = breadcrumbNameMap[to as keyof typeof breadcrumbNameMap] || value;
+    }
+
+    return {
+      label,
+      href: index < filtered.length - 1 ? to : undefined,
+      isCurrentPage: index === filtered.length - 1,
+    };
+  });
+
+  return [
+    { label: 'Page', href: '/admin/dashboard' },
+    ...items.filter((item) => item.label !== 'admin'),
+  ];
+}
+
+
 export const AdminNavbar: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -65,11 +114,12 @@ export const AdminNavbar: React.FC = () => {
     };
   }, [isMobileMenuOpen]);
 
-  const breadcrumbItems = [
-    { label: 'Page', href: '/admin/dashboard' },
-    { label: `${location.pathname.split('/').pop()}`, isCurrentPage: true },
-  ];
 
+
+  const breadcrumbItems = [
+    ...useBreadcrumbs(),
+  ];
+console.log('breadcrumbItems', breadcrumbItems)
   return (
     <>
       <div className="bg-white w-full shadow-sm border-b border-gray-200">
@@ -113,7 +163,7 @@ export const AdminNavbar: React.FC = () => {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild className="cursor-pointer text-sm">
-                  <Link to="/profile" className="flex gap-3 items-center">
+                  <Link to="/admin/profile" className="flex gap-3 items-center">
                     <Avatar className="w-10 h-10">
                       <AvatarFallback className="bg-gray-200">
                         <User className="w-6 h-6" />
@@ -163,7 +213,7 @@ export const AdminNavbar: React.FC = () => {
             <div className="border-t border-gray-200 bg-white px-4 py-4 space-y-4">
               {/* User Profile */}
 
-              <Link to="/profile" className="flex items-center gap-3 py-2">
+              <Link to="/admin/profile" className="flex items-center gap-3 py-2">
                 <Avatar className="w-10 h-10">
                   <AvatarImage src={user?.avatar} alt={user?.displayName} />
                   <AvatarFallback className="bg-gray-200 text-white">

@@ -12,6 +12,7 @@ import { weekSalesData, revenueData, metricsAdminData } from '../data/mockData';
 import { useNavigate } from 'react-router-dom';
 import { transformOrders } from '@/features/orders/utils/orderTransformers';
 import {  useProductsQuery } from '@/features/products/hooks/useProductMutations';
+import { useOrdersQuery } from '@/features/orders/hooks/useOrderMutations';
 
 export const AdminDashboard: React.FC = () => {
   const [selectedYear, setSelectedYear] = useState('2024');
@@ -114,7 +115,7 @@ export const AdminDashboard: React.FC = () => {
   }, [currentPage, itemsPerPage, selectedSort, filters, customDateRange, getSortParams]);
 
   // Fetch orders from API with filters
-  const { data, isLoading, isError, error } = useProductsQuery(queryParams);
+  const { data, isLoading, isError, error } = useOrdersQuery(queryParams);
   const orders = data?.data || [];
   // Transform API orders to match dashboard Order type
   const transformedOrders = transformOrders(orders);
@@ -177,7 +178,7 @@ export const AdminDashboard: React.FC = () => {
       ) : (
         <OrdersTable
           title="Recent Orders"
-          orders={transformedOrders}
+          orders={transformedOrders as any}
           showSort={false}
           showFilter={true}
           selectedSort={selectedSort}

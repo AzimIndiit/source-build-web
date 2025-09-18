@@ -82,7 +82,7 @@ const ChatInterface = () => {
         (p: any) => p?.id !== user.id || p?._id !== user.id
       );
       console.log('Setting otherUser:', other);
-      setOtherUser(other || null);
+      setOtherUser(other ? { ...other, isOnline: false } : null);
     }
   }, [chatData, user?.id]);
 
@@ -520,7 +520,7 @@ const ChatInterface = () => {
   return (
     <div className="py-4 md:p-6 space-y-6">
       {/* Breadcrumb */}
-      <BreadcrumbWrapper items={breadcrumbItems} />
+      {user?.role != 'admin' && <BreadcrumbWrapper items={breadcrumbItems} />}
 
       <Card className="h-[calc(100vh-200px)] flex flex-col overflow-hidden border-gray-200">
         {/* Chat Header */}

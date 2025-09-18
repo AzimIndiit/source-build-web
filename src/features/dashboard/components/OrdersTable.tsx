@@ -19,6 +19,7 @@ import { SortDropdown } from '@/components/common/SortDropdown';
 import { formatCurrency } from '@/lib/utils';
 import { formatDate } from '@/lib/date-utils';
 import { useAuth } from '@/hooks/useAuth';
+import { getInitials } from '@/lib/helpers';
 
 interface OrdersTableProps {
   orders: Order[];
@@ -123,41 +124,110 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
               </div>
 
               <div className="space-y-2">
-                <div>
-                  <p className="text-xs text-gray-500">Product</p>
-                  <p className="text-sm font-medium text-gray-900 line-clamp-1">
-                    {order.products?.map((product) => product.title).join(', ')}
-                  </p>
-                </div>
-
-                {user?.role === 'seller' && (
-                  <div className="flex items-center gap-2">
-                    <Avatar className="w-8 h-8 border border-white shadow-sm">
-                      {order.customer?.avatar ? (
-                        <AvatarImage
-                          src={order.customer.avatar}
-                          alt={order.customer?.displayName || 'Customer'}
-                          className="object-cover"
-                        />
-                      ) : null}
-                      <AvatarFallback className="bg-gray-200 text-gray-700 text-xs font-medium">
-                        {order.customer?.displayName
-                          ? order.customer.displayName
-                              .split(' ')
-                              .map((n) => n[0])
-                              .join('')
-                          : 'NA'}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="text-sm font-medium text-gray-900 capitalize">
-                        {order.customer?.displayName || 'Unknown'}
-                      </p>
-                      <p className="text-xs text-gray-500">{order.customer?.email || 'No email'}</p>
-                    </div>
+                {user?.role !== 'admin' && (
+                  <div>
+                    <p className="text-xs text-gray-500 mb-1">Product</p>
+                    <p className="text-sm font-medium text-gray-900 line-clamp-1">
+                      {order.products?.map((product) => product.title).join(', ')}
+                    </p>
                   </div>
                 )}
+                <div className="grid grid-cols-2 gap-2 space-y-4">
+                  {['seller', 'admin'].includes(user?.role || '') && (
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Customer</p>
+                      <div className="flex items-center gap-2">
+                        <Avatar className="w-8 h-8 border border-white shadow-sm">
+                          {order.customer?.avatar ? (
+                            <AvatarImage
+                              src={order.customer.avatar}
+                              alt={order.customer?.displayName || 'Customer'}
+                              className="object-cover"
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-gray-200 text-gray-700 text-xs font-medium">
+                            {order.customer?.displayName
+                              ? getInitials(order.customer.displayName)
+                              : 'NA'}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="text-sm font-medium text-gray-900 capitalize">
+                            {order.customer?.displayName || 'Unknown'}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {order.customer?.email || 'No email'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
+                  {['admin'].includes(user?.role || '') && (
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Seller</p>
+                      <div className="flex items-center gap-2">
+                        <Avatar className="w-8 h-8 border border-white shadow-sm">
+                          {order.seller?.avatar ? (
+                            <AvatarImage
+                              src={order.seller.avatar}
+                              alt={order.seller?.displayName || 'Seller'}
+                              className="object-cover"
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-gray-200 text-gray-700 text-xs font-medium">
+                            {order.seller?.displayName
+                              ? getInitials(order.seller.displayName)
+                              : 'NA'}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="text-sm font-medium text-gray-900 capitalize">
+                            {order.seller?.displayName || 'Unknown'}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {order.seller?.email || 'No email'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {['admin'].includes(user?.role || '') && order.driver ? (
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Driver</p>
+                      <div className="flex items-center gap-2">
+                        <Avatar className="w-8 h-8 border border-white shadow-sm">
+                          {order.driver?.avatar ? (
+                            <AvatarImage
+                              src={order.driver.avatar}
+                              alt={order.driver?.displayName || 'Driver'}
+                              className="object-cover"
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-gray-200 text-gray-700 text-xs font-medium">
+                            {order.driver?.displayName
+                              ? getInitials(order.driver.displayName)
+                              : 'NA'}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="text-sm font-medium text-gray-900 capitalize">
+                            {order.driver?.displayName || 'Unknown'}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {order.driver?.email || 'No email'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Driver</p>
+                      <p className=" text-gray-500">Not Assigned</p>
+                    </div>
+                  )}
+                </div>
                 {user?.role === 'driver' && (
                   <div>
                     <p className="text-xs text-gray-500">Pick Up Location</p>
@@ -175,10 +245,10 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
                     </p>
                   </div>
                 )}
-                <div className="flex justify-between items-center pt-2 border-t">
+                <div className="flex justify-between items-center pt-2 border-t border-gray-200">
                   <div>
                     <p className="text-xs text-gray-500">{formatDate(order.date)}</p>
-                    <p className="text-sm font-semibold text-gray-900">
+                    <p className="text-sm font-semibold text-primary">
                       {formatCurrency(order.amount)}
                     </p>
                   </div>
@@ -207,9 +277,27 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
                 <TableHead className="text-center font-semibold text-gray-700 text-xs lg:text-sm">
                   Order ID
                 </TableHead>
-                <TableHead className="text-left font-semibold text-gray-700 text-xs lg:text-sm">
-                  Product
-                </TableHead>
+                {user?.role !== 'admin' && (
+                  <TableHead className="text-left font-semibold text-gray-700 text-xs lg:text-sm">
+                    Product
+                  </TableHead>
+                )}
+                {user?.role === 'admin' && (
+                  <TableHead className="text-left font-semibold text-gray-700 text-xs lg:text-sm">
+                    Buyer Name
+                  </TableHead>
+                )}
+                {user?.role === 'admin' && (
+                  <TableHead className="text-left font-semibold text-gray-700 text-xs lg:text-sm">
+                    Seller Name
+                  </TableHead>
+                )}
+                {user?.role === 'admin' && (
+                  <TableHead className="text-left font-semibold text-gray-700 text-xs lg:text-sm">
+                    Driver Name
+                  </TableHead>
+                )}
+
                 {user?.role === 'seller' && (
                   <TableHead className="text-left font-semibold text-gray-700 text-xs lg:text-sm">
                     Customer Details
@@ -228,6 +316,7 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
                 <TableHead className="text-center font-semibold text-gray-700 text-xs lg:text-sm hidden lg:table-cell">
                   Order Date
                 </TableHead>
+
                 <TableHead className="text-center font-semibold text-gray-700 text-xs lg:text-sm">
                   Amount
                 </TableHead>
@@ -245,12 +334,15 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
                   <TableCell className="text-center">
                     <span className="text-primary font-medium text-xs lg:text-sm">#{order.id}</span>
                   </TableCell>
-                  <TableCell className="text-left   max-w-[200px] truncate">
-                    <span className="text-gray-900 text-xs lg:text-sm">
-                      {order.products?.map((product) => product.title).join(', ')}
-                    </span>
-                  </TableCell>
-                  {user?.role === 'seller' && (
+                  {user?.role !== 'admin' && (
+                    <TableCell className="text-left   max-w-[200px] truncate">
+                      <span className="text-gray-900 text-xs lg:text-sm">
+                        {order.products?.map((product) => product.title).join(', ')}
+                      </span>
+                    </TableCell>
+                  )}
+
+                  {['seller', 'admin'].includes(user?.role || '') && (
                     <TableCell className="py-3 lg:py-4">
                       <div className="flex items-center gap-2 lg:gap-3">
                         <Avatar className="w-8 h-8 lg:w-10 lg:h-10 border-2 border-white shadow-sm">
@@ -263,10 +355,7 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
                           ) : null}
                           <AvatarFallback className="bg-gray-200 text-gray-700 font-medium text-xs uppercase">
                             {order.customer?.displayName
-                              ? order.customer.displayName
-                                  .split(' ')
-                                  .map((n) => n[0])
-                                  .join('')
+                              ? getInitials(order.customer.displayName)
                               : 'NA'}
                           </AvatarFallback>
                         </Avatar>
@@ -281,7 +370,66 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
                       </div>
                     </TableCell>
                   )}
-
+                  {['admin'].includes(user?.role || '') && (
+                    <TableCell className="py-3 lg:py-4">
+                      <div className="flex items-center gap-2 lg:gap-3">
+                        <Avatar className="w-8 h-8 lg:w-10 lg:h-10 border-2 border-white shadow-sm">
+                          {order.seller?.avatar ? (
+                            <AvatarImage
+                              src={order.seller.avatar}
+                              alt={order.seller?.displayName || 'Seller'}
+                              className="object-cover"
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-gray-200 text-gray-700 font-medium text-xs uppercase">
+                            {order.seller?.displayName
+                              ? getInitials(order.seller.displayName)
+                              : 'NA'}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="text-left">
+                          <div className="font-medium text-xs lg:text-sm text-gray-900 capitalize">
+                            {order.seller?.displayName || 'Unknown'}
+                          </div>
+                          <div className="text-xs text-gray-500 hidden xl:block">
+                            {order.seller?.email || 'No email'}
+                          </div>
+                        </div>
+                      </div>
+                    </TableCell>
+                  )}
+                  {['admin'].includes(user?.role || '') && order.driver ? (
+                    <TableCell className="py-3 lg:py-4">
+                      <div className="flex items-center gap-2 lg:gap-3">
+                        <Avatar className="w-8 h-8 lg:w-10 lg:h-10 border-2 border-white shadow-sm">
+                          {order.driver?.avatar ? (
+                            <AvatarImage
+                              src={order.driver.avatar}
+                              alt={order.driver?.displayName || 'Driver'}
+                              className="object-cover"
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-gray-200 text-gray-700 font-medium text-xs uppercase">
+                            {order.driver?.displayName
+                              ? getInitials(order.driver.displayName)
+                              : 'NA'}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="text-left">
+                          <div className="font-medium text-xs lg:text-sm text-gray-900 capitalize">
+                            {order.driver?.displayName || 'Unknown'}
+                          </div>
+                          <div className="text-xs text-gray-500 hidden xl:block">
+                            {order.driver?.email || 'No email'}
+                          </div>
+                        </div>
+                      </div>
+                    </TableCell>
+                  ) : (
+                    <TableCell>
+                      <p className=" text-gray-500">Not Assigned</p>
+                    </TableCell>
+                  )}
                   {user?.role === 'driver' && (
                     <TableCell className="text-left max-w-[200px] truncate">
                       <span className="text-gray-700 text-xs lg:text-sm ">

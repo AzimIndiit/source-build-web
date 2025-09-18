@@ -67,7 +67,18 @@ export const SortDropdown: React.FC<SortDropdownProps> = ({
   };
 
   const handleDateSelect = (key: 'from' | 'to', date?: Date) => {
-    const newRange = { ...tempDateRange, [key]: date };
+    const newRange = { ...tempDateRange };
+    
+    if (key === 'from') {
+      newRange.from = date;
+      // If the new from date is after the current to date, reset the to date
+      if (date && newRange.to && date > newRange.to) {
+        newRange.to = undefined;
+      }
+    } else {
+      newRange.to = date;
+    }
+    
     setTempDateRange(newRange);
   };
 
