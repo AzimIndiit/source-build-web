@@ -23,12 +23,13 @@ const breadcrumbNameMap = {
   '/admin/quote': 'Quote',
   '/admin/quote/:id': 'Quote Details',
   '/admin/quote/:id/edit': 'Edit Quote',
+  '/admin/categories': 'Categories',
+  '/admin/categories/:id/subcategories': 'Subcategories',
 };
 
 export function useBreadcrumbs() {
   const location = useLocation();
   const pathnames = location.pathname.split('/').filter(Boolean);
-
   const items = pathnames.map((value, index, filtered) => {
     const to = `/${filtered.slice(0, index + 1).join('/')}`;
 
@@ -38,17 +39,22 @@ export function useBreadcrumbs() {
     if (isId) {
       // look at parent to decide
       const parent = `/${filtered.slice(0, index).join('/')}`;
+      console.log('parent', parent===`/admin/categories`)
       if (parent === '/admin/messages') {
         label = 'Chat Details';
       } else if (parent === '/admin/quote') {
         label = 'Quote Details';
-      } else {
+      }
+      else if (parent === `/admin/categories`) {
+        label = 'Subcategories';
+      } 
+      else {
         label = 'Details'; // fallback
       }
     } else {
       label = breadcrumbNameMap[to as keyof typeof breadcrumbNameMap] || value;
     }
-
+console.log('label', label)
     return {
       label,
       href: index < filtered.length - 1 ? to : undefined,
@@ -58,7 +64,7 @@ export function useBreadcrumbs() {
 
   return [
     { label: 'Page', href: '/admin/dashboard' },
-    ...items.filter((item) => item.label !== 'admin'),
+    ...items.filter((item) => !['admin', 'Subcategories'].includes(item.label )),
   ];
 }
 

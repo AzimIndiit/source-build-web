@@ -660,6 +660,21 @@ export const router = createBrowserRouter([
                 Component: module.default,
               })),
           },
+          {
+            path: 'categories',
+            index: true,
+            lazy: () =>
+              import('@/features/admin/categories/pages/CategoryPage').then((module) => ({
+                Component: module.default,
+              })),
+          },
+          {
+            path: 'categories/:id/subcategories',
+            lazy: () =>
+              import('@/features/admin/categories/pages/SubcategoryPage').then((module) => ({
+                Component: module.default,
+              })),
+          },
 
           {
             path: 'quote',

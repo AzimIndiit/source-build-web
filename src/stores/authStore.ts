@@ -63,7 +63,7 @@ interface AuthState {
   setLoading: (loading: boolean) => void;
   setCurrentLocation: (location: LocationData | null) => void;
   checkAuth: () => Promise<void>;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string, role?: string) => Promise<void>;
   signup: (data: SignupData) => Promise<void>;
   logout: () => Promise<void>;
   updateUser: (data: Partial<User>) => void;
@@ -229,7 +229,7 @@ const useAuthStore = create<AuthState>()(
         }
       },
 
-      login: async (email: string, password: string) => {
+      login: async (email: string, password: string, role?: string) => {
         try {
           console.log('AuthStore: Starting login process');
 
@@ -237,6 +237,7 @@ const useAuthStore = create<AuthState>()(
           const response = await axiosInstance.post('/auth/login', {
             email,
             password,
+            role,
           });
 
           console.log('AuthStore: API response received', response);

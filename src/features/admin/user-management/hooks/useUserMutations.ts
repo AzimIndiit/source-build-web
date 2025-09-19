@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
 import { userService, UserFilters } from '../services/userService';
+import { queryClient } from '@/lib/queryClient';
 
 // User role enum to match backend
 export enum UserRole {
@@ -168,7 +169,6 @@ export const useUsersQuery = (filters?: UserFilters) => {
 
 // Block user mutation
 export const useBlockUser = () => {
-  const queryClient = useQueryClient();
   
   return useMutation({
     mutationFn: (userId: string) => userService.blockUser(userId),
@@ -184,7 +184,6 @@ export const useBlockUser = () => {
 
 // Unblock user mutation
 export const useUnblockUser = () => {
-  const queryClient = useQueryClient();
   
   return useMutation({
     mutationFn: (userId: string) => userService.unblockUser(userId),
@@ -200,7 +199,6 @@ export const useUnblockUser = () => {
 
 // Delete user mutation
 export const useDeleteUser = () => {
-  const queryClient = useQueryClient();
   
   return useMutation({
     mutationFn: (userId: string) => userService.deleteUser(userId),
