@@ -57,9 +57,6 @@ export const useToggleCategoryStatus = () => {
   });
 };
 
-
-
-
 export const useCategoriesQuery = (params: CategoryFilters) => {
   return useQuery({
     queryKey: ['categories', params],

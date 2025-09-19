@@ -4,7 +4,6 @@ import { subcategoryService, SubcategoryFilters } from '../services/subcategoryS
 import { queryClient } from '@/lib/queryClient';
 import { CreateSubcategoryDto, UpdateSubcategoryDto } from '../types';
 
-
 export const useCreateSubcategory = () => {
   return useMutation({
     mutationFn: (data: CreateSubcategoryDto) => subcategoryService.createSubcategory(data),
@@ -58,9 +57,6 @@ export const useToggleSubcategoryStatus = () => {
   });
 };
 
-
-
-
 export const useSubcategoriesQuery = (params: SubcategoryFilters) => {
   return useQuery({
     queryKey: ['subcategories', params],
@@ -78,7 +74,10 @@ export const useSubcategoryByIdQuery = (subcategoryId: string, enabled = true) =
   });
 };
 
-export const useSubcategoriesByCategoryQuery = (categoryId: string, filters?: SubcategoryFilters) => {
+export const useSubcategoriesByCategoryQuery = (
+  categoryId: string,
+  filters?: SubcategoryFilters
+) => {
   return useQuery({
     queryKey: ['subcategories', 'category', categoryId, filters],
     queryFn: () => subcategoryService.getSubcategoriesByCategory(categoryId, filters),

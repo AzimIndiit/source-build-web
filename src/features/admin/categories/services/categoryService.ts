@@ -66,7 +66,9 @@ class CategoryService {
 
   // Toggle category status
   async toggleCategoryStatus(categoryId: string): Promise<CategoryResponse> {
-    const response = await axiosInstance.patch<CategoryResponse>(`/categories/${categoryId}/toggle-status`);
+    const response = await axiosInstance.patch<CategoryResponse>(
+      `/categories/${categoryId}/toggle-status`
+    );
     return response.data;
   }
 

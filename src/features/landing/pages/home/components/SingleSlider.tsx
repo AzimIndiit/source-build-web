@@ -41,10 +41,10 @@ const CustomNextArrow: React.FC<CustomArrowProps> = ({ onClick }) => (
 
 const CustomSlider: React.FC<CustomSliderProps> = ({ slides }) => {
   const navigate = useNavigate();
-  const { isAuthenticated ,user} = useAuth();
+  const { isAuthenticated, user } = useAuth();
 
   const handleGetDesignClick = () => {
-    console.log('first', isAuthenticated)
+    console.log('first', isAuthenticated);
     if (!isAuthenticated) {
       // Navigate to login with the intended destination
       navigate('/auth/login', { state: { from: '/get-quote' } });
@@ -91,24 +91,25 @@ const CustomSlider: React.FC<CustomSliderProps> = ({ slides }) => {
                     <p className="text-sm sm:text-base md:text-lg lg:text-xl leading-relaxed max-w-2xl">
                       {slide.description}
                     </p>
-                  {(!isAuthenticated || user?.role === 'buyer') &&  <div
-                      className="flex gap-4 flex-row"
-                    >
-                      <Button 
-                        onClick={() => navigate('/cabinets-collection')}
-                        className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base font-semibold text-white transition-all duration-300 hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2  h-10 sm:h-[69px]">
-                        Shop cabinets
-                      </Button>
-                      <Button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleGetDesignClick();
-                        }}
-                        className="bg-white text-gray-800 px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base font-semibold transition-all duration-300 hover:bg-white hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2   h-10 sm:h-[69px]"
-                      >
-                        Get a design
-                      </Button>
-                    </div>}
+                    {(!isAuthenticated || user?.role === 'buyer') && (
+                      <div className="flex gap-4 flex-row">
+                        <Button
+                          onClick={() => navigate('/cabinets-collection')}
+                          className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base font-semibold text-white transition-all duration-300 hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2  h-10 sm:h-[69px]"
+                        >
+                          Shop cabinets
+                        </Button>
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleGetDesignClick();
+                          }}
+                          className="bg-white text-gray-800 px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base font-semibold transition-all duration-300 hover:bg-white hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2   h-10 sm:h-[69px]"
+                        >
+                          Get a design
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

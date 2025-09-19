@@ -252,7 +252,7 @@ export const router = createBrowserRouter([
     path: 'profile',
     element: (
       <Suspense fallback={<SuspenseLoader fullScreen />}>
-        <ProtectedRoute redirectTo="/auth/login" />
+        <ProtectedRoute allowedRoles={['buyer', 'seller', 'driver']} redirectTo="/auth/login" />
       </Suspense>
     ),
     errorElement: <RouterErrorBoundary />,

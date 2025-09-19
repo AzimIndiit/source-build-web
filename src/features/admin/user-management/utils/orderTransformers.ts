@@ -122,5 +122,5 @@ export function transformOrder(order: any): TransformedOrder {
  * @returns Array of transformed order data for UI components
  */
 export function transformOrders(orders: any[]): TransformedOrder[] {
-  return orders.length>0 ? orders?.map(transformOrder) : [];
+  return orders.length > 0 ? orders?.map(transformOrder) : [];
 }

@@ -93,18 +93,18 @@ const generateItemId = (productId: string, variantId?: string): string => {
 // Helper function to convert API cart item to local format
 const mapAPICartItemToLocal = (apiItem: APICartItem): CartItem => {
   const id = generateItemId(apiItem.productId, apiItem.variantId);
-  
+
   // Calculate discount if prices differ
   let discount: CartItem['discount'] = { discountType: 'none' };
   const currentPrice = apiItem.currentPrice ?? 0;
   const originalPrice = apiItem.originalPrice ?? 0;
-  
+
   if (originalPrice > currentPrice) {
     const discountAmount = originalPrice - currentPrice;
     const discountPercent = Math.round((discountAmount / originalPrice) * 100);
     discount = {
       discountType: 'percentage',
-      discountValue: discountPercent
+      discountValue: discountPercent,
     };
   }
 
@@ -129,10 +129,10 @@ const mapAPICartItemToLocal = (apiItem: APICartItem): CartItem => {
     selectedOptions: {
       ...(apiItem.product?.color && { color: apiItem.product.color }),
       ...(apiItem.product?.size && { size: apiItem.product.size }),
-      ...apiItem.product?.attributes
+      ...apiItem.product?.attributes,
     },
     syncStatus: 'synced',
-    lastModified: Date.now()
+    lastModified: Date.now(),
   };
 };
 
@@ -165,11 +165,11 @@ const useCartStore = create<CartStore>()(
             set({ isLoading: false, isSynced: false });
             return;
           }
-          
+
           set({ isLoading: true });
           try {
             const cart = await cartService.getCart();
-       
+
             get().syncWithAPI(cart, 'merge');
             set({ isSynced: true, lastServerSync: Date.now() });
           } catch (error: any) {
@@ -185,7 +185,7 @@ const useCartStore = create<CartStore>()(
 
         syncWithAPI: (cart: Cart, mergeStrategy = 'replace') => {
           const serverItems = cart.items.map(mapAPICartItemToLocal);
-          
+
           if (mergeStrategy === 'merge') {
             // Smart merge: combine local and server items
             const { items: localItems } = get();
@@ -193,8 +193,8 @@ const useCartStore = create<CartStore>()(
             const processedIds = new Set<string>();
 
             // First, process all server items
-            serverItems.forEach(serverItem => {
-              const localItem = localItems.find(l => l.id === serverItem.id);
+            serverItems.forEach((serverItem) => {
+              const localItem = localItems.find((l) => l.id === serverItem.id);
               if (localItem && localItem.syncStatus === 'local') {
                 // Conflict: merge based on last modified
                 mergedItems.push(mergeCartItems(localItem, serverItem));
@@ -206,23 +206,23 @@ const useCartStore = create<CartStore>()(
             });
 
             // Add local-only items (not in server)
-            localItems.forEach(localItem => {
+            localItems.forEach((localItem) => {
               if (!processedIds.has(localItem.id) && localItem.syncStatus === 'local') {
                 mergedItems.push({ ...localItem, syncStatus: 'pending' });
               }
             });
 
-            set({ 
-              items: mergedItems, 
+            set({
+              items: mergedItems,
               cartData: cart,
-              isSynced: true 
+              isSynced: true,
             });
           } else {
             // Replace strategy: just use server data
-            set({ 
-              items: serverItems, 
+            set({
+              items: serverItems,
               cartData: cart,
-              isSynced: true 
+              isSynced: true,
             });
           }
         },
@@ -233,9 +233,9 @@ const useCartStore = create<CartStore>()(
           if (user?.role !== 'buyer') {
             return;
           }
-          
+
           const { items: localItems } = get();
-          
+
           if (localItems.length === 0) {
             // No local items, just fetch server cart
             await get().fetchCart();
@@ -246,28 +246,29 @@ const useCartStore = create<CartStore>()(
             // Get current backend cart
             const backendCart = await cartService.getCart();
             const backendItems = backendCart.items || [];
-            
+
             // Find items that exist only locally
-            const uniqueLocalItems = localItems.filter(localItem => {
-              return !backendItems.some(backendItem => 
-                backendItem.productId === localItem.productId && 
-                backendItem.variantId === localItem.variantId
+            const uniqueLocalItems = localItems.filter((localItem) => {
+              return !backendItems.some(
+                (backendItem) =>
+                  backendItem.productId === localItem.productId &&
+                  backendItem.variantId === localItem.variantId
               );
             });
-            
+
             // Add unique local items to server
             for (const item of uniqueLocalItems) {
               try {
                 await cartService.addToCart({
                   productId: item.productId,
                   variantId: item.variantId || undefined,
-                  quantity: item.quantity
+                  quantity: item.quantity,
                 });
               } catch (error) {
                 console.error('Failed to sync item:', error);
               }
             }
-            
+
             // Fetch the merged cart from server
             await get().fetchCart();
           } catch (error) {
@@ -280,7 +281,7 @@ const useCartStore = create<CartStore>()(
           // Check if user is a buyer
           const user = useAuthStore.getState().user;
           if (user?.role !== 'buyer') return;
-          
+
           const { syncQueue, isSynced } = get();
           if (!isSynced || syncQueue.length === 0) return;
 
@@ -325,7 +326,7 @@ const useCartStore = create<CartStore>()(
             if (user?.role !== 'buyer') {
               return;
             }
-            
+
             const { isSynced } = get();
             if (isSynced) {
               // Only fetch if tab is visible
@@ -350,10 +351,10 @@ const useCartStore = create<CartStore>()(
         addItem: async (item) => {
           const cartItemId = generateItemId(item.productId, item.variantId);
           const timestamp = Date.now();
-          
+
           // LOCAL-FIRST: Update local state immediately
           set((state) => {
-            const existingItemIndex = state.items.findIndex(i => i.id === cartItemId);
+            const existingItemIndex = state.items.findIndex((i) => i.id === cartItemId);
 
             if (existingItemIndex > -1) {
               // Update existing item quantity
@@ -368,7 +369,7 @@ const useCartStore = create<CartStore>()(
                 ...existingItem,
                 quantity: newQuantity,
                 syncStatus: 'local',
-                lastModified: timestamp
+                lastModified: timestamp,
               };
 
               return { items: updatedItems };
@@ -380,7 +381,7 @@ const useCartStore = create<CartStore>()(
                 inStock: item.inStock !== false && item.outOfStock !== true,
                 outOfStock: item.outOfStock === true || item.inStock === false,
                 syncStatus: 'local',
-                lastModified: timestamp
+                lastModified: timestamp,
               };
 
               return { items: [...state.items, newItem] };
@@ -397,16 +398,15 @@ const useCartStore = create<CartStore>()(
               const cart = await cartService.addToCart({
                 productId: item.productId,
                 variantId: item.variantId,
-                quantity: item.quantity
+                quantity: item.quantity,
               });
-              
+
               // Update item with server data (prices, stock, etc)
               set((state) => ({
-                items: state.items.map(i => {
+                items: state.items.map((i) => {
                   if (i.id === cartItemId) {
-                    const serverItem = cart.items.find(si => 
-                      si.productId === item.productId && 
-                      si.variantId === item.variantId
+                    const serverItem = cart.items.find(
+                      (si) => si.productId === item.productId && si.variantId === item.variantId
                     );
                     if (serverItem) {
                       return { ...mapAPICartItemToLocal(serverItem), quantity: i.quantity };
@@ -414,25 +414,28 @@ const useCartStore = create<CartStore>()(
                   }
                   return i;
                 }),
-                cartData: cart
+                cartData: cart,
               }));
             } catch (error: any) {
               console.error('Background sync failed:', error);
-              
+
               // Add to sync queue for retry
               set((state) => ({
-                syncQueue: [...state.syncQueue, {
-                  operation: 'add',
-                  data: {
-                    productId: item.productId,
-                    variantId: item.variantId,
-                    quantity: item.quantity
+                syncQueue: [
+                  ...state.syncQueue,
+                  {
+                    operation: 'add',
+                    data: {
+                      productId: item.productId,
+                      variantId: item.variantId,
+                      quantity: item.quantity,
+                    },
+                    timestamp,
+                    retries: 0,
                   },
-                  timestamp,
-                  retries: 0
-                }]
+                ],
               }));
-              
+
               if (error.response?.status === 401) {
                 set({ isSynced: false });
               }
@@ -442,13 +445,13 @@ const useCartStore = create<CartStore>()(
 
         removeItem: async (id: string) => {
           const { items } = get();
-          const item = items.find(i => i.id === id);
-          
+          const item = items.find((i) => i.id === id);
+
           if (!item) return;
-          
+
           // LOCAL-FIRST: Remove immediately
           set((state) => ({
-            items: state.items.filter((item) => item.id !== id)
+            items: state.items.filter((item) => item.id !== id),
           }));
 
           // toast.success('Product removed from cart');
@@ -463,17 +466,20 @@ const useCartStore = create<CartStore>()(
               set({ cartData: cart });
             } catch (error: any) {
               console.error('Background sync failed:', error);
-              
+
               // Add to sync queue
               set((state) => ({
-                syncQueue: [...state.syncQueue, {
-                  operation: 'remove',
-                  data: { productId: item.productId, variantId: item.variantId },
-                  timestamp: Date.now(),
-                  retries: 0
-                }]
+                syncQueue: [
+                  ...state.syncQueue,
+                  {
+                    operation: 'remove',
+                    data: { productId: item.productId, variantId: item.variantId },
+                    timestamp: Date.now(),
+                    retries: 0,
+                  },
+                ],
               }));
-              
+
               if (error.response?.status === 401) {
                 set({ isSynced: false });
               }
@@ -483,26 +489,26 @@ const useCartStore = create<CartStore>()(
 
         updateQuantity: async (id: string, quantity: number) => {
           if (quantity < 1) return;
-          
+
           const { items } = get();
-          const item = items.find(i => i.id === id);
-          
+          const item = items.find((i) => i.id === id);
+
           if (!item) return;
-          
+
           const timestamp = Date.now();
-          
+
           // LOCAL-FIRST: Update immediately
           set((state) => ({
-            items: state.items.map((item) => 
-              item.id === id 
-                ? { 
-                    ...item, 
+            items: state.items.map((item) =>
+              item.id === id
+                ? {
+                    ...item,
                     quantity: Math.min(quantity, item.maxQuantity || 99),
                     syncStatus: 'local',
-                    lastModified: timestamp
+                    lastModified: timestamp,
                   }
                 : item
-            )
+            ),
           }));
 
           // BACKGROUND SYNC
@@ -513,16 +519,15 @@ const useCartStore = create<CartStore>()(
               const cart = await cartService.updateCartItem({
                 productId: item.productId,
                 variantId: item.variantId,
-                quantity
+                quantity,
               });
-              
+
               // Update with server data
               set((state) => ({
-                items: state.items.map(i => {
+                items: state.items.map((i) => {
                   if (i.id === id) {
-                    const serverItem = cart.items.find(si => 
-                      si.productId === item.productId && 
-                      si.variantId === item.variantId
+                    const serverItem = cart.items.find(
+                      (si) => si.productId === item.productId && si.variantId === item.variantId
                     );
                     if (serverItem) {
                       return mapAPICartItemToLocal(serverItem);
@@ -530,25 +535,28 @@ const useCartStore = create<CartStore>()(
                   }
                   return i;
                 }),
-                cartData: cart
+                cartData: cart,
               }));
             } catch (error: any) {
               console.error('Background sync failed:', error);
-              
+
               // Add to sync queue
               set((state) => ({
-                syncQueue: [...state.syncQueue, {
-                  operation: 'update',
-                  data: {
-                    productId: item.productId,
-                    variantId: item.variantId,
-                    quantity
+                syncQueue: [
+                  ...state.syncQueue,
+                  {
+                    operation: 'update',
+                    data: {
+                      productId: item.productId,
+                      variantId: item.variantId,
+                      quantity,
+                    },
+                    timestamp,
+                    retries: 0,
                   },
-                  timestamp,
-                  retries: 0
-                }]
+                ],
               }));
-              
+
               if (error.response?.status === 401) {
                 set({ isSynced: false });
               }
@@ -559,7 +567,7 @@ const useCartStore = create<CartStore>()(
         clearCart: async () => {
           // LOCAL-FIRST: Clear immediately
           set({ items: [] });
-          
+
           // toast.success('Cart cleared');
 
           // BACKGROUND SYNC
@@ -571,17 +579,20 @@ const useCartStore = create<CartStore>()(
               set({ cartData: cart });
             } catch (error: any) {
               console.error('Background sync failed:', error);
-              
+
               // Add to sync queue
               set((state) => ({
-                syncQueue: [...state.syncQueue, {
-                  operation: 'clear',
-                  data: {},
-                  timestamp: Date.now(),
-                  retries: 0
-                }]
+                syncQueue: [
+                  ...state.syncQueue,
+                  {
+                    operation: 'clear',
+                    data: {},
+                    timestamp: Date.now(),
+                    retries: 0,
+                  },
+                ],
               }));
-              
+
               if (error.response?.status === 401) {
                 set({ isSynced: false });
               }
@@ -611,15 +622,15 @@ const useCartStore = create<CartStore>()(
         syncLocalToAPI: async () => {
           // This is now handled by mergeCartsOnLogin
           await get().mergeCartsOnLogin();
-        }
+        },
       }),
       {
         name: 'cart-storage',
         storage: createJSONStorage(() => localStorage),
-        partialize: (state) => ({ 
+        partialize: (state) => ({
           items: state.items,
           syncQueue: state.syncQueue,
-          lastServerSync: state.lastServerSync
+          lastServerSync: state.lastServerSync,
         }),
       }
     )
@@ -629,7 +640,7 @@ const useCartStore = create<CartStore>()(
 // Auto-start periodic sync when store is created
 if (typeof window !== 'undefined') {
   useCartStore.getState().startPeriodicSync();
-  
+
   // Clean up on page unload
   window.addEventListener('beforeunload', () => {
     useCartStore.getState().stopPeriodicSync();

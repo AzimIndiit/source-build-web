@@ -391,13 +391,23 @@ const ProductDetailsPage: React.FC = () => {
                     if (currentDiscount.discountType === 'percentage') {
                       const discountedPrice =
                         currentPrice * (1 - currentDiscount.discountValue / 100);
+                      const priceUnit =
+                        product.priceType === 'sqft'
+                          ? '/sq ft'
+                          : product.priceType === 'linear'
+                            ? '/linear ft'
+                            : product.priceType === 'pallet'
+                              ? '/pallet'
+                              : '';
                       return (
                         <>
                           <span className="text-xl sm:text-2xl font-bold text-primary">
                             ${discountedPrice.toFixed(2)}
+                            <span className="text-sm">{priceUnit}</span>
                           </span>
                           <span className="text-lg sm:text-xl md:text-2xl text-gray-400 line-through">
                             ${currentPrice.toFixed(2)}
+                            <span className="text-sm">{priceUnit}</span>
                           </span>
                           <Badge className="bg-primary text-white px-2 sm:px-3 py-0.5 sm:py-1 text-xs sm:text-sm font-semibold">
                             -{currentDiscount.discountValue}%
@@ -407,13 +417,23 @@ const ProductDetailsPage: React.FC = () => {
                     }
                     if (currentDiscount.discountType === 'flat') {
                       const discountedPrice = currentPrice - currentDiscount.discountValue;
+                      const priceUnit =
+                        product.priceType === 'sqft'
+                          ? '/sq ft'
+                          : product.priceType === 'linear'
+                            ? '/linear ft'
+                            : product.priceType === 'pallet'
+                              ? '/pallet'
+                              : '';
                       return (
                         <>
                           <span className="text-xl sm:text-2xl font-bold text-primary">
                             ${discountedPrice.toFixed(2)}
+                            <span className="text-sm">{priceUnit}</span>
                           </span>
                           <span className="text-lg sm:text-xl md:text-2xl text-gray-400 line-through">
                             ${currentPrice.toFixed(2)}
+                            <span className="text-sm">{priceUnit}</span>
                           </span>
                           <Badge className="bg-primary text-white px-2 sm:px-3 py-0.5 sm:py-1 text-xs sm:text-sm font-semibold">
                             -${currentDiscount.discountValue}
@@ -422,9 +442,18 @@ const ProductDetailsPage: React.FC = () => {
                       );
                     }
                   } else {
+                    const priceUnit =
+                      product.priceType === 'sqft'
+                        ? '/sq ft'
+                        : product.priceType === 'linear'
+                          ? '/linear ft'
+                          : product.priceType === 'pallet'
+                            ? '/pallet'
+                            : '';
                     return (
                       <span className="text-xl sm:text-2xl font-bold text-primary">
                         ${currentPrice.toFixed(2)}
+                        <span className="text-sm">{priceUnit}</span>
                       </span>
                     );
                   }
@@ -503,7 +532,17 @@ const ProductDetailsPage: React.FC = () => {
             <div className="text-xs sm:text-sm text-gray-600">
               <span className="font-medium">Categories: </span>
               <span className="text-gray-900">
-                {product.category}, {product.subCategory}
+                {typeof product.category === 'object' && product.category
+                  ? product.category.name
+                  : product.category}
+                {product.subCategory && (
+                  <>
+                    ,{' '}
+                    {typeof product.subCategory === 'object' && product.subCategory
+                      ? product.subCategory.name
+                      : product.subCategory}
+                  </>
+                )}
               </span>
             </div>
           </div>

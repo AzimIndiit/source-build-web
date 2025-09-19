@@ -34,13 +34,17 @@ class SubcategoryService {
       });
     }
 
-    const response = await axiosInstance.get<SubcategoriesListResponse>('/subcategories', { params });
+    const response = await axiosInstance.get<SubcategoriesListResponse>('/subcategories', {
+      params,
+    });
     return response.data;
   }
 
   // Get single subcategory by ID
   async getSubcategoryById(subcategoryId: string): Promise<SubcategoryResponse> {
-    const response = await axiosInstance.get<SubcategoryResponse>(`/subcategories/${subcategoryId}`);
+    const response = await axiosInstance.get<SubcategoryResponse>(
+      `/subcategories/${subcategoryId}`
+    );
     return response.data;
   }
 
@@ -51,8 +55,14 @@ class SubcategoryService {
   }
 
   // Update subcategory
-  async updateSubcategory(subcategoryId: string, data: UpdateSubcategoryDto): Promise<SubcategoryResponse> {
-    const response = await axiosInstance.put<SubcategoryResponse>(`/subcategories/${subcategoryId}`, data);
+  async updateSubcategory(
+    subcategoryId: string,
+    data: UpdateSubcategoryDto
+  ): Promise<SubcategoryResponse> {
+    const response = await axiosInstance.put<SubcategoryResponse>(
+      `/subcategories/${subcategoryId}`,
+      data
+    );
     return response.data;
   }
 
@@ -64,12 +74,17 @@ class SubcategoryService {
 
   // Toggle subcategory status
   async toggleSubcategoryStatus(subcategoryId: string): Promise<SubcategoryResponse> {
-    const response = await axiosInstance.patch<SubcategoryResponse>(`/subcategories/${subcategoryId}/toggle-status`);
+    const response = await axiosInstance.patch<SubcategoryResponse>(
+      `/subcategories/${subcategoryId}/toggle-status`
+    );
     return response.data;
   }
 
   // Get subcategories by category
-  async getSubcategoriesByCategory(categoryId: string, filters?: SubcategoryFilters): Promise<SubcategoriesListResponse> {
+  async getSubcategoriesByCategory(
+    categoryId: string,
+    filters?: SubcategoryFilters
+  ): Promise<SubcategoriesListResponse> {
     const params = new URLSearchParams();
     params.append('category', categoryId);
 
@@ -81,7 +96,9 @@ class SubcategoryService {
       });
     }
 
-    const response = await axiosInstance.get<SubcategoriesListResponse>('/subcategories', { params });
+    const response = await axiosInstance.get<SubcategoriesListResponse>('/subcategories', {
+      params,
+    });
     return response.data;
   }
 

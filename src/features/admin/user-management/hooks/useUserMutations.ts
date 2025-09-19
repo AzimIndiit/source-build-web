@@ -8,7 +8,7 @@ export enum UserRole {
   BUYER = 'buyer',
   SELLER = 'seller',
   DRIVER = 'driver',
-  ADMIN = 'admin'
+  ADMIN = 'admin',
 }
 
 // User interface to match backend structure
@@ -156,12 +156,12 @@ export const useUsersQuery = (filters?: UserFilters) => {
     queryFn: async () => {
       const response = await userService.getUsers(filters);
       // Format each user response
-      console.log('response', response)
-      return  {
+      console.log('response', response);
+      return {
         users: response.data.map((user: any) => formatUserResponse(user)),
         pagination: response.meta.pagination,
         stats: response.meta.stats,
-      }
+      };
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
@@ -169,7 +169,6 @@ export const useUsersQuery = (filters?: UserFilters) => {
 
 // Block user mutation
 export const useBlockUser = () => {
-  
   return useMutation({
     mutationFn: (userId: string) => userService.blockUser(userId),
     onSuccess: () => {
@@ -184,7 +183,6 @@ export const useBlockUser = () => {
 
 // Unblock user mutation
 export const useUnblockUser = () => {
-  
   return useMutation({
     mutationFn: (userId: string) => userService.unblockUser(userId),
     onSuccess: () => {
@@ -199,7 +197,6 @@ export const useUnblockUser = () => {
 
 // Delete user mutation
 export const useDeleteUser = () => {
-  
   return useMutation({
     mutationFn: (userId: string) => userService.deleteUser(userId),
     onSuccess: () => {
@@ -211,4 +208,3 @@ export const useDeleteUser = () => {
     },
   });
 };
-

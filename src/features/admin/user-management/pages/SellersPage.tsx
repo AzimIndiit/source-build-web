@@ -1,7 +1,12 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PaginationWrapper } from '@/components/ui';
-import { useUsersQuery, useBlockUser, useUnblockUser, useDeleteUser } from '../hooks/useUserMutations';
+import {
+  useUsersQuery,
+  useBlockUser,
+  useUnblockUser,
+  useDeleteUser,
+} from '../hooks/useUserMutations';
 
 import { UserDataTable } from '../components/UserDataTable';
 import { MetricsGrid } from '@/features/dashboard/components';
@@ -9,7 +14,7 @@ import { Users } from 'lucide-react';
 import { BuyersPageSkeleton } from '../components/BuyersPageSkeleton';
 
 const getMetricsUserData: any[] = [
-  { 
+  {
     id: 'total',
     title: 'Total Buyers',
     value: '0',
@@ -51,9 +56,7 @@ const getMetricsUserData: any[] = [
   // },
 ];
 
-
-
-  const SellerPage: React.FC = () => {
+const SellerPage: React.FC = () => {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
@@ -62,7 +65,7 @@ const getMetricsUserData: any[] = [
   const [filterStatus, setFilterStatus] = useState('');
   const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
   const [metricsUserData, setMetricsUserData] = useState<any[]>(getMetricsUserData);
-  
+
   // User mutation hooks
   const blockUser = useBlockUser();
   const unblockUser = useUnblockUser();
@@ -74,7 +77,7 @@ const getMetricsUserData: any[] = [
       limit: itemsPerPage,
       role: 'seller',
     };
-    
+
     // Add search parameter if there's a search value
     if (searchValue) {
       params.search = searchValue;
@@ -90,20 +93,20 @@ const getMetricsUserData: any[] = [
       // Set time to start of day for from date and end of day for to date
       const fromDate = new Date(dateRange.from);
       fromDate.setHours(0, 0, 0, 0);
-      
+
       const toDate = new Date(dateRange.to);
       toDate.setHours(23, 59, 59, 999);
-      
+
       params.startDate = fromDate.toISOString();
       params.endDate = toDate.toISOString();
     } else if (sortValue !== 'recent') {
       // Handle other sort options
       const now = new Date();
       now.setHours(23, 59, 59, 999);
-      
+
       let startDate = new Date();
-      
-      switch(sortValue) {
+
+      switch (sortValue) {
         case 'this-week':
           startDate.setDate(now.getDate() - 7);
           break;
@@ -117,15 +120,15 @@ const getMetricsUserData: any[] = [
           startDate.setMonth(now.getMonth() - 6);
           break;
       }
-      
+
       startDate.setHours(0, 0, 0, 0);
-      
+
       if (sortValue !== 'recent') {
         params.startDate = startDate.toISOString();
         params.endDate = now.toISOString();
       }
     }
-    
+
     return params;
   }, [currentPage, itemsPerPage, searchValue, filterStatus, sortValue, dateRange]);
 
@@ -170,8 +173,6 @@ const getMetricsUserData: any[] = [
     setCurrentPage(1); // Reset to first page on filter change
   };
 
-
-
   // Error state
   if (isError) {
     return (
@@ -188,11 +189,11 @@ const getMetricsUserData: any[] = [
   const transformedUsers = data?.users || [];
 
   const totalPages = data?.pagination?.totalPages || 1;
-  const stats :any = data?.stats;
+  const stats: any = data?.stats;
 
   useEffect(() => {
     if (stats) {
-      setMetricsUserData(prevMetrics => 
+      setMetricsUserData((prevMetrics) =>
         prevMetrics.map((metric: any) => {
           // Use new value if available, otherwise keep previous value
           const newValue = stats[metric.id];
@@ -204,9 +205,7 @@ const getMetricsUserData: any[] = [
         })
       );
     }
-  }, [stats]);      
-
-  
+  }, [stats]);
 
   // Show full page skeleton only on initial load (no search/filter/sort)
   if (isLoading && !searchValue && !filterStatus && sortValue === 'recent' && currentPage === 1) {
@@ -215,15 +214,15 @@ const getMetricsUserData: any[] = [
 
   return (
     <div className="py-4 md:p-6 space-y-6">
-        <MetricsGrid metrics={metricsUserData}  />
+      <MetricsGrid metrics={metricsUserData} />
       {/* Sellers List */}
-      <UserDataTable 
-        users={transformedUsers} 
+      <UserDataTable
+        users={transformedUsers}
         onViewDetails={handleViewUserDetails}
         onBlock={handleBlockUser}
         onUnblock={handleUnblockUser}
         onDelete={handleDeleteUser}
-        title="Sellers" 
+        title="Sellers"
         searchValue={searchValue}
         onSearchChange={handleSearchChange}
         selectedSort={sortValue}
@@ -232,7 +231,7 @@ const getMetricsUserData: any[] = [
         onFilterChange={handleFilterChange}
         isLoading={isLoading}
         actionLoading={blockUser.isPending || unblockUser.isPending || deleteUser.isPending}
-        />
+      />
 
       {/* Pagination */}
       {totalPages > 1 && (

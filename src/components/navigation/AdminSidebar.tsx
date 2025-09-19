@@ -123,7 +123,12 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
         {/* Mobile Header */}
         {isMobile && (
           <div className="flex items-center justify-end  px-6  pt-4  bg-primary">
-            <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full w-8 h-8 bg-white">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onClose}
+              className="rounded-full w-8 h-8 bg-white"
+            >
               <X className="w-5 h-5" />
             </Button>
           </div>
@@ -147,7 +152,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
         )}
 
         {/* Scrollable Content Area */}
-        <div className={cn("flex-1  py-6 bg-primary", !isCollapsed && 'overflow-y-auto')}>
+        <div className={cn('flex-1  py-6 bg-primary', !isCollapsed && 'overflow-y-auto')}>
           {/* Logo */}
           <div className="">
             {isCollapsed ? (
@@ -250,7 +255,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
                           <div className="relative">
                             {/* Arrow pointing to the menu item */}
                             <div className="absolute -left-2 top-[18px] w-0 h-0 border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent border-r-[8px] border-r-gray-900"></div>
-                            
+
                             {/* Dropdown container */}
                             <div className="bg-gray-900 text-white rounded-lg shadow-2xl overflow-hidden min-w-[200px] border border-gray-800">
                               {/* Header */}
@@ -260,7 +265,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
                                   <span className="font-semibold text-sm">{item.name}</span>
                                 </div>
                               </div>
-                              
+
                               {/* Sub-items */}
                               {item.subItems && item.subItems.length > 0 && (
                                 <div className="p-1">
@@ -283,7 +288,6 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
                                         )}
                                       >
                                         <div className="flex items-center gap-2">
-                                         
                                           {subItem.name}
                                         </div>
                                       </Link>
@@ -291,7 +295,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
                                   })}
                                 </div>
                               )}
-                              
+
                               {/* Empty state for items with no sub-items */}
                               {(!item.subItems || item.subItems.length === 0) && (
                                 <div className="px-4 py-3 text-gray-500 text-xs italic">

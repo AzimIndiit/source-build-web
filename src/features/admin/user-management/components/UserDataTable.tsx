@@ -108,7 +108,7 @@ export const UserDataTable: React.FC<UserDataTableProps> = ({
 
   const handleConfirmAction = () => {
     if (!confirmModalState.userId) return;
-    
+
     switch (confirmModalState.type) {
       case 'delete':
         onDelete?.(confirmModalState.userId);
@@ -120,11 +120,22 @@ export const UserDataTable: React.FC<UserDataTableProps> = ({
         onUnblock?.(confirmModalState.userId);
         break;
     }
-    
-    setConfirmModalState({ isOpen: false, type: null, userId: null, userName: null, userEmail: null });
+
+    setConfirmModalState({
+      isOpen: false,
+      type: null,
+      userId: null,
+      userName: null,
+      userEmail: null,
+    });
   };
 
-  const openConfirmModal = (type: 'delete' | 'block' | 'unblock', userId: string, userName: string, userEmail: string) => {
+  const openConfirmModal = (
+    type: 'delete' | 'block' | 'unblock',
+    userId: string,
+    userName: string,
+    userEmail: string
+  ) => {
     setConfirmModalState({ isOpen: true, type, userId, userName, userEmail });
   };
 
@@ -192,9 +203,7 @@ export const UserDataTable: React.FC<UserDataTableProps> = ({
         filterFn: (row, id, value) => {
           return value === undefined || value === ''
             ? true
-            : (row.getValue(id) as string)
-                ?.toLowerCase()
-                .includes(value.toLowerCase());
+            : (row.getValue(id) as string)?.toLowerCase().includes(value.toLowerCase());
         },
       },
       {
@@ -219,9 +228,7 @@ export const UserDataTable: React.FC<UserDataTableProps> = ({
         filterFn: (row, id, value) => {
           return value === undefined || value === ''
             ? true
-            : (row.getValue(id) as string)
-                ?.toLowerCase()
-                .includes(value.toLowerCase());
+            : (row.getValue(id) as string)?.toLowerCase().includes(value.toLowerCase());
         },
       },
       {
@@ -244,9 +251,7 @@ export const UserDataTable: React.FC<UserDataTableProps> = ({
         filterFn: (row, id, value) => {
           return value === undefined || value === ''
             ? true
-            : (row.getValue(id) as string)
-                ?.toLowerCase()
-                .includes(value.toLowerCase());
+            : (row.getValue(id) as string)?.toLowerCase().includes(value.toLowerCase());
         },
       },
       {
@@ -322,7 +327,14 @@ export const UserDataTable: React.FC<UserDataTableProps> = ({
                   </DropdownMenuItem>
                   {user.status === 'active' ? (
                     <DropdownMenuItem
-                      onClick={() => openConfirmModal('block', user.id || '', user.displayName || 'this user', user.email || '')}
+                      onClick={() =>
+                        openConfirmModal(
+                          'block',
+                          user.id || '',
+                          user.displayName || 'this user',
+                          user.email || ''
+                        )
+                      }
                       className="cursor-pointer text-orange-600 hover:text-orange-700"
                     >
                       <Ban className="mr-2 h-4 w-4" />
@@ -330,7 +342,14 @@ export const UserDataTable: React.FC<UserDataTableProps> = ({
                     </DropdownMenuItem>
                   ) : user.status === 'inactive' ? (
                     <DropdownMenuItem
-                      onClick={() => openConfirmModal('unblock', user.id || '', user.displayName || 'this user', user.email || '')}
+                      onClick={() =>
+                        openConfirmModal(
+                          'unblock',
+                          user.id || '',
+                          user.displayName || 'this user',
+                          user.email || ''
+                        )
+                      }
                       className="cursor-pointer text-green-600 hover:text-green-700"
                     >
                       <UserCheck className="mr-2 h-4 w-4" />
@@ -339,7 +358,14 @@ export const UserDataTable: React.FC<UserDataTableProps> = ({
                   ) : null}
                   {user.status !== 'deleted' && (
                     <DropdownMenuItem
-                      onClick={() => openConfirmModal('delete', user.id || '', user.displayName || 'this user', user.email || '')}
+                      onClick={() =>
+                        openConfirmModal(
+                          'delete',
+                          user.id || '',
+                          user.displayName || 'this user',
+                          user.email || ''
+                        )
+                      }
                       className="cursor-pointer text-red-600 hover:text-red-700"
                     >
                       <Trash2 className="mr-2 h-4 w-4" />
@@ -413,18 +439,8 @@ export const UserDataTable: React.FC<UserDataTableProps> = ({
               className="w-64"
             />
           )}
-          {showSort && (
-            <SortDropdown
-              selectedSort={selectedSort}
-              onSortChange={onSortChange}
-            />
-          )}
-          {showFilter && (
-            <UserFilterDropdown
-              filters={filters}
-              onFilterChange={onFilterChange}
-            />
-          )}
+          {showSort && <SortDropdown selectedSort={selectedSort} onSortChange={onSortChange} />}
+          {showFilter && <UserFilterDropdown filters={filters} onFilterChange={onFilterChange} />}
         </div>
       </div>
 
@@ -524,12 +540,12 @@ export const UserDataTable: React.FC<UserDataTableProps> = ({
                         <Mail className="w-3 h-3 text-gray-400" />
                         <span className="text-gray-600">{user.email || 'No email'}</span>
                       </div>
-                      
+
                       <div className="flex items-center gap-2 text-xs">
                         <User className="w-3 h-3 text-gray-400" />
                         <span className="text-gray-600">Login: {user.authType || 'Email'}</span>
                       </div>
-                      
+
                       <div className="flex items-center gap-2 text-xs">
                         <Calendar className="w-3 h-3 text-gray-400" />
                         <span className="text-gray-600">Joined: {formatDate(user.createdAt)}</span>
@@ -547,7 +563,7 @@ export const UserDataTable: React.FC<UserDataTableProps> = ({
                         View Details
                         <ChevronRight className="w-4 h-4 ml-1" />
                       </Button>
-                      
+
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -558,7 +574,14 @@ export const UserDataTable: React.FC<UserDataTableProps> = ({
                         <DropdownMenuContent align="end">
                           {user.status === 'active' ? (
                             <DropdownMenuItem
-                              onClick={() => openConfirmModal('block', user.id || '', user.displayName || 'this user', user.email || '')}
+                              onClick={() =>
+                                openConfirmModal(
+                                  'block',
+                                  user.id || '',
+                                  user.displayName || 'this user',
+                                  user.email || ''
+                                )
+                              }
                               className="cursor-pointer text-orange-600"
                             >
                               <Ban className="mr-2 h-4 w-4" />
@@ -566,7 +589,14 @@ export const UserDataTable: React.FC<UserDataTableProps> = ({
                             </DropdownMenuItem>
                           ) : user.status === 'inactive' ? (
                             <DropdownMenuItem
-                              onClick={() => openConfirmModal('unblock', user.id || '', user.displayName || 'this user', user.email || '')}
+                              onClick={() =>
+                                openConfirmModal(
+                                  'unblock',
+                                  user.id || '',
+                                  user.displayName || 'this user',
+                                  user.email || ''
+                                )
+                              }
                               className="cursor-pointer text-green-600"
                             >
                               <UserCheck className="mr-2 h-4 w-4" />
@@ -575,7 +605,14 @@ export const UserDataTable: React.FC<UserDataTableProps> = ({
                           ) : null}
                           {user.status !== 'deleted' && (
                             <DropdownMenuItem
-                              onClick={() => openConfirmModal('delete', user.id || '', user.displayName || 'this user', user.email || '')}
+                              onClick={() =>
+                                openConfirmModal(
+                                  'delete',
+                                  user.id || '',
+                                  user.displayName || 'this user',
+                                  user.email || ''
+                                )
+                              }
                               className="cursor-pointer text-red-600"
                             >
                               <Trash2 className="mr-2 h-4 w-4" />
@@ -592,95 +629,93 @@ export const UserDataTable: React.FC<UserDataTableProps> = ({
           </div>
 
           {/* Desktop View - Table */}
-        <Card className="hidden md:block bg-white shadow-sm border-gray-50 rounded-3xl p-0 overflow-hidden">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow
-                    key={headerGroup.id}
-                    className="bg-gray-50/50 hover:bg-gray-50/50"
-                  >
-                    {headerGroup.headers.map((header) => (
-                      <TableHead key={header.id}>
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-                      </TableHead>
-                    ))}
-                  </TableRow>
-                ))}
-              </TableHeader>
-              <TableBody>
-                {table.getRowModel().rows.map((row, displayIndex) => (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && 'selected'}
-                    className="hover:bg-gray-50/30 border-b"
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id} className="py-3 lg:py-4">
-                        {cell.column.id === 'serialNumber' 
-                          ? (
+          <Card className="hidden md:block bg-white shadow-sm border-gray-50 rounded-3xl p-0 overflow-hidden">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <TableRow key={headerGroup.id} className="bg-gray-50/50 hover:bg-gray-50/50">
+                      {headerGroup.headers.map((header) => (
+                        <TableHead key={header.id}>
+                          {header.isPlaceholder
+                            ? null
+                            : flexRender(header.column.columnDef.header, header.getContext())}
+                        </TableHead>
+                      ))}
+                    </TableRow>
+                  ))}
+                </TableHeader>
+                <TableBody>
+                  {table.getRowModel().rows.map((row, displayIndex) => (
+                    <TableRow
+                      key={row.id}
+                      data-state={row.getIsSelected() && 'selected'}
+                      className="hover:bg-gray-50/30 border-b"
+                    >
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell key={cell.id} className="py-3 lg:py-4">
+                          {cell.column.id === 'serialNumber' ? (
                             <div className="text-center">
                               <span className="text-primary font-medium text-xs lg:text-sm">
                                 {displayIndex + 1}
                               </span>
                             </div>
-                          )
-                          : flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </Card>
+                          ) : (
+                            flexRender(cell.column.columnDef.cell, cell.getContext())
+                          )}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </Card>
         </>
       )}
 
       {/* Confirmation Modal */}
       <DeleteConfirmationModal
         isOpen={confirmModalState.isOpen}
-        onClose={() => setConfirmModalState({ isOpen: false, type: null, userId: null, userName: null, userEmail: null })}
+        onClose={() =>
+          setConfirmModalState({
+            isOpen: false,
+            type: null,
+            userId: null,
+            userName: null,
+            userEmail: null,
+          })
+        }
         onConfirm={handleConfirmAction}
         title={
           confirmModalState.type === 'delete'
             ? `Delete User?`
             : confirmModalState.type === 'block'
-            ? `Block User?`
-            : `Unblock User?`
+              ? `Block User?`
+              : `Unblock User?`
         }
         description={
           <div className="space-y-2">
-            <div className="font-medium text-gray-900">
-              {confirmModalState.userName}
-            </div>
+            <div className="font-medium text-gray-900">{confirmModalState.userName}</div>
             {confirmModalState.userEmail && (
-              <div className="text-sm text-gray-600">
-                {confirmModalState.userEmail}
-              </div>
+              <div className="text-sm text-gray-600">{confirmModalState.userEmail}</div>
             )}
             <div className="text-sm text-gray-700 mt-3">
               {confirmModalState.type === 'delete'
                 ? 'This action cannot be undone. The user will be permanently removed from the system.'
                 : confirmModalState.type === 'block'
-                ? 'The user will not be able to access their account until unblocked.'
-                : 'The user will regain full access to their account.'}
+                  ? 'The user will not be able to access their account until unblocked.'
+                  : 'The user will regain full access to their account.'}
             </div>
           </div>
         }
         isLoading={actionLoading}
         confirmText={
           confirmModalState.type === 'delete'
-            ? "Yes, Delete User"
+            ? 'Yes, Delete User'
             : confirmModalState.type === 'block'
-            ? "Yes, Block User"
-            : "Yes, Unblock User"
+              ? 'Yes, Block User'
+              : 'Yes, Unblock User'
         }
       />
     </div>

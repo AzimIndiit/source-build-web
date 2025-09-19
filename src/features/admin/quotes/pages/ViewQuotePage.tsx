@@ -25,26 +25,24 @@ const ViewQuotePage: React.FC = () => {
   const navigate = useNavigate();
   const [imagePreviewOpen, setImagePreviewOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  
+
   // Fetch quote details
   const { data: quote, isLoading } = useQuoteQuery(id || '');
   const { mutate: getOrCreateChat, isPending } = useGetOrCreateChatMutation();
 
-
   const handleReply = () => {
-      if(quote?.user?.id){
-        getOrCreateChat({ participantId: quote?.user?.id });
-      }
+    if (quote?.user?.id) {
+      getOrCreateChat({ participantId: quote?.user?.id });
+    }
   };
 
- 
   // Format display values
   const formatValue = (value: string | undefined) => {
     if (!value) return 'N/A';
     // Format enum values (e.g., 'new-construction' -> 'New Construction')
     return value
       .split('-')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
   };
 
@@ -113,15 +111,11 @@ const ViewQuotePage: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <h4 className="text-sm font-semibold text-gray-600 mb-2">Name</h4>
-                  <p className="text-base text-gray-900">
-                    {mockQuote.user?.displayName || 'N/A'}
-                  </p>
+                  <p className="text-base text-gray-900">{mockQuote.user?.displayName || 'N/A'}</p>
                 </div>
                 <div>
                   <h4 className="text-sm font-semibold text-gray-600 mb-2">Email</h4>
-                  <p className="text-base text-gray-900">
-                    {mockQuote.user?.email || 'N/A'}
-                  </p>
+                  <p className="text-base text-gray-900">{mockQuote.user?.email || 'N/A'}</p>
                 </div>
               </div>
             </div>
@@ -134,9 +128,7 @@ const ViewQuotePage: React.FC = () => {
                   <h4 className="text-sm font-semibold text-gray-600 mb-2">
                     What is the project type?
                   </h4>
-                  <p className="text-base text-gray-900">
-                    {formatValue(mockQuote.projectType)}
-                  </p>
+                  <p className="text-base text-gray-900">{formatValue(mockQuote.projectType)}</p>
                 </div>
                 <div>
                   <h4 className="text-sm font-semibold text-gray-600 mb-2">
@@ -158,9 +150,7 @@ const ViewQuotePage: React.FC = () => {
                   <h4 className="text-sm font-semibold text-gray-600 mb-2">
                     Do you have a layout or design already?
                   </h4>
-                  <p className="text-base text-gray-900">
-                    {formatValue(mockQuote.existingDesign)}
-                  </p>
+                  <p className="text-base text-gray-900">{formatValue(mockQuote.existingDesign)}</p>
                 </div>
               </div>
             </div>
@@ -173,25 +163,19 @@ const ViewQuotePage: React.FC = () => {
                   <h4 className="text-sm font-semibold text-gray-600 mb-2">
                     What cabinet style do you prefer?
                   </h4>
-                  <p className="text-base text-gray-900">
-                    {formatValue(mockQuote.cabinetStyle)}
-                  </p>
+                  <p className="text-base text-gray-900">{formatValue(mockQuote.cabinetStyle)}</p>
                 </div>
                 <div>
                   <h4 className="text-sm font-semibold text-gray-600 mb-2">
                     What material do you want?
                   </h4>
-                  <p className="text-base text-gray-900">
-                    {formatValue(mockQuote.material)}
-                  </p>
+                  <p className="text-base text-gray-900">{formatValue(mockQuote.material)}</p>
                 </div>
                 <div className="md:col-span-2">
                   <h4 className="text-sm font-semibold text-gray-600 mb-2">
                     What finish or color are you looking for?
                   </h4>
-                  <p className="text-base text-gray-900">
-                    {formatValue(mockQuote.finishColor)}
-                  </p>
+                  <p className="text-base text-gray-900">{formatValue(mockQuote.finishColor)}</p>
                 </div>
               </div>
             </div>
@@ -255,7 +239,6 @@ const ViewQuotePage: React.FC = () => {
         </CardContent>
       </Card>
 
-   
       {/* Image Preview Modal */}
       {mockQuote.images && mockQuote.images.length > 0 && (
         <ImagePreviewModal

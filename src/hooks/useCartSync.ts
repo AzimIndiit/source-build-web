@@ -8,15 +8,15 @@ import useCartStore from '@/stores/cartStore';
  */
 export const useCartSync = () => {
   const { user } = useAuth();
-  const { 
-    isSynced, 
-    mergeCartsOnLogin, 
-    fetchCart, 
+  const {
+    isSynced,
+    mergeCartsOnLogin,
+    fetchCart,
     processSyncQueue,
     startPeriodicSync,
-    stopPeriodicSync 
+    stopPeriodicSync,
   } = useCartStore();
-  
+
   const hasInitialSyncRef = useRef(false);
   const previousUserIdRef = useRef<string | null>(null);
 
@@ -29,14 +29,14 @@ export const useCartSync = () => {
 
         if (userChanged && !hasInitialSyncRef.current) {
           hasInitialSyncRef.current = true;
-          
+
           try {
             // Merge local cart with server cart on login
             await mergeCartsOnLogin();
-            
+
             // Process any pending operations in the sync queue
             await processSyncQueue();
-            
+
             // Start periodic sync for two-way updates
             startPeriodicSync();
           } catch (error) {
@@ -51,10 +51,10 @@ export const useCartSync = () => {
         // User is logged out
         hasInitialSyncRef.current = false;
         previousUserIdRef.current = null;
-        
+
         // Stop periodic sync when logged out
         stopPeriodicSync();
-        
+
         // Mark as not synced but keep local items
         useCartStore.setState({ isSynced: false, cartData: null });
       }
@@ -79,7 +79,7 @@ export const useCartSync = () => {
   // Handle visibility change for two-way sync
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
-    
+
     const handleVisibilityChange = async () => {
       if (!document.hidden && user && isSynced) {
         // Debounce to prevent multiple rapid calls

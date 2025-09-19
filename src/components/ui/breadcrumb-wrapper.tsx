@@ -29,7 +29,9 @@ export const BreadcrumbWrapper: React.FC<BreadcrumbWrapperProps> = ({ items, cla
             <React.Fragment key={index}>
               <BreadcrumbItem>
                 {item.isCurrentPage ? (
-                  <BreadcrumbPage className="text-primary text-base capitalize">{item.label}</BreadcrumbPage>
+                  <BreadcrumbPage className="text-primary text-base capitalize">
+                    {item.label}
+                  </BreadcrumbPage>
                 ) : item.href ? (
                   <BreadcrumbLink asChild className="text-base capitalize">
                     <Link to={item.href}>{item.label}</Link>

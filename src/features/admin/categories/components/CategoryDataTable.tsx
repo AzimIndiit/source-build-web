@@ -223,7 +223,7 @@ export const CategoryDataTable: React.FC<CategoryDataTableProps> = ({
         ),
         sortingFn: 'datetime',
       },
-  
+
       {
         accessorKey: 'isActive',
         header: 'Status',
@@ -242,7 +242,7 @@ export const CategoryDataTable: React.FC<CategoryDataTableProps> = ({
           );
         },
       },
-     
+
       {
         id: 'actions',
         header: () => <div className="text-center">Actions</div>,
@@ -258,14 +258,19 @@ export const CategoryDataTable: React.FC<CategoryDataTableProps> = ({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                {title === 'Categories' && <DropdownMenuItem 
-                    onClick={() => navigate(`/admin/categories/${category._id}/subcategories`)}
-                    className="cursor-pointer text-blue-600"
+                  {title === 'Categories' && (
+                    <DropdownMenuItem
+                      onClick={() => navigate(`/admin/categories/${category._id}/subcategories`)}
+                      className="cursor-pointer text-blue-600"
+                    >
+                      <Layers className="mr-2 h-4 w-4" />
+                      View Subcategories
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem
+                    onClick={() => onEdit?.(category)}
+                    className="cursor-pointer text-primary"
                   >
-                    <Layers className="mr-2 h-4 w-4" />
-                    View Subcategories
-                  </DropdownMenuItem>}
-                  <DropdownMenuItem onClick={() => onEdit?.(category)} className="cursor-pointer text-primary">
                     <Edit className="mr-2 h-4 w-4" />
                     Edit {title === 'Categories' ? 'Category' : 'Subcategory'}
                   </DropdownMenuItem>
@@ -323,7 +328,6 @@ export const CategoryDataTable: React.FC<CategoryDataTableProps> = ({
         <div className="justify-between items-centre flex w-full border-b border-gray-200 pb-4">
           <h1 className="text-xl md:text-2xl font-bold text-gray-900">{title}</h1>
           <div className="flex gap-2">
-           
             <Button
               onClick={() => onAddCategory?.()}
               className="bg-primary text-white hover:bg-primary/90 h-10"
@@ -340,7 +344,7 @@ export const CategoryDataTable: React.FC<CategoryDataTableProps> = ({
               value={globalFilter ?? ''}
               onChange={handleSearchChange}
               placeholder={`Search ${title?.toLowerCase()}...`}
-             className="w-64"
+              className="w-64"
             />
           )}
           {showSort && <SortDropdown selectedSort={selectedSort} onSortChange={onSortChange} />}
@@ -489,15 +493,15 @@ export const CategoryDataTable: React.FC<CategoryDataTableProps> = ({
                     >
                       {row.getVisibleCells().map((cell) => (
                         <TableCell key={cell.id} className="py-3 lg:py-4">
-                          {cell.column.id === 'serialNumber' 
-                            ? (
-                              <div className="text-center">
-                                <span className="text-primary font-medium text-xs lg:text-sm">
-                                  {displayIndex + 1}
-                                </span>
-                              </div>
-                            )
-                            : flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          {cell.column.id === 'serialNumber' ? (
+                            <div className="text-center">
+                              <span className="text-primary font-medium text-xs lg:text-sm">
+                                {displayIndex + 1}
+                              </span>
+                            </div>
+                          ) : (
+                            flexRender(cell.column.columnDef.cell, cell.getContext())
+                          )}
                         </TableCell>
                       ))}
                     </TableRow>

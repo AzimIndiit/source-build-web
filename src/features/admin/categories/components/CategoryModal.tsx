@@ -8,7 +8,14 @@ import { Loader2, Upload, X } from 'lucide-react';
 import { FormInput } from '@/components/forms/FormInput';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Category, CreateCategoryDto, Subcategory, UpdateCategoryDto, CreateSubcategoryDto, UpdateSubcategoryDto   } from '../types';
+import {
+  Category,
+  CreateCategoryDto,
+  Subcategory,
+  UpdateCategoryDto,
+  CreateSubcategoryDto,
+  UpdateSubcategoryDto,
+} from '../types';
 import { fileService } from '@/features/profile/services/fileService';
 import { validateImageFile } from '@/utils/imageValidation';
 import toast from 'react-hot-toast';
@@ -30,7 +37,9 @@ type CategoryFormData = z.infer<typeof categorySchema>;
 interface CategoryModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: CreateCategoryDto | UpdateCategoryDto | CreateSubcategoryDto | UpdateSubcategoryDto) => Promise<void>;
+  onSubmit: (
+    data: CreateCategoryDto | UpdateCategoryDto | CreateSubcategoryDto | UpdateSubcategoryDto
+  ) => Promise<void>;
   category?: Category | Subcategory | null;
   categoryId?: string;
   isLoading?: boolean;
@@ -188,13 +197,17 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
         imageUrl = existingImage;
       }
 
-      const submitData: CreateCategoryDto | UpdateCategoryDto | CreateSubcategoryDto | UpdateSubcategoryDto = {
+      const submitData:
+        | CreateCategoryDto
+        | UpdateCategoryDto
+        | CreateSubcategoryDto
+        | UpdateSubcategoryDto = {
         ...values,
         image: imageUrl,
       };
-   if(categoryId) {
-    (submitData as CreateSubcategoryDto | UpdateSubcategoryDto).category = categoryId;
-   }
+      if (categoryId) {
+        (submitData as CreateSubcategoryDto | UpdateSubcategoryDto).category = categoryId;
+      }
       await onSubmit(submitData);
       reset();
       setUploadedImage(null);
@@ -209,7 +222,15 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px] bg-white">
         <DialogHeader>
-          <DialogTitle>{category ?  categoryId ? 'Edit Subcategory' : 'Edit Category' : categoryId ? 'Create New Subcategory' :  'Create New Category'}</DialogTitle>
+          <DialogTitle>
+            {category
+              ? categoryId
+                ? 'Edit Subcategory'
+                : 'Edit Category'
+              : categoryId
+                ? 'Create New Subcategory'
+                : 'Create New Category'}
+          </DialogTitle>
         </DialogHeader>
 
         <FormProvider {...methods}>
@@ -341,8 +362,6 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
                 </div>
               )}
 
-          
-
               {errors.image && <p className="text-sm text-red-600">{errors.image.message}</p>}
             </div>
 
@@ -375,15 +394,16 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
                     Status
                   </Label>
                 </div>
-                <div className='flex gap-2 items-center'>
-                  <p className={`${watchedIsActive ? 'text-green-500' : 'text-red-500'}`}>{watchedIsActive ? 'Active' : 'Inactive'}</p>
-                <Switch
-                  id="isActive"
-                   
-                  checked={watchedIsActive}
-                  onCheckedChange={(checked) => setValue('isActive', checked)}
-                  disabled={isLoading}
-                />
+                <div className="flex gap-2 items-center">
+                  <p className={`${watchedIsActive ? 'text-green-500' : 'text-red-500'}`}>
+                    {watchedIsActive ? 'Active' : 'Inactive'}
+                  </p>
+                  <Switch
+                    id="isActive"
+                    checked={watchedIsActive}
+                    onCheckedChange={(checked) => setValue('isActive', checked)}
+                    disabled={isLoading}
+                  />
                 </div>
               </div>
             ) : null}

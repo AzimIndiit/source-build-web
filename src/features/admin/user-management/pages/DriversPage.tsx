@@ -1,7 +1,12 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PaginationWrapper } from '@/components/ui';
-import { useUsersQuery, useBlockUser, useUnblockUser, useDeleteUser } from '../hooks/useUserMutations';
+import {
+  useUsersQuery,
+  useBlockUser,
+  useUnblockUser,
+  useDeleteUser,
+} from '../hooks/useUserMutations';
 
 import { UserDataTable } from '../components/UserDataTable';
 import { MetricsGrid } from '@/features/dashboard/components';
@@ -60,7 +65,7 @@ const DriverPage: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState('');
   const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
   const [metricsUserData, setMetricsUserData] = useState<any[]>(getMetricsUserData);
-  
+
   // User mutation hooks
   const blockUser = useBlockUser();
   const unblockUser = useUnblockUser();
@@ -88,20 +93,20 @@ const DriverPage: React.FC = () => {
       // Set time to start of day for from date and end of day for to date
       const fromDate = new Date(dateRange.from);
       fromDate.setHours(0, 0, 0, 0);
-      
+
       const toDate = new Date(dateRange.to);
       toDate.setHours(23, 59, 59, 999);
-      
+
       params.startDate = fromDate.toISOString();
       params.endDate = toDate.toISOString();
     } else if (sortValue !== 'recent') {
       // Handle other sort options
       const now = new Date();
       now.setHours(23, 59, 59, 999);
-      
+
       let startDate = new Date();
-      
-      switch(sortValue) {
+
+      switch (sortValue) {
         case 'this-week':
           startDate.setDate(now.getDate() - 7);
           break;
@@ -115,9 +120,9 @@ const DriverPage: React.FC = () => {
           startDate.setMonth(now.getMonth() - 6);
           break;
       }
-      
+
       startDate.setHours(0, 0, 0, 0);
-      
+
       if (sortValue !== 'recent') {
         params.startDate = startDate.toISOString();
         params.endDate = now.toISOString();
@@ -189,7 +194,7 @@ const DriverPage: React.FC = () => {
 
   useEffect(() => {
     if (stats) {
-      setMetricsUserData(prevMetrics => 
+      setMetricsUserData((prevMetrics) =>
         prevMetrics.map((metric: any) => {
           // Use new value if available, otherwise keep previous value
           const newValue = stats[metric.id];
@@ -210,7 +215,7 @@ const DriverPage: React.FC = () => {
 
   return (
     <div className="py-4 md:p-6 space-y-6">
-      <MetricsGrid metrics={metricsUserData}  />
+      <MetricsGrid metrics={metricsUserData} />
       {/* Drivers List */}
       <UserDataTable
         users={transformedUsers}

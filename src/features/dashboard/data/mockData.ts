@@ -1,8 +1,8 @@
 // @ts-nocheck
-import { 
-  Package, 
-  AlertTriangle, 
-  ShoppingCart, 
+import {
+  Package,
+  AlertTriangle,
+  ShoppingCart,
   Clock,
   Users,
   TrendingUp,
@@ -10,7 +10,7 @@ import {
   DollarSign,
   CheckCircle,
   RefreshCw,
-  Truck
+  Truck,
 } from 'lucide-react';
 import { MetricData, SalesData, RevenueData, Order } from '../types';
 
@@ -134,8 +134,6 @@ export const metricsAdminData: MetricData[] = [
     bgColor: 'bg-white/20',
   },
 ];
-
-
 
 export const weekSalesData: SalesData[] = [
   { day: 'Mon', sales: 200 },

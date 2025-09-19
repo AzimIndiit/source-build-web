@@ -120,9 +120,7 @@ export const OrdersDataTable: React.FC<OrdersDataTableProps> = ({
           </Button>
         ),
         cell: ({ row }) => (
-          <span className="text-primary font-medium text-xs lg:text-sm">
-            #{row.getValue('id')}
-          </span>
+          <span className="text-primary font-medium text-xs lg:text-sm">#{row.getValue('id')}</span>
         ),
       },
       {
@@ -158,9 +156,7 @@ export const OrdersDataTable: React.FC<OrdersDataTableProps> = ({
                 <div className="font-medium text-xs lg:text-sm text-gray-900 capitalize">
                   {customer?.displayName || 'Unknown'}
                 </div>
-                <div className="text-xs text-gray-500">
-                  {customer?.email || 'No email'}
-                </div>
+                <div className="text-xs text-gray-500">{customer?.email || 'No email'}</div>
               </div>
             </div>
           );
@@ -204,9 +200,7 @@ export const OrdersDataTable: React.FC<OrdersDataTableProps> = ({
                 <div className="font-medium text-xs lg:text-sm text-gray-900 capitalize">
                   {seller?.displayName || 'Unknown'}
                 </div>
-                <div className="text-xs text-gray-500">
-                  {seller?.email || 'No email'}
-                </div>
+                <div className="text-xs text-gray-500">{seller?.email || 'No email'}</div>
               </div>
             </div>
           );
@@ -253,9 +247,7 @@ export const OrdersDataTable: React.FC<OrdersDataTableProps> = ({
                 <div className="font-medium text-xs lg:text-sm text-gray-900 capitalize">
                   {driver?.displayName || 'Unknown'}
                 </div>
-                <div className="text-xs text-gray-500">
-                  {driver?.email || 'No email'}
-                </div>
+                <div className="text-xs text-gray-500">{driver?.email || 'No email'}</div>
               </div>
             </div>
           );
@@ -442,7 +434,6 @@ export const OrdersDataTable: React.FC<OrdersDataTableProps> = ({
           <h1 className="text-xl md:text-2xl font-bold text-gray-900">{title}</h1>
         </div>
         <div className="flex items-center gap-2 md:gap-4">
-       
           {onViewAll && (
             <Button
               variant="link"
@@ -467,8 +458,8 @@ export const OrdersDataTable: React.FC<OrdersDataTableProps> = ({
             globalFilter
               ? `No results found for "${globalFilter}". Try adjusting your search.`
               : filters?.orderStatus || filters?.pricing
-              ? 'No orders match your current filters. Try adjusting your filters.'
-              : "You don't have any orders yet."
+                ? 'No orders match your current filters. Try adjusting your filters.'
+                : "You don't have any orders yet."
           }
           icon={<img src={OrderEmptyIcon} className="w-64 h-56" alt="No orders" />}
           className="min-h-[400px]"

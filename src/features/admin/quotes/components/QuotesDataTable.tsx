@@ -170,7 +170,7 @@ export const QuotesDataTable: React.FC<QuotesDataTableProps> = ({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                <DropdownMenuItem
+                  <DropdownMenuItem
                     onClick={() => onReply?.(quote)}
                     className="cursor-pointer text-green-600 hover:text-green-700"
                   >
@@ -185,8 +185,6 @@ export const QuotesDataTable: React.FC<QuotesDataTableProps> = ({
                     <Eye className="mr-2 h-4 w-4 text-primary" />
                     View
                   </DropdownMenuItem>
-
-                
 
                   <DropdownMenuItem
                     onClick={() => handleDeleteClick(quote)}
@@ -204,7 +202,7 @@ export const QuotesDataTable: React.FC<QuotesDataTableProps> = ({
         enableColumnFilter: false,
       },
     ],
-    [ onView]
+    [onView]
   );
 
   const table = useReactTable({
@@ -290,120 +288,123 @@ export const QuotesDataTable: React.FC<QuotesDataTableProps> = ({
           {/* Content - Only show if has quotes */}
           {table.getFilteredRowModel().rows.length > 0 && (
             <>
-          {/* Mobile View - Cards */}
-          <div className="block md:hidden space-y-3">
-            {table.getFilteredRowModel().rows.map((row, index) => {
-              const quote = row.original;
-              return (
-                <Card
-                  key={quote.id || quote._id || index}
-                  className="bg-white shadow-sm border-gray-200"
-                >
-                  <CardContent className="p-4">
-                    {/* Quote Header */}
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <p className="text-xs text-gray-500">Quote #{index + 1}</p>
-                        <p className="text-sm font-medium text-gray-900">
-                          {quote.user?.displayName || 'Unknown User'}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Quote Details */}
-                    <div className="space-y-2 mb-3">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-gray-500">Email:</span>
-                        <span className="text-xs font-medium text-primary">
-                          {quote.user?.email || 'No Email'}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-gray-500">Project Type:</span>
-                        <span className="text-xs font-medium">
-                          {quote.projectType
-                            ?.replace(/-/g, ' ')
-                            .replace(/\b\w/g, (l) => l.toUpperCase())}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-gray-500">Location:</span>
-                        <span className="text-xs font-medium">
-                          {quote.installationLocation
-                            ?.replace(/-/g, ' ')
-                            .replace(/\b\w/g, (l) => l.toUpperCase())}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex justify-end pt-3 border-t gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 bg-yellow-500 hover:bg-yellow-600 text-white rounded-full"
-                        onClick={() => onReply?.(quote)}
-                      >
-                        <MessageSquare className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 bg-blue-600 hover:bg-blue-700 text-white rounded-full"
-                        onClick={() => onView?.(quote)}
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 bg-red-600 hover:bg-red-700 text-white rounded-full"
-                        onClick={() => handleDeleteClick(quote)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-
-          {/* Desktop View - Table */}
-          <Card className="hidden md:block bg-white shadow-sm border-gray-50 rounded-3xl p-0 overflow-hidden">
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  {table.getHeaderGroups().map((headerGroup) => (
-                    <TableRow key={headerGroup.id} className="bg-gray-50/50 hover:bg-gray-50/50">
-                      {headerGroup.headers.map((header) => (
-                        <TableHead key={header.id}>
-                          {header.isPlaceholder
-                            ? null
-                            : flexRender(header.column.columnDef.header, header.getContext())}
-                        </TableHead>
-                      ))}
-                    </TableRow>
-                  ))}
-                </TableHeader>
-                <TableBody>
-                  {table.getRowModel().rows.map((row) => (
-                    <TableRow
-                      key={row.id}
-                      data-state={row.getIsSelected() && 'selected'}
-                      className="hover:bg-gray-50/30 border-b"
+              {/* Mobile View - Cards */}
+              <div className="block md:hidden space-y-3">
+                {table.getFilteredRowModel().rows.map((row, index) => {
+                  const quote = row.original;
+                  return (
+                    <Card
+                      key={quote.id || quote._id || index}
+                      className="bg-white shadow-sm border-gray-200"
                     >
-                      {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id} className="py-3 lg:py-4">
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                        </TableCell>
+                      <CardContent className="p-4">
+                        {/* Quote Header */}
+                        <div className="flex items-start justify-between mb-3">
+                          <div>
+                            <p className="text-xs text-gray-500">Quote #{index + 1}</p>
+                            <p className="text-sm font-medium text-gray-900">
+                              {quote.user?.displayName || 'Unknown User'}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Quote Details */}
+                        <div className="space-y-2 mb-3">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-gray-500">Email:</span>
+                            <span className="text-xs font-medium text-primary">
+                              {quote.user?.email || 'No Email'}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-gray-500">Project Type:</span>
+                            <span className="text-xs font-medium">
+                              {quote.projectType
+                                ?.replace(/-/g, ' ')
+                                .replace(/\b\w/g, (l) => l.toUpperCase())}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-gray-500">Location:</span>
+                            <span className="text-xs font-medium">
+                              {quote.installationLocation
+                                ?.replace(/-/g, ' ')
+                                .replace(/\b\w/g, (l) => l.toUpperCase())}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex justify-end pt-3 border-t gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 bg-yellow-500 hover:bg-yellow-600 text-white rounded-full"
+                            onClick={() => onReply?.(quote)}
+                          >
+                            <MessageSquare className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 bg-blue-600 hover:bg-blue-700 text-white rounded-full"
+                            onClick={() => onView?.(quote)}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 bg-red-600 hover:bg-red-700 text-white rounded-full"
+                            onClick={() => handleDeleteClick(quote)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+
+              {/* Desktop View - Table */}
+              <Card className="hidden md:block bg-white shadow-sm border-gray-50 rounded-3xl p-0 overflow-hidden">
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      {table.getHeaderGroups().map((headerGroup) => (
+                        <TableRow
+                          key={headerGroup.id}
+                          className="bg-gray-50/50 hover:bg-gray-50/50"
+                        >
+                          {headerGroup.headers.map((header) => (
+                            <TableHead key={header.id}>
+                              {header.isPlaceholder
+                                ? null
+                                : flexRender(header.column.columnDef.header, header.getContext())}
+                            </TableHead>
+                          ))}
+                        </TableRow>
                       ))}
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </Card>
+                    </TableHeader>
+                    <TableBody>
+                      {table.getRowModel().rows.map((row) => (
+                        <TableRow
+                          key={row.id}
+                          data-state={row.getIsSelected() && 'selected'}
+                          className="hover:bg-gray-50/30 border-b"
+                        >
+                          {row.getVisibleCells().map((cell) => (
+                            <TableCell key={cell.id} className="py-3 lg:py-4">
+                              {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </Card>
             </>
           )}
         </>

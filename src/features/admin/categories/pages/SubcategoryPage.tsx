@@ -16,7 +16,7 @@ import { CategoryDataTable } from '../components/CategoryDataTable';
 import { CategoryModal } from '../components/CategoryModal';
 
 const SubcategoryPage: React.FC = () => {
-  const {id: categoryId} = useParams();
+  const { id: categoryId } = useParams();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedSubcategory, setSelectedSubcategory] = useState<Subcategory | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -55,7 +55,7 @@ const SubcategoryPage: React.FC = () => {
   // Fetch subcategories from API with filters
   const { data, isLoading } = useSubcategoriesQuery(queryParams);
   const responseData = data?.data;
-  console.log('responseData', responseData)
+  console.log('responseData', responseData);
 
   const subcategories = responseData || [];
   const pagination = responseData?.meta?.pagination;
@@ -68,7 +68,7 @@ const SubcategoryPage: React.FC = () => {
   const toggleStatusMutation = useToggleSubcategoryStatus();
 
   const handleOpenModal = (subcategory?: Subcategory | Category) => {
-    setSelectedSubcategory(subcategory as Subcategory || null);
+    setSelectedSubcategory((subcategory as Subcategory) || null);
     setIsModalOpen(true);
   };
 
@@ -114,8 +114,8 @@ const SubcategoryPage: React.FC = () => {
 
   return (
     <div className="container mx-auto py-6 px-4">
-     {/* Sub Categories Table */}
-     <CategoryDataTable
+      {/* Sub Categories Table */}
+      <CategoryDataTable
         title="Subcategories"
         categories={subcategories}
         onEdit={handleOpenModal}
@@ -141,15 +141,17 @@ const SubcategoryPage: React.FC = () => {
       )}
 
       {/* Category Modal */}
-   { isModalOpen &&  <CategoryModal
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        onSubmit={handleSubmit}
-        category={selectedSubcategory}
-        categoryId={selectedCategory}
-        isLoading={isActionLoading}
-        edit={!!selectedSubcategory}
-      />}
+      {isModalOpen && (
+        <CategoryModal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          onSubmit={handleSubmit}
+          category={selectedSubcategory}
+          categoryId={selectedCategory}
+          isLoading={isActionLoading}
+          edit={!!selectedSubcategory}
+        />
+      )}
     </div>
   );
 };

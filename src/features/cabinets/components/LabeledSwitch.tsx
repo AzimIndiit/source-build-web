@@ -42,11 +42,7 @@ const LabeledSwitch: React.FC<LabeledSwitchProps> = ({
       >
         {offLabel}
       </span>
-      <Switch
-        checked={checked}
-        onCheckedChange={onCheckedChange}
-        disabled={disabled}
-      />
+      <Switch checked={checked} onCheckedChange={onCheckedChange} disabled={disabled} />
       <span
         className={cn(
           'text-sm font-medium transition-colors',

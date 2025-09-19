@@ -104,7 +104,7 @@ export const SubcategoryDataTable: React.FC<SubcategoryDataTableProps> = ({
     subcategoryId: string | null;
     subcategoryName: string | null;
   }>({ isOpen: false, type: null, subcategoryId: null, subcategoryName: null });
-  
+
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
@@ -136,7 +136,7 @@ export const SubcategoryDataTable: React.FC<SubcategoryDataTableProps> = ({
 
   const handleConfirmAction = () => {
     if (!confirmModalState.subcategoryId) return;
-    
+
     switch (confirmModalState.type) {
       case 'delete':
         onDelete?.(confirmModalState.subcategoryId);
@@ -145,11 +145,15 @@ export const SubcategoryDataTable: React.FC<SubcategoryDataTableProps> = ({
         onToggleStatus?.(confirmModalState.subcategoryId);
         break;
     }
-    
+
     setConfirmModalState({ isOpen: false, type: null, subcategoryId: null, subcategoryName: null });
   };
 
-  const openConfirmModal = (type: 'delete' | 'toggle', subcategoryId: string, subcategoryName: string) => {
+  const openConfirmModal = (
+    type: 'delete' | 'toggle',
+    subcategoryId: string,
+    subcategoryName: string
+  ) => {
     setConfirmModalState({ isOpen: true, type, subcategoryId, subcategoryName });
   };
 
@@ -201,9 +205,7 @@ export const SubcategoryDataTable: React.FC<SubcategoryDataTableProps> = ({
                 <div className="font-medium text-xs lg:text-sm text-gray-900">
                   {subcategory.name}
                 </div>
-                <div className="text-xs text-gray-500">
-                  {subcategory.slug}
-                </div>
+                <div className="text-xs text-gray-500">{subcategory.slug}</div>
               </div>
             </div>
           );
@@ -227,9 +229,7 @@ export const SubcategoryDataTable: React.FC<SubcategoryDataTableProps> = ({
           return (
             <div className="flex items-center gap-2">
               <Tag className="w-4 h-4 text-gray-400" />
-              <span className="text-xs lg:text-sm text-gray-700">
-                {categoryName}
-              </span>
+              <span className="text-xs lg:text-sm text-gray-700">{categoryName}</span>
             </div>
           );
         },
@@ -256,9 +256,7 @@ export const SubcategoryDataTable: React.FC<SubcategoryDataTableProps> = ({
           </Button>
         ),
         cell: ({ row }) => (
-          <span className="text-gray-900 text-xs lg:text-sm">
-            {row.getValue('order') || 0}
-          </span>
+          <span className="text-gray-900 text-xs lg:text-sm">{row.getValue('order') || 0}</span>
         ),
       },
       {
@@ -446,179 +444,180 @@ export const SubcategoryDataTable: React.FC<SubcategoryDataTableProps> = ({
       {/* Subcategories List */}
       {!isLoading && table.getFilteredRowModel().rows.length > 0 && (
         <>
-      {/* Mobile View - Cards */}
-      <div className="block md:hidden space-y-3">
-        {table.getFilteredRowModel().rows.map((row, index) => {
-          const subcategory = row.original;
-          const category = subcategory.category as Category | string;
-          const categoryName = typeof category === 'object' ? category.name : 'Unknown';
-          
-          return (
-            <Card key={subcategory._id} className="bg-white shadow-sm border-gray-200">
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center gap-3">
-                    <Avatar className="w-10 h-10 border-2 border-white shadow-sm">
-                      {subcategory.image ? (
-                        <AvatarImage
-                          src={subcategory.image}
-                          alt={subcategory.name}
-                          className="object-cover"
-                        />
-                      ) : (
-                        <AvatarFallback className="bg-gray-200">
-                          <ImageIcon className="w-5 h-5 text-gray-500" />
-                        </AvatarFallback>
-                      )}
-                    </Avatar>
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">
-                        {subcategory.name}
-                      </p>
-                      <p className="text-xs text-gray-500">#{index + 1}</p>
-                    </div>
-                  </div>
-                  <Badge
-                    className={`px-2 py-1 rounded-full font-medium text-xs capitalize ${
-                      subcategory.isActive
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-gray-100 text-gray-800'
-                    }`}
-                  >
-                    {subcategory.isActive ? 'Active' : 'Inactive'}
-                  </Badge>
-                </div>
+          {/* Mobile View - Cards */}
+          <div className="block md:hidden space-y-3">
+            {table.getFilteredRowModel().rows.map((row, index) => {
+              const subcategory = row.original;
+              const category = subcategory.category as Category | string;
+              const categoryName = typeof category === 'object' ? category.name : 'Unknown';
 
-                <div className="space-y-2 mb-3">
-                  <div className="flex items-center gap-2 text-xs text-gray-600">
-                    <Tag className="w-3 h-3" />
-                    <span>Category: {categoryName}</span>
-                  </div>
-                  <p className="text-xs text-gray-600 line-clamp-2">
-                    {subcategory.description || 'No description'}
-                  </p>
-                  <div className="flex justify-between text-xs text-gray-500">
-                    <span>Order: {subcategory.order || 0}</span>
-                    <span>{formatDate(subcategory.createdAt)}</span>
-                  </div>
-                </div>
-
-                <div className="flex justify-between items-center pt-3 border-t">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-primary font-semibold text-xs"
-                    onClick={() => onEdit?.(subcategory)}
-                  >
-                    Edit
-                    <ChevronRight className="w-4 h-4 ml-1" />
-                  </Button>
-                  
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        onClick={() => openConfirmModal('toggle', subcategory._id, subcategory.name)}
-                        className="cursor-pointer"
-                      >
-                        <Power className="mr-2 h-4 w-4" />
-                        {subcategory.isActive ? 'Deactivate' : 'Activate'}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => openConfirmModal('delete', subcategory._id, subcategory.name)}
-                        className="cursor-pointer text-red-600"
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-
-      {/* Desktop View - Table */}
-      <Card className="hidden md:block bg-white shadow-sm border-gray-50 rounded-3xl p-0 overflow-hidden">
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow
-                  key={headerGroup.id}
-                  className="bg-gray-50/50 hover:bg-gray-50/50"
-                >
-                  {headerGroup.headers.map((header) => (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
+              return (
+                <Card key={subcategory._id} className="bg-white shadow-sm border-gray-200">
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="w-10 h-10 border-2 border-white shadow-sm">
+                          {subcategory.image ? (
+                            <AvatarImage
+                              src={subcategory.image}
+                              alt={subcategory.name}
+                              className="object-cover"
+                            />
+                          ) : (
+                            <AvatarFallback className="bg-gray-200">
+                              <ImageIcon className="w-5 h-5 text-gray-500" />
+                            </AvatarFallback>
                           )}
-                    </TableHead>
+                        </Avatar>
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">{subcategory.name}</p>
+                          <p className="text-xs text-gray-500">#{index + 1}</p>
+                        </div>
+                      </div>
+                      <Badge
+                        className={`px-2 py-1 rounded-full font-medium text-xs capitalize ${
+                          subcategory.isActive
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-gray-100 text-gray-800'
+                        }`}
+                      >
+                        {subcategory.isActive ? 'Active' : 'Inactive'}
+                      </Badge>
+                    </div>
+
+                    <div className="space-y-2 mb-3">
+                      <div className="flex items-center gap-2 text-xs text-gray-600">
+                        <Tag className="w-3 h-3" />
+                        <span>Category: {categoryName}</span>
+                      </div>
+                      <p className="text-xs text-gray-600 line-clamp-2">
+                        {subcategory.description || 'No description'}
+                      </p>
+                      <div className="flex justify-between text-xs text-gray-500">
+                        <span>Order: {subcategory.order || 0}</span>
+                        <span>{formatDate(subcategory.createdAt)}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-between items-center pt-3 border-t">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-primary font-semibold text-xs"
+                        onClick={() => onEdit?.(subcategory)}
+                      >
+                        Edit
+                        <ChevronRight className="w-4 h-4 ml-1" />
+                      </Button>
+
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={() =>
+                              openConfirmModal('toggle', subcategory._id, subcategory.name)
+                            }
+                            className="cursor-pointer"
+                          >
+                            <Power className="mr-2 h-4 w-4" />
+                            {subcategory.isActive ? 'Deactivate' : 'Activate'}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() =>
+                              openConfirmModal('delete', subcategory._id, subcategory.name)
+                            }
+                            className="cursor-pointer text-red-600"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+
+          {/* Desktop View - Table */}
+          <Card className="hidden md:block bg-white shadow-sm border-gray-50 rounded-3xl p-0 overflow-hidden">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <TableRow key={headerGroup.id} className="bg-gray-50/50 hover:bg-gray-50/50">
+                      {headerGroup.headers.map((header) => (
+                        <TableHead key={header.id}>
+                          {header.isPlaceholder
+                            ? null
+                            : flexRender(header.column.columnDef.header, header.getContext())}
+                        </TableHead>
+                      ))}
+                    </TableRow>
                   ))}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {table.getRowModel().rows.map((row, displayIndex) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && 'selected'}
-                  className="hover:bg-gray-50/30 border-b"
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="py-3 lg:py-4">
-                      {cell.column.id === 'serialNumber' 
-                        ? (
-                          <div className="text-center">
-                            <span className="text-primary font-medium text-xs lg:text-sm">
-                              {displayIndex + 1}
-                            </span>
-                          </div>
-                        )
-                        : flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
+                </TableHeader>
+                <TableBody>
+                  {table.getRowModel().rows.map((row, displayIndex) => (
+                    <TableRow
+                      key={row.id}
+                      data-state={row.getIsSelected() && 'selected'}
+                      className="hover:bg-gray-50/30 border-b"
+                    >
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell key={cell.id} className="py-3 lg:py-4">
+                          {cell.column.id === 'serialNumber' ? (
+                            <div className="text-center">
+                              <span className="text-primary font-medium text-xs lg:text-sm">
+                                {displayIndex + 1}
+                              </span>
+                            </div>
+                          ) : (
+                            flexRender(cell.column.columnDef.cell, cell.getContext())
+                          )}
+                        </TableCell>
+                      ))}
+                    </TableRow>
                   ))}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      </Card>
+                </TableBody>
+              </Table>
+            </div>
+          </Card>
         </>
       )}
 
       {/* Confirmation Modal */}
       <DeleteConfirmationModal
         isOpen={confirmModalState.isOpen}
-        onClose={() => setConfirmModalState({ isOpen: false, type: null, subcategoryId: null, subcategoryName: null })}
+        onClose={() =>
+          setConfirmModalState({
+            isOpen: false,
+            type: null,
+            subcategoryId: null,
+            subcategoryName: null,
+          })
+        }
         onConfirm={handleConfirmAction}
         title={
           confirmModalState.type === 'delete'
             ? 'Delete Subcategory?'
             : confirmModalState.type === 'toggle'
-            ? `${subcategories.find(s => s._id === confirmModalState.subcategoryId)?.isActive ? 'Deactivate' : 'Activate'} Subcategory?`
-            : ''
+              ? `${subcategories.find((s) => s._id === confirmModalState.subcategoryId)?.isActive ? 'Deactivate' : 'Activate'} Subcategory?`
+              : ''
         }
         description={
           <div className="space-y-2">
-            <div className="font-medium text-gray-900">
-              {confirmModalState.subcategoryName}
-            </div>
+            <div className="font-medium text-gray-900">{confirmModalState.subcategoryName}</div>
             <div className="text-sm text-gray-700 mt-3">
               {confirmModalState.type === 'delete'
                 ? 'This action cannot be undone. The subcategory will be permanently removed.'
                 : confirmModalState.type === 'toggle'
-                ? `This will ${subcategories.find(s => s._id === confirmModalState.subcategoryId)?.isActive ? 'deactivate' : 'activate'} the subcategory and affect its visibility.`
-                : ''}
+                  ? `This will ${subcategories.find((s) => s._id === confirmModalState.subcategoryId)?.isActive ? 'deactivate' : 'activate'} the subcategory and affect its visibility.`
+                  : ''}
             </div>
           </div>
         }
@@ -627,8 +626,8 @@ export const SubcategoryDataTable: React.FC<SubcategoryDataTableProps> = ({
           confirmModalState.type === 'delete'
             ? 'Yes, Delete Subcategory'
             : confirmModalState.type === 'toggle'
-            ? `Yes, ${subcategories.find(s => s._id === confirmModalState.subcategoryId)?.isActive ? 'Deactivate' : 'Activate'} Subcategory`
-            : ''
+              ? `Yes, ${subcategories.find((s) => s._id === confirmModalState.subcategoryId)?.isActive ? 'Deactivate' : 'Activate'} Subcategory`
+              : ''
         }
       />
     </div>

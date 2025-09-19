@@ -34,7 +34,7 @@ export const SearchInput: React.FC<SearchInputProps> = ({
       isInitialMount.current = false;
       return;
     }
-    
+
     onChange(debouncedValue);
   }, [debouncedValue]);
 

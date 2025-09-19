@@ -5,6 +5,8 @@ import { z } from 'zod';
 import { X, Eye, EyeOff } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { useQuery } from '@tanstack/react-query';
+import axiosInstance from '@/lib/axios';
 
 import { ProductForm } from '../components/ProductForm';
 import { ProductPreview } from '../components/ProductPreview';
@@ -27,14 +29,15 @@ import {
 import { format } from 'date-fns';
 import { Button } from '@/components/ui';
 import { validateMultipleImages } from '@/utils/imageValidation';
+import { Category, Subcategory } from '@/features/admin/categories/types';
 
 // Variant schema
 const variantSchema = z.object({
   color: z
     .string()
     .trim()
-    .min(1, 'Color is required')
-    .regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, 'Please enter a valid HEX color code'),
+    .regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, 'Please enter a valid HEX color code')
+,
   quantity: z
     .string()
     .trim()
@@ -51,6 +54,8 @@ const variantSchema = z.object({
     .min(1, 'Price is required')
     .regex(/^\d+(\.\d{1,2})?$/, 'Price must be a valid number')
     .refine((val) => parseFloat(val) > 0, 'Price must be greater than 0'),
+
+  priceType: z.enum(['sqft', 'linear', 'pallet']).default('sqft').optional(),
   discount: z
     .object({
       discountType: z.enum(['none', 'flat', 'percentage']),
@@ -111,6 +116,7 @@ const editProductSchema = z
       .regex(/^\d+(\.\d{1,2})?$/, 'Price must be a valid number with up to 2 decimal places')
       .refine((val) => parseFloat(val) > 0, 'Price must be greater than 0')
       .refine((val) => parseFloat(val) <= 999999.99, 'Price must not exceed 999,999.99'),
+    priceType: z.string().trim().default('sqft').optional(),
 
     description: z
       .string()
@@ -154,16 +160,16 @@ const editProductSchema = z
       .regex(
         /^[a-zA-Z0-9\s\-&.]+$/,
         'Brand can only contain letters, numbers, spaces, hyphens, ampersands, and periods'
-      ),
+      )
+      .optional()
+      .or(z.literal('')), // allow empty string
 
     color: z
       .string()
       .trim()
-      .min(1, 'Color is required')
-      .regex(
-        /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/,
-        'Please enter a valid HEX color code (e.g., #FF0000)'
-      ),
+      .regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, 'Please enter a valid HEX color code')
+      .optional()
+      .or(z.literal('')), // allow empty string
 
     locationIds: z
       .array(z.string())
@@ -182,9 +188,8 @@ const editProductSchema = z
             'Tags can only contain letters, numbers, spaces, hyphens, and hashtags'
           )
       )
-      .min(1, 'At least one product tag is required')
-      .max(10, 'Maximum 10 tags allowed'),
-
+      .max(10, 'Maximum 10 tags allowed')
+      .default([]),
     variants: z.array(variantSchema).max(5, 'Maximum 5 variants allowed').optional(),
 
     // Marketplace fields
@@ -355,83 +360,6 @@ const editProductSchema = z
 
 type EditProductForm = z.infer<typeof editProductSchema>;
 
-// Create options with lowercase values to match backend
-const categoryOptions = [
-  { value: 'electronics', label: 'Electronics' },
-  { value: 'clothing', label: 'Clothing' },
-  { value: 'home', label: 'Home & Garden' },
-  { value: 'sports', label: 'Sports & Outdoors' },
-  { value: 'accessories', label: 'Accessories' },
-  { value: 'commercial', label: 'Commercial' },
-  { value: 'commercial doors', label: 'Commercial Doors' },
-];
-
-// Category to subcategory mapping
-const categorySubcategoryMap: Record<string, Array<{ value: string; label: string }>> = {
-  electronics: [
-    { value: 'phones', label: 'Phones' },
-    { value: 'laptops', label: 'Laptops' },
-    { value: 'tablets', label: 'Tablets' },
-    { value: 'headphones', label: 'Headphones' },
-    { value: 'cameras', label: 'Cameras' },
-    { value: 'accessories', label: 'Accessories' },
-  ],
-  clothing: [
-    { value: 'mens', label: "Men's Clothing" },
-    { value: 'womens', label: "Women's Clothing" },
-    { value: 'kids', label: "Kids' Clothing" },
-    { value: 'shoes', label: 'Shoes' },
-    { value: 'accessories', label: 'Accessories' },
-  ],
-  home: [
-    { value: 'furniture', label: 'Furniture' },
-    { value: 'decor', label: 'Decor' },
-    { value: 'kitchen', label: 'Kitchen' },
-    { value: 'bathroom', label: 'Bathroom' },
-    { value: 'garden', label: 'Garden' },
-  ],
-  'home & garden': [
-    { value: 'furniture', label: 'Furniture' },
-    { value: 'decor', label: 'Decor' },
-    { value: 'kitchen', label: 'Kitchen' },
-    { value: 'bathroom', label: 'Bathroom' },
-    { value: 'garden', label: 'Garden' },
-  ],
-  sports: [
-    { value: 'fitness equipment', label: 'Fitness Equipment' },
-    { value: 'outdoor gear', label: 'Outdoor Gear' },
-    { value: 'sportswear', label: 'Sportswear' },
-    { value: 'accessories', label: 'Accessories' },
-  ],
-  'sports & outdoors': [
-    { value: 'fitness equipment', label: 'Fitness Equipment' },
-    { value: 'outdoor gear', label: 'Outdoor Gear' },
-    { value: 'sportswear', label: 'Sportswear' },
-    { value: 'accessories', label: 'Accessories' },
-  ],
-  accessories: [
-    { value: 'jewelry', label: 'Jewelry' },
-    { value: 'bags', label: 'Bags' },
-    { value: 'watches', label: 'Watches' },
-    { value: 'belts', label: 'Belts' },
-    { value: 'other', label: 'Other' },
-  ],
-  commercial: [
-    { value: 'equipment', label: 'Equipment' },
-    { value: 'supplies', label: 'Supplies' },
-    { value: 'furniture', label: 'Furniture' },
-    { value: 'tools', label: 'Tools' },
-  ],
-  'commercial doors': [
-    { value: 'doors', label: 'Doors' },
-    { value: 'windows', label: 'Windows' },
-    { value: 'glass doors', label: 'Glass Doors' },
-    { value: 'frames', label: 'Frames' },
-    { value: 'hardware', label: 'Hardware' },
-  ],
-  // Add mappings for variations in category names from backend
-};
-
 const tagOptions = [
   { value: 'casing', label: 'Casing' },
   { value: 'trim', label: 'Trim' },
@@ -466,12 +394,58 @@ function EditProductPage() {
 
   const [showAddAddressModal, setShowAddAddressModal] = useState(false);
   const [showSaveDraftModal, setShowSaveDraftModal] = useState(false);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
 
   const { data: productData, isLoading: isLoadingProduct } = useProductByIdQuery(id || '');
   const { data: addressesData, refetch: refetchAddresses } = useSavedAddresssQuery();
   const createAddressMutation = useCreateSavedAddressMutation();
   const updateProductMutation = useUpdateProductMutation();
   const saveDraftMutation = useSaveDraftMutation();
+
+  // Fetch categories from API (only active ones)
+  const { data: categoriesData, isLoading: categoriesLoading } = useQuery({
+    queryKey: ['categories-active'],
+    queryFn: async () => {
+      const response = await axiosInstance.get('/categories', {
+        params: {
+          limit: 100,
+        },
+      });
+      const categories = response.data.data as Category[];
+      return categories.filter((cat) => cat.isActive);
+    },
+  });
+
+  // Fetch subcategories based on selected category
+  const { data: subcategoriesData, isLoading: subcategoriesLoading } = useQuery({
+    queryKey: ['subcategories', selectedCategoryId],
+    queryFn: async () => {
+      if (!selectedCategoryId) return [];
+      const response = await axiosInstance.get('/subcategories', {
+        params: {
+          category: selectedCategoryId,
+          limit: 100,
+        },
+      });
+      const subcategories = response.data.data as Subcategory[];
+      return subcategories.filter((sub) => sub.isActive);
+    },
+    enabled: !!selectedCategoryId,
+  });
+
+  // Convert categories to options for FormSelect
+  const categoryOptions =
+    categoriesData?.map((category) => ({
+      value: category._id,
+      label: category.name,
+    })) || [];
+
+  // Convert subcategories to options for FormSelect
+  const subCategoryOptions =
+    subcategoriesData?.map((subcategory) => ({
+      value: subcategory._id,
+      label: subcategory.name,
+    })) || [];
 
   const savedAddresses = Array.isArray(addressesData?.data)
     ? addressesData.data
@@ -491,13 +465,14 @@ function EditProductPage() {
     defaultValues: {
       title: '',
       price: '',
+      priceType: '',
       description: '',
       category: '',
       subCategory: '',
       quantity: '',
       outOfStock: false,
       brand: '',
-      color: '#000000',
+      color: '',
       locationIds: [],
       productTag: [],
       variants: [],
@@ -507,7 +482,7 @@ function EditProductPage() {
         delivery: false,
       },
       pickupHours: '',
-      shippingPrice: '',
+      shippingPrice: '200',
       // readyByDate: '',
       // readyByTime: '',
       readyByDays: '0',
@@ -526,76 +501,47 @@ function EditProductPage() {
   const { handleSubmit, watch, reset, setValue } = methods;
   const formValues = watch();
 
-  // Get subcategory options based on selected category
-  // Check both exact match and lowercase match for category
-  let subCategoryOptions = formValues.category
-    ? [
-        ...(categorySubcategoryMap[formValues.category] ||
-          categorySubcategoryMap[formValues.category.toLowerCase()] ||
-          []),
-      ]
-    : [];
-
-  // If we have a subcategory value but no options (for custom categories from backend),
-  // create an option for it
-  const currentSubCategory = formValues.subCategory;
-
-  console.log('=== SubCategory Debug ===');
-  console.log('Current category:', formValues.category);
-  console.log('Current subCategory value:', currentSubCategory);
-  console.log('SubCategory options before adding current:', subCategoryOptions);
-
-  if (currentSubCategory && subCategoryOptions.length === 0 && formValues.category) {
-    subCategoryOptions.push({ value: currentSubCategory, label: currentSubCategory });
-    console.log('Added subcategory because no options available');
-  } else if (
-    currentSubCategory &&
-    !subCategoryOptions.find((opt) => opt.value.toLowerCase() === currentSubCategory.toLowerCase())
-  ) {
-    // Add current subcategory if it's not in the options list (case-insensitive check)
-    subCategoryOptions.push({ value: currentSubCategory, label: currentSubCategory });
-    console.log('Added subcategory because not in options list');
-  }
-
-  console.log('Final subCategory options:', subCategoryOptions);
-  console.log('=== End SubCategory Debug ===');
-
-  // Force update subcategory when data is loaded
+  // Update selectedCategoryId when form category changes
   useEffect(() => {
-    if (isInitialDataLoaded && currentSubCategory) {
-      console.log('Forcing subcategory update after initial load:', currentSubCategory);
-      methods.setValue('subCategory', currentSubCategory);
+    if (formValues.category) {
+      // Check if it's an ID (from API) or a name
+      const categoryOption = categoryOptions.find(
+        (cat) =>
+          cat.value === formValues.category ||
+          cat.label.toLowerCase() === formValues.category.toLowerCase()
+      );
+      if (categoryOption) {
+        setSelectedCategoryId(categoryOption.value);
+      }
+    } else {
+      setSelectedCategoryId('');
     }
-  }, [isInitialDataLoaded, currentSubCategory, methods]);
+  }, [formValues.category, categoryOptions]);
 
   // Reset subcategory when category changes (but not during initial load)
   useEffect(() => {
     // Skip this effect during initial data load
     if (!isInitialDataLoaded) return;
 
-    if (formValues.category) {
+    if (formValues.category && subcategoriesData) {
       const currentSubcategory = formValues.subCategory;
-      const availableSubcategories =
-        categorySubcategoryMap[formValues.category] ||
-        categorySubcategoryMap[formValues.category.toLowerCase()] ||
-        [];
 
-      // Check if current subcategory is valid for the new category
-      const isValidSubcategory = availableSubcategories.some(
+      // Check if current subcategory exists in new category's subcategories
+      const isValidSubcategory = subcategoriesData.some(
         (sub) =>
-          sub.value === currentSubcategory ||
-          sub.value.toLowerCase() === currentSubcategory?.toLowerCase()
+          sub._id === currentSubcategory ||
+          sub.name.toLowerCase() === currentSubcategory?.toLowerCase()
       );
 
       // Reset subcategory if it's not valid for the new category
       if (!isValidSubcategory && currentSubcategory) {
         setValue('subCategory', '');
       }
-    } else {
+    } else if (!formValues.category) {
       // Clear subcategory when no category is selected
       setValue('subCategory', '');
     }
-  }, [formValues.category, setValue, isInitialDataLoaded]);
+  }, [formValues.category, setValue, isInitialDataLoaded, subcategoriesData]);
   useEffect(() => {
     if (productData?.data) {
       const product = productData.data;
@@ -621,82 +567,52 @@ function EditProductPage() {
         }
       }
 
-      // Handle category value - ensure it exists in options
-      let categoryValue = product.category || '';
-      let subCategoryValue = product.subCategory || '';
+      // Handle category value - extract ID from object or use string directly
+      let categoryValue = '';
+      let subCategoryValue = '';
 
-      // First, validate and normalize the category
-      if (categoryValue) {
-        // Check if category exists in options (case-insensitive)
-        const categoryMatch = categoryOptions.find(
-          (opt) => opt.value.toLowerCase() === categoryValue.toLowerCase()
-        );
-
-        if (categoryMatch) {
-          // Use the exact value from options
-          categoryValue = categoryMatch.value;
-        } else {
-          // Category doesn't exist in options - keep original value but log warning
-          console.warn(
-            `Category "${product.category}" not found in predefined options, keeping original value`
-          );
-          // Don't use fallback - preserve the original category
+      if (product.category) {
+        if (typeof product.category === 'string') {
+          // If it's a string ID, use it directly
+          categoryValue = product.category;
+        } else if (typeof product.category === 'object' && product.category) {
+          // If it's an object, extract the ID
+          categoryValue = (product.category as any)._id || (product.category as any).id || '';
         }
       }
 
-      // Now handle subcategory based on the selected category
-      if (categoryValue) {
-        // Get subcategory options for the current category
-        // Try both exact match and lowercase match
-        const categorySubOptions =
-          categorySubcategoryMap[categoryValue] ||
-          categorySubcategoryMap[categoryValue.toLowerCase()] ||
-          [];
-        console.log(`Subcategory options for category "${categoryValue}":`, categorySubOptions);
-        console.log(`Original subcategory value: "${subCategoryValue}"`);
-
-        if (subCategoryValue) {
-          if (categorySubOptions.length > 0) {
-            // Check if subcategory exists in the category's options (case-insensitive)
-            const subCategoryMatch = categorySubOptions.find(
-              (opt) => opt.value.toLowerCase() === subCategoryValue.toLowerCase()
-            );
-
-            if (subCategoryMatch) {
-              // Use the exact value from options
-              console.log(`Found matching subcategory: "${subCategoryMatch.value}"`);
-              subCategoryValue = subCategoryMatch.value;
-            } else {
-              // Subcategory doesn't exist for this category - keep original value
-              console.warn(
-                `SubCategory "${product.subCategory}" not found for category "${categoryValue}", keeping original value`
-              );
-              // Keep the original subcategory value even if not in options
-              // This is important for custom or backend-specific values
-            }
-          } else {
-            // No subcategory options available for this category
-            console.log(
-              `No subcategory options available for category "${categoryValue}", keeping value: "${subCategoryValue}"`
-            );
-          }
+      if (product.subCategory) {
+        if (typeof product.subCategory === 'string') {
+          // If it's a string ID, use it directly
+          subCategoryValue = product.subCategory;
+        } else if (typeof product.subCategory === 'object' && product.subCategory) {
+          // If it's an object, extract the ID
+          subCategoryValue =
+            (product.subCategory as any)._id || (product.subCategory as any).id || '';
         }
       }
 
-      console.log('Final category value:', categoryValue);
-      console.log('Final subcategory value:', subCategoryValue);
+      // Set selectedCategoryId for fetching subcategories
+      if (categoryValue) {
+        setSelectedCategoryId(categoryValue);
+      }
+
+      console.log('Category ID:', categoryValue);
+      console.log('SubCategory ID:', subCategoryValue);
 
       // Reset form with all values
+      const parentPriceType = product.priceType || 'sqft';
       const formData = {
         title: product.title || '',
         price: product.price?.toString() || '',
+        priceType: parentPriceType,
         description: product.description || '',
         category: categoryValue,
         subCategory: subCategoryValue,
         quantity: product.quantity?.toString() || '',
         outOfStock: product.outOfStock || false,
         brand: product.brand || '',
-        color: product.color || '#000000',
+        color: product.color || '',
         locationIds:
           product.locationIds?.map((loc: any) =>
             typeof loc === 'string' ? loc : loc._id || loc.id
@@ -707,6 +623,7 @@ function EditProductPage() {
             color: v.color,
             quantity: v.quantity?.toString() || '',
             price: v.price?.toString() || '',
+            priceType: v.priceType || parentPriceType,
             outOfStock: v.outOfStock || false,
             discount: {
               discountType: v.discount?.discountType || 'none',
@@ -738,25 +655,13 @@ function EditProductPage() {
       console.log('Discount data:', formData.discount);
       console.log('Setting subCategory to:', subCategoryValue);
 
-      // Ensure subcategory options include the current value before resetting
-      const subCatOptions = categoryValue
-        ? categorySubcategoryMap[categoryValue] ||
-          categorySubcategoryMap[categoryValue.toLowerCase()] ||
-          []
-        : [];
-
-      // Check if the subcategory exists in options
-      const matchingSubCat = subCatOptions.find(
-        (opt) => opt.value.toLowerCase() === subCategoryValue.toLowerCase()
+      // The subcategory value is already set to the ID
+      console.log(
+        'About to reset form with category:',
+        categoryValue,
+        'subcategory:',
+        subCategoryValue
       );
-
-      // Use the exact value from options if found, otherwise use the original value
-      const finalSubCategoryValue = matchingSubCat ? matchingSubCat.value : subCategoryValue;
-
-      // Update formData with the final subcategory value
-      formData.subCategory = finalSubCategoryValue;
-
-      console.log('About to reset form with subCategory:', formData.subCategory);
 
       // Use reset to set all form values at once
       reset(formData);
@@ -772,11 +677,11 @@ function EditProductPage() {
           'Setting form values after delay - category:',
           categoryValue,
           'subcategory:',
-          finalSubCategoryValue
+          subCategoryValue
         );
         console.log('Setting discount after delay:', formData.discount);
         methods.setValue('category', categoryValue);
-        methods.setValue('subCategory', finalSubCategoryValue);
+        methods.setValue('subCategory', subCategoryValue);
 
         // Check again after setValue
         const valuesAfterSet = methods.getValues();
@@ -924,6 +829,7 @@ function EditProductPage() {
     const mutationData: any = {
       title: data.title,
       price: parseFloat(data.price),
+      priceType: data.priceType,
       description: data.description,
       category: data.category,
       subCategory: data.subCategory,
@@ -954,24 +860,26 @@ function EditProductPage() {
           ? parseFloat(data.discount.discountValue)
           : undefined,
       },
-      variants: data.variants?.map((v, index) => {
-        const variant = variants[index];
+      variants: variants.map((variant, index) => {
+        const formVariant = data.variants?.[index];
+        if (!formVariant) return null;
         return {
-          color: v.color,
-          quantity: parseInt(v.quantity),
-          price: parseFloat(v.price),
-          outOfStock: v.outOfStock,
+          color: formVariant.color,
+          quantity: parseInt(formVariant.quantity),
+          price: parseFloat(formVariant.price),
+          priceType: formVariant.priceType || data.priceType || 'sqft',
+          outOfStock: formVariant.outOfStock ?? false,
           discount: {
-            discountType: v.discount.discountType,
-            discountValue: v.discount.discountValue
-              ? parseFloat(v.discount.discountValue)
+            discountType: formVariant.discount.discountType || 'none',
+            discountValue: formVariant.discount.discountValue
+              ? parseFloat(formVariant.discount.discountValue)
               : undefined,
           },
           // Keep existing images in the images property
           // The mutation will merge new uploaded images with these
           images: variant?.existingImages || [],
         };
-      }),
+      }).filter(Boolean),
       imageFiles: uploadedPhotos.length > 0 ? uploadedPhotos : undefined,
       existingImages: existingImages,
       variantFiles: variantFiles.length > 0 ? variantFiles : undefined,
@@ -1053,6 +961,9 @@ function EditProductPage() {
     if (formData.price && formData.price.trim()) {
       draftData.price = formData.price;
     }
+    if (formData.priceType) {
+      draftData.priceType = formData.priceType;
+    }
     if (formData.description && formData.description.trim()) {
       draftData.description = formData.description;
     }
@@ -1124,29 +1035,37 @@ function EditProductPage() {
     if (formData.outOfStock !== undefined) {
       draftData.outOfStock = formData.outOfStock;
     }
-    if (formData.variants && formData.variants.length > 0) {
-      // Filter out invalid variant discounts and preserve existing images
-      draftData.variants = formData.variants.map((v, index) => {
-        const variantState = variants[index];
+    // Only include variants that are in the variants state (not deleted)
+    if (variants && variants.length > 0) {
+      // Map through variants state and get corresponding form data
+      draftData.variants = variants.map((variantState, index) => {
+        const formVariant = formData.variants?.[index];
+        if (!formVariant) {
+          // This shouldn't happen, but handle it gracefully
+          return null;
+        }
         return {
-          ...v,
-          outOfStock: v.outOfStock,
+          color: formVariant.color,
+          quantity: formVariant.quantity,
+          price: formVariant.price,
+          priceType: formVariant.priceType || formData.priceType || 'sqft',
+          outOfStock: formVariant.outOfStock ?? false,
           // Preserve existing images for each variant
           images: variantState?.existingImages || [],
           discount:
-            v.discount.discountType !== 'none' &&
-            v.discount.discountValue &&
-            v.discount.discountValue.trim()
+            formVariant.discount?.discountType !== 'none' &&
+            formVariant.discount?.discountValue &&
+            formVariant.discount.discountValue.trim()
               ? {
-                  discountType: v.discount.discountType,
-                  discountValue: v.discount.discountValue,
+                  discountType: formVariant.discount.discountType,
+                  discountValue: formVariant.discount.discountValue,
                 }
               : {
                   discountType: 'none',
                   discountValue: '',
                 },
         };
-      });
+      }).filter(Boolean); // Remove any null values
     }
     if (variantFiles.length > 0) {
       draftData.variantFiles = variantFiles;
@@ -1162,6 +1081,7 @@ function EditProductPage() {
           status: 'draft',
           // Convert string values to proper types for update
           price: draftData.price ? parseFloat(draftData.price) : undefined,
+          priceType: draftData.priceType,
           quantity: draftData.quantity ? parseInt(draftData.quantity) : undefined,
           outOfStock: draftData.outOfStock,
           shippingPrice: draftData.shippingPrice ? parseFloat(draftData.shippingPrice) : undefined,
@@ -1192,6 +1112,7 @@ function EditProductPage() {
               color: v.color,
               quantity: parseInt(v.quantity || '0'),
               price: parseFloat(v.price || '0'),
+              priceType: v.priceType,
               outOfStock: v.outOfStock,
               // Include existing images from variant state
               images: variantState?.existingImages || v.images || [],
@@ -1303,16 +1224,19 @@ function EditProductPage() {
     const newVariant = {
       id: Date.now().toString(),
       images: [],
+      color: '#000000',
       existingImages: [],
     };
     setVariants([...variants, newVariant]);
     setShowVariants(true);
 
     const variantIndex = variants.length;
-    setValue(`variants.${variantIndex}.color`, '#000000');
+    setValue(`variants.${variantIndex}.color`, '');
     setValue(`variants.${variantIndex}.discount.discountType`, 'none');
     setValue(`variants.${variantIndex}.quantity`, '');
     setValue(`variants.${variantIndex}.price`, '');
+    // Use parent product's priceType as default for variant
+    setValue(`variants.${variantIndex}.priceType`, (formValues.priceType || 'sqft') as 'sqft' | 'linear' | 'pallet');
     setValue(`variants.${variantIndex}.discount.discountValue`, '');
   };
 
@@ -1321,15 +1245,23 @@ function EditProductPage() {
     const variantIndex = variants.findIndex((v) => v.id === variantId);
 
     // Remove the variant from state
-    setVariants(variants.filter((v) => v.id !== variantId));
+    const updatedVariants = variants.filter((v) => v.id !== variantId);
+    setVariants(updatedVariants);
+
+    // Update form values to remove the variant
+    const currentFormVariants = methods.getValues('variants') || [];
+    const updatedFormVariants = currentFormVariants.filter((_: any, index: number) => index !== variantIndex);
+    setValue('variants', updatedFormVariants);
 
     // Clear any errors for this variant
     if (variantIndex !== -1) {
       methods.clearErrors(`variants.${variantIndex}`);
     }
 
-    if (variants.length <= 1) {
+    if (updatedVariants.length === 0) {
       setShowVariants(false);
+      // Clear the entire variants array from form when no variants left
+      setValue('variants', []);
     }
   };
 
@@ -1489,7 +1421,7 @@ function EditProductPage() {
         {/* Rest of the component structure similar to CreateProductPage */}
         <form
           id="product-form"
-          onSubmit={handleSubmit(onSubmit, onError)}
+          onSubmit={handleSubmit(onSubmit)}
           className="flex-1 flex flex-col lg:flex-row gap-4 p-4 mx-auto overflow-hidden min-h-0 w-full"
         >
           <div className="w-full lg:max-w-[450px] h-full">

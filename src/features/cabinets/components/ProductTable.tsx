@@ -50,7 +50,10 @@ const ProductTable: React.FC<ProductTableProps> = ({
           </thead>
           <tbody>
             {products.map((product, productIndex) => (
-              <tr key={product.id} className={productIndex === products.length - 1 ? '' : 'border-b border-gray-200'}>
+              <tr
+                key={product.id}
+                className={productIndex === products.length - 1 ? '' : 'border-b border-gray-200'}
+              >
                 <td className="px-4 py-4 font-medium">{product.model}</td>
                 <td className="px-4 py-4 text-gray-600">{product.description}</td>
                 <td className="px-4 py-4">
@@ -87,7 +90,9 @@ const ProductTable: React.FC<ProductTableProps> = ({
                     />
                   </div>
                 </td>
-                <td className="px-4 py-4 text-center font-semibold">{formatCurrency(product.price)}</td>
+                <td className="px-4 py-4 text-center font-semibold">
+                  {formatCurrency(product.price)}
+                </td>
                 <td className="px-4 py-4">
                   <div className="flex justify-center">
                     <StockSvgComponent color={product.inStock ? '#42B72A' : '#FF0000'} />
@@ -97,7 +102,7 @@ const ProductTable: React.FC<ProductTableProps> = ({
                   <div className="flex justify-center">
                     <Button
                       size="sm"
-                       className='text-gray-600 hover:text-white bg-gray-300 rounded-sm hover:bg-primary'
+                      className="text-gray-600 hover:text-white bg-gray-300 rounded-sm hover:bg-primary"
                       onClick={() => onAddToCart(product)}
                       disabled={!product.inStock}
                     >

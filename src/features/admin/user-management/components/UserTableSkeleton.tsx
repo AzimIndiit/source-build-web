@@ -3,8 +3,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 export const UserTableSkeleton = () => {
   return (
     <div className="py-4 md:p-6 space-y-6">
-    
-
       {/* Table skeleton */}
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
         {/* Table header */}

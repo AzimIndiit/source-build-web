@@ -63,7 +63,7 @@ export const UserFilterDropdown: React.FC<UserFilterDropdownProps> = ({
         <div className="space-y-3 mb-6">
           <h3 className="font-semibold text-sm text-gray-900"> Status</h3>
           <div className="flex flex-wrap gap-3">
-            {['Active', 'Inactive','Pending'].map((key) => (
+            {['Active', 'Inactive', 'Pending'].map((key) => (
               <label
                 key={key}
                 className={`inline-flex items-center gap-2 px-4 py-2 rounded-sm border border-gray-200 cursor-pointer transition-colors`}

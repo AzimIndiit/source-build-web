@@ -53,9 +53,9 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
         <div className="relative w-full h-full flex items-center justify-center">
           {/* Close Button */}
           <DialogClose className="absolute top-4 right-4 z-50">
-            <Button 
-              variant="ghost" 
-              size="icon" 
+            <Button
+              variant="ghost"
+              size="icon"
               className="h-10 w-10 rounded-full bg-white/10 text-white hover:bg-white/20 transition-all"
             >
               <X className="h-5 w-5" />

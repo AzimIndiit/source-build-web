@@ -1,10 +1,9 @@
 import axiosInstance from '@/lib/axios';
-import type {  LoginFormData } from '../schemas/authSchemas';
+import type { LoginFormData } from '../schemas/authSchemas';
 import type {
   SignupPayload,
   RegisterResponse,
   LoginResponse,
-
   ForgotPasswordResponse,
   VerifyResetTokenResponse,
   ResetPasswordResponse,
@@ -43,12 +42,9 @@ class AdminAuthService {
    * Request password reset
    */
   async forgotPassword(email: string): Promise<ForgotPasswordResponse> {
-    const response = await axiosInstance.post<ForgotPasswordResponse>(
-      '/auth/forgot-password',
-      {
-        email,
-      }
-    );
+    const response = await axiosInstance.post<ForgotPasswordResponse>('/auth/forgot-password', {
+      email,
+    });
     return response.data;
   }
 

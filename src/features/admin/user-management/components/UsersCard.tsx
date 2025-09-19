@@ -11,13 +11,9 @@ import { useNavigate } from 'react-router-dom';
 interface UsersCardProps {
   user: any;
   onViewItem?: ({ slug }: { slug: string }) => void;
-
 }
 
-export const UsersCard: React.FC<UsersCardProps> = ({
-  user,
-  onViewItem,
-}) => {
+export const UsersCard: React.FC<UsersCardProps> = ({ user, onViewItem }) => {
   const { user: currentUser } = useAuth();
   const navigate = useNavigate();
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);

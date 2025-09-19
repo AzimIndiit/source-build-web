@@ -25,6 +25,7 @@ export interface Product {
   title: string;
   slug: string;
   price: number;
+  priceType?: 'sqft' | 'linear' | 'pallet';
   quantity: number;
   outOfStock?: boolean;
   category: string;
@@ -60,6 +61,7 @@ interface SaveDraftWithFiles {
   imageFiles: File[];
   existingImages?: string[]; // For editing existing products
   price?: number;
+  priceType?: 'sqft' | 'linear' | 'pallet';
   description?: string;
   category?: string;
   subCategory?: string;
@@ -73,6 +75,7 @@ interface SaveDraftWithFiles {
     color: string;
     quantity: number;
     price: number;
+    priceType?: 'sqft' | 'linear' | 'pallet';
     outOfStock?: boolean;
     discount: {
       discountType: 'none' | 'flat' | 'percentage';
@@ -174,20 +177,26 @@ export function useCreateProductMutation() {
         price: Number(productData.price),
         quantity: Number(productData.quantity),
         shippingPrice: productData.shippingPrice ? Number(productData.shippingPrice) : undefined,
-        discount: {
-          ...productData.discount,
-          discountValue: productData.discount.discountValue
-            ? Number(productData.discount.discountValue)
-            : undefined,
-        },
+        discount: productData.discount
+          ? {
+              discountType: productData.discount.discountType || 'none',
+              discountValue: productData.discount.discountValue
+                ? Number(productData.discount.discountValue)
+                : undefined,
+            }
+          : { discountType: 'none' },
         variants: variants?.map((v) => ({
           ...v,
           price: Number(v.price),
           quantity: Number(v.quantity),
-          discount: {
-            ...v.discount,
-            discountValue: v.discount.discountValue ? Number(v.discount.discountValue) : undefined,
-          },
+          discount: v.discount
+            ? {
+                discountType: v.discount.discountType || 'none',
+                discountValue: v.discount.discountValue
+                  ? Number(v.discount.discountValue)
+                  : undefined,
+              }
+            : undefined,
         })),
         images: imageUrls,
       };
@@ -393,6 +402,7 @@ export function useSaveDraftMutation() {
         isDraft: true,
         outOfStock: draftData.outOfStock,
         ...(draftData.price && { price: Number(draftData.price) }),
+        ...(draftData.priceType && { priceType: draftData.priceType }),
         ...(draftData.description && { description: draftData.description }),
         ...(draftData.category && { category: draftData.category }),
         ...(draftData.subCategory && { subCategory: draftData.subCategory }),
@@ -424,10 +434,12 @@ export function useSaveDraftMutation() {
         }),
         ...(variants && {
           variants: variants.map((v) => ({
-            ...v,
+            color: v.color,
             price: Number(v.price),
             quantity: Number(v.quantity),
+            priceType: v.priceType,
             outOfStock: v.outOfStock,
+            images: v.images || v.existingImages,
             discount: {
               ...v.discount,
               discountValue: v.discount.discountValue

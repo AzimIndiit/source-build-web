@@ -77,19 +77,26 @@ class QuoteService {
   }
 
   // Get single quote by ID
-  async getQuoteById(quoteId: string): Promise<{ success: boolean; message?: string; data: { quote: Quote } }> {
+  async getQuoteById(
+    quoteId: string
+  ): Promise<{ success: boolean; message?: string; data: { quote: Quote } }> {
     const response = await axiosInstance.get(`/quotes/${quoteId}`);
     return response.data;
   }
 
   // Create new quote
-  async createQuote(data: CreateQuotePayload): Promise<{ success: boolean; message?: string; data: Quote }> {
+  async createQuote(
+    data: CreateQuotePayload
+  ): Promise<{ success: boolean; message?: string; data: Quote }> {
     const response = await axiosInstance.post('/quotes', data);
     return response.data;
   }
 
   // Update quote
-  async updateQuote(quoteId: string, data: UpdateQuotePayload): Promise<{ success: boolean; message?: string; data: Quote }> {
+  async updateQuote(
+    quoteId: string,
+    data: UpdateQuotePayload
+  ): Promise<{ success: boolean; message?: string; data: Quote }> {
     const response = await axiosInstance.patch(`/quotes/${quoteId}`, data);
     return response.data;
   }
@@ -101,7 +108,10 @@ class QuoteService {
   }
 
   // Update quote status
-  async updateQuoteStatus(quoteId: string, status: string): Promise<{ success: boolean; message?: string; data: Quote }> {
+  async updateQuoteStatus(
+    quoteId: string,
+    status: string
+  ): Promise<{ success: boolean; message?: string; data: Quote }> {
     const response = await axiosInstance.patch(`/quotes/${quoteId}/status`, {
       status,
     });

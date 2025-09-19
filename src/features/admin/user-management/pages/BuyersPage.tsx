@@ -14,7 +14,7 @@ import { Users } from 'lucide-react';
 import { BuyersPageSkeleton } from '../components/BuyersPageSkeleton';
 
 const getMetricsUserData: any[] = [
-  { 
+  {
     id: 'total',
     title: 'Total Buyers',
     value: '0',
@@ -89,20 +89,20 @@ const BuyerPage: React.FC = () => {
       // Set time to start of day for from date and end of day for to date
       const fromDate = new Date(dateRange.from);
       fromDate.setHours(0, 0, 0, 0);
-      
+
       const toDate = new Date(dateRange.to);
       toDate.setHours(23, 59, 59, 999);
-      
+
       params.startDate = fromDate.toISOString();
       params.endDate = toDate.toISOString();
     } else if (sortValue !== 'recent') {
       // Handle other sort options
       const now = new Date();
       now.setHours(23, 59, 59, 999);
-      
+
       let startDate = new Date();
-      
-      switch(sortValue) {
+
+      switch (sortValue) {
         case 'this-week':
           startDate.setDate(now.getDate() - 7);
           break;
@@ -116,9 +116,9 @@ const BuyerPage: React.FC = () => {
           startDate.setMonth(now.getMonth() - 6);
           break;
       }
-      
+
       startDate.setHours(0, 0, 0, 0);
-      
+
       if (sortValue !== 'recent') {
         params.startDate = startDate.toISOString();
         params.endDate = now.toISOString();
@@ -163,16 +163,15 @@ const BuyerPage: React.FC = () => {
   };
 
   const handleBlockUser = (userId: string) => {
-      blockUserMutation.mutate(userId);
+    blockUserMutation.mutate(userId);
   };
 
   const handleUnblockUser = (userId: string) => {
-      unblockUserMutation.mutate(userId);
+    unblockUserMutation.mutate(userId);
   };
 
   const handleDeleteUser = (userId: string) => {
-   
-      deleteUserMutation.mutate(userId);
+    deleteUserMutation.mutate(userId);
   };
 
   // Error state
@@ -189,11 +188,11 @@ const BuyerPage: React.FC = () => {
 
   // Transform data to match the expected format for UsersTable
   const transformedUsers = data?.users || [];
-  const stats :any = data?.stats;
+  const stats: any = data?.stats;
 
   useEffect(() => {
     if (stats) {
-      setMetricsUserData(prevMetrics => 
+      setMetricsUserData((prevMetrics) =>
         prevMetrics.map((metric: any) => {
           // Use new value if available, otherwise keep previous value
           const newValue = stats[metric.id];
@@ -216,7 +215,7 @@ const BuyerPage: React.FC = () => {
 
   return (
     <div className="py-4 md:p-6 space-y-6">
-      <MetricsGrid metrics={metricsUserData}  />
+      <MetricsGrid metrics={metricsUserData} />
       {/* Buyers List */}
       <UserDataTable
         users={transformedUsers}
@@ -232,7 +231,11 @@ const BuyerPage: React.FC = () => {
         filters={{ status: filterStatus }}
         onFilterChange={handleFilterChange}
         isLoading={isLoading}
-        actionLoading={blockUserMutation.isPending || unblockUserMutation.isPending || deleteUserMutation.isPending}
+        actionLoading={
+          blockUserMutation.isPending ||
+          unblockUserMutation.isPending ||
+          deleteUserMutation.isPending
+        }
       />
 
       {/* Pagination */}

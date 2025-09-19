@@ -3,12 +3,7 @@ import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useQuery } from '@tanstack/react-query';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Loader2, Upload } from 'lucide-react';
 import { FormInput } from '@/components/forms/FormInput';
@@ -20,7 +15,11 @@ import { Subcategory, Category, CreateSubcategoryDto, UpdateSubcategoryDto } fro
 import axiosInstance from '@/lib/axios';
 
 const subcategorySchema = z.object({
-  name: z.string().trim().min(1, 'Subcategory name is required').max(100, 'Subcategory name must not exceed 100 characters'),
+  name: z
+    .string()
+    .trim()
+    .min(1, 'Subcategory name is required')
+    .max(100, 'Subcategory name must not exceed 100 characters'),
   description: z.string().trim().optional(),
   category: z.string().min(1, 'Category is required'),
   image: z.string().trim().optional(),
@@ -81,10 +80,9 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
 
   useEffect(() => {
     if (subcategory) {
-      const categoryId = typeof subcategory.category === 'object' 
-        ? subcategory.category._id 
-        : subcategory.category;
-      
+      const categoryId =
+        typeof subcategory.category === 'object' ? subcategory.category._id : subcategory.category;
+
       reset({
         name: subcategory.name,
         description: subcategory.description || '',
@@ -116,18 +114,17 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
   };
 
   // Prepare category options for FormSelect
-  const categoryOptions = categoriesData?.map((cat) => ({
-    value: cat._id,
-    label: cat.name,
-  })) || [];
+  const categoryOptions =
+    categoriesData?.map((cat) => ({
+      value: cat._id,
+      label: cat.name,
+    })) || [];
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>
-            {subcategory ? 'Edit Subcategory' : 'Create New Subcategory'}
-          </DialogTitle>
+          <DialogTitle>{subcategory ? 'Edit Subcategory' : 'Create New Subcategory'}</DialogTitle>
         </DialogHeader>
 
         <FormProvider {...methods}>
@@ -181,12 +178,8 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
                   <Upload className="h-4 w-4" />
                 </Button>
               </div>
-              {errors.image && (
-                <p className="text-sm text-red-600">{errors.image.message}</p>
-              )}
-              <p className="text-sm text-gray-500">
-                Provide an image URL for the subcategory
-              </p>
+              {errors.image && <p className="text-sm text-red-600">{errors.image.message}</p>}
+              <p className="text-sm text-gray-500">Provide an image URL for the subcategory</p>
             </div>
 
             {/* Display Order */}
@@ -205,12 +198,8 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
                 disabled={isLoading}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
-              {errors.order && (
-                <p className="text-sm text-red-600">{errors.order.message}</p>
-              )}
-              <p className="text-sm text-gray-500">
-                Lower numbers appear first
-              </p>
+              {errors.order && <p className="text-sm text-red-600">{errors.order.message}</p>}
+              <p className="text-sm text-gray-500">Lower numbers appear first</p>
             </div>
 
             {/* Active Status */}
@@ -219,9 +208,7 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
                 <Label htmlFor="isActive" className="text-base font-medium">
                   Active Status
                 </Label>
-                <p className="text-sm text-gray-500">
-                  Active subcategories are visible to users
-                </p>
+                <p className="text-sm text-gray-500">Active subcategories are visible to users</p>
               </div>
               <Switch
                 id="isActive"
@@ -233,18 +220,10 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
 
             {/* Form Actions */}
             <div className="flex justify-end gap-3 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onClose}
-                disabled={isLoading}
-              >
+              <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>
                 Cancel
               </Button>
-              <Button 
-                type="submit" 
-                disabled={isLoading || !isValid}
-              >
+              <Button type="submit" disabled={isLoading || !isValid}>
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />

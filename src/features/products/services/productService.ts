@@ -1,15 +1,17 @@
 import axiosInstance from '@/lib/axios';
 import { fileService } from '@/features/profile/services/fileService';
+import { Category } from '@/features/admin/categories/types';
 
 export interface CreateProductPayload {
   title: string;
   price: number;
+  priceType?: 'sqft' | 'linear' | 'pallet';
   description: string;
-  category: string;
-  subCategory: string;
+  category: string | Category;
+  subCategory: string | Category;
   quantity: number;
-  brand: string;
-  color: string;
+  brand?: string;
+  color?: string;
   locationIds: string[];
   productTag: string[];
   outOfStock: boolean;
@@ -18,10 +20,10 @@ export interface CreateProductPayload {
     quantity: number;
     price: number;
     outOfStock: boolean;
-    discount: {
+    discount?: {
       discountType: 'none' | 'flat' | 'percentage';
       discountValue?: number;
-    };
+    } | null;
     images?: string[];
   }>;
   marketplaceOptions?: {
@@ -33,10 +35,10 @@ export interface CreateProductPayload {
   shippingPrice?: number;
   readyByDate?: string;
   readyByTime?: string;
-  discount: {
+  discount?: {
     discountType: 'none' | 'flat' | 'percentage';
     discountValue?: number;
-  };
+  } | null;
   dimensions?: {
     width?: number;
     length?: number;
@@ -49,9 +51,10 @@ export interface SaveDraftPayload {
   title: string;
   images: string[];
   price?: number;
+  priceType?: 'sqft' | 'linear' | 'pallet';
   description?: string;
-  category?: string;
-  subCategory?: string;
+  category?: string | Category;
+  subCategory?: string | Category;
   quantity?: number;
   outOfStock?: boolean;
   brand?: string;
@@ -62,8 +65,9 @@ export interface SaveDraftPayload {
     color: string;
     quantity: number;
     price: number;
+    priceType?: 'sqft' | 'linear' | 'pallet';
     outOfStock?: boolean;
-    discount: {
+    discount?: {
       discountType: 'none' | 'flat' | 'percentage';
       discountValue?: number;
     };
@@ -101,8 +105,9 @@ export interface Product {
   title: string;
   price: number;
   description: string;
-  category: string;
-  subCategory: string;
+  category: string | Category;
+  subCategory: string | Category;
+  priceType?: 'sqft' | 'linear' | 'pallet';
   quantity: number;
   outOfStock?: boolean;
   brand: string;
@@ -115,7 +120,7 @@ export interface Product {
     quantity: number;
     price: number;
     outOfStock?: boolean;
-    discount: {
+    discount?: {
       discountType: 'none' | 'flat' | 'percentage';
       discountValue?: number;
     };

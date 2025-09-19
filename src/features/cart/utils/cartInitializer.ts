@@ -29,12 +29,13 @@ export const initializeCart = async (isAuthenticated: boolean) => {
     } else if (hasLocalItems && hasBackendItems) {
       // Both have items - merge unique items
       console.log('Merging local and backend carts...');
-      
+
       // Find items that exist in local but not in backend
-      const uniqueLocalItems = localItems.filter(localItem => {
-        return !backendCart.items.some(backendItem => 
-          backendItem.productId === localItem.productId && 
-          backendItem.variantId === localItem.variantId
+      const uniqueLocalItems = localItems.filter((localItem) => {
+        return !backendCart.items.some(
+          (backendItem) =>
+            backendItem.productId === localItem.productId &&
+            backendItem.variantId === localItem.variantId
         );
       });
 
@@ -44,7 +45,7 @@ export const initializeCart = async (isAuthenticated: boolean) => {
           await cartService.addToCart({
             productId: item.productId,
             variantId: item.variantId,
-            quantity: item.quantity
+            quantity: item.quantity,
           });
         }
         console.log(`Added ${uniqueLocalItems.length} unique items from local to backend`);
@@ -73,8 +74,8 @@ export const initializeCart = async (isAuthenticated: boolean) => {
 export const clearLocalCartOnLogout = () => {
   // Keep items in local storage for guest experience
   // Just mark as not synced
-  useCartStore.setState({ 
-    isSynced: false, 
-    cartData: null 
+  useCartStore.setState({
+    isSynced: false,
+    cartData: null,
   });
 };

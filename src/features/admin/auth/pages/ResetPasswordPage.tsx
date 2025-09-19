@@ -108,7 +108,10 @@ function ResetPasswordPage() {
             >
               Request New Reset Link
             </Link>
-            <Link to="/admin/auth/login" className="block text-primary hover:text-primary/80 font-medium">
+            <Link
+              to="/admin/auth/login"
+              className="block text-primary hover:text-primary/80 font-medium"
+            >
               Back to Login
             </Link>
           </div>
@@ -150,7 +153,10 @@ function ResetPasswordPage() {
             <div className="text-center">
               <p className="text-gray-600">
                 Back to{' '}
-                <Link to="/admin/auth/login" className="text-primary hover:text-primary/80 font-medium">
+                <Link
+                  to="/admin/auth/login"
+                  className="text-primary hover:text-primary/80 font-medium"
+                >
                   Login
                 </Link>
               </p>

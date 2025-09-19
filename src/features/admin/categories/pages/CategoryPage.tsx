@@ -31,10 +31,8 @@ const CategoryPage: React.FC = () => {
       params.search = searchValue;
     }
 
-
     return params;
   }, [currentPage, itemsPerPage, searchValue]);
- 
 
   // Fetch categories from API with filters
   const { data, isLoading } = useCategoriesQuery(queryParams);
@@ -129,14 +127,16 @@ const CategoryPage: React.FC = () => {
       )}
 
       {/* Category Modal */}
-   { isModalOpen &&  <CategoryModal
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        onSubmit={handleSubmit}
-        category={selectedCategory}
-        isLoading={isActionLoading}
-        edit={!!selectedCategory}
-      />}
+      {isModalOpen && (
+        <CategoryModal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          onSubmit={handleSubmit}
+          category={selectedCategory}
+          isLoading={isActionLoading}
+          edit={!!selectedCategory}
+        />
+      )}
     </div>
   );
 };

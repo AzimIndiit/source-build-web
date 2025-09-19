@@ -11,16 +11,16 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { 
-  ChevronRight, 
-  Eye, 
-  Ban, 
-  UserCheck, 
-  Trash2, 
+import {
+  ChevronRight,
+  Eye,
+  Ban,
+  UserCheck,
+  Trash2,
   MoreVertical,
   Mail,
   Calendar,
-  User
+  User,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -142,9 +142,11 @@ export const UserTable: React.FC<UserTableProps> = ({
       {!isLoading && users.length === 0 && (
         <EmptyState
           title={`No ${title || 'Users'} found`}
-          description={searchValue 
-            ? `No results found for "${searchValue}". Try adjusting your search.`
-            : `You don't have any ${title?.toLowerCase() || 'users'} yet.`}
+          description={
+            searchValue
+              ? `No results found for "${searchValue}". Try adjusting your search.`
+              : `You don't have any ${title?.toLowerCase() || 'users'} yet.`
+          }
           icon={<img src={BuyingEmptyIcon} className="w-64 h-56" alt="No users" />}
           className="min-h-[400px]"
         />
@@ -193,12 +195,12 @@ export const UserTable: React.FC<UserTableProps> = ({
                       <Mail className="w-3 h-3 text-gray-400" />
                       <span className="text-gray-600">{user.email || 'No email'}</span>
                     </div>
-                    
+
                     <div className="flex items-center gap-2 text-xs">
                       <User className="w-3 h-3 text-gray-400" />
                       <span className="text-gray-600">Login: {user.authType || 'Email'}</span>
                     </div>
-                    
+
                     <div className="flex items-center gap-2 text-xs">
                       <Calendar className="w-3 h-3 text-gray-400" />
                       <span className="text-gray-600">Joined: {formatDate(user.createdAt)}</span>
@@ -216,7 +218,7 @@ export const UserTable: React.FC<UserTableProps> = ({
                       View Details
                       <ChevronRight className="w-4 h-4 ml-1" />
                     </Button>
-                    
+
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -324,13 +326,13 @@ export const UserTable: React.FC<UserTableProps> = ({
                           {user.email || 'No email'}
                         </span>
                       </TableCell>
-                      
+
                       <TableCell className="text-left">
                         <span className="text-gray-900 text-xs lg:text-sm capitalize">
                           {user.authType || 'Email'}
                         </span>
                       </TableCell>
-                      
+
                       <TableCell className="text-left">
                         <span className="text-gray-900 text-xs lg:text-sm">
                           {formatDate(user.createdAt)}
@@ -344,7 +346,7 @@ export const UserTable: React.FC<UserTableProps> = ({
                           {user.status}
                         </Badge>
                       </TableCell>
-                      
+
                       <TableCell className="text-center">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>

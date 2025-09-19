@@ -77,7 +77,9 @@ class UserService {
 
   // Delete user (soft delete)
   async deleteUser(userId: string): Promise<{ success: boolean; message: string; data: any }> {
-    const response = await axiosInstance.delete<{ success: boolean; message: string; data: any }>(`/user/${userId}`);
+    const response = await axiosInstance.delete<{ success: boolean; message: string; data: any }>(
+      `/user/${userId}`
+    );
     return response.data;
   }
 

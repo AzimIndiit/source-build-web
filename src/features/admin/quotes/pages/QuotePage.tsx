@@ -28,10 +28,9 @@ const QuotePage: React.FC = () => {
   };
 
   const handleReplyQuote = (quote: Quote) => {
-    if(quote.user?.id) {
-    getOrCreateChat({ participantId: quote.user?.id });
+    if (quote.user?.id) {
+      getOrCreateChat({ participantId: quote.user?.id });
     }
-   
   };
 
   const handleDeleteQuote = (id: string) => {

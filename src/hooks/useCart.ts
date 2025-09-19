@@ -25,7 +25,7 @@ export const useCart = () => {
 export const useCartCount = () => {
   const user = useAuthStore((state) => state.user);
   const isBuyer = user?.role === 'buyer';
-  
+
   return useQuery({
     queryKey: [CART_COUNT_QUERY_KEY],
     queryFn: () => cartService.getCartCount(),

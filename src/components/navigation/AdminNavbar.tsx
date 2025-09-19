@@ -14,8 +14,6 @@ import { getInitials } from '@/lib/helpers';
 import { useLogoutModal } from '@/stores/useLogoutModal';
 import { BreadcrumbWrapper, DeleteConfirmationModal } from '../ui';
 
-
-
 const breadcrumbNameMap = {
   '/admin/dashboard': 'Dashboard',
   '/admin/messages': 'Messages',
@@ -39,22 +37,20 @@ export function useBreadcrumbs() {
     if (isId) {
       // look at parent to decide
       const parent = `/${filtered.slice(0, index).join('/')}`;
-      console.log('parent', parent===`/admin/categories`)
+      console.log('parent', parent === `/admin/categories`);
       if (parent === '/admin/messages') {
         label = 'Chat Details';
       } else if (parent === '/admin/quote') {
         label = 'Quote Details';
-      }
-      else if (parent === `/admin/categories`) {
+      } else if (parent === `/admin/categories`) {
         label = 'Subcategories';
-      } 
-      else {
+      } else {
         label = 'Details'; // fallback
       }
     } else {
       label = breadcrumbNameMap[to as keyof typeof breadcrumbNameMap] || value;
     }
-console.log('label', label)
+    console.log('label', label);
     return {
       label,
       href: index < filtered.length - 1 ? to : undefined,
@@ -64,10 +60,9 @@ console.log('label', label)
 
   return [
     { label: 'Page', href: '/admin/dashboard' },
-    ...items.filter((item) => !['admin', 'Subcategories'].includes(item.label )),
+    ...items.filter((item) => !['admin', 'Subcategories'].includes(item.label)),
   ];
 }
-
 
 export const AdminNavbar: React.FC = () => {
   const { user, logout } = useAuth();
@@ -120,12 +115,8 @@ export const AdminNavbar: React.FC = () => {
     };
   }, [isMobileMenuOpen]);
 
-
-
-  const breadcrumbItems = [
-    ...useBreadcrumbs(),
-  ];
-console.log('breadcrumbItems', breadcrumbItems)
+  const breadcrumbItems = [...useBreadcrumbs()];
+  console.log('breadcrumbItems', breadcrumbItems);
   return (
     <>
       <div className="bg-white w-full shadow-sm border-b border-gray-200">

@@ -86,8 +86,18 @@ export const useUpdateQuoteStatus = () => {
 // Respond to quote mutation (admin response)
 export const useRespondToQuote = () => {
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: { quotedPrice?: number; estimatedTime?: string; responseNotes?: string; status?: 'completed' | 'rejected' } }) =>
-      quoteService.respondToQuote(id, data),
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: {
+        quotedPrice?: number;
+        estimatedTime?: string;
+        responseNotes?: string;
+        status?: 'completed' | 'rejected';
+      };
+    }) => quoteService.respondToQuote(id, data),
     onSuccess: (data) => {
       toast.success('Quote response sent successfully');
       queryClient.invalidateQueries({ queryKey: ['quotes'] });

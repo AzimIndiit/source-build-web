@@ -78,14 +78,12 @@ const ChatInterface = () => {
   // Update otherUser when chatData is fetched
   useEffect(() => {
     if (chatData?.data?.participants && user?.id) {
-      const other = chatData.data.participants.find(
-        (p: any) => {
-          // Check if this participant is NOT the current user
-          // Compare both id and _id fields as the backend might use either
-          const participantId = p?.id || p?._id;
-          return participantId !== user.id;
-        }
-      );
+      const other = chatData.data.participants.find((p: any) => {
+        // Check if this participant is NOT the current user
+        // Compare both id and _id fields as the backend might use either
+        const participantId = p?.id || p?._id;
+        return participantId !== user.id;
+      });
       console.log('Current user ID:', user?.id);
       console.log('Participants:', chatData.data.participants);
       console.log('Other user found:', other);
