@@ -31,6 +31,7 @@ export interface CreateProductPayload {
     shipping?: boolean;
     delivery?: boolean;
   };
+  deliveryDistance?: number;
   pickupHours?: string;
   shippingPrice?: number;
   readyByDate?: string;
@@ -79,6 +80,8 @@ export interface SaveDraftPayload {
     delivery?: boolean;
   };
   pickupHours?: string;
+  localDeliveryFree?: boolean;
+  deliveryDistance?: number;
   shippingPrice?: number;
   readyByDate?: string;
   readyByTime?: string;
@@ -99,7 +102,7 @@ export interface UpdateProductPayload extends Partial<CreateProductPayload> {
   id: string;
 }
 
-export interface Product {
+export interface  Product {
   id: string;
   slug: string;
   title: string;
@@ -131,6 +134,8 @@ export interface Product {
     shipping?: boolean;
     delivery?: boolean;
   };
+  localDeliveryFree?: boolean;
+  deliveryDistance?: number | string;
   pickupHours?: string;
   shippingPrice?: number;
   readyByDate?: string;

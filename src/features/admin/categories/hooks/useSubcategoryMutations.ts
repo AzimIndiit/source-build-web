@@ -93,3 +93,11 @@ export const useSubcategoryStatsQuery = () => {
     staleTime: 5 * 60 * 1000,
   });
 };
+
+export const useAvailableSubcategoriesQuery = (categoryId?: string) => {
+  return useQuery({
+    queryKey: ['available-subcategories', categoryId],
+    queryFn: () => subcategoryService.getAvailableSubcategories(categoryId),
+    staleTime: 5 * 60 * 1000,
+  });
+};

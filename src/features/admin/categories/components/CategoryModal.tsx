@@ -57,8 +57,8 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
 }) => {
   const [uploadedImage, setUploadedImage] = useState<File | null>(null);
   const [existingImage, setExistingImage] = useState<string | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const methods = useForm<CategoryFormData>({
     resolver: zodResolver(categorySchema),
@@ -168,15 +168,12 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
 
   // Upload image to server
   const uploadImageToServer = async (file: File): Promise<string> => {
-    setIsUploading(true);
     try {
       const response = await fileService.uploadFile(file);
       return response.data.url;
     } catch (error: any) {
       toast.error(error?.response?.data?.message || 'Failed to upload image');
       throw error;
-    } finally {
-      setIsUploading(false);
     }
   };
 
@@ -188,6 +185,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
         return;
       }
 
+      setIsSubmitting(true);
       let imageUrl = values.image;
 
       // Upload new image if one was selected
@@ -215,6 +213,8 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
       onClose();
     } catch (error) {
       // Error is handled in the mutation
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -240,7 +240,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
               name="name"
               label="Category Name"
               placeholder="Enter category name"
-              disabled={isLoading || isUploading}
+              disabled={isSubmitting}
               type="text"
             />
 
@@ -272,7 +272,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
                     className="hidden"
                     accept="image/*"
                     onChange={handleInputChange}
-                    disabled={isLoading || isUploading}
+                    disabled={isSubmitting}
                   />
                   <label
                     htmlFor="category-image-upload"
@@ -304,7 +304,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
                       className="hidden"
                       accept="image/*"
                       onChange={handleInputChange}
-                      disabled={isLoading || isUploading}
+                      disabled={isSubmitting}
                     />
                     <label
                       htmlFor="category-image-upload-more"
@@ -333,7 +333,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
                           type="button"
                           onClick={removeExistingImage}
                           className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5 cursor-pointer"
-                          disabled={isLoading || isUploading}
+                          disabled={isSubmitting}
                         >
                           <X className="h-3 w-3" />
                         </button>
@@ -352,7 +352,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
                           type="button"
                           onClick={removeUploadedImage}
                           className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5 cursor-pointer"
-                          disabled={isLoading || isUploading}
+                          disabled={isSubmitting}
                         >
                           <X className="h-3 w-3" />
                         </button>
@@ -402,7 +402,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
                     id="isActive"
                     checked={watchedIsActive}
                     onCheckedChange={(checked) => setValue('isActive', checked)}
-                    disabled={isLoading}
+                    disabled={isSubmitting}
                   />
                 </div>
               </div>
@@ -419,10 +419,10 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
               </Button>
               <Button
                 type="submit"
-                disabled={isLoading || isUploading}
+                disabled={isSubmitting}
                 className="bg-primary hover:bg-primary/90 text-white px-6 w-[220px]"
               >
-                {isLoading || isUploading ? 'Submitting...' : 'Submit'}
+                {isSubmitting ? 'Submitting...' : 'Submit'}
               </Button>
             </div>
           </form>

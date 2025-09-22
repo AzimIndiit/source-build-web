@@ -24,6 +24,8 @@ interface FilterDropdownProps {
     sorting: string;
     pricing: string;
     priceRange: number[];
+    categories?: string[];
+    subcategories?: string[];
   };
 }
 

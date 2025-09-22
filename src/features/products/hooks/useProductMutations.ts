@@ -28,7 +28,7 @@ export interface Product {
   priceType?: 'sqft' | 'linear' | 'pallet';
   quantity: number;
   outOfStock?: boolean;
-  category: string;
+  category: string | { _id?: string; name: string; slug: string };
   dimensions?: {
     length: number;
     width: number;
@@ -88,6 +88,8 @@ interface SaveDraftWithFiles {
     shipping?: boolean;
     delivery?: boolean;
   };
+  deliveryDistance?: number;
+  localDeliveryFree?: boolean;  
   pickupHours?: string;
   shippingPrice?: number;
   readyByDate?: string;
@@ -285,6 +287,7 @@ export function useUpdateProductMutation() {
         price: productData.price !== undefined ? Number(productData.price) : undefined,
         quantity: productData.quantity !== undefined ? Number(productData.quantity) : undefined,
         outOfStock: productData.outOfStock,
+        deliveryDistance: productData.deliveryDistance!==undefined ? Number(productData.deliveryDistance) : undefined,
         shippingPrice: productData.shippingPrice ? Number(productData.shippingPrice) : undefined,
         discount: productData.discount
           ? {
@@ -413,6 +416,8 @@ export function useSaveDraftMutation() {
         ...(draftData.productTag && { productTag: draftData.productTag }),
         ...(draftData.marketplaceOptions && { marketplaceOptions: draftData.marketplaceOptions }),
         ...(draftData.pickupHours && { pickupHours: draftData.pickupHours }),
+        ...(draftData.deliveryDistance && { deliveryDistance: Number(draftData.deliveryDistance) }),
+        ...(draftData.localDeliveryFree && { localDeliveryFree: draftData.localDeliveryFree }),
         ...(draftData.shippingPrice && { shippingPrice: Number(draftData.shippingPrice) }),
         ...(draftData.readyByDays && { readyByDays: Number(draftData.readyByDays) }),
         // ...(draftData.readyByDate && { readyByDate: draftData.readyByDate }),

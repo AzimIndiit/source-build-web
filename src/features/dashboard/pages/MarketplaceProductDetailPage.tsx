@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Minus, Plus, ShoppingCart, Heart, Edit2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Minus, Plus, ShoppingCart, Heart, Edit2, MapPin, Package, Truck, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import ReadMore from '@/components/ui/ReadMore';
@@ -24,6 +24,8 @@ import ProductCard from '../components/ProductCard';
 import ProductCardSkeleton from '../components/ProductCardSkeleton';
 import toast from 'react-hot-toast';
 import { getColorName } from '@/utils/colorUtils';
+import { formatPickupHoursDisplay } from '@/features/products/pages/ProductDetailsPage';
+import { CustomerDetailsSection } from '@/features/orders/components';
 
 const MarketplaceProductDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -623,12 +625,13 @@ const MarketplaceProductDetailPage: React.FC = () => {
           </div>
 
           {/* Variants if available */}
-          <div className=" flex flex-col sm:hidden border-t border-gray-200 text-xs sm:text-sm text-gray-600 pt-4 sm:pt-6 space-y-2">
+       {(product.color ||
+            (product.variants && product.variants.some((v: any) => !!v.color))) &&   <div className=" flex flex-col sm:hidden border-t border-gray-200 text-xs sm:text-sm text-gray-600 pt-4 sm:pt-6 space-y-2">
             <span className="font-medium">Colors: </span>
             <div className="flex flex-wrap gap-3 mt-2">
               {/* Main Product Option */}
 
-              <div
+              {product.color && <div
                 onClick={() => setSelectedVariant(null)}
                 className={`w-12 h-12 rounded-full border-2transition-all cursor-pointer ${
                   selectedVariant === null
@@ -637,11 +640,11 @@ const MarketplaceProductDetailPage: React.FC = () => {
                 }`}
                 style={{ backgroundColor: product.color }}
                 title={product.color ? getColorName(product.color).name : ''}
-              />
+              />}
 
               {product.variants &&
                 product.variants.length > 0 &&
-                product.variants.map((variant: any, index: number) => (
+                product.variants .filter((variant: any) => !!variant.color).map((variant: any, index: number) => (
                   <div
                     key={index}
                     onClick={() => setSelectedVariant(variant)}
@@ -655,7 +658,7 @@ const MarketplaceProductDetailPage: React.FC = () => {
                   />
                 ))}
             </div>
-          </div>
+          </div>}
 
           {/* Description */}
           <div className="border-t border-gray-200 pt-4 sm:pt-6">
@@ -685,6 +688,86 @@ const MarketplaceProductDetailPage: React.FC = () => {
               </span>
             </div>
           </div>
+
+             {/* Marketplace Options */}
+             {product.marketplaceOptions && (
+            <div className="border-t border-gray-200 pt-4">
+                 <div className="text-xs sm:text-sm text-gray-600 mb-2">
+           <span className="font-medium">
+                Delivery Options
+              </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {product.marketplaceOptions.pickup && (
+                  <div className="group relative p-4 border-2 rounded-xl border-gray-200 transition-all duration-200 bg-gradient-to-br from-white to-gray-50">
+                    <div className="flex flex-col items-center text-center">
+                      <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mb-2 transition-transform">
+                        <MapPin className="text-green-600 w-5 h-5" />
+                      </div>
+                      <p className="text-sm font-semibold text-gray-800 mb-2">Pickup</p>
+                      {product.pickupHours && (
+                        <div className="w-full">
+                          <p className="text-[10px] font-semibold text-gray-600 uppercase tracking-wider mb-1.5">
+                            Hours
+                          </p>
+                          <div className="mx-auto flex flex-col justify-center items-center w-full px-2 ">
+                            {formatPickupHoursDisplay(product.pickupHours)}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {product.marketplaceOptions.shipping && (
+                  <div className="group relative p-4 border-2 rounded-xl border-gray-200 transition-all duration-200 bg-gradient-to-br from-white to-gray-50">
+                    <div className="flex flex-col items-center text-center">
+                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mb-2 transition-transform">
+                        <Package className="text-blue-600 w-5 h-5" />
+                      </div>
+                      <p className="text-sm font-semibold text-gray-800 mb-2">Shipping</p>
+                      {product.shippingPrice ? (
+                        <div className="">
+                          <p className="text-[10px] font-medium text-gray-600 uppercase tracking-wide">
+                            Cost
+                          </p>
+                          <p className="text-base font-bold text-blue-600">
+                            ${product.shippingPrice}
+                          </p>
+                        </div>
+                      ) : (
+                        <p className="text-xs text-gray-500">Contact for rates</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {product.marketplaceOptions.delivery && (
+                  <div className="group relative p-4 border-2 rounded-xl border-gray-200 transition-all duration-200 bg-gradient-to-br from-white to-gray-50">
+                    <div className="flex flex-col items-center text-center">
+                      <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center mb-2 transition-transform">
+                        <Truck className="text-purple-600 w-5 h-5" />
+                      </div>
+                      <p className="text-sm font-semibold text-gray-800 mb-2">Local Delivery</p>
+                      
+                      {product.localDeliveryFree ? "Free" : product.deliveryDistance ? (
+                        <div>
+                          <p className="text-xs text-gray-500">Within</p>
+                          <p className="text-base font-bold text-purple-600">
+                            {product.deliveryDistance} miles
+                          </p>
+                        </div>
+                      ) : (
+                        <p className="text-xs text-gray-500">Local delivery available</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+            </div>
+          )}
+
 
           {/* Product Information Grid */}
           <div className="border-t border-gray-200 pt-4 sm:pt-6 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs sm:text-sm">
@@ -718,12 +801,13 @@ const MarketplaceProductDetailPage: React.FC = () => {
           )}
 
           {/* Variants if available */}
-          <div className="border-t hidden sm:flex flex-col border-gray-200 text-xs sm:text-sm text-gray-600 pt-4 sm:pt-6 space-y-2 ">
+   {(product.color ||
+            (product.variants && product.variants.some((v: any) => !!v.color))) &&       <div className="border-t hidden sm:flex flex-col border-gray-200 text-xs sm:text-sm text-gray-600 pt-4 sm:pt-6 space-y-2 ">
             <span className="font-medium">Colors: </span>
             <div className="flex flex-wrap gap-3 mt-2">
               {/* Main Product Option */}
 
-              <div
+           {product.color &&   <div
                 onClick={() => setSelectedVariant(null)}
                 className={`w-12 h-12 rounded-full cursor-pointer transition-all ${
                   selectedVariant === null
@@ -732,11 +816,12 @@ const MarketplaceProductDetailPage: React.FC = () => {
                 }`}
                 style={{ backgroundColor: product.color }}
                 title={product.color ? getColorName(product.color).name : ''}
-              />
+              />}
 
               {product.variants &&
                 product.variants.length > 0 &&
-                product.variants.map((variant: any, index: number) => (
+                product.variants
+                .filter((variant: any) => !!variant.color).map((variant: any, index: number) => (
                   <div
                     key={index}
                     onClick={() => setSelectedVariant(variant)}
@@ -750,7 +835,15 @@ const MarketplaceProductDetailPage: React.FC = () => {
                   />
                 ))}
             </div>
-          </div>
+          </div>}
+
+          { product.seller && 
+            <CustomerDetailsSection
+              customerDetails={product.seller}
+              title=""
+              reviewTitle=""
+            />
+          }
           {/* Add to Cart Section */}
           <div className="flex items-center gap-4 pt-6">
             {/* Quantity Selector */}

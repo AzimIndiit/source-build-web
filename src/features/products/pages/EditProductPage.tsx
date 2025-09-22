@@ -36,8 +36,7 @@ const variantSchema = z.object({
   color: z
     .string()
     .trim()
-    .regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, 'Please enter a valid HEX color code')
-,
+    .regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, 'Please enter a valid HEX color code'),
   quantity: z
     .string()
     .trim()
@@ -216,9 +215,10 @@ const editProductSchema = z
       .trim()
       // .max(100, 'Pickup hours must not exceed 100 characters')
       .optional(),
+    deliveryDistance: z.string().trim().optional(),
 
     shippingPrice: z.string().trim().optional(),
-
+    localDeliveryFree : z.boolean().optional(),
     // readyByDate: z.string().min(1, 'Date is required'),
 
     // readyByTime: z.string().min(1, 'Time is required'),
@@ -483,6 +483,8 @@ function EditProductPage() {
       },
       pickupHours: '',
       shippingPrice: '200',
+      deliveryDistance: undefined,
+      localDeliveryFree:false,
       // readyByDate: '',
       // readyByTime: '',
       readyByDays: '0',
@@ -635,6 +637,8 @@ function EditProductPage() {
           shipping: product.marketplaceOptions?.shipping || false,
           delivery: product.marketplaceOptions?.delivery || false,
         },
+        deliveryDistance: product?.deliveryDistance?.toString() || '',
+        localDeliveryFree: product.localDeliveryFree || false,
         pickupHours: product.pickupHours || '',
         shippingPrice: product.shippingPrice?.toString() || '',
         readyByDate,
@@ -841,7 +845,9 @@ function EditProductPage() {
       productTag: data.productTag,
       marketplaceOptions: data.marketplaceOptions,
       pickupHours: data.pickupHours,
+      deliveryDistance: data.deliveryDistance ? parseFloat(data.deliveryDistance) : undefined,
       shippingPrice: data.shippingPrice ? parseFloat(data.shippingPrice) : undefined,
+      localDeliveryFree: data.localDeliveryFree,
       // readyByDate,
       // readyByTime: data.readyByTime,
       readyByDays: data.readyByDays ? parseInt(data.readyByDays) : undefined,
@@ -860,32 +866,35 @@ function EditProductPage() {
           ? parseFloat(data.discount.discountValue)
           : undefined,
       },
-      variants: variants.map((variant, index) => {
-        const formVariant = data.variants?.[index];
-        if (!formVariant) return null;
-        return {
-          color: formVariant.color,
-          quantity: parseInt(formVariant.quantity),
-          price: parseFloat(formVariant.price),
-          priceType: formVariant.priceType || data.priceType || 'sqft',
-          outOfStock: formVariant.outOfStock ?? false,
-          discount: {
-            discountType: formVariant.discount.discountType || 'none',
-            discountValue: formVariant.discount.discountValue
-              ? parseFloat(formVariant.discount.discountValue)
-              : undefined,
-          },
-          // Keep existing images in the images property
-          // The mutation will merge new uploaded images with these
-          images: variant?.existingImages || [],
-        };
-      }).filter(Boolean),
+      variants: variants
+        .map((variant, index) => {
+          const formVariant = data.variants?.[index];
+          if (!formVariant) return null;
+          return {
+            color: formVariant.color,
+            quantity: parseInt(formVariant.quantity),
+            price: parseFloat(formVariant.price),
+            priceType: formVariant.priceType || data.priceType || 'sqft',
+            outOfStock: formVariant.outOfStock ?? false,
+            discount: {
+              discountType: formVariant.discount.discountType || 'none',
+              discountValue: formVariant.discount.discountValue
+                ? parseFloat(formVariant.discount.discountValue)
+                : undefined,
+            },
+            // Keep existing images in the images property
+            // The mutation will merge new uploaded images with these
+            images: variant?.existingImages || [],
+          };
+        })
+        .filter(Boolean),
       imageFiles: uploadedPhotos.length > 0 ? uploadedPhotos : undefined,
       existingImages: existingImages,
       variantFiles: variantFiles.length > 0 ? variantFiles : undefined,
     };
 
     try {
+      console.log('mutationData', mutationData)
       await updateProductMutation.mutateAsync({ id: id!, data: mutationData });
       navigate('/seller/products');
     } catch (error) {
@@ -996,11 +1005,17 @@ function EditProductPage() {
     ) {
       draftData.marketplaceOptions = formData.marketplaceOptions;
     }
+    if (formData.localDeliveryFree !== undefined) {
+      draftData.localDeliveryFree = formData.localDeliveryFree;
+    }
     if (formData.pickupHours && formData.pickupHours.trim()) {
       draftData.pickupHours = formData.pickupHours;
     }
     if (formData.shippingPrice && formData.shippingPrice.trim()) {
       draftData.shippingPrice = formData.shippingPrice;
+    }
+    if (formData.deliveryDistance && formData.deliveryDistance.trim()) {
+      draftData.deliveryDistance = formData.deliveryDistance;
     }
     // if (readyByDate) {
     // draftData.readyByDate = readyByDate;
@@ -1038,34 +1053,36 @@ function EditProductPage() {
     // Only include variants that are in the variants state (not deleted)
     if (variants && variants.length > 0) {
       // Map through variants state and get corresponding form data
-      draftData.variants = variants.map((variantState, index) => {
-        const formVariant = formData.variants?.[index];
-        if (!formVariant) {
-          // This shouldn't happen, but handle it gracefully
-          return null;
-        }
-        return {
-          color: formVariant.color,
-          quantity: formVariant.quantity,
-          price: formVariant.price,
-          priceType: formVariant.priceType || formData.priceType || 'sqft',
-          outOfStock: formVariant.outOfStock ?? false,
-          // Preserve existing images for each variant
-          images: variantState?.existingImages || [],
-          discount:
-            formVariant.discount?.discountType !== 'none' &&
-            formVariant.discount?.discountValue &&
-            formVariant.discount.discountValue.trim()
-              ? {
-                  discountType: formVariant.discount.discountType,
-                  discountValue: formVariant.discount.discountValue,
-                }
-              : {
-                  discountType: 'none',
-                  discountValue: '',
-                },
-        };
-      }).filter(Boolean); // Remove any null values
+      draftData.variants = variants
+        .map((variantState, index) => {
+          const formVariant = formData.variants?.[index];
+          if (!formVariant) {
+            // This shouldn't happen, but handle it gracefully
+            return null;
+          }
+          return {
+            color: formVariant.color,
+            quantity: formVariant.quantity,
+            price: formVariant.price,
+            priceType: formVariant.priceType || formData.priceType || 'sqft',
+            outOfStock: formVariant.outOfStock ?? false,
+            // Preserve existing images for each variant
+            images: variantState?.existingImages || [],
+            discount:
+              formVariant.discount?.discountType !== 'none' &&
+              formVariant.discount?.discountValue &&
+              formVariant.discount.discountValue.trim()
+                ? {
+                    discountType: formVariant.discount.discountType,
+                    discountValue: formVariant.discount.discountValue,
+                  }
+                : {
+                    discountType: 'none',
+                    discountValue: '',
+                  },
+          };
+        })
+        .filter(Boolean); // Remove any null values
     }
     if (variantFiles.length > 0) {
       draftData.variantFiles = variantFiles;
@@ -1236,7 +1253,10 @@ function EditProductPage() {
     setValue(`variants.${variantIndex}.quantity`, '');
     setValue(`variants.${variantIndex}.price`, '');
     // Use parent product's priceType as default for variant
-    setValue(`variants.${variantIndex}.priceType`, (formValues.priceType || 'sqft') as 'sqft' | 'linear' | 'pallet');
+    setValue(
+      `variants.${variantIndex}.priceType`,
+      (formValues.priceType || 'sqft') as 'sqft' | 'linear' | 'pallet'
+    );
     setValue(`variants.${variantIndex}.discount.discountValue`, '');
   };
 
@@ -1250,7 +1270,9 @@ function EditProductPage() {
 
     // Update form values to remove the variant
     const currentFormVariants = methods.getValues('variants') || [];
-    const updatedFormVariants = currentFormVariants.filter((_: any, index: number) => index !== variantIndex);
+    const updatedFormVariants = currentFormVariants.filter(
+      (_: any, index: number) => index !== variantIndex
+    );
     setValue('variants', updatedFormVariants);
 
     // Clear any errors for this variant

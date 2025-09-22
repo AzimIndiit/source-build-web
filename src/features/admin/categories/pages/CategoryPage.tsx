@@ -119,11 +119,13 @@ const CategoryPage: React.FC = () => {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <PaginationWrapper
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
-        />
+        <div className='mt-2'>
+          <PaginationWrapper
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
+        </div>
       )}
 
       {/* Category Modal */}

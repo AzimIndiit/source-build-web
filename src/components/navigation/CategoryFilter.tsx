@@ -1,45 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-interface Category {
-  id: string;
-  name: string;
-  subcategories?: string[];
-}
-
-const categories: Category[] = [
-  {
-    id: 'adhesives',
-    name: 'Adhesives',
-    subcategories: ['Glue', 'Tape', 'Epoxy', 'Sealants'],
-  },
-  {
-    id: 'appliances',
-    name: 'Appliances',
-    subcategories: ['Kitchen Appliances', 'Laundry', 'Small Appliances', 'HVAC'],
-  },
-  {
-    id: 'baseboards',
-    name: 'Baseboards, Casing, Trim & Crown',
-    subcategories: ['Baseboards', 'Casing', 'Crown Molding', 'Chair Rail', 'Trim'],
-  },
-  {
-    id: 'cabinetry',
-    name: 'Cabinetry',
-    subcategories: ['Kitchen Cabinets', 'Bathroom Vanities', 'Cabinet Hardware', 'Cabinet Doors'],
-  },
-  {
-    id: 'caulk',
-    name: 'Caulk & Sealants',
-    subcategories: ['Silicone Caulk', 'Acrylic Caulk', 'Latex Caulk', 'Specialty Sealants'],
-  },
-  {
-    id: 'carpet',
-    name: 'Carpet',
-    subcategories: ['Area Rugs', 'Carpet Tiles', 'Wall-to-Wall', 'Carpet Padding'],
-  },
-];
+import { useNavigate } from 'react-router-dom';
+import { useAvailableCategoriesQuery } from '@/features/admin/categories/hooks/useCategoryMutations';
 
 interface CategoryFilterProps {
   isCollapsed?: boolean;
@@ -52,24 +15,99 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
   onCategorySelect,
   selectedCategories = [],
 }) => {
+  const navigate = useNavigate();
+  
+  // Fetch available categories with their subcategories (single API call)
+  const { data: categoriesResponse } = useAvailableCategoriesQuery();
+  const categories = categoriesResponse?.data || [];
+
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
 
+  // Check if any subcategories are selected for a category and auto-select parent (only on initial load)
+  useEffect(() => {
+    if (categories.length > 0 && selectedCategories.length > 0) {
+      // Only run this once when categories are loaded
+      const timer = setTimeout(() => {
+        categories.forEach((category: any) => {
+          // Check if any subcategories for this category are selected
+          const hasSelectedSubcategories = selectedCategories.some((cat) =>
+            cat.startsWith(`${category.slug}:`)
+          );
+
+          // If subcategories are selected but parent isn't, select the parent
+          if (hasSelectedSubcategories && !selectedCategories.includes(category.slug)) {
+            onCategorySelect?.(category.slug);
+          }
+        });
+      }, 100);
+
+      return () => clearTimeout(timer);
+    }
+  }, [categories.length]); // Only depend on categories length to run once when loaded
+
   const toggleCategory = (categoryId: string) => {
-    setExpandedCategories((prev) =>
-      prev.includes(categoryId) ? prev.filter((id) => id !== categoryId) : [...prev, categoryId]
-    );
+    setExpandedCategories((prev) => {
+      const isExpanded = prev.includes(categoryId);
+      if (isExpanded) {
+        return prev.filter((id) => id !== categoryId);
+      } else {
+        return [...prev, categoryId];
+      }
+    });
   };
 
-  const handleCategoryCheck = (categoryId: string, subcategory?: string) => {
-    onCategorySelect?.(categoryId, subcategory);
+  const handleCategoryCheck = (category: any, subcategorySlug?: string) => {
+    if (subcategorySlug) {
+      // Handle subcategory selection - just toggle the single subcategory
+      onCategorySelect?.(category.slug, subcategorySlug);
+    } else {
+      const categorySlug = category.slug;
+      const isCategorySelected = isCategoryChecked(categorySlug);
+      const categorySubcategories = category.subcategories || [];
+
+      // First, perform the selection/deselection
+      if (isCategorySelected) {
+        // Deselect category and all its subcategories
+        onCategorySelect?.(categorySlug); // Deselect category
+
+        // Deselect all subcategories
+        categorySubcategories.forEach((sub: any) => {
+          if (isSubcategoryChecked(categorySlug, sub.slug)) {
+            onCategorySelect?.(categorySlug, sub.slug);
+          }
+        });
+      } else {
+        // Select category and all its subcategories
+        onCategorySelect?.(categorySlug); // Select category
+
+        // Select all subcategories
+        categorySubcategories.forEach((sub: any) => {
+          if (!isSubcategoryChecked(categorySlug, sub.slug)) {
+            onCategorySelect?.(categorySlug, sub.slug);
+          }
+        });
+      }
+    }
   };
 
-  const isCategoryChecked = (categoryId: string) => {
-    return selectedCategories.includes(categoryId);
+  const isCategoryChecked = (categorySlug: string) => {
+    return selectedCategories.includes(categorySlug);
   };
 
-  const isSubcategoryChecked = (categoryId: string, subcategory: string) => {
-    return selectedCategories.includes(`${categoryId}:${subcategory}`);
+  const isSubcategoryChecked = (categorySlug: string, subcategorySlug: string) => {
+    return selectedCategories.includes(`${categorySlug}:${subcategorySlug}`);
+  };
+
+  // Check if category is partially selected (some but not all subcategories selected)
+  const isCategoryPartiallyChecked = (category: any) => {
+    const categorySubcategories = category.subcategories || [];
+    if (categorySubcategories.length === 0) return false;
+
+    const checkedCount = categorySubcategories.filter((sub: any) =>
+      isSubcategoryChecked(category.slug, sub.slug)
+    ).length;
+
+    return checkedCount > 0 && checkedCount < categorySubcategories.length;
   };
 
   if (isCollapsed) {
@@ -78,15 +116,19 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
 
   return (
     <div className="flex flex-col">
-      <h3 className="text-base font-bold text-gray-900 px-3 mb-4">Categories</h3>
+      <div className="px-3 mb-4">
+        <h3 className="text-base font-bold text-gray-900">Categories</h3>
+      </div>
 
       <div className="flex flex-col">
-        {categories.map((category) => {
-          const isExpanded = expandedCategories.includes(category.id);
-          const categoryChecked = isCategoryChecked(category.id);
+        {categories?.map((category: any) => {
+          const isExpanded = expandedCategories.includes(category._id);
+          const categoryChecked = isCategoryChecked(category.slug);
+          const categoryPartiallyChecked = isCategoryPartiallyChecked(category);
+          const categorySubcategories = category.subcategories || [];
 
           return (
-            <div key={category.id} className="flex flex-col">
+            <div key={category._id} className="flex flex-col">
               {/* Category Item */}
               <div
                 className={cn(
@@ -98,18 +140,21 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
                 <div className="flex items-center gap-3 flex-1">
                   {/* Checkbox */}
                   <button
-                    onClick={() => handleCategoryCheck(category.id)}
+                    onClick={() => handleCategoryCheck(category)}
                     className={cn(
-                      'w-5 h-5 rounded flex items-center justify-center transition-all',
-                      categoryChecked ? 'bg-blue-600' : 'border-2 border-blue-400 bg-white'
+                      'w-5 h-5 rounded flex items-center justify-center transition-all relative',
+                      categoryChecked ? 'bg-primary' : 'border-2 border-blue-400 bg-white'
                     )}
                   >
                     {categoryChecked && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
+                    {categoryPartiallyChecked && !categoryChecked && (
+                      <div className="absolute w-2.5 h-0.5 bg-primary"></div>
+                    )}
                   </button>
 
                   {/* Category Name */}
                   <span
-                    onClick={() => handleCategoryCheck(category.id)}
+                    onClick={() => handleCategoryCheck(category)}
                     className={cn(
                       'text-sm font-medium flex-1',
                       categoryChecked ? 'text-gray-900' : 'text-gray-700'
@@ -119,33 +164,34 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
                   </span>
                 </div>
 
-                {/* Expand Button */}
-                {category.subcategories && category.subcategories.length > 0 && (
+                {/* Expand Button - Only show if there are subcategories */}
+                {categorySubcategories.length > 0 && (
                   <button
-                    onClick={() => toggleCategory(category.id)}
+                    onClick={() => toggleCategory(category._id)}
                     className={cn(
-                      'w-8 h-8 rounded-full flex items-center justify-center transition-all',
-                      'border-2 border-blue-500 text-blue-600 bg-white',
+                      'w-8 h-8 rounded-full flex items-center cursor-pointer justify-center transition-all',
+                      'border-2 border-primary text-primary bg-white',
                       'hover:bg-blue-50'
                     )}
                   >
-                    <Plus
-                      className={cn('w-5 h-5 transition-transform', isExpanded && 'rotate-45')}
-                    />
+                    <Plus className={cn('w-5 h-5 transition-transform', isExpanded && 'rotate-45')} />
                   </button>
                 )}
               </div>
 
               {/* Subcategories */}
-              {isExpanded && category.subcategories && (
+              {isExpanded && categorySubcategories.length > 0 && (
                 <div className="ml-10 mr-3 mb-2 flex flex-col gap-1">
-                  {category.subcategories.map((subcategory) => {
-                    const subcategoryChecked = isSubcategoryChecked(category.id, subcategory);
+                  {categorySubcategories.map((subcategory: any) => {
+                    const subcategoryChecked = isSubcategoryChecked(
+                      category.slug,
+                      subcategory.slug
+                    );
 
                     return (
                       <div
-                        key={subcategory}
-                        onClick={() => handleCategoryCheck(category.id, subcategory)}
+                        key={subcategory._id}
+                        onClick={() => handleCategoryCheck(category, subcategory.slug)}
                         className={cn(
                           'flex items-center gap-3 px-4 py-2.5 rounded-lg cursor-pointer transition-colors',
                           'hover:bg-gray-50',
@@ -156,7 +202,7 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
                         <button
                           className={cn(
                             'w-4 h-4 rounded flex items-center justify-center transition-all',
-                            subcategoryChecked ? 'bg-blue-600' : 'border-2 border-blue-400 bg-white'
+                            subcategoryChecked ? 'bg-primary' : 'border-2 border-blue-400 bg-white'
                           )}
                         >
                           {subcategoryChecked && (
@@ -170,7 +216,7 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
                             subcategoryChecked ? 'text-gray-900 font-medium' : 'text-gray-700'
                           )}
                         >
-                          {subcategory}
+                          {subcategory.name}
                         </span>
                       </div>
                     );
@@ -180,6 +226,13 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
             </div>
           );
         })}
+
+        {/* Show message if no categories found */}
+        {categories.length === 0 && (
+          <div className="px-3">
+            <p className="text-sm text-gray-500 px-4 py-2">No categories with products available</p>
+          </div>
+        )}
       </div>
     </div>
   );

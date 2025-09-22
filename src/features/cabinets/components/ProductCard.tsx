@@ -37,11 +37,28 @@ const ProductCard: React.FC<ProductCardProps> = ({
           )}
           <div className="text-right">
             <h5 className="font-semibold">{product.model}</h5>
-            <p className="text-xl font-bold text-primary">${product.price}</p>
+            <p className="text-xl font-bold text-primary">
+              ${product.price}
+              {product.priceType && (
+                <span className="text-sm font-normal">
+                  /{' '}
+                  {product.priceType === 'sqft'
+                    ? 'sq ft'
+                    : product.priceType === 'linear'
+                      ? 'linear ft'
+                      : 'pallet'}
+                </span>
+              )}
+            </p>
           </div>
         </div>
 
         <p className="text-sm text-gray-600 mb-4">{product.description}</p>
+        {product.category && (
+          <p className="text-xs text-gray-500 capitalize mb-2">
+            {typeof product.category === 'string' ? product.category : product.category.name}
+          </p>
+        )}
 
         <div className="space-y-3">
           <div className="flex items-center justify-between">

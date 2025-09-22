@@ -1,26 +1,26 @@
 import { Menu } from 'lucide-react';
-import { useState } from 'react';
 import { cn } from '@/lib/utils';
-
-const menuItems = [
-  'All',
-  'Commercial Doors',
-  'Commercial Building Supplies',
-  'Cabinetry',
-  'Ceiling Fans',
-  'Door Frames',
-  'Doors',
-  'Carpets',
-  'Windows',
-  'Hardwood',
-  'Flooring',
-  'LVP',
-  'Tiles',
-];
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useCategoriesQuery } from '@/features/admin/categories/hooks/useCategoryMutations';
 
 export function HeaderMenu() {
-  const [selectedItem, setSelectedItem] = useState('All');
-
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { data: response } = useCategoriesQuery({ limit: 100,isActive:true });
+  
+  // Response structure: response (CategoriesListResponse) -> data (CategoriesResponse) -> data (Category[])
+  // Filter only active categories
+  const allCategories = response?.data || [];
+  const categories = Array.isArray(allCategories) ? allCategories.filter((cat: any) => cat.isActive) : [];
+  
+  // Parse URL params
+  const searchParams = new URLSearchParams(location.search);
+  const typeParam = searchParams.get('type');
+  const categoryParam = searchParams.get('category');
+  
+  // Determine if "All" should be active
+  const isAllActive = typeParam === 'all' || !categoryParam || categoryParam === '';
+  
   return (
     <nav
       className="border-b border-gray-200"
@@ -35,20 +35,36 @@ export function HeaderMenu() {
           </button>
 
           <div className="flex items-center ml-4 space-x-1">
-            {menuItems.map((item) => (
-              <button
-                key={item}
-                onClick={() => setSelectedItem(item)}
-                className={cn(
-                  'flex-shrink-0 px-4 py-2 text-sm font-medium transition-colors rounded-md cursor-pointer',
-                  selectedItem === item
-                    ? 'bg-white/40 text-gray-900'
-                    : 'text-gray-700 hover:bg-white/20 hover:text-gray-900'
-                )}
-              >
-                {item}
-              </button>
-            ))}
+            <button
+              onClick={() => navigate('/marketplace')}
+              className={cn(
+                'flex-shrink-0 px-4 py-2 text-sm font-medium transition-colors rounded-md cursor-pointer',
+                isAllActive
+                  ? 'bg-white/40 text-gray-900'
+                  : 'text-gray-700 hover:bg-white/20 hover:text-gray-900'
+              )}
+            >
+              All
+            </button>
+            {categories.map((category: any) => {
+              // Check if this specific category is active (only when type !== 'all')
+              const isCategoryActive = typeParam !== 'all' && location.search.includes(`category=${category.slug}`);
+              
+              return (
+                <button
+                  key={category._id}
+                  onClick={() => navigate(`/marketplace/${category.slug}`)}
+                  className={cn(
+                    'flex-shrink-0 px-4 py-2 text-sm font-medium transition-colors rounded-md cursor-pointer',
+                    isCategoryActive
+                      ? 'bg-white/40 text-gray-900'
+                      : 'text-gray-700 hover:bg-white/20 hover:text-gray-900'
+                  )}
+                >
+                  {category.name}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>

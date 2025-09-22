@@ -81,3 +81,11 @@ export const useCategoryStatsQuery = () => {
     staleTime: 5 * 60 * 1000,
   });
 };
+
+export const useAvailableCategoriesQuery = () => {
+  return useQuery({
+    queryKey: ['available-categories'],
+    queryFn: () => categoryService.getAvailableCategories(),
+    staleTime: 5 * 60 * 1000,
+  });
+};

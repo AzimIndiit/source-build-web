@@ -107,6 +107,16 @@ class SubcategoryService {
     const response = await axiosInstance.get('/subcategories/stats');
     return response.data;
   }
+
+  // Get available subcategories (subcategories with active products)
+  async getAvailableSubcategories(categoryId?: string): Promise<SubcategoriesListResponse> {
+    const params = new URLSearchParams();
+    if (categoryId) {
+      params.append('categoryId', categoryId);
+    }
+    const response = await axiosInstance.get<SubcategoriesListResponse>('/subcategories/available', { params });
+    return response.data;
+  }
 }
 
 export const subcategoryService = new SubcategoryService();

@@ -23,6 +23,12 @@ export interface CategoriesListResponse {
   meta: { pagination: PaginationMeta };
 }
 
+export interface AvailableCategoriesResponse {
+  success: boolean;
+  message?: string;
+  data: Category[];
+}
+
 class CategoryService {
   // Get all categories with filters
   async getCategories(filters?: CategoryFilters): Promise<CategoriesListResponse> {
@@ -75,6 +81,12 @@ class CategoryService {
   // Get category statistics
   async getCategoryStats() {
     const response = await axiosInstance.get('/categories/stats');
+    return response.data;
+  }
+
+  // Get available categories (categories with active products)
+  async getAvailableCategories(): Promise<AvailableCategoriesResponse> {
+    const response = await axiosInstance.get<AvailableCategoriesResponse>('/categories/available');
     return response.data;
   }
 }

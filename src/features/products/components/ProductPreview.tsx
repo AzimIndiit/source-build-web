@@ -289,7 +289,9 @@ export const ProductPreview: React.FC<ProductPreviewProps> = ({
                   <div className="text-gray-600">
                     /{' '}
                     {categoryOptions.find((opt) => opt.value === formValues.category)?.label ||
-                      formValues.category}
+                      (typeof formValues.category === 'string'
+                        ? formValues.category
+                        : formValues.category.name)}
                   </div>
                 )}
                 {formValues.discount?.discountType !== 'none' &&
@@ -502,7 +504,10 @@ export const ProductPreview: React.FC<ProductPreviewProps> = ({
                   )}
                   {formValues.marketplaceOptions?.delivery && (
                     <div className="text-xs sm:text-sm md:text-base text-gray-600">
-                      <span className="font-medium">Delivery Available</span>
+                      <span className="font-medium">Local Delivery</span>
+                      {formValues.marketplaceOptions?.deliveryDistance && (
+                        <span>: Within {formValues.marketplaceOptions.deliveryDistance} miles</span>
+                      )}
                     </div>
                   )}
                 </div>

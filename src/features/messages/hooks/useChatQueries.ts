@@ -163,7 +163,7 @@ export function useGetOrCreateChatMutation() {
     onSuccess: (response) => {
       // Navigate to the chat interface
       if (user) {
-        navigate(`/${user.role}/messages/${response.data.id}`);
+        navigate(user.role === 'buyer' ?  `/messages/${response.data.id}` : `/${user.role}/messages/${response.data.id}`);
       }
 
       // Invalidate chats list to refetch

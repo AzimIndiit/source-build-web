@@ -203,6 +203,7 @@ const createProductSchema = z
             'At least one marketplace option (Pickup, Shipping, or Delivery) must be selected',
         }
       ),
+    deliveryDistance:z.string().trim().optional(),
 
     pickupHours: z
       .string()
@@ -211,7 +212,7 @@ const createProductSchema = z
       .optional(),
 
     shippingPrice: z.string().trim().optional(),
-
+    localDeliveryFree: z.boolean().optional(),
     // readyByDate: z.string().min(1, 'Date is required'),
 
     // readyByTime: z.string().min(1, 'Time is required'),
@@ -488,6 +489,8 @@ function CreateProductPage() {
         shipping: false,
         delivery: false,
       },
+      deliveryDistance: '50',
+      localDeliveryFree: false,
       pickupHours: '',
       shippingPrice: '200',
       readyByDate: '',
@@ -644,7 +647,9 @@ function CreateProductPage() {
       productTag: data.productTag,
       marketplaceOptions: data.marketplaceOptions,
       pickupHours: data.pickupHours,
+      deliveryDistance: data.deliveryDistance ? parseFloat(data.deliveryDistance) : undefined,
       shippingPrice: data.shippingPrice ? parseFloat(data.shippingPrice) : undefined,
+      localDeliveryFree: data.localDeliveryFree,
       readyByDate,
       readyByTime: data.readyByTime,
       readyByDays: data.readyByDays ? parseInt(data.readyByDays) : undefined,
@@ -663,23 +668,25 @@ function CreateProductPage() {
           ? parseFloat(data.discount.discountValue)
           : undefined,
       },
-      variants: variants.map((variant, index) => {
-        const formVariant = data.variants?.[index];
-        if (!formVariant) return null;
-        return {
-          color: formVariant.color,
-          quantity: parseInt(formVariant.quantity),
-          price: parseFloat(formVariant.price),
-          priceType: formVariant.priceType || data.priceType || 'sqft',
-          outOfStock: formVariant.outOfStock ?? false,
-          discount: {
-            discountType: formVariant.discount.discountType,
-            discountValue: formVariant.discount.discountValue
-              ? parseFloat(formVariant.discount.discountValue)
-              : undefined,
-          },
-        };
-      }).filter(Boolean),
+      variants: variants
+        .map((variant, index) => {
+          const formVariant = data.variants?.[index];
+          if (!formVariant) return null;
+          return {
+            color: formVariant.color,
+            quantity: parseInt(formVariant.quantity),
+            price: parseFloat(formVariant.price),
+            priceType: formVariant.priceType || data.priceType || 'sqft',
+            outOfStock: formVariant.outOfStock ?? false,
+            discount: {
+              discountType: formVariant.discount.discountType,
+              discountValue: formVariant.discount.discountValue
+                ? parseFloat(formVariant.discount.discountValue)
+                : undefined,
+            },
+          };
+        })
+        .filter(Boolean),
       imageFiles: uploadedPhotos,
       variantFiles: variantFiles.length > 0 ? variantFiles : undefined,
     };
@@ -801,6 +808,12 @@ function CreateProductPage() {
     if (formData.shippingPrice && formData.shippingPrice.trim()) {
       draftData.shippingPrice = formData.shippingPrice;
     }
+    if (formData.deliveryDistance && formData.deliveryDistance) {
+      draftData.deliveryDistance = formData.deliveryDistance;
+    }
+    if (formData.localDeliveryFree !== undefined) {
+      draftData.localDeliveryFree = formData.localDeliveryFree;
+    }
     if (readyByDate) {
       draftData.readyByDate = readyByDate;
       draftData.readyByTime = formData.readyByTime;
@@ -835,29 +848,31 @@ function CreateProductPage() {
     }
     // Only include variants that exist in the variants state (not deleted)
     if (variants && variants.length > 0) {
-      draftData.variants = variants.map((variant, index) => {
-        const formVariant = formData.variants?.[index];
-        if (!formVariant) return null;
-        return {
-          color: formVariant.color,
-          quantity: formVariant.quantity,
-          price: formVariant.price,
-          priceType: formVariant.priceType || formData.priceType || 'sqft',
-          outOfStock: formVariant.outOfStock ?? false,
-          discount:
-            formVariant.discount.discountType !== 'none' &&
-            formVariant.discount.discountValue &&
-            formVariant.discount.discountValue.trim()
-              ? {
-                  discountType: formVariant.discount.discountType,
-                  discountValue: formVariant.discount.discountValue,
-                }
-              : {
-                  discountType: 'none',
-                  discountValue: '',
-                },
-        };
-      }).filter(Boolean); // Remove null values
+      draftData.variants = variants
+        .map((variant, index) => {
+          const formVariant = formData.variants?.[index];
+          if (!formVariant) return null;
+          return {
+            color: formVariant.color,
+            quantity: formVariant.quantity,
+            price: formVariant.price,
+            priceType: formVariant.priceType || formData.priceType || 'sqft',
+            outOfStock: formVariant.outOfStock ?? false,
+            discount:
+              formVariant.discount.discountType !== 'none' &&
+              formVariant.discount.discountValue &&
+              formVariant.discount.discountValue.trim()
+                ? {
+                    discountType: formVariant.discount.discountType,
+                    discountValue: formVariant.discount.discountValue,
+                  }
+                : {
+                    discountType: 'none',
+                    discountValue: '',
+                  },
+          };
+        })
+        .filter(Boolean); // Remove null values
     }
     if (variantFiles.length > 0) {
       draftData.variantFiles = variantFiles;
@@ -984,7 +999,9 @@ function CreateProductPage() {
 
     // Update form values to remove the variant
     const currentFormVariants = methods.getValues('variants') || [];
-    const updatedFormVariants = currentFormVariants.filter((_: any, index: number) => index !== variantIndex);
+    const updatedFormVariants = currentFormVariants.filter(
+      (_: any, index: number) => index !== variantIndex
+    );
     setValue('variants', updatedFormVariants);
 
     // Clear any errors for this variant

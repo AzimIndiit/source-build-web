@@ -1,6 +1,6 @@
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { MessageSquareMore } from 'lucide-react';
+import { Loader2, MessageSquareMore } from 'lucide-react';
 import { Card, StarRating } from '@/components/ui';
 import { useGetOrCreateChatMutation } from '@/features/messages/hooks/useChatQueries';
 
@@ -22,7 +22,7 @@ export const CustomerDetailsSection: React.FC<CustomerDetailsSectionProps> = ({
   title = 'Customer Details',
   reviewTitle = 'Reviews & Rating From Customer',
 }) => {
-  const { mutate: getOrCreateChat } = useGetOrCreateChatMutation();
+  const { mutate: getOrCreateChat ,isPending} = useGetOrCreateChatMutation();
 
   const handleMessageClick = () => {
     if (customerDetails?.id) {
@@ -59,10 +59,11 @@ export const CustomerDetailsSection: React.FC<CustomerDetailsSectionProps> = ({
               </div>
             </div>
             <button
+             disabled={isPending}
               className="p-3 bg-primary/10 hover:bg-primary/20 rounded-full transition-colors cursor-pointer"
               onClick={handleMessageClick}
             >
-              <MessageSquareMore className="w-5 h-5 text-primary " />
+             {isPending? <Loader2 className='animate-spin h-5 w-5 text-primary'/> : <MessageSquareMore className="w-5 h-5 text-primary " />}
             </button>
           </div>
         </Card>

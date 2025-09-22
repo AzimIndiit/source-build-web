@@ -91,7 +91,7 @@ const MarketPlacePage: React.FC = () => {
 
     setActiveFilters((prev: any) => ({
       ...prev,
-      category: categoryParam || undefined,
+      category: categoryParam!=='All' ? categoryParam : undefined,
       subCategory: subCategoryParam || undefined,
     }));
   }, [location.search]);
@@ -112,6 +112,18 @@ const MarketPlacePage: React.FC = () => {
 
     // Transform filters to match backend API expectations
     const transformedFilters: any = {};
+
+    // Preserve category and subcategory filters from URL
+    const searchParams = new URLSearchParams(location.search);
+    const categoryParam = searchParams.get('category');
+    const subCategoryParam = searchParams.get('subCategory');
+    
+    if (categoryParam && categoryParam !== 'All') {
+      transformedFilters.category = categoryParam;
+    }
+    if (subCategoryParam) {
+      transformedFilters.subCategory = subCategoryParam;
+    }
 
     // Popularity filters - collect checked items
     const popularityFilters = filters.popularity
@@ -164,7 +176,20 @@ const MarketPlacePage: React.FC = () => {
   };
 
   const handleClearFilters = () => {
-    setActiveFilters({});
+    // Preserve category and subcategory filters from URL
+    const searchParams = new URLSearchParams(location.search);
+    const categoryParam = searchParams.get('category');
+    const subCategoryParam = searchParams.get('subCategory');
+    
+    const clearedFilters: any = {};
+    if (categoryParam && categoryParam !== 'All') {
+      clearedFilters.category = categoryParam;
+    }
+    if (subCategoryParam) {
+      clearedFilters.subCategory = subCategoryParam;
+    }
+    
+    setActiveFilters(clearedFilters);
     setCurrentPage(1);
     // Reset filter state to default
     setFilterState({
@@ -228,6 +253,8 @@ const MarketPlacePage: React.FC = () => {
   const cancelDelete = () => {
     setDeleteModal({ isOpen: false, productId: '', productTitle: '' });
   };
+const formattedCategory = activeFilters.category && !location.search.includes('type=all') ? `${activeFilters.category.split('-').join(' ')}` : 'Marketplace';
+
 
   // Loading state
   if (isLoading) {
@@ -239,7 +266,7 @@ const MarketPlacePage: React.FC = () => {
     return (
       <div className="py-4 md:p-4 space-y-4 md:space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-xl md:text-2xl font-bold text-gray-900">Marketplace</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900 capitalize max-w-80 sm:max-w-full truncate">{ formattedCategory }</h1>
           <FilterDropdown
             onApply={handleApplyFilters}
             onClear={handleClearFilters}
@@ -259,7 +286,6 @@ const MarketPlacePage: React.FC = () => {
       </div>
     );
   }
-
   // Handle both old and new API response structures
   const responseData: any = data?.data;
   const products = Array.isArray(responseData) ? responseData : responseData?.products || [];
@@ -273,7 +299,7 @@ const MarketPlacePage: React.FC = () => {
     return (
       <div className="py-4 md:p-4 space-y-4 md:space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-xl md:text-2xl font-bold text-gray-900">Marketplace</h1>
+            <h1 className="text-xl md:text-2xl font-bold text-gray-900 capitalize max-w-80 sm:max-w-full truncate">{ formattedCategory }</h1>
           <div className="flex items-center gap-2">
             {/* Location Selector - Visible on tablet and desktop */}
             <DropdownMenu>
@@ -329,12 +355,14 @@ const MarketPlacePage: React.FC = () => {
             />
           </div>
         </div>
-        <EmptyState
+       <div>
+       <EmptyState
           title="No products found"
           description="Check back later for new products"
           icon={<img src={ProductEmptyIcon} alt="Product empty" className="h-64 w-auto" />}
-          className="h-64"
+          className="h-100"
         />
+       </div>
       </div>
     );
   }
@@ -342,7 +370,7 @@ const MarketPlacePage: React.FC = () => {
   return (
     <div className="py-4 md:p-4 space-y-4 md:space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl md:text-2xl font-bold text-gray-900">Marketplace</h1>
+        <h1 className="text-xl md:text-2xl font-bold text-gray-900 capitalize max-w-80 sm:max-w-full truncate">{ formattedCategory }</h1>
         <div className="flex items-center gap-2">
           {/* Location Selector - Visible on tablet and desktop */}
           <DropdownMenu>
