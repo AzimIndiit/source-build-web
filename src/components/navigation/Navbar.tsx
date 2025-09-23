@@ -12,8 +12,10 @@ import {
   Search,
   LayoutDashboard,
   ChevronDown,
+  Loader2,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { switchUserRole } from '@/services/userService';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -35,7 +37,8 @@ import { useSocket } from '@/hooks/useSocket';
 import toast from 'react-hot-toast';
 
 export const Navbar: React.FC = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, updateUser } = useAuth();
+  console.log('user', user);
   const navigate = useNavigate();
   const location = useLocation();
   const { openModal, isOpen, closeModal } = useLogoutModal();
@@ -47,6 +50,7 @@ export const Navbar: React.FC = () => {
     location.pathname === `/${user?.role}/messages` ||
     location.pathname.startsWith(`/${user?.role}/messages/`);
   const [isBuyerMode, setIsBuyerMode] = useState(user?.role === 'buyer');
+  const [isRoleSwitching, setIsRoleSwitching] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -114,6 +118,11 @@ export const Navbar: React.FC = () => {
   }, [initialMessageCount]);
 
   // Listen for socket updates to increment/decrement message count
+  // Sync isBuyerMode with user role changes
+  useEffect(() => {
+    setIsBuyerMode(user?.role === 'buyer');
+  }, [user?.role]);
+
   useEffect(() => {
     const handleUpdateUnreadCount = (data: any) => {
       // Check if the event is for the current logged-in user
@@ -159,9 +168,73 @@ export const Navbar: React.FC = () => {
     };
   }, [on, user?.id]);
 
-  const handleSwitchBuyerMode = (checked: boolean) => {
-    toast.error('Functionality is not available yet');
-    // setIsBuyerMode(checked); // TODO: Enable when functionality is available
+  const handleSwitchBuyerMode = async (checked: boolean) => {
+    // Prevent multiple simultaneous switches
+    if (isRoleSwitching) return;
+    
+    // Determine the target role based on the switch state
+    const targetRole = checked ? 'buyer' : 'seller';
+
+    // Optimistic update - update UI immediately
+    setIsBuyerMode(checked);
+    setIsRoleSwitching(true);
+
+    // Store the previous role for potential rollback
+    const previousRole = user?.role;
+
+    try {
+      // Call the API to switch roles
+      const response = await switchUserRole(targetRole);
+
+      if (response.success) {
+        // Update with the actual user data from response if available
+
+        // Update tokens if provided
+        if (response.data?.tokens) {
+          localStorage.setItem('access_token', response.data.tokens.accessToken);
+          localStorage.setItem('refresh_token', response.data.tokens.refreshToken);
+        }
+
+        // Show success message
+        toast.success(response.message || `Successfully switched to ${targetRole} mode`);
+        // Update the user in the auth store with the response data
+        if (response.data?.user) {
+          updateUser(response.data.user);
+        } else {
+          updateUser({ role: targetRole });
+        }
+        
+        // Navigate based on role
+        if (targetRole === 'buyer') {
+          // Buyers go to home page
+          window.location.href = '/';
+        } else {
+          // Sellers go to dashboard
+          window.location.href = '/seller/dashboard';
+        }
+      }
+    } catch (error: any) {
+      // Rollback on error
+      setIsBuyerMode(!checked);
+      updateUser({ role: previousRole });
+
+      // Show error message
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.response?.data?.error?.message ||
+        'Failed to switch role. Please try again.';
+      toast.error(errorMessage);
+
+      // If it's a profile completion error, optionally navigate to profile page
+      if (errorMessage.includes('complete your seller profile')) {
+        setTimeout(() => {
+          navigate('/profile');
+        }, 2000);
+      }
+    } finally {
+      // Always reset loading state
+      setIsRoleSwitching(false);
+    }
   };
 
   return (
@@ -243,7 +316,7 @@ export const Navbar: React.FC = () => {
                       </Link>
                     </DropdownMenuItem>
 
-                    {user?.role === 'seller' && (
+                    {(user?.role === 'seller' || user?.role === 'buyer') && (
                       <DropdownMenuItem
                         className="cursor-pointer text-sm"
                         onSelect={(e) => e.preventDefault()}
@@ -254,12 +327,22 @@ export const Navbar: React.FC = () => {
                               <Settings className="w-6 h-6" />
                             </AvatarFallback>
                           </Avatar>
-                          <span className="flex-1">Switch to Buyer</span>
-                          <Switch
-                            className={`h-6 w-12 ${isBuyerMode ? 'data-[state=checked]:bg-green-500' : ''}`}
-                            checked={isBuyerMode}
-                            onCheckedChange={handleSwitchBuyerMode}
-                          />
+                          <span className="flex-1">
+                            {user?.role === 'seller' ? 'Switch to Buyer' : 'Switch to Seller'}
+                          </span>
+                          <div className="relative">
+                            <Switch
+                              className={`h-6 w-12 ${isBuyerMode ? 'data-[state=checked]:bg-green-500' : ''}`}
+                              checked={isBuyerMode}
+                              onCheckedChange={handleSwitchBuyerMode}
+                              disabled={isRoleSwitching}
+                            />
+                            {isRoleSwitching && (
+                              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                <Loader2 className="h-4 w-4 animate-spin text-gray-600" />
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </DropdownMenuItem>
                     )}
@@ -435,14 +518,24 @@ export const Navbar: React.FC = () => {
                   )}
 
                   {/* Switch Mode */}
-                  {user?.role === 'seller' && (
+                  {(user?.role === 'seller' || user?.role === 'buyer') && (
                     <div className="flex items-center justify-between py-2">
-                      <span className="text-sm">Switch to Buyer</span>
-                      <Switch
-                        className={`h-6 w-12 ${isBuyerMode ? 'data-[state=checked]:bg-green-500' : ''}`}
-                        checked={isBuyerMode}
-                        onCheckedChange={handleSwitchBuyerMode}
-                      />
+                      <span className="text-sm">
+                        {user?.role === 'seller' ? 'Switch to Buyer' : 'Switch to Seller'}
+                      </span>
+                      <div className="relative">
+                        <Switch
+                          className={`h-6 w-12 ${isBuyerMode ? 'data-[state=checked]:bg-green-500' : ''}`}
+                          checked={isBuyerMode}
+                          onCheckedChange={handleSwitchBuyerMode}
+                          disabled={isRoleSwitching}
+                        />
+                        {isRoleSwitching && (
+                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <Loader2 className="h-4 w-4 animate-spin text-gray-600" />
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
 

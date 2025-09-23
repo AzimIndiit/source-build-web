@@ -19,8 +19,8 @@ function LoginPage() {
   const methods = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: '',
-      password: '', // Default password for testing
+      email: 'admin@yopmail.com',
+      password: 'Password@1',  // Default password for testing
       role: 'admin',
     },
   });
