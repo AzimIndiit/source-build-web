@@ -44,6 +44,7 @@ export const BuyerSidebar: React.FC<BuyerSidebarProps> = ({
   const navigate = useNavigate();
   const [localCollapsed, setLocalCollapsed] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  
 
   // Use controlled state if provided, otherwise use local state
   const isCollapsed = controlledCollapsed !== undefined ? controlledCollapsed : localCollapsed;
@@ -60,22 +61,33 @@ export const BuyerSidebar: React.FC<BuyerSidebarProps> = ({
       const subCategoryParam = searchParams.get('subCategory');
       const initialCategories: string[] = [];
 
-      // Add categories
+      // Add categories (these are slugs)
       if (categoryParam) {
-        categoryParam.split(',').forEach((cat) => {
-          if (cat) initialCategories.push(cat);
+        categoryParam.split(',').forEach((catSlug) => {
+          if (catSlug) {
+            initialCategories.push(catSlug);
+          }
         });
       }
 
       // Add subcategories with their parent category prefix
-      if (subCategoryParam) {
-        // Note: We'd need to map subcategories back to their parent categories
-        // For now, we'll assume the backend handles this mapping
+      if (subCategoryParam && categoryParam) {
+        const categorySlugList = categoryParam.split(',');
+        const subCategorySlugs = subCategoryParam.split(',');
+        
+        // For each subcategory, we need to pair it with its parent category
+        // This assumes subcategories are passed in the same order as their parent categories
+        subCategorySlugs.forEach((subCatSlug) => {
+          if (subCatSlug && categorySlugList.length > 0) {
+            // For now, pair with the first category slug (this might need adjustment based on your data structure)
+            initialCategories.push(`${categorySlugList[0]}:${subCatSlug}`);
+          }
+        });
       }
 
       setSelectedCategories(initialCategories);
     }
-  }, [isMarketplacePage, location.pathname]);
+  }, [isMarketplacePage, location.search]);
 
   // Handle category selection
   const handleCategorySelect = (category: string, subcategory?: string) => {
@@ -96,10 +108,16 @@ export const BuyerSidebar: React.FC<BuyerSidebarProps> = ({
           .join(',');
 
         // Set or delete category parameter
-        if (categories) {
+        if (categories.split(',').length > 1) {
+          searchParams.set('type', 'all');
           searchParams.set('category', categories);
+        } else
+         if(categories.split(',').length === 1) {
+          searchParams.set('category', categories);
+          searchParams.delete('type');
         } else {
           searchParams.delete('category');
+          searchParams.delete('type');
         }
 
         // Set or delete subcategory parameter
@@ -108,7 +126,7 @@ export const BuyerSidebar: React.FC<BuyerSidebarProps> = ({
         } else {
           searchParams.delete('subCategory');
         }
-
+ console.log('categories.length', categories, 'subcategories.length', subcategories.length)
         navigate(`${location.pathname}?${searchParams.toString()}`, { replace: true });
       }
 

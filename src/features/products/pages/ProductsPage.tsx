@@ -31,6 +31,8 @@ const ProductsPage: React.FC = () => {
     sorting: 'ascending',
   });
   const [selectedLocation, setSelectedLocation] = useState<string>('all');
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([]);
 
   // Store the full filter state to persist it
   const [filterState, setFilterState] = useState<{
@@ -41,6 +43,8 @@ const ProductsPage: React.FC = () => {
     sorting: string;
     pricing: string;
     priceRange: number[];
+    categories?: string[];
+    subcategories?: string[];
   }>({
     popularity: [
       { id: 'best-selling', label: 'Best-Selling Products', checked: false },
@@ -68,6 +72,8 @@ const ProductsPage: React.FC = () => {
     sorting: 'ascending',
     pricing: '',
     priceRange: [],
+    categories: [],
+    subcategories: [],
   });
   const [deleteModal, setDeleteModal] = useState<{
     isOpen: boolean;
@@ -85,6 +91,8 @@ const ProductsPage: React.FC = () => {
     page: currentPage,
     limit: itemsPerPage,
     location: selectedLocation === 'all' ? undefined : selectedLocation,
+    category: selectedCategories.length > 0 ? selectedCategories.join(',') : undefined,
+    subCategory: selectedSubcategories.length > 0 ? selectedSubcategories.join(',') : undefined,
     ...activeFilters,
   });
 
@@ -96,6 +104,19 @@ const ProductsPage: React.FC = () => {
 
     // Transform filters to match backend API expectations
     const transformedFilters: any = {};
+
+    // Category and Subcategory filters
+    if (filters.categories && filters.categories.length > 0) {
+      setSelectedCategories(filters.categories);
+    } else {
+      setSelectedCategories([]);
+    }
+
+    if (filters.subcategories && filters.subcategories.length > 0) {
+      setSelectedSubcategories(filters.subcategories);
+    } else {
+      setSelectedSubcategories([]);
+    }
 
     // Popularity filters - collect checked items
     const popularityFilters = filters.popularity
@@ -150,6 +171,8 @@ const ProductsPage: React.FC = () => {
   const handleClearFilters = () => {
     setActiveFilters({});
     setCurrentPage(1);
+    setSelectedCategories([]);
+    setSelectedSubcategories([]);
     // Reset filter state to default
     setFilterState({
       popularity: [
@@ -178,6 +201,8 @@ const ProductsPage: React.FC = () => {
       sorting: 'ascending',
       pricing: '',
       priceRange: [],
+      categories: [],
+      subcategories: [],
     });
   };
 

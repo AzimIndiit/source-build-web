@@ -14,7 +14,7 @@ import { format } from 'date-fns';
 import { getColorName } from '@/utils/colorUtils';
 
 // Helper function to parse and format pickup hours
-const formatPickupHoursDisplay = (hours: string | object): React.ReactNode => {
+export const formatPickupHoursDisplay = (hours: string | object): React.ReactNode => {
   if (!hours) return null;
 
   // If it's an object with day-specific hours
@@ -391,13 +391,23 @@ const ProductDetailsPage: React.FC = () => {
                     if (currentDiscount.discountType === 'percentage') {
                       const discountedPrice =
                         currentPrice * (1 - currentDiscount.discountValue / 100);
+                      const priceUnit =
+                        product.priceType === 'sqft'
+                          ? '/sq ft'
+                          : product.priceType === 'linear'
+                            ? '/linear ft'
+                            : product.priceType === 'pallet'
+                              ? '/pallet'
+                              : '';
                       return (
                         <>
                           <span className="text-xl sm:text-2xl font-bold text-primary">
                             ${discountedPrice.toFixed(2)}
+                            <span className="text-sm">{priceUnit}</span>
                           </span>
                           <span className="text-lg sm:text-xl md:text-2xl text-gray-400 line-through">
                             ${currentPrice.toFixed(2)}
+                            <span className="text-sm">{priceUnit}</span>
                           </span>
                           <Badge className="bg-primary text-white px-2 sm:px-3 py-0.5 sm:py-1 text-xs sm:text-sm font-semibold">
                             -{currentDiscount.discountValue}%
@@ -407,13 +417,23 @@ const ProductDetailsPage: React.FC = () => {
                     }
                     if (currentDiscount.discountType === 'flat') {
                       const discountedPrice = currentPrice - currentDiscount.discountValue;
+                      const priceUnit =
+                        product.priceType === 'sqft'
+                          ? '/sq ft'
+                          : product.priceType === 'linear'
+                            ? '/linear ft'
+                            : product.priceType === 'pallet'
+                              ? '/pallet'
+                              : '';
                       return (
                         <>
                           <span className="text-xl sm:text-2xl font-bold text-primary">
                             ${discountedPrice.toFixed(2)}
+                            <span className="text-sm">{priceUnit}</span>
                           </span>
                           <span className="text-lg sm:text-xl md:text-2xl text-gray-400 line-through">
                             ${currentPrice.toFixed(2)}
+                            <span className="text-sm">{priceUnit}</span>
                           </span>
                           <Badge className="bg-primary text-white px-2 sm:px-3 py-0.5 sm:py-1 text-xs sm:text-sm font-semibold">
                             -${currentDiscount.discountValue}
@@ -422,9 +442,18 @@ const ProductDetailsPage: React.FC = () => {
                       );
                     }
                   } else {
+                    const priceUnit =
+                      product.priceType === 'sqft'
+                        ? '/sq ft'
+                        : product.priceType === 'linear'
+                          ? '/linear ft'
+                          : product.priceType === 'pallet'
+                            ? '/pallet'
+                            : '';
                     return (
                       <span className="text-xl sm:text-2xl font-bold text-primary">
                         ${currentPrice.toFixed(2)}
+                        <span className="text-sm">{priceUnit}</span>
                       </span>
                     );
                   }
@@ -454,40 +483,46 @@ const ProductDetailsPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Variants if available */}
-          <div className=" flex flex-col sm:hidden border-t border-gray-200 text-xs sm:text-sm text-gray-600 pt-4 sm:pt-6 space-y-2">
-            <span className="font-medium">Colors: </span>
-            <div className="flex flex-wrap gap-3 mt-2">
-              {/* Main Product Option */}
-
-              <div
-                onClick={() => setSelectedVariant(null)}
-                className={`w-12 h-12 rounded-full border-2 transition-all cursor-pointer ${
-                  selectedVariant === null
-                    ? 'border-black bg-primary/5 border-3'
-                    : 'border-gray-300 hover:border-gray-400'
-                }`}
-                style={{ backgroundColor: product.color }}
-                title={product.color ? getColorName(product.color).name : ''}
-              />
-
-              {product.variants &&
-                product.variants.length > 0 &&
-                product.variants.map((variant: any, index: number) => (
+          {/* Show product color or variant colors if available */}
+          {(product.color ||
+            (product.variants && product.variants.some((v: any) => !!v.color))) && (
+            <div className="flex flex-col sm:hidden border-t border-gray-200 text-xs sm:text-sm text-gray-600 pt-4 sm:pt-6 space-y-2">
+              <span className="font-medium">Colors: </span>
+              <div className="flex flex-wrap gap-3 mt-2">
+                {/* Main Product Color Option */}
+                {product.color && (
                   <div
-                    key={index}
-                    onClick={() => setSelectedVariant(variant)}
-                    className={`w-12 h-12 rounded-full cursor-pointer transition-all ${
-                      selectedVariant === variant
-                        ? 'ring-2 ring-black ring-offset-2'
-                        : 'ring-1 ring-gray-300 ring-offset-2 hover:ring-gray-400'
+                    onClick={() => setSelectedVariant(null)}
+                    className={`w-12 h-12 rounded-full border-2 transition-all cursor-pointer ${
+                      selectedVariant === null
+                        ? 'border-black bg-primary/5 border-3'
+                        : 'border-gray-300 hover:border-gray-400'
                     }`}
-                    style={{ backgroundColor: variant.color }}
-                    title={variant.color ? getColorName(variant.color).name : ''}
+                    style={{ backgroundColor: product.color }}
+                    title={getColorName(product.color).name}
                   />
-                ))}
+                )}
+
+                {/* Variant Colors */}
+                {product.variants &&
+                  product.variants
+                    .filter((variant: any) => !!variant.color)
+                    .map((variant: any, index: number) => (
+                      <div
+                        key={index}
+                        onClick={() => setSelectedVariant(variant)}
+                        className={`w-12 h-12 rounded-full cursor-pointer transition-all ${
+                          selectedVariant === variant
+                            ? 'ring-2 ring-black ring-offset-2'
+                            : 'ring-1 ring-gray-300 ring-offset-2 hover:ring-gray-400'
+                        }`}
+                        style={{ backgroundColor: variant.color }}
+                        title={getColorName(variant.color).name}
+                      />
+                    ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Description */}
           <div className="border-t border-gray-200 pt-4 sm:pt-6">
@@ -503,21 +538,31 @@ const ProductDetailsPage: React.FC = () => {
             <div className="text-xs sm:text-sm text-gray-600">
               <span className="font-medium">Categories: </span>
               <span className="text-gray-900">
-                {product.category}, {product.subCategory}
+                {typeof product.category === 'object' && product.category
+                  ? product.category.name
+                  : product.category}
+                {product.subCategory && (
+                  <>
+                    ,{' '}
+                    {typeof product.subCategory === 'object' && product.subCategory
+                      ? product.subCategory.name
+                      : product.subCategory}
+                  </>
+                )}
               </span>
             </div>
           </div>
 
           {/* Product Information Grid */}
-          <div className="border-t border-gray-200 pt-4 sm:pt-6 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs sm:text-sm">
-            {/* Brand */}
-            {product.brand && (
+          {/* Brand */}
+          {product.brand && (
+            <div className="border-t border-gray-200 pt-4 sm:pt-6 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs sm:text-sm">
               <div className=" text-gray-600 flex items-center gap-2">
                 <span className="font-medium">Brand: </span>
                 <p className="text-sm font-medium">{product.brand}</p>
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* Tags */}
           {product.productTag && product.productTag.length > 0 && (
@@ -540,39 +585,45 @@ const ProductDetailsPage: React.FC = () => {
           )}
 
           {/* Variants if available */}
-          <div className="border-t hidden sm:flex flex-col border-gray-200 text-xs sm:text-sm text-gray-600 pt-4 sm:pt-6 space-y-2 ">
-            <span className="font-medium">Colors: </span>
-            <div className="flex flex-wrap gap-3 mt-2">
-              {/* Main Product Option */}
-
-              <div
-                onClick={() => setSelectedVariant(null)}
-                className={`w-12 h-12 rounded-full cursor-pointer transition-all ${
-                  selectedVariant === null
-                    ? 'ring-2 ring-black ring-offset-2 '
-                    : 'ring-1 ring-gray-300 ring-offset-2 hover:ring-gray-400 '
-                }`}
-                style={{ backgroundColor: product.color }}
-                title={product.color ? getColorName(product.color).name : ''}
-              />
-
-              {product.variants &&
-                product.variants.length > 0 &&
-                product.variants.map((variant: any, index: number) => (
+          {(product.color ||
+            (product.variants && product.variants.some((v: any) => !!v.color))) && (
+            <div className="border-t hidden sm:flex flex-col border-gray-200 text-xs sm:text-sm text-gray-600 pt-4 sm:pt-6 space-y-2 ">
+              <span className="font-medium">Colors: </span>
+              <div className="flex flex-wrap gap-3 mt-2">
+                {/* Main Product Option */}
+                {product.color && (
                   <div
-                    key={index}
-                    onClick={() => setSelectedVariant(variant)}
+                    onClick={() => setSelectedVariant(null)}
                     className={`w-12 h-12 rounded-full cursor-pointer transition-all ${
-                      selectedVariant === variant
-                        ? 'ring-2 ring-black ring-offset-2'
-                        : 'ring-1 ring-gray-300 ring-offset-2 hover:ring-gray-400'
+                      selectedVariant === null
+                        ? 'ring-2 ring-black ring-offset-2 '
+                        : 'ring-1 ring-gray-300 ring-offset-2 hover:ring-gray-400 '
                     }`}
-                    style={{ backgroundColor: variant.color }}
-                    title={variant.color ? getColorName(variant.color).name : ''}
+                    style={{ backgroundColor: product.color }}
+                    title={product.color ? getColorName(product.color).name : ''}
                   />
-                ))}
+                )}
+
+                {product.variants &&
+                  product.variants.length > 0 &&
+                  product.variants
+                    .filter((variant: any) => !!variant.color)
+                    .map((variant: any, index: number) => (
+                      <div
+                        key={index}
+                        onClick={() => setSelectedVariant(variant)}
+                        className={`w-12 h-12 rounded-full cursor-pointer transition-all ${
+                          selectedVariant === variant
+                            ? 'ring-2 ring-black ring-offset-2'
+                            : 'ring-1 ring-gray-300 ring-offset-2 hover:ring-gray-400'
+                        }`}
+                        style={{ backgroundColor: variant.color }}
+                        title={variant.color ? getColorName(variant.color).name : ''}
+                      />
+                    ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Marketplace Options */}
           {product.marketplaceOptions && (
@@ -634,8 +685,18 @@ const ProductDetailsPage: React.FC = () => {
                       <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center mb-2 transition-transform">
                         <Truck className="text-purple-600 w-5 h-5" />
                       </div>
-                      <p className="text-sm font-semibold text-gray-800 mb-2">Delivery</p>
-                      <p className="text-xs text-gray-500">Local delivery available</p>
+                      <p className="text-sm font-semibold text-gray-800 mb-2">Local Delivery</p>
+                      
+                      {product.localDeliveryFree ? "Free" : product.deliveryDistance ? (
+                        <div>
+                          <p className="text-xs text-gray-500">Within</p>
+                          <p className="text-base font-bold text-purple-600">
+                            {product.deliveryDistance} miles
+                          </p>
+                        </div>
+                      ) : (
+                        <p className="text-xs text-gray-500">Local delivery available</p>
+                      )}
                     </div>
                   </div>
                 )}

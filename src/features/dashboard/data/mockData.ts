@@ -1,5 +1,17 @@
 // @ts-nocheck
-import { Package, AlertTriangle, ShoppingCart, Clock } from 'lucide-react';
+import {
+  Package,
+  AlertTriangle,
+  ShoppingCart,
+  Clock,
+  Users,
+  TrendingUp,
+  CreditCard,
+  DollarSign,
+  CheckCircle,
+  RefreshCw,
+  Truck,
+} from 'lucide-react';
 import { MetricData, SalesData, RevenueData, Order } from '../types';
 
 export const metricsSellerData: MetricData[] = [
@@ -60,6 +72,65 @@ export const metricsDriverData: MetricData[] = [
     value: '24',
     color: 'bg-[#da1010]',
     icon: AlertTriangle,
+    bgColor: 'bg-white/20',
+  },
+];
+
+export const metricsAdminData: MetricData[] = [
+  {
+    title: 'Today Sales',
+    value: '$0.00',
+    color: 'bg-green-600',
+    icon: Users,
+    bgColor: 'bg-white/20',
+  },
+  {
+    title: 'This Month Sales',
+    value: '$680.70',
+    color: 'bg-blue-600',
+    icon: TrendingUp,
+    bgColor: 'bg-white/20',
+  },
+  {
+    title: 'Last Month Sales',
+    value: '$130.00',
+    color: 'bg-teal-600',
+    icon: CreditCard,
+    bgColor: 'bg-white/20',
+  },
+  {
+    title: 'All-Time Sales',
+    value: '$58373.70',
+    color: 'bg-purple-700',
+    icon: DollarSign,
+    bgColor: 'bg-white/20',
+  },
+  {
+    title: 'Total Orders',
+    value: '888',
+    color: 'bg-purple-600',
+    icon: ShoppingCart,
+    bgColor: 'bg-white/20',
+  },
+  {
+    title: 'Orders Pending',
+    value: '277',
+    color: 'bg-orange-500',
+    icon: RefreshCw,
+    bgColor: 'bg-white/20',
+  },
+  {
+    title: 'Orders Processing',
+    value: '126',
+    color: 'bg-indigo-600',
+    icon: Truck,
+    bgColor: 'bg-white/20',
+  },
+  {
+    title: 'Orders Delivered',
+    value: '363',
+    color: 'bg-green-700',
+    icon: CheckCircle,
     bgColor: 'bg-white/20',
   },
 ];

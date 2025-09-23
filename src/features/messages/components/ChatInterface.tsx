@@ -78,11 +78,16 @@ const ChatInterface = () => {
   // Update otherUser when chatData is fetched
   useEffect(() => {
     if (chatData?.data?.participants && user?.id) {
-      const other = chatData.data.participants.find(
-        (p: any) => p?.id !== user.id || p?._id !== user.id
-      );
-      console.log('Setting otherUser:', other);
-      setOtherUser(other || null);
+      const other = chatData.data.participants.find((p: any) => {
+        // Check if this participant is NOT the current user
+        // Compare both id and _id fields as the backend might use either
+        const participantId = p?.id || p?._id;
+        return participantId !== user.id;
+      });
+      console.log('Current user ID:', user?.id);
+      console.log('Participants:', chatData.data.participants);
+      console.log('Other user found:', other);
+      setOtherUser(other ? { ...other, isOnline: false } : null);
     }
   }, [chatData, user?.id]);
 
@@ -520,7 +525,7 @@ const ChatInterface = () => {
   return (
     <div className="py-4 md:p-6 space-y-6">
       {/* Breadcrumb */}
-      <BreadcrumbWrapper items={breadcrumbItems} />
+      {user?.role != 'admin' && <BreadcrumbWrapper items={breadcrumbItems} />}
 
       <Card className="h-[calc(100vh-200px)] flex flex-col overflow-hidden border-gray-200">
         {/* Chat Header */}

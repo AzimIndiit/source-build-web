@@ -35,3 +35,11 @@ export const updateUserProfile = async (data: any) => {
   const response = await axios.put('/user/profile', data);
   return response.data;
 };
+
+/**
+ * Switch user role between buyer and seller
+ */
+export const switchUserRole = async (role: 'buyer' | 'seller') => {
+  const response = await axios.put('/user/switch-role', { role });
+  return response.data;
+};

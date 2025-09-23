@@ -20,8 +20,6 @@ export function useCardsQuery() {
 
 // Mutation to create a new card with token
 export function useCreateCardMutation() {
-   
-
   return useMutation({
     mutationFn: (data: CreateCardWithTokenPayload) => cardService.createCardWithToken(data),
     onSuccess: () => {
@@ -37,8 +35,6 @@ export function useCreateCardMutation() {
 
 // Legacy mutation to create a new card (for backwards compatibility)
 export function useCreateCardLegacyMutation() {
-   
-
   return useMutation({
     mutationFn: (data: CreateCardPayload) => cardService.createCard(data),
     onSuccess: () => {
@@ -54,8 +50,6 @@ export function useCreateCardLegacyMutation() {
 
 // Mutation to update a card
 export function useUpdateCardMutation() {
-   
-
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateCardPayload }) =>
       cardService.updateCard(id, data),
@@ -72,8 +66,6 @@ export function useUpdateCardMutation() {
 
 // Mutation to set a card as default
 export function useSetDefaultCardMutation() {
-   
-
   return useMutation({
     mutationFn: (id: string) => cardService.setDefaultCard(id),
     onSuccess: () => {
@@ -89,8 +81,6 @@ export function useSetDefaultCardMutation() {
 
 // Mutation to delete a card
 export function useDeleteCardMutation() {
-   
-
   return useMutation({
     mutationFn: (id: string) => cardService.deleteCard(id),
     onSuccess: () => {

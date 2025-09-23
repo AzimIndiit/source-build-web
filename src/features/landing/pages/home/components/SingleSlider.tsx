@@ -4,7 +4,6 @@ import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import { Link, useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { ReactElement } from 'react';
 import { Button } from '@/components/ui';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -42,14 +41,17 @@ const CustomNextArrow: React.FC<CustomArrowProps> = ({ onClick }) => (
 
 const CustomSlider: React.FC<CustomSliderProps> = ({ slides }) => {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
 
   const handleGetDesignClick = () => {
+    console.log('first', isAuthenticated);
     if (!isAuthenticated) {
       // Navigate to login with the intended destination
       navigate('/auth/login', { state: { from: '/get-quote' } });
+      return false;
     } else {
       navigate('/get-quote');
+      return true;
     }
   };
 
@@ -82,27 +84,32 @@ const CustomSlider: React.FC<CustomSliderProps> = ({ slides }) => {
             <div className="absolute inset-0 flex items-center">
               <div className="container mx-auto px-4 sm:px-6 lg:px-8 ">
                 <div className="max-w-4xl  px-12 sm:px-12 lg:px-0">
-                  <div className="space-y-3 sm:space-y-4 md:space-y-6 text-white">
+                  <div className="space-y-3 sm:space-y-4 md:space-y-6 text-white -mt-20">
                     <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-bold leading-tight">
                       {slide.title}
                     </h1>
                     <p className="text-sm sm:text-base md:text-lg lg:text-xl leading-relaxed max-w-2xl">
                       {slide.description}
                     </p>
-                    <div
-                      className="flex gap-4 flex-row"
-                      onClick={() => navigate('/cabinets-collection')}
-                    >
-                      <Button className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base font-semibold text-white transition-all duration-300 hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2  h-10 sm:h-[69px]">
-                        Shop cabinets
-                      </Button>
-                      <Button
-                        onClick={handleGetDesignClick}
-                        className="bg-white text-gray-800 px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base font-semibold transition-all duration-300 hover:bg-white hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2   h-10 sm:h-[69px]"
-                      >
-                        Get a design
-                      </Button>
-                    </div>
+                    {(!isAuthenticated || user?.role === 'buyer') && (
+                      <div className="flex gap-4 flex-row">
+                        <Button
+                          onClick={() => navigate('/cabinets-collection')}
+                          className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base font-semibold text-white transition-all duration-300 hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2  h-10 sm:h-14"
+                        >
+                          Shop cabinets
+                        </Button>
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleGetDesignClick();
+                          }}
+                          className="bg-white text-gray-800 px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base font-semibold transition-all duration-300 hover:bg-white hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2   h-10 sm:h-14"
+                        >
+                          Get a design
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

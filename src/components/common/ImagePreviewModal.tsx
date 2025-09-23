@@ -49,11 +49,15 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-7xl h-[90vh] p-0 bg-black border-none">
+      <DialogContent className="sm:max-w-[95vw] w-full h-[95vh] p-0 bg-black/95 backdrop-blur-sm border-none">
         <div className="relative w-full h-full flex items-center justify-center">
           {/* Close Button */}
-          <DialogClose className="absolute top-4 right-4 z-50 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
-            <Button variant="ghost" size="icon" className="h-8 w-8 p-0 text-white hover:bg-white">
+          <DialogClose className="absolute top-4 right-4 z-50">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-10 w-10 rounded-full bg-white/10 text-white hover:bg-white/20 transition-all"
+            >
               <X className="h-5 w-5" />
               <span className="sr-only">Close</span>
             </Button>

@@ -28,7 +28,7 @@ function ForgotPasswordPage() {
 
       if (response.status === 'success') {
         toast.success(
-          `If ${data.email} is registered, you’ll get a password reset email shortly.`,
+          `A password reset link has been sent to ${data.email}. Please check your inbox.`,
           {
             duration: 5000,
           }

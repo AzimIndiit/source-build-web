@@ -43,6 +43,8 @@ interface ProductFormProps {
   subCategoryOptions: Array<{ value: string; label: string }>;
   tagOptions: Array<{ value: string; label: string }>;
   isLoading?: boolean;
+  categoriesLoading?: boolean;
+  subcategoriesLoading?: boolean;
 }
 
 export const ProductForm: React.FC<ProductFormProps> = ({
@@ -87,6 +89,19 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   const [currentStep, setCurrentStep] = useState(1);
   const [variantToDelete, setVariantToDelete] = useState<string | null>(null);
 
+  // Helper function to scroll to element
+  const scrollToElement = (elementId: string) => {
+    const element = document.getElementById(elementId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // Add a visual indicator (optional - highlights the field)
+      element.classList.add('ring-2', 'ring-red-500');
+      setTimeout(() => {
+        element.classList.remove('ring-2', 'ring-red-500');
+      }, 3000);
+    }
+  };
+
   // Validate Step 1 fields
   const validateStep1 = async () => {
     // Check for minimum required images (existing + uploaded)
@@ -94,9 +109,24 @@ export const ProductForm: React.FC<ProductFormProps> = ({
     if (totalImages < 2) {
       setImageError(true);
       toast.error('Please upload at least 2 product images');
+      scrollToElement('photos');
       return false;
     }
     setImageError(false);
+
+    // Field mapping for IDs
+    const fieldToIdMap: Record<string, string> = {
+      title: 'title',
+      price: 'price',
+      description: 'description',
+      category: 'category',
+      subCategory: 'subCategory',
+      quantity: 'quantity',
+      brand: 'brand',
+      color: 'color',
+      locationIds: 'locationIds',
+      productTag: 'productTag',
+    };
 
     // Validate required fields for step 1
     const step1Fields = [
@@ -124,6 +154,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
         step1Fields.push(`variants.${index}.color`);
         step1Fields.push(`variants.${index}.quantity`);
         step1Fields.push(`variants.${index}.price`);
+        step1Fields.push(`variants.${index}.priceType`);
         // Add discount validation if discount type is not 'none'
         const variantDiscount = formValues.variants?.[index]?.discount;
         if (variantDiscount?.discountType && variantDiscount.discountType !== 'none') {
@@ -139,6 +170,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       const discountError = errors.discount as any;
       if (discountError?.discountValue) {
         toast.error(`Discount: ${discountError.discountValue.message}`);
+        scrollToElement('discount.discountValue');
         return false;
       }
 
@@ -166,16 +198,26 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
         if (variantWithError !== -1) {
           const variantErrors = variantsErrors?.[variantWithError];
+          let fieldId = '';
+          let errorMessage = '';
+
           if (variantErrors?.color) {
-            toast.error(`Variant ${variantWithError + 1}: ${variantErrors.color.message}`);
+            fieldId = `variants.${variantWithError}.color`;
+            errorMessage = `Variant ${variantWithError + 1}: ${variantErrors.color.message}`;
           } else if (variantErrors?.quantity) {
-            toast.error(`Variant ${variantWithError + 1}: ${variantErrors.quantity.message}`);
+            fieldId = `variants.${variantWithError}.quantity`;
+            errorMessage = `Variant ${variantWithError + 1}: ${variantErrors.quantity.message}`;
           } else if (variantErrors?.price) {
-            toast.error(`Variant ${variantWithError + 1}: ${variantErrors.price.message}`);
+            fieldId = `variants.${variantWithError}.price`;
+            errorMessage = `Variant ${variantWithError + 1}: ${variantErrors.price.message}`;
           } else if (variantErrors?.discount?.discountValue) {
-            toast.error(
-              `Variant ${variantWithError + 1}: ${variantErrors.discount.discountValue.message}`
-            );
+            fieldId = `variants.${variantWithError}.discount.discountValue`;
+            errorMessage = `Variant ${variantWithError + 1}: ${variantErrors.discount.discountValue.message}`;
+          }
+
+          if (errorMessage) {
+            toast.error(errorMessage);
+            scrollToElement(fieldId);
           }
         }
       } else {
@@ -183,12 +225,24 @@ export const ProductForm: React.FC<ProductFormProps> = ({
         const firstErrorField = step1Fields.find((field) => {
           // Skip variant fields
           if (field.startsWith('variants.')) return false;
-          return errors[field];
+          const fieldParts = field.split('.');
+          let currentError: any = errors;
+          for (const part of fieldParts) {
+            currentError = currentError?.[part];
+          }
+          return currentError;
         });
-        if (firstErrorField && errors[firstErrorField]) {
-          const errorMessage = errors[firstErrorField]?.message;
-          if (errorMessage) {
-            toast.error(errorMessage as string);
+
+        if (firstErrorField) {
+          const fieldParts = firstErrorField.split('.');
+          let currentError: any = errors;
+          for (const part of fieldParts) {
+            currentError = currentError?.[part];
+          }
+
+          if (currentError?.message) {
+            toast.error(currentError.message as string);
+            scrollToElement(fieldToIdMap[firstErrorField] || firstErrorField);
           }
         }
       }
@@ -356,6 +410,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
               {/* Form Fields */}
               <div className="">
                 <FormInput
+                  id="title"
                   name="title"
                   label="Title"
                   placeholder="Primed MDF 3.25″ Casing, 7′ x 1/2"
@@ -363,31 +418,48 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                 />
               </div>
 
-              <div>
-                <FormInput
-                  name="price"
-                  label="Price ($ sq ft) "
-                  placeholder="$0.00 / sq ft"
-                  type="text"
-                  className="border-gray-300 h-[53px]"
-                  onInput={(e: React.FormEvent<HTMLInputElement>) => {
-                    const input = e.currentTarget;
-                    const value = input.value;
-                    const cleaned = value.replace(/[^0-9.]/g, '');
-                    const parts = cleaned.split('.');
-                    if (parts.length > 2) {
-                      input.value = parts[0] + '.' + parts.slice(1).join('');
-                    } else if (parts.length === 2 && parts[1].length > 2) {
-                      input.value = parts[0] + '.' + parts[1].substring(0, 2);
-                    } else {
-                      input.value = cleaned;
-                    }
-                  }}
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <FormInput
+                    id="price"
+                    name="price"
+                    label={`Price${formValues.priceType === 'sqft' ? ' ($ / sq ft)' : formValues.priceType === 'linear' ? ' ($ / linear foot)' : formValues.priceType === 'pallet' ? ' ($ / pallet)' : ' ($ / sq ft)'}`}
+                    placeholder={`$0.00 / ${formValues.priceType === 'sqft' ? 'sq ft' : formValues.priceType === 'linear' ? 'linear foot' : formValues.priceType === 'pallet' ? 'pallet' : 'sq ft'}`}
+                    type="text"
+                    className="border-gray-300 h-[53px]"
+                    onInput={(e: React.FormEvent<HTMLInputElement>) => {
+                      const input = e.currentTarget;
+                      const value = input.value;
+                      const cleaned = value.replace(/[^0-9.]/g, '');
+                      const parts = cleaned.split('.');
+                      if (parts.length > 2) {
+                        input.value = parts[0] + '.' + parts.slice(1).join('');
+                      } else if (parts.length === 2 && parts[1].length > 2) {
+                        input.value = parts[0] + '.' + parts[1].substring(0, 2);
+                      } else {
+                        input.value = cleaned;
+                      }
+                    }}
+                  />
+                </div>
+                <div>
+                  <FormSelect
+                    name="priceType"
+                    label="Price Type"
+                    placeholder="Select price type"
+                    className="border-gray-300 h-[53px]"
+                    options={[
+                      { value: 'sqft', label: 'Square Foot' },
+                      { value: 'linear', label: 'Linear Foot' },
+                      { value: 'pallet', label: 'Pallet' },
+                    ]}
+                  />
+                </div>
               </div>
 
               <div>
                 <FormTextarea
+                  id="description"
                   name="description"
                   label="Description"
                   placeholder="Lorem ipsum dolor sit amet, consectetur adipiscing elit."
@@ -396,17 +468,18 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                 />
               </div>
 
-              <div>
+              <div id="category">
                 <FormSelect
                   name="category"
                   label="Category"
                   placeholder="Select Category"
                   options={categoryOptions}
                   className="h-[53px]"
+                  searchable={true}
                 />
               </div>
 
-              <div>
+              <div id="subCategory">
                 <FormSelect
                   name="subCategory"
                   label="Sub Category"
@@ -416,7 +489,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                   options={subCategoryOptions}
                   className="h-[53px]"
                   disabled={!formValues.category}
-                  creatable={true}
+                  // creatable={true}
                   searchable={true}
                   createPlaceholder='Add "{search}" as custom subcategory'
                 />
@@ -425,7 +498,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                 )}
               </div>
 
-              <div>
+              <div id="quantity">
                 <div className="flex items-center justify-between mb-2">
                   <Label className="text-sm font-medium">Quantity</Label>
                   <div className="flex items-center gap-2">
@@ -476,6 +549,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
               <div>
                 <FormInput
+                  id="brand"
                   name="brand"
                   label="Brand"
                   placeholder="Styling"
@@ -483,7 +557,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                 />
               </div>
 
-              <div>
+              <div id="color">
                 <div>
                   <div className="flex gap-2 items-center">
                     <FormInput
@@ -516,7 +590,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                     />
                     <input
                       type="color"
-                      value={formValues.color || '#000000'}
+                      value={formValues.color || ''}
                       onChange={(e) => setValue(`color`, e.target.value)}
                       className={`w-[53px] h-[53px] ${errors.color ? 'mt-0' : 'mt-5'} rounded border border-gray-300 cursor-pointer flex-shrink-0`}
                     />
@@ -530,7 +604,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
               </div>
 
               {/* Locations Section */}
-              <div className="space-y-3">
+              <div className="space-y-3" id="locationIds">
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-medium text-gray-900">Locations</h3>
                   <Button
@@ -556,7 +630,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                   multiple={true}
                   searchable={true}
                   searchPlaceholder="Search locations..."
-                  className="border-gray-300"
+                  className="border-gray-300 h-[59px]"
                 />
               </div>
 
@@ -627,7 +701,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                 </div>
               </div>
 
-              <div>
+              <div id="productTag">
                 <FormSelect
                   name="productTag"
                   label="Product Tag"
@@ -642,7 +716,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                   maxSelections={10}
                 />
               </div>
-
+              {/* 
               <div className="space-y-4">
                 <FormSelect
                   name={`discount.discountType`}
@@ -699,7 +773,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                       }}
                     />
                   )}
-              </div>
+              </div> */}
 
               {/* Product Variants Section */}
               <div className="border-t border-gray-200 pt-4 mt-4">
@@ -913,6 +987,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                             <div>
                               <div className="flex gap-2">
                                 <FormInput
+                                  id={`variants.${variantIndex}.color`}
                                   name={`variants.${variantIndex}.color`}
                                   label="Color (HEX)"
                                   type="text"
@@ -945,7 +1020,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                                 />
                                 <input
                                   type="color"
-                                  value={formValues.variants?.[variantIndex]?.color || '#000000'}
+                                  value={formValues.variants?.[variantIndex]?.color || ''}
                                   onChange={(e) =>
                                     setValue(`variants.${variantIndex}.color`, e.target.value)
                                   }
@@ -991,6 +1066,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                                 </div>
                               </div>
                               <FormInput
+                                id={`variants.${variantIndex}.quantity`}
                                 name={`variants.${variantIndex}.quantity`}
                                 label=""
                                 placeholder="10"
@@ -1018,9 +1094,10 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                             </div>
                             <div>
                               <FormInput
+                                id={`variants.${variantIndex}.price`}
                                 name={`variants.${variantIndex}.price`}
-                                label="Price ($ sq ft)"
-                                placeholder="$0.00 / sq ft"
+                                label={`Price${formValues.priceType === 'sqft' ? ' ($ / sq ft)' : formValues.priceType === 'linear' ? ' ($ / linear foot)' : formValues.priceType === 'pallet' ? ' ($ / pallet)' : ' ($)'}`}
+                                placeholder={`$0.00${formValues.variants?.[variantIndex]?.priceType ? ` / ${formValues.variants?.[variantIndex]?.priceType === 'sqft' ? 'sq ft' : formValues.variants?.[variantIndex]?.priceType === 'linear' ? 'linear foot' : 'pallet'}` : ''}`}
                                 type="text"
                                 className="text-sm"
                                 onInput={(e: React.FormEvent<HTMLInputElement>) => {
@@ -1038,8 +1115,21 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                                 }}
                               />
                             </div>
+                            {/* <div>
+                              <FormSelect
+                                name={`variants.${variantIndex}.priceType`}
+                                label="Price Type"
+                                placeholder="Select price type"
+                                options={[
+                                  { value: 'sqft', label: 'Per Sq Ft' },
+                                  { value: 'linear', label: 'Per Linear Ft' },
+                                  { value: 'pallet', label: 'Per Pallet' },
+                                ]}
+                                className="text-sm"
+                              />
+                            </div> */}
                           </div>
-
+                          {/* 
                           <div className="space-y-2">
                             <FormSelect
                               name={`variants.${variantIndex}.discount.discountType`}
@@ -1101,7 +1191,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                                 }}
                               />
                             )}
-                          </div>
+                          </div> */}
                         </div>
                       </Card>
                     ))}
@@ -1159,6 +1249,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                           ...formValues.marketplaceOptions,
                           shipping: checked as boolean,
                         });
+                        setValue('shippingPrice', '200');
                         clearErrors('marketplaceOptions');
                       }}
                       className="h-5 w-5 border-gray-300"
@@ -1183,9 +1274,63 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                       }}
                       className="h-5 w-5 border-gray-300"
                     />
-                    <span className="text-sm font-medium leading-none">Delivery</span>
+                    <span className="text-sm font-medium leading-none">Local Delivery</span>
                   </label>
                 </div>
+
+                {/* Delivery Distance Field - Shows when delivery is selected */}
+                {formValues.marketplaceOptions?.delivery && (
+                  <div className="mt-4 pl-8">
+                   
+                    <FormInput
+                      disabled={formValues.localDeliveryFree}
+                      name="deliveryDistance"
+                      label="Delivery Distance (miles)"
+                      type="text"
+                      placeholder="e.g., 25"
+                      onInput={(e: React.FormEvent<HTMLInputElement>) => {
+                        const input = e.currentTarget;
+                        let value = input.value.replace(/[^0-9.]/g, '');
+                        const parts = value.split('.');
+                        // Remove leading zeros from integer part, but allow "0"
+                        if (parts.length > 2) {
+                          // More than one decimal, join all after the first
+                          parts[0] = parts[0].replace(/^0+(?=\d)/, '') || '0';
+                          input.value = parts[0] + '.' + parts.slice(1).join('');
+                        } else if (parts.length === 2) {
+                          // Remove leading zeros from integer part
+                          parts[0] = parts[0].replace(/^0+(?=\d)/, '') || '0';
+                          // Limit decimal to 2 digits
+                          parts[1] = parts[1].substring(0, 2);
+                          input.value = parts[0] + '.' + parts[1];
+                        } else {
+                          // Only integer part, remove leading zeros
+                          input.value = value.replace(/^0+(?=\d)/, '') || '0';
+                        }
+                      }}
+                      className="h-[53px]"
+                      hint="Maximum delivery distance in miles"
+                    />
+                     <div className="flex items-center mt-2 justify-end gap-1">
+                      <Label htmlFor={`delivery-for-free`} className="text-xs text-gray-600">
+                        Local Delivery Free
+                      </Label>
+                      <Switch
+                        id={`delivery-for-free`}
+                        className="h-6 w-12"
+                        checked={formValues.localDeliveryFree || false}
+                        onCheckedChange={(checked) => {
+                          setValue(`localDeliveryFree`, checked);
+
+                          // if (formValues.localDeliveryFree === '') {
+                          //   setValue(`deliveryDistance`, '0');
+                          //   clearErrors(`localDeliveryFree`);
+                          // }
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
                 {errors.marketplaceOptions && (
                   <p className="text-red-500">
                     {typeof errors.marketplaceOptions === 'object' &&
@@ -1217,7 +1362,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                   <hr className="border-gray-200 my-4" />
                   <div className="mb-4">
                     <FormInput
-                      disabled={isLoading}
+                      disabled={true}
                       name="shippingPrice"
                       label="Shipping Price ($)"
                       placeholder="$10.00"
@@ -1342,8 +1487,13 @@ export const ProductForm: React.FC<ProductFormProps> = ({
         onClose={() => setVariantToDelete(null)}
         onConfirm={() => {
           if (variantToDelete) {
-            removeVariant(variantToDelete);
-            setVariantToDelete(null);
+            try {
+              removeVariant(variantToDelete);
+            } catch (error) {
+              console.error('Error removing variant:', error);
+            } finally {
+              setVariantToDelete(null);
+            }
           }
         }}
         title="Delete Variant?"

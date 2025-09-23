@@ -155,11 +155,23 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onProductClick }) =>
           <div className="flex justify-between items-center gap-2">
             {/* Price */}
             <div className="text-[16px] font-semibold mb-1">
-              {formatCurrency(product.price)} / sq ft
+              {formatCurrency(product.price)}
+              {product.priceType && (
+                <span className="text-[12px] font-normal">
+                  /{' '}
+                  {product.priceType === 'sqft'
+                    ? 'sq ft'
+                    : product.priceType === 'linear'
+                      ? 'linear ft'
+                      : 'pallet'}
+                </span>
+              )}
             </div>
           </div>
           {/* Title + Description */}
-          <p className="text-[12px] text-gray-500 line-clamp-1 capitalize">{product.category}</p>
+          <p className="text-[12px] text-gray-500 line-clamp-1 capitalize">
+            {typeof product.category === 'string' ? product.category : product.category?.name}
+          </p>
           <p className="text-[14px] text-gray-700 leading-snug line-clamp-1 mb-1 capitalize">
             {product.title}{' '}
             {product.dimensions

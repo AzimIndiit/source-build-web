@@ -10,6 +10,7 @@ import { RouterErrorBoundary } from '@/features/error/pages/RouterErrorBoundary'
 import SuspenseLoader from '@/components/common/SuspenseLoader';
 import { DriverLayout } from '../layouts/DriverLayout';
 import { BuyerLayout } from '../layouts/BuyerLayout';
+import { AdminLayout } from '../layouts/AdminLayout';
 
 export const router = createBrowserRouter([
   {
@@ -137,6 +138,48 @@ export const router = createBrowserRouter([
       },
     ],
   },
+
+  {
+    path: '/admin/auth',
+    element: (
+      <Suspense fallback={<SuspenseLoader fullScreen />}>
+        <AuthLayout />
+      </Suspense>
+    ),
+    errorElement: <RouterErrorBoundary />,
+    children: [
+      {
+        index: true,
+        lazy: () =>
+          import('@/features/admin/auth/pages/LoginPage').then((module) => ({
+            Component: module.default,
+          })),
+      },
+      {
+        path: 'login',
+        lazy: () =>
+          import('@/features/admin/auth/pages/LoginPage').then((module) => ({
+            Component: module.default,
+          })),
+      },
+
+      {
+        path: 'forgot-password',
+        lazy: () =>
+          import('@/features/admin/auth/pages/ForgotPasswordPage').then((module) => ({
+            Component: module.default,
+          })),
+      },
+      {
+        path: 'reset-password',
+        lazy: () =>
+          import('@/features/admin/auth/pages/ResetPasswordPage').then((module) => ({
+            Component: module.default,
+          })),
+      },
+    ],
+  },
+
   {
     path: '/auth',
     element: (
@@ -209,7 +252,7 @@ export const router = createBrowserRouter([
     path: 'profile',
     element: (
       <Suspense fallback={<SuspenseLoader fullScreen />}>
-        <ProtectedRoute redirectTo="/auth/login" />
+        <ProtectedRoute allowedRoles={['buyer', 'seller', 'driver']} redirectTo="/auth/login" />
       </Suspense>
     ),
     errorElement: <RouterErrorBoundary />,
@@ -552,6 +595,135 @@ export const router = createBrowserRouter([
             path: 'test-suspense',
             lazy: () =>
               import('@/features/test/pages/TestSuspensePage').then((module) => ({
+                Component: module.default,
+              })),
+          },
+        ],
+      },
+    ],
+  },
+  {
+    path: '/admin',
+    element: (
+      <Suspense fallback={<SuspenseLoader fullScreen />}>
+        <ProtectedRoute allowedRoles={['admin']} redirectTo="/admin/auth/login" />
+      </Suspense>
+    ),
+    errorElement: <RouterErrorBoundary />,
+    children: [
+      {
+        element: (
+          <Suspense fallback={<SuspenseLoader />}>
+            <AdminLayout />
+          </Suspense>
+        ),
+        children: [
+          {
+            index: true,
+            lazy: () =>
+              import('@/features/dashboard/pages/AdminDashboard').then((module) => ({
+                Component: module.default,
+              })),
+          },
+          {
+            path: 'dashboard',
+            lazy: () =>
+              import('@/features/dashboard/pages/AdminDashboard').then((module) => ({
+                Component: module.default,
+              })),
+          },
+          {
+            path: 'profile',
+            lazy: () =>
+              import('@/features/profile/pages/ProfilePage').then((module) => ({
+                Component: module.default,
+              })),
+          },
+          {
+            path: 'buyers',
+            lazy: () =>
+              import('@/features/admin/user-management/pages/BuyersPage').then((module) => ({
+                Component: module.default,
+              })),
+          },
+          {
+            path: 'sellers',
+            lazy: () =>
+              import('@/features/admin/user-management/pages/SellersPage').then((module) => ({
+                Component: module.default,
+              })),
+          },
+          {
+            path: 'drivers',
+            lazy: () =>
+              import('@/features/admin/user-management/pages/DriversPage').then((module) => ({
+                Component: module.default,
+              })),
+          },
+          {
+            path: 'categories',
+            index: true,
+            lazy: () =>
+              import('@/features/admin/categories/pages/CategoryPage').then((module) => ({
+                Component: module.default,
+              })),
+          },
+          {
+            path: 'categories/:id/subcategories',
+            lazy: () =>
+              import('@/features/admin/categories/pages/SubcategoryPage').then((module) => ({
+                Component: module.default,
+              })),
+          },
+
+          {
+            path: 'quote',
+            lazy: () =>
+              import('@/features/admin/quotes/pages/QuotePage').then((module) => ({
+                Component: module.default,
+              })),
+          },
+
+          {
+            path: 'quote/:id',
+            lazy: () =>
+              import('@/features/admin/quotes/pages/ViewQuotePage').then((module) => ({
+                Component: module.default,
+              })),
+          },
+          {
+            path: 'products',
+            lazy: () =>
+              import('@/features/products/pages/ProductsPage').then((module) => ({
+                Component: module.default,
+              })),
+          },
+
+          {
+            path: 'orders',
+            lazy: () =>
+              import('@/features/orders/pages/AdminOrdersPage').then((module) => ({
+                Component: module.default,
+              })),
+          },
+          {
+            path: 'orders/:id',
+            lazy: () =>
+              import('@/features/orders/pages/OrderDetailsPage').then((module) => ({
+                Component: module.default,
+              })),
+          },
+          {
+            path: 'messages',
+            lazy: () =>
+              import('@/features/messages/pages/MessagesPage').then((module) => ({
+                Component: module.default,
+              })),
+          },
+          {
+            path: 'messages/:id',
+            lazy: () =>
+              import('@/features/messages/pages/ChatPage').then((module) => ({
                 Component: module.default,
               })),
           },

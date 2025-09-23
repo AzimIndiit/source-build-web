@@ -8,6 +8,6 @@ interface CartSyncProviderProps {
 export function CartSyncProvider({ children }: CartSyncProviderProps) {
   // This hook will sync cart when auth state changes
   useCartSync();
-  
+
   return <>{children}</>;
 }

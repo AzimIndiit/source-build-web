@@ -120,7 +120,7 @@ const OrderDetailsPage: React.FC = () => {
   return (
     <div className="py-4 md:p-6 space-y-6">
       {/* Breadcrumb */}
-      <BreadcrumbWrapper items={breadcrumbItems} />
+      {user?.role != 'admin' && <BreadcrumbWrapper items={breadcrumbItems} />}
 
       {/* Header with Status Updater */}
       {/* <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">

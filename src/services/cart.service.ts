@@ -74,11 +74,11 @@ class CartService {
     const cleanData = {
       productId: data.productId,
       quantity: data.quantity || 1,
-      ...(data.variantId && data.variantId.trim() !== '' && { variantId: data.variantId })
+      ...(data.variantId && data.variantId.trim() !== '' && { variantId: data.variantId }),
     };
-    
+
     console.log('Sending to cart API:', cleanData);
-    
+
     const response = await axios.post<ApiResponse<Cart>>(`${this.baseUrl}/add`, cleanData);
     return response.data.data;
   }
@@ -89,9 +89,9 @@ class CartService {
     const cleanData = {
       productId: data.productId,
       quantity: data.quantity,
-      ...(data.variantId && data.variantId !== '' && { variantId: data.variantId })
+      ...(data.variantId && data.variantId !== '' && { variantId: data.variantId }),
     };
-    
+
     const response = await axios.put<ApiResponse<Cart>>(`${this.baseUrl}/update`, cleanData);
     return response.data.data;
   }
@@ -99,9 +99,10 @@ class CartService {
   // Remove item from cart
   async removeFromCart(productId: string, variantId?: string): Promise<Cart> {
     // Don't include variantId in URL if it's empty string
-    const url = variantId && variantId !== ''
-      ? `${this.baseUrl}/remove/${productId}/${variantId}`
-      : `${this.baseUrl}/remove/${productId}`;
+    const url =
+      variantId && variantId !== ''
+        ? `${this.baseUrl}/remove/${productId}/${variantId}`
+        : `${this.baseUrl}/remove/${productId}`;
     const response = await axios.delete<ApiResponse<Cart>>(url);
     return response.data.data;
   }

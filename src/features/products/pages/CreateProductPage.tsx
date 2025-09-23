@@ -5,6 +5,8 @@ import { z } from 'zod';
 import { X, Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { useQuery } from '@tanstack/react-query';
+import axiosInstance from '@/lib/axios';
 import { Button } from '@/components/ui';
 import { ProductForm } from '../components/ProductForm';
 import { ProductPreview } from '../components/ProductPreview';
@@ -25,7 +27,6 @@ const variantSchema = z.object({
   color: z
     .string()
     .trim()
-    .min(1, 'Color is required')
     .regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, 'Please enter a valid HEX color code'),
   quantity: z
     .string()
@@ -46,6 +47,7 @@ const variantSchema = z.object({
     .min(1, 'Price is required')
     .regex(/^\d+(\.\d{1,2})?$/, 'Price must be a valid number')
     .refine((val) => parseFloat(val) > 0, 'Price must be greater than 0'),
+  priceType: z.enum(['sqft', 'linear', 'pallet']).default('sqft').optional(),
   discount: z
     .object({
       discountType: z.enum(['none', 'flat', 'percentage']),
@@ -107,6 +109,8 @@ const createProductSchema = z
       .refine((val) => parseFloat(val) > 0, 'Price must be greater than 0')
       .refine((val) => parseFloat(val) <= 999999.99, 'Price must not exceed 999,999.99'),
 
+    priceType: z.enum(['sqft', 'linear', 'pallet']).default('sqft').optional(),
+
     description: z
       .string()
       .trim()
@@ -148,16 +152,16 @@ const createProductSchema = z
       .regex(
         /^[a-zA-Z0-9\s\-&.]+$/,
         'Brand can only contain letters, numbers, spaces, hyphens, ampersands, and periods'
-      ),
+      )
+      .optional()
+      .or(z.literal('')), // allow empty string
 
     color: z
       .string()
       .trim()
-      .min(1, 'Color is required')
-      .regex(
-        /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/,
-        'Please enter a valid HEX color code (e.g., #FF0000)'
-      ),
+      .regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, 'Please enter a valid HEX color code')
+      .optional()
+      .or(z.literal('')), // allow empty string
 
     locationIds: z
       .array(z.string())
@@ -176,8 +180,8 @@ const createProductSchema = z
             'Tags can only contain letters, numbers, spaces, hyphens, and hashtags'
           )
       )
-      .min(1, 'At least one product tag is required')
-      .max(10, 'Maximum 10 tags allowed'),
+      .max(10, 'Maximum 10 tags allowed')
+      .default([]),
 
     variants: z.array(variantSchema).max(5, 'Maximum 5 variants allowed').optional(),
 
@@ -199,6 +203,7 @@ const createProductSchema = z
             'At least one marketplace option (Pickup, Shipping, or Delivery) must be selected',
         }
       ),
+    deliveryDistance:z.string().trim().optional(),
 
     pickupHours: z
       .string()
@@ -207,7 +212,7 @@ const createProductSchema = z
       .optional(),
 
     shippingPrice: z.string().trim().optional(),
-
+    localDeliveryFree: z.boolean().optional(),
     // readyByDate: z.string().min(1, 'Date is required'),
 
     // readyByTime: z.string().min(1, 'Time is required'),
@@ -349,68 +354,21 @@ const createProductSchema = z
 
 type CreateProductForm = z.infer<typeof createProductSchema>;
 
-// Create options with lowercase values to match backend
-const categoryOptions = [
-  { value: 'electronics', label: 'Electronics' },
-  { value: 'clothing', label: 'Clothing' },
-  { value: 'home', label: 'Home & Garden' },
-  { value: 'sports', label: 'Sports & Outdoors' },
-  { value: 'accessories', label: 'Accessories' },
-  { value: 'commercial', label: 'Commercial' },
-  { value: 'commercial doors', label: 'Commercial Doors' },
-];
+// Interface definitions for API responses
+interface Category {
+  _id: string;
+  name: string;
+  slug: string;
+  isActive: boolean;
+}
 
-// Category to subcategory mapping
-const categorySubcategoryMap: Record<string, Array<{ value: string; label: string }>> = {
-  electronics: [
-    { value: 'phones', label: 'Phones' },
-    { value: 'laptops', label: 'Laptops' },
-    { value: 'tablets', label: 'Tablets' },
-    { value: 'headphones', label: 'Headphones' },
-    { value: 'cameras', label: 'Cameras' },
-    { value: 'accessories', label: 'Accessories' },
-  ],
-  clothing: [
-    { value: 'mens', label: "Men's Clothing" },
-    { value: 'womens', label: "Women's Clothing" },
-    { value: 'kids', label: "Kids' Clothing" },
-    { value: 'shoes', label: 'Shoes' },
-    { value: 'accessories', label: 'Accessories' },
-  ],
-  home: [
-    { value: 'furniture', label: 'Furniture' },
-    { value: 'decor', label: 'Decor' },
-    { value: 'kitchen', label: 'Kitchen' },
-    { value: 'bathroom', label: 'Bathroom' },
-    { value: 'garden', label: 'Garden' },
-  ],
-  sports: [
-    { value: 'fitness', label: 'Fitness Equipment' },
-    { value: 'outdoor', label: 'Outdoor Gear' },
-    { value: 'sportswear', label: 'Sportswear' },
-    { value: 'accessories', label: 'Accessories' },
-  ],
-  accessories: [
-    { value: 'jewelry', label: 'Jewelry' },
-    { value: 'bags', label: 'Bags' },
-    { value: 'watches', label: 'Watches' },
-    { value: 'belts', label: 'Belts' },
-    { value: 'other', label: 'Other' },
-  ],
-  commercial: [
-    { value: 'equipment', label: 'Equipment' },
-    { value: 'supplies', label: 'Supplies' },
-    { value: 'furniture', label: 'Furniture' },
-    { value: 'tools', label: 'Tools' },
-  ],
-  'commercial doors': [
-    { value: 'doors', label: 'Doors' },
-    { value: 'windows', label: 'Windows' },
-    { value: 'glass doors', label: 'Glass Doors' },
-    { value: 'frames', label: 'Frames' },
-    { value: 'hardware', label: 'Hardware' },
-  ],
-};
+interface Subcategory {
+  _id: string;
+  name: string;
+  slug: string;
+  category: string | Category;
+  isActive: boolean;
+}
 
 const tagOptions = [
   { value: 'casing', label: 'Casing' },
@@ -440,11 +398,62 @@ function CreateProductPage() {
   const [variantDragActive, setVariantDragActive] = useState<string | null>(null);
   const [showMobilePreview, setShowMobilePreview] = useState(false);
   const [showAddAddressModal, setShowAddAddressModal] = useState(false);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
+
   // Fetch saved addresses
   const { data: addressesData, refetch: refetchAddresses } = useSavedAddresssQuery();
   const createAddressMutation = useCreateSavedAddressMutation();
   const createProductMutation = useCreateProductMutation();
   const saveDraftMutation = useSaveDraftMutation();
+
+  // Fetch categories from API (only active ones by default)
+  const { data: categoriesData, isLoading: categoriesLoading } = useQuery({
+    queryKey: ['categories-active'],
+    queryFn: async () => {
+      // Don't send isActive parameter - let backend handle filtering
+      const response = await axiosInstance.get('/categories', {
+        params: {
+          limit: 100,
+        },
+      });
+      // The categories are directly in response.data.data array
+      const categories = response.data.data as Category[];
+      return categories.filter((cat) => cat.isActive);
+    },
+  });
+
+  // Fetch subcategories based on selected category
+  const { data: subcategoriesData, isLoading: subcategoriesLoading } = useQuery({
+    queryKey: ['subcategories', selectedCategoryId],
+    queryFn: async () => {
+      if (!selectedCategoryId) return [];
+      // Don't send isActive parameter - let backend handle filtering
+      const response = await axiosInstance.get('/subcategories', {
+        params: {
+          category: selectedCategoryId,
+          limit: 100,
+        },
+      });
+      // Check the response structure and extract subcategories accordingly
+      const subcategories = response.data.data as Subcategory[];
+      return subcategories.filter((sub) => sub.isActive);
+    },
+    enabled: !!selectedCategoryId,
+  });
+
+  // Convert categories to options for FormSelect
+  const categoryOptions =
+    categoriesData?.map((category) => ({
+      value: category._id,
+      label: category.name,
+    })) || [];
+
+  // Convert subcategories to options for FormSelect
+  const subCategoryOptions =
+    subcategoriesData?.map((subcategory) => ({
+      value: subcategory._id,
+      label: subcategory.name,
+    })) || [];
 
   // Convert saved addresses to options for FormSelect
   const savedAddresses = Array.isArray(addressesData?.data)
@@ -465,12 +474,13 @@ function CreateProductPage() {
     defaultValues: {
       title: '',
       price: '',
+      priceType: 'sqft',
       description: '',
       category: '',
       subCategory: '',
       quantity: '',
       brand: '',
-      color: '#000000',
+      color: '',
       locationIds: [],
       productTag: [],
       variants: [],
@@ -479,8 +489,10 @@ function CreateProductPage() {
         shipping: false,
         delivery: false,
       },
+      deliveryDistance: '50',
+      localDeliveryFree: false,
       pickupHours: '',
-      shippingPrice: '',
+      shippingPrice: '200',
       readyByDate: '',
       readyByTime: '',
       readyByDays: '0',
@@ -508,31 +520,14 @@ function CreateProductPage() {
   } = methods;
   const formValues = watch();
 
-  // Get subcategory options based on selected category
-  const subCategoryOptions = formValues.category
-    ? categorySubcategoryMap[formValues.category] || []
-    : [];
-
-  // Reset subcategory when category changes
+  // Update selected category ID when category changes
   useEffect(() => {
-    if (formValues.category) {
-      const currentSubcategory = formValues.subCategory;
-      const availableSubcategories = categorySubcategoryMap[formValues.category] || [];
-
-      // Check if current subcategory is valid for the new category
-      const isValidSubcategory = availableSubcategories.some(
-        (sub) => sub.value === currentSubcategory
-      );
-
-      // Reset subcategory if it's not valid for the new category
-      if (!isValidSubcategory && currentSubcategory) {
-        methods.setValue('subCategory', '');
-      }
-    } else {
-      // Clear subcategory when no category is selected
+    if (formValues.category !== selectedCategoryId) {
+      setSelectedCategoryId(formValues.category);
+      // Reset subcategory when category changes
       methods.setValue('subCategory', '');
     }
-  }, [formValues.category, methods]);
+  }, [formValues.category, selectedCategoryId, methods]);
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -640,6 +635,7 @@ function CreateProductPage() {
     const mutationData = {
       title: data.title,
       price: parseFloat(data.price),
+      priceType: data.priceType,
       description: data.description,
       category: data.category,
       subCategory: data.subCategory,
@@ -651,7 +647,9 @@ function CreateProductPage() {
       productTag: data.productTag,
       marketplaceOptions: data.marketplaceOptions,
       pickupHours: data.pickupHours,
+      deliveryDistance: data.deliveryDistance ? parseFloat(data.deliveryDistance) : undefined,
       shippingPrice: data.shippingPrice ? parseFloat(data.shippingPrice) : undefined,
+      localDeliveryFree: data.localDeliveryFree,
       readyByDate,
       readyByTime: data.readyByTime,
       readyByDays: data.readyByDays ? parseInt(data.readyByDays) : undefined,
@@ -670,18 +668,25 @@ function CreateProductPage() {
           ? parseFloat(data.discount.discountValue)
           : undefined,
       },
-      variants: data.variants?.map((v) => ({
-        color: v.color,
-        quantity: parseInt(v.quantity),
-        price: parseFloat(v.price),
-        outOfStock: v.outOfStock,
-        discount: {
-          discountType: v.discount.discountType,
-          discountValue: v.discount.discountValue
-            ? parseFloat(v.discount.discountValue)
-            : undefined,
-        },
-      })),
+      variants: variants
+        .map((variant, index) => {
+          const formVariant = data.variants?.[index];
+          if (!formVariant) return null;
+          return {
+            color: formVariant.color,
+            quantity: parseInt(formVariant.quantity),
+            price: parseFloat(formVariant.price),
+            priceType: formVariant.priceType || data.priceType || 'sqft',
+            outOfStock: formVariant.outOfStock ?? false,
+            discount: {
+              discountType: formVariant.discount.discountType,
+              discountValue: formVariant.discount.discountValue
+                ? parseFloat(formVariant.discount.discountValue)
+                : undefined,
+            },
+          };
+        })
+        .filter(Boolean),
       imageFiles: uploadedPhotos,
       variantFiles: variantFiles.length > 0 ? variantFiles : undefined,
     };
@@ -759,6 +764,9 @@ function CreateProductPage() {
     if (formData.price && formData.price.trim()) {
       draftData.price = formData.price;
     }
+    if (formData.priceType) {
+      draftData.priceType = formData.priceType;
+    }
     if (formData.description && formData.description.trim()) {
       draftData.description = formData.description;
     }
@@ -800,6 +808,12 @@ function CreateProductPage() {
     if (formData.shippingPrice && formData.shippingPrice.trim()) {
       draftData.shippingPrice = formData.shippingPrice;
     }
+    if (formData.deliveryDistance && formData.deliveryDistance) {
+      draftData.deliveryDistance = formData.deliveryDistance;
+    }
+    if (formData.localDeliveryFree !== undefined) {
+      draftData.localDeliveryFree = formData.localDeliveryFree;
+    }
     if (readyByDate) {
       draftData.readyByDate = readyByDate;
       draftData.readyByTime = formData.readyByTime;
@@ -832,24 +846,33 @@ function CreateProductPage() {
     if (formData.outOfStock !== undefined) {
       draftData.outOfStock = formData.outOfStock;
     }
-    if (formData.variants && formData.variants.length > 0) {
-      // Filter out invalid variant discounts
-      draftData.variants = formData.variants.map((v) => ({
-        ...v,
-        outOfStock: v.outOfStock,
-        discount:
-          v.discount.discountType !== 'none' &&
-          v.discount.discountValue &&
-          v.discount.discountValue.trim()
-            ? {
-                discountType: v.discount.discountType,
-                discountValue: v.discount.discountValue,
-              }
-            : {
-                discountType: 'none',
-                discountValue: '',
-              },
-      }));
+    // Only include variants that exist in the variants state (not deleted)
+    if (variants && variants.length > 0) {
+      draftData.variants = variants
+        .map((variant, index) => {
+          const formVariant = formData.variants?.[index];
+          if (!formVariant) return null;
+          return {
+            color: formVariant.color,
+            quantity: formVariant.quantity,
+            price: formVariant.price,
+            priceType: formVariant.priceType || formData.priceType || 'sqft',
+            outOfStock: formVariant.outOfStock ?? false,
+            discount:
+              formVariant.discount.discountType !== 'none' &&
+              formVariant.discount.discountValue &&
+              formVariant.discount.discountValue.trim()
+                ? {
+                    discountType: formVariant.discount.discountType,
+                    discountValue: formVariant.discount.discountValue,
+                  }
+                : {
+                    discountType: 'none',
+                    discountValue: '',
+                  },
+          };
+        })
+        .filter(Boolean); // Remove null values
     }
     if (variantFiles.length > 0) {
       draftData.variantFiles = variantFiles;
@@ -950,16 +973,19 @@ function CreateProductPage() {
     const newVariant = {
       id: Date.now().toString(),
       images: [],
+      color: '#000000',
     };
     setVariants([...variants, newVariant]);
     setShowVariants(true);
 
     // Set default values for the new variant form fields
     const variantIndex = variants.length;
-    setValue(`variants.${variantIndex}.color`, '#000000');
+    setValue(`variants.${variantIndex}.color`, '');
     setValue(`variants.${variantIndex}.discount.discountType`, 'none');
     setValue(`variants.${variantIndex}.quantity`, '');
     setValue(`variants.${variantIndex}.price`, '');
+    // Use parent product's priceType as default for variant
+    setValue(`variants.${variantIndex}.priceType`, formValues.priceType || 'sqft');
     setValue(`variants.${variantIndex}.discount.discountValue`, '');
   };
 
@@ -968,15 +994,25 @@ function CreateProductPage() {
     const variantIndex = variants.findIndex((v) => v.id === variantId);
 
     // Remove the variant from state
-    setVariants(variants.filter((v) => v.id !== variantId));
+    const updatedVariants = variants.filter((v) => v.id !== variantId);
+    setVariants(updatedVariants);
+
+    // Update form values to remove the variant
+    const currentFormVariants = methods.getValues('variants') || [];
+    const updatedFormVariants = currentFormVariants.filter(
+      (_: any, index: number) => index !== variantIndex
+    );
+    setValue('variants', updatedFormVariants);
 
     // Clear any errors for this variant
     if (variantIndex !== -1) {
       methods.clearErrors(`variants.${variantIndex}`);
     }
 
-    if (variants.length <= 1) {
+    if (updatedVariants.length === 0) {
       setShowVariants(false);
+      // Clear the entire variants array from form when no variants left
+      setValue('variants', []);
     }
   };
 
@@ -1146,6 +1182,8 @@ function CreateProductPage() {
               subCategoryOptions={subCategoryOptions}
               tagOptions={tagOptions}
               isLoading={createProductMutation.isPending}
+              categoriesLoading={categoriesLoading}
+              subcategoriesLoading={subcategoriesLoading}
             />
           </div>
 

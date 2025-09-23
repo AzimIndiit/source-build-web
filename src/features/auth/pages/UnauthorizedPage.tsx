@@ -1,7 +1,9 @@
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/useAuth';
 import { Link } from 'react-router-dom';
 
 function UnauthorizedPage() {
+  const { user } = useAuth();
   return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="text-center">
@@ -10,7 +12,7 @@ function UnauthorizedPage() {
           You don't have permission to access this page.
         </p>
         <Button asChild className="text-white hover:text-white">
-          <Link to="/dashboard">Go to Dashboard</Link>
+          {user?.role=='buyer'?<Link to={`/`}>Go to Home</Link>:<Link to={`/${user?.role}/dashboard`}>Go to Dashboard</Link>}
         </Button>
       </div>
     </div>

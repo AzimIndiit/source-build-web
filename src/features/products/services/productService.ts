@@ -1,15 +1,17 @@
 import axiosInstance from '@/lib/axios';
 import { fileService } from '@/features/profile/services/fileService';
+import { Category } from '@/features/admin/categories/types';
 
 export interface CreateProductPayload {
   title: string;
   price: number;
+  priceType?: 'sqft' | 'linear' | 'pallet';
   description: string;
-  category: string;
-  subCategory: string;
+  category: string | Category;
+  subCategory: string | Category;
   quantity: number;
-  brand: string;
-  color: string;
+  brand?: string;
+  color?: string;
   locationIds: string[];
   productTag: string[];
   outOfStock: boolean;
@@ -18,10 +20,10 @@ export interface CreateProductPayload {
     quantity: number;
     price: number;
     outOfStock: boolean;
-    discount: {
+    discount?: {
       discountType: 'none' | 'flat' | 'percentage';
       discountValue?: number;
-    };
+    } | null;
     images?: string[];
   }>;
   marketplaceOptions?: {
@@ -29,14 +31,15 @@ export interface CreateProductPayload {
     shipping?: boolean;
     delivery?: boolean;
   };
+  deliveryDistance?: number;
   pickupHours?: string;
   shippingPrice?: number;
   readyByDate?: string;
   readyByTime?: string;
-  discount: {
+  discount?: {
     discountType: 'none' | 'flat' | 'percentage';
     discountValue?: number;
-  };
+  } | null;
   dimensions?: {
     width?: number;
     length?: number;
@@ -49,9 +52,10 @@ export interface SaveDraftPayload {
   title: string;
   images: string[];
   price?: number;
+  priceType?: 'sqft' | 'linear' | 'pallet';
   description?: string;
-  category?: string;
-  subCategory?: string;
+  category?: string | Category;
+  subCategory?: string | Category;
   quantity?: number;
   outOfStock?: boolean;
   brand?: string;
@@ -62,8 +66,9 @@ export interface SaveDraftPayload {
     color: string;
     quantity: number;
     price: number;
+    priceType?: 'sqft' | 'linear' | 'pallet';
     outOfStock?: boolean;
-    discount: {
+    discount?: {
       discountType: 'none' | 'flat' | 'percentage';
       discountValue?: number;
     };
@@ -75,6 +80,8 @@ export interface SaveDraftPayload {
     delivery?: boolean;
   };
   pickupHours?: string;
+  localDeliveryFree?: boolean;
+  deliveryDistance?: number;
   shippingPrice?: number;
   readyByDate?: string;
   readyByTime?: string;
@@ -95,14 +102,15 @@ export interface UpdateProductPayload extends Partial<CreateProductPayload> {
   id: string;
 }
 
-export interface Product {
+export interface  Product {
   id: string;
   slug: string;
   title: string;
   price: number;
   description: string;
-  category: string;
-  subCategory: string;
+  category: string | Category;
+  subCategory: string | Category;
+  priceType?: 'sqft' | 'linear' | 'pallet';
   quantity: number;
   outOfStock?: boolean;
   brand: string;
@@ -115,7 +123,7 @@ export interface Product {
     quantity: number;
     price: number;
     outOfStock?: boolean;
-    discount: {
+    discount?: {
       discountType: 'none' | 'flat' | 'percentage';
       discountValue?: number;
     };
@@ -126,6 +134,8 @@ export interface Product {
     shipping?: boolean;
     delivery?: boolean;
   };
+  localDeliveryFree?: boolean;
+  deliveryDistance?: number | string;
   pickupHours?: string;
   shippingPrice?: number;
   readyByDate?: string;

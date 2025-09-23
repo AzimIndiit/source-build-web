@@ -24,10 +24,12 @@ export interface CabinetDetailProduct {
   model: string;
   description: string;
   price: number;
+  priceType?: 'sqft' | 'linear' | 'pallet';
   inStock: boolean;
   assembly: string | boolean;
   quantity: number;
   image: string;
+  category?: string | { _id?: string; name: string; slug: string };
 }
 
 export interface CabinetSection {

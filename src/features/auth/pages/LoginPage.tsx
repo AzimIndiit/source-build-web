@@ -35,7 +35,6 @@ function LoginPage() {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const content = params.get('content');
-    console.log('cont', content);
     if (content) {
       setPendingUserId(content);
       setShowRoleModal(true);

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -9,6 +9,9 @@ import { FormTextarea } from '@/components/forms/FormTextarea';
 import toast from 'react-hot-toast';
 import { contactService } from '../services/contactService';
 import { useMutation } from '@tanstack/react-query';
+import { useAuth } from '@/hooks/useAuth';
+import { FormPhoneInput } from '@/components/forms/FormPhoneInput';
+import { phoneValidation } from '@/features/auth/schemas/authSchemas';
 
 // Zod validation schema
 const personalDetailsSchema = z.object({
@@ -25,6 +28,7 @@ const personalDetailsSchema = z.object({
     .min(2, 'Last name must be at least 2 characters')
     .max(50, 'Last name must not exceed 50 characters'),
   email: z.string().min(1, 'Email is required').email('Please enter valid email address'),
+  phone: phoneValidation,
   message: z
     .string()
     .trim()
@@ -44,10 +48,12 @@ const ContactFormPage: React.FC<ContactFormPageProps> = ({
     firstName: '',
     lastName: '',
     email: '',
+    phone: '',
     message: '',
   },
   onSave,
 }) => {
+  const { user } = useAuth();
   const methods = useForm<ContactFormPageData>({
     resolver: zodResolver(personalDetailsSchema),
     defaultValues: initialData,
@@ -64,7 +70,7 @@ const ContactFormPage: React.FC<ContactFormPageProps> = ({
     onSuccess: (response) => {
       toast.success(response.message || 'Contact form submitted successfully');
       reset();
-      onSave?.(response.data as ContactFormPageData);
+      onSave?.(response.data as unknown as ContactFormPageData);
     },
     onError: (error: any) => {
       const errorMessage = error.response?.data?.message || 'Failed to submit contact form';
@@ -83,6 +89,15 @@ const ContactFormPage: React.FC<ContactFormPageProps> = ({
 
     mutation.mutate(trimmedData);
   };
+
+  useEffect(() => {
+    if (user) {
+      methods.setValue('firstName', user.firstName);
+      methods.setValue('lastName', user.lastName);
+      methods.setValue('email', user.email);
+      methods.setValue('phone', user.phone || '');
+    }
+  }, [user]);
 
   return (
     <>
@@ -111,6 +126,14 @@ const ContactFormPage: React.FC<ContactFormPageProps> = ({
                     label="Email"
                     type="email"
                     placeholder="Enter your email address"
+                    disabled={mutation.isPending}
+                  />
+                  <FormPhoneInput
+                    name="phone"
+                    label="Phone Number"
+                    disabled={mutation.isPending}
+                    placeholder="(123) 456-7890"
+                    className="text-base px-4 border-gray-300"
                   />
                 </div>
 

@@ -237,8 +237,32 @@ export const ProductPreview: React.FC<ProductPreviewProps> = ({
                   {formValues.discount?.discountType !== 'none' &&
                   formValues.discount?.discountValue ? (
                     <div className="flex gap-2 items-center ">
-                      <div className="text-xs text-gray-500 line-through">${formValues.price}</div>
-                      <div className="text-sm font-bold text-primary">${finalPrice || '0.00'}</div>
+                      <div className="text-xs text-gray-500 line-through">
+                        ${formValues.price}
+                        {formValues.priceType && (
+                          <span className="text-xs">
+                            /
+                            {formValues.priceType === 'sqft'
+                              ? 'sq ft'
+                              : formValues.priceType === 'linear'
+                                ? 'linear ft'
+                                : 'pallet'}
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-sm font-bold text-primary">
+                        ${finalPrice || '0.00'}
+                        {formValues.priceType && (
+                          <span className="text-xs">
+                            /
+                            {formValues.priceType === 'sqft'
+                              ? 'sq ft'
+                              : formValues.priceType === 'linear'
+                                ? 'linear ft'
+                                : 'pallet'}
+                          </span>
+                        )}
+                      </div>
                       <Badge variant="destructive" className="text-xs bg-primary text-white">
                         {formValues.discount.discountType === 'percentage'
                           ? `${formValues.discount.discountValue}% OFF`
@@ -248,6 +272,16 @@ export const ProductPreview: React.FC<ProductPreviewProps> = ({
                   ) : (
                     <div className="text-sm font-bold text-primary">
                       ${formValues.price || '0.00'}
+                      {formValues.priceType && (
+                        <span className="text-xs">
+                          /
+                          {formValues.priceType === 'sqft'
+                            ? 'sq ft'
+                            : formValues.priceType === 'linear'
+                              ? 'linear ft'
+                              : 'pallet'}
+                        </span>
+                      )}
                     </div>
                   )}
                 </div>
@@ -255,7 +289,9 @@ export const ProductPreview: React.FC<ProductPreviewProps> = ({
                   <div className="text-gray-600">
                     /{' '}
                     {categoryOptions.find((opt) => opt.value === formValues.category)?.label ||
-                      formValues.category}
+                      (typeof formValues.category === 'string'
+                        ? formValues.category
+                        : formValues.category.name)}
                   </div>
                 )}
                 {formValues.discount?.discountType !== 'none' &&
@@ -468,7 +504,10 @@ export const ProductPreview: React.FC<ProductPreviewProps> = ({
                   )}
                   {formValues.marketplaceOptions?.delivery && (
                     <div className="text-xs sm:text-sm md:text-base text-gray-600">
-                      <span className="font-medium">Delivery Available</span>
+                      <span className="font-medium">Local Delivery</span>
+                      {formValues.marketplaceOptions?.deliveryDistance && (
+                        <span>: Within {formValues.marketplaceOptions.deliveryDistance} miles</span>
+                      )}
                     </div>
                   )}
                 </div>
@@ -617,9 +656,29 @@ export const ProductPreview: React.FC<ProductPreviewProps> = ({
                                   <>
                                     <div className="text-xs text-gray-500 line-through">
                                       ${variantData.price}
+                                      {formValues.priceType && (
+                                        <span className="text-xs">
+                                          /
+                                          {formValues.priceType === 'sqft'
+                                            ? 'sq ft'
+                                            : formValues.priceType === 'linear'
+                                              ? 'linear ft'
+                                              : 'pallet'}
+                                        </span>
+                                      )}
                                     </div>
                                     <div className="text-sm font-bold text-primary">
                                       ${finalPrice}
+                                      {formValues.priceType && (
+                                        <span className="text-xs">
+                                          /
+                                          {formValues.priceType === 'sqft'
+                                            ? 'sq ft'
+                                            : formValues.priceType === 'linear'
+                                              ? 'linear ft'
+                                              : 'pallet'}
+                                        </span>
+                                      )}
                                     </div>
                                     <Badge variant="destructive" className="text-xs mt-1">
                                       {variantData.discount.discountType === 'percentage'
@@ -630,6 +689,16 @@ export const ProductPreview: React.FC<ProductPreviewProps> = ({
                                 ) : (
                                   <div className="text-sm font-bold text-primary">
                                     ${variantData.price}
+                                    {formValues.priceType && (
+                                      <span className="text-xs">
+                                        /
+                                        {formValues.priceType === 'sqft'
+                                          ? 'sq ft'
+                                          : formValues.priceType === 'linear'
+                                            ? 'linear ft'
+                                            : 'pallet'}
+                                      </span>
+                                    )}
                                   </div>
                                 )}
                               </div>
