@@ -6,6 +6,8 @@ export interface Category {
   image?: string;
   order?: number;
   isActive: boolean;
+  hasAttributes?: boolean;
+  attributes?: Attribute[];
   createdAt: string;
   updatedAt: string;
 }
@@ -45,6 +47,8 @@ export interface CreateCategoryDto {
   image?: string;
   order?: number;
   isActive?: boolean;
+  hasAttributes?: boolean;
+  attributes?: Attribute[];
 }
 
 export interface UpdateCategoryDto {
@@ -53,6 +57,8 @@ export interface UpdateCategoryDto {
   image?: string;
   order?: number;
   isActive?: boolean;
+  hasAttributes?: boolean;
+  attributes?: Attribute[];
 }
 
 export interface CreateSubcategoryDto {

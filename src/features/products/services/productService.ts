@@ -36,6 +36,8 @@ export interface CreateProductPayload {
   shippingPrice?: number;
   readyByDate?: string;
   readyByTime?: string;
+  readyByDays?: number;
+  localDeliveryFree?: boolean;
   discount?: {
     discountType: 'none' | 'flat' | 'percentage';
     discountValue?: number;
@@ -46,6 +48,12 @@ export interface CreateProductPayload {
     height?: number;
   };
   images: string[];
+  productAttributes?: Array<{
+    attributeName: string;
+    inputType: string;
+    value: any;
+    required?: boolean;
+  }>;
 }
 
 export interface SaveDraftPayload {
@@ -96,6 +104,12 @@ export interface SaveDraftPayload {
     height?: number;
   };
   isDraft: boolean;
+  productAttributes?: Array<{
+    attributeName: string;
+    inputType: string;
+    value: any;
+    required?: boolean;
+  }>;
 }
 
 export interface UpdateProductPayload extends Partial<CreateProductPayload> {

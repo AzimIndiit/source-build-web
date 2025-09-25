@@ -127,7 +127,9 @@ const createProductSchema = z
       .string()
       .trim()
       .min(1, 'Sub category is required')
-      .max(50, 'Sub category must not exceed 50 characters').optional(),
+      .max(50, 'Sub category must not exceed 50 characters')
+      .optional()
+      .or(z.literal('')), // allow empty string as valid (optional)
 
     quantity: z
       .string()
@@ -181,7 +183,8 @@ const createProductSchema = z
           )
       )
       .max(10, 'Maximum 10 tags allowed')
-      .default([]),
+      .default([])
+      .optional(),
 
     variants: z.array(variantSchema).max(5, 'Maximum 5 variants allowed').optional(),
 
@@ -213,10 +216,8 @@ const createProductSchema = z
 
     shippingPrice: z.string().trim().optional(),
     localDeliveryFree: z.boolean().optional(),
-    // readyByDate: z.string().min(1, 'Date is required'),
-
-    // readyByTime: z.string().min(1, 'Time is required'),
-
+    readyByDate: z.string().optional(),
+    readyByTime: z.string().optional(),
     readyByDays: z.string().optional(),
 
     dimensions: z
@@ -350,16 +351,32 @@ const createProductSchema = z
         }
       }
     }
-  });
+  }).passthrough(); // Allow additional fields for dynamic attributes
 
-type CreateProductForm = z.infer<typeof createProductSchema>;
+type CreateProductForm = z.infer<typeof createProductSchema> & Record<string, any>;
 
 // Interface definitions for API responses
+interface AttributeValue {
+  value: string;
+  order?: number;
+}
+
+interface Attribute {
+  name: string;
+  inputType: 'text' | 'number' | 'dropdown' | 'multiselect' | 'boolean' | 'radio';
+  required?: boolean;
+  values?: AttributeValue[];
+  order?: number;
+  isActive?: boolean;
+}
+
 interface Category {
   _id: string;
   name: string;
   slug: string;
   isActive: boolean;
+  hasAttributes?: boolean;
+  attributes?: Attribute[];
 }
 
 interface Subcategory {
@@ -368,6 +385,8 @@ interface Subcategory {
   slug: string;
   category: string | Category;
   isActive: boolean;
+  hasAttributes?: boolean;
+  attributes?: Attribute[];
 }
 
 const tagOptions = [
@@ -399,6 +418,7 @@ function CreateProductPage() {
   const [showMobilePreview, setShowMobilePreview] = useState(false);
   const [showAddAddressModal, setShowAddAddressModal] = useState(false);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
+  const [currentAttributes, setCurrentAttributes] = useState<Attribute[]>([]);
 
   // Fetch saved addresses
   const { data: addressesData, refetch: refetchAddresses } = useSavedAddresssQuery();
@@ -523,11 +543,111 @@ function CreateProductPage() {
   // Update selected category ID when category changes
   useEffect(() => {
     if (formValues.category !== selectedCategoryId) {
+      // Clear previous attribute values when category changes
+      if (currentAttributes.length > 0) {
+        currentAttributes.forEach(attr => {
+          const fieldName = `attribute_${attr.name.replace(/\s+/g, '_')}`;
+          methods.unregister(fieldName as any);
+        });
+      }
+
       setSelectedCategoryId(formValues.category);
       // Reset subcategory when category changes
       methods.setValue('subCategory', '');
+      
+      // Update attributes from category
+      const selectedCategory = categoriesData?.find(cat => cat._id === formValues.category);
+      console.log('Category changed:', formValues.category);
+      console.log('Selected category data:', selectedCategory);
+      console.log('Category has attributes?', selectedCategory?.hasAttributes);
+      console.log('Category attributes:', selectedCategory?.attributes);
+      
+      if (selectedCategory?.hasAttributes && selectedCategory.attributes) {
+        const filteredAttributes = selectedCategory.attributes.filter(attr => attr.isActive !== false);
+        console.log('Setting category attributes:', filteredAttributes);
+        setCurrentAttributes(filteredAttributes);
+      } else {
+        console.log('No attributes for category, clearing');
+        setCurrentAttributes([]);
+      }
     }
-  }, [formValues.category, selectedCategoryId, methods]);
+  }, [formValues.category, selectedCategoryId, methods, categoriesData, currentAttributes]);
+
+  // Update attributes when subcategory changes
+  useEffect(() => {
+    // Clear previous attribute values when subcategory changes
+    if (currentAttributes.length > 0) {
+      currentAttributes.forEach(attr => {
+        const fieldName = `attribute_${attr.name.replace(/\s+/g, '_')}`;
+        methods.unregister(fieldName as any);
+      });
+    }
+
+    if (formValues.subCategory) {
+      const selectedSubcategory = subcategoriesData?.find(sub => sub._id === formValues.subCategory);
+      console.log('Subcategory changed:', formValues.subCategory);
+      console.log('Selected subcategory data:', selectedSubcategory);
+      console.log('Subcategory has attributes?', selectedSubcategory?.hasAttributes);
+      console.log('Subcategory attributes:', selectedSubcategory?.attributes);
+      
+      if (selectedSubcategory?.hasAttributes && selectedSubcategory.attributes) {
+        // Subcategory attributes override category attributes
+        const filteredAttributes = selectedSubcategory.attributes.filter(attr => attr.isActive !== false);
+        console.log('Setting subcategory attributes:', filteredAttributes);
+        setCurrentAttributes(filteredAttributes);
+      } else if (!selectedSubcategory?.hasAttributes) {
+        // If subcategory doesn't have attributes, use category attributes
+        const selectedCategory = categoriesData?.find(cat => cat._id === formValues.category);
+        console.log('Subcategory has no attributes, checking category:', selectedCategory);
+        if (selectedCategory?.hasAttributes && selectedCategory.attributes) {
+          const filteredAttributes = selectedCategory.attributes.filter(attr => attr.isActive !== false);
+          console.log('Using category attributes instead:', filteredAttributes);
+          setCurrentAttributes(filteredAttributes);
+        } else {
+          console.log('No attributes for category either, clearing');
+          setCurrentAttributes([]);
+        }
+      }
+    }
+  }, [formValues.subCategory, subcategoriesData, formValues.category, categoriesData, currentAttributes, methods]);
+  
+  // Register attribute fields when attributes change
+  useEffect(() => {
+    if (currentAttributes.length > 0) {
+      console.log('Registering attribute fields:', currentAttributes);
+      currentAttributes.forEach(attr => {
+        const fieldName = `attribute_${attr.name.replace(/\s+/g, '_')}`;
+        console.log(`Registering field: ${fieldName}`);
+        
+        // Unregister the field first if it exists to ensure clean state
+        try {
+          methods.unregister(fieldName as any);
+        } catch (e) {
+          // Field might not exist, that's ok
+        }
+        
+        // Register the field with react-hook-form
+        methods.register(fieldName as any);
+        
+        // Set default value based on input type
+        const currentValue = (methods.getValues() as any)[fieldName];
+        if (currentValue === undefined || currentValue === null) {
+          if (attr.inputType === 'boolean') {
+            methods.setValue(fieldName as any, false);
+          } else if (attr.inputType === 'multiselect') {
+            methods.setValue(fieldName as any, []);
+          } else {
+            methods.setValue(fieldName as any, '');
+          }
+        }
+        
+        console.log(`Field ${fieldName} registered with value:`, (methods.getValues() as any)[fieldName]);
+      });
+      
+      // Force a re-render to ensure fields are registered
+      methods.trigger();
+    }
+  }, [currentAttributes]);
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -631,6 +751,25 @@ function CreateProductPage() {
       readyByDate = new Date(`${data.readyByDate}T${time}:00`).toISOString();
     }
 
+    // Collect attribute values from form
+    console.log('Current attributes:', currentAttributes);
+    console.log('Form data:', data);
+    console.log('All form values:', methods.getValues());
+    
+    const productAttributes = currentAttributes.map(attr => {
+      const fieldName = `attribute_${attr.name.replace(/\s+/g, '_')}`;
+      const value = (data as any)[fieldName] || (methods.getValues() as any)[fieldName];
+      console.log(`Attribute ${attr.name} (${fieldName}):`, value);
+      return {
+        attributeName: attr.name,
+        inputType: attr.inputType,
+        value: value,
+        required: attr.required
+      };
+    }).filter(attr => attr.value !== undefined && attr.value !== '' && attr.value !== null);
+    
+    console.log('Collected productAttributes:', productAttributes);
+
     // Prepare the mutation data
     const mutationData = {
       title: data.title,
@@ -640,7 +779,7 @@ function CreateProductPage() {
       category: data.category,
       subCategory: data.subCategory,
       quantity: parseInt(data.quantity),
-      outOfStock: data.outOfStock,
+      outOfStock: data.outOfStock || false,
       brand: data.brand,
       color: data.color,
       locationIds: data.locationIds,
@@ -653,6 +792,7 @@ function CreateProductPage() {
       readyByDate,
       readyByTime: data.readyByTime,
       readyByDays: data.readyByDays ? parseInt(data.readyByDays) : undefined,
+      productAttributes: productAttributes.length > 0 ? productAttributes : undefined,
       dimensions:
         data.dimensions &&
         (data.dimensions.width || data.dimensions.length || data.dimensions.height)
@@ -691,6 +831,9 @@ function CreateProductPage() {
       variantFiles: variantFiles.length > 0 ? variantFiles : undefined,
     };
 
+    console.log('Final mutation data with attributes:', mutationData);
+    console.log('ProductAttributes in mutation:', mutationData.productAttributes);
+    
     try {
       await createProductMutation.mutateAsync(mutationData);
       // Navigate to products page or wherever appropriate
@@ -754,11 +897,34 @@ function CreateProductPage() {
       readyByDate = new Date(`${formData.readyByDate}T${time}:00`).toISOString();
     }
 
+    // Collect attribute values for draft
+    const productAttributes: any[] = [];
+    if (currentAttributes.length > 0) {
+      currentAttributes.forEach(attr => {
+        const fieldName = `attribute_${attr.name.replace(/\s+/g, '_')}`;
+        const value = (formData as any)[fieldName] || (methods.getValues() as any)[fieldName];
+        
+        if (value !== undefined && value !== '' && value !== null) {
+          productAttributes.push({
+            attributeName: attr.name,
+            inputType: attr.inputType,
+            value: value,
+            required: attr.required || false
+          });
+        }
+      });
+    }
+
     // Prepare the draft data with only provided fields
     const draftData: any = {
       title: formData.title,
       imageFiles: uploadedPhotos,
     };
+
+    // Add product attributes if any
+    if (productAttributes.length > 0) {
+      draftData.productAttributes = productAttributes;
+    }
 
     // Add optional fields only if they have values
     if (formData.price && formData.price.trim()) {
@@ -1184,6 +1350,7 @@ function CreateProductPage() {
               isLoading={createProductMutation.isPending}
               categoriesLoading={categoriesLoading}
               subcategoriesLoading={subcategoriesLoading}
+              currentAttributes={currentAttributes}
             />
           </div>
 

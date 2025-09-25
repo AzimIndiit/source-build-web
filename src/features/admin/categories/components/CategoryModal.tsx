@@ -415,9 +415,8 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
               {errors.image && <p className="text-sm text-red-600">{errors.image.message}</p>}
             </div>
 
-            {/* Attributes Section - Only for Subcategories */}
-            {isSubcategory && (
-              <div className="space-y-4">
+            {/* Attributes Section - For both Categories and Subcategories */}
+            <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="hasAttributes" className="text-base font-medium">
                    Attributes
@@ -489,8 +488,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
                     )}
                   </div>
                 )}
-              </div>
-            )}
+            </div>
 
             {/* Active Status */}
             {/* {edit && (

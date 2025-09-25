@@ -48,11 +48,23 @@ export interface Product {
     };
   };
   readyByDays?: string | number;
+  productAttributes?: Array<{
+    attributeName: string;
+    inputType: string;
+    value: any;
+    required?: boolean;
+  }>;
 }
 
 interface CreateProductWithFiles extends Omit<CreateProductPayload, 'images'> {
   imageFiles: File[];
   variantFiles?: Array<{ variantId: string; variantIndex: number; files: File[] }>;
+  productAttributes?: Array<{
+    attributeName: string;
+    inputType: string;
+    value: any;
+    required?: boolean;
+  }>;
 }
 
 interface SaveDraftWithFiles {
@@ -105,6 +117,12 @@ interface SaveDraftWithFiles {
     discountValue?: number;
   };
   variantFiles?: Array<{ variantId: string; variantIndex: number; files: File[] }>;
+  productAttributes?: Array<{
+    attributeName: string;
+    inputType: string;
+    value: any;
+    required?: boolean;
+  }>;
 }
 
 interface UpdateProductWithFiles extends Omit<UpdateProductPayload, 'images' | 'id'> {
@@ -201,6 +219,7 @@ export function useCreateProductMutation() {
             : undefined,
         })),
         images: imageUrls,
+        productAttributes: productData.productAttributes,
       };
 
       return await productService.createProduct(payload);
@@ -444,7 +463,7 @@ export function useSaveDraftMutation() {
             quantity: Number(v.quantity),
             priceType: v.priceType,
             outOfStock: v.outOfStock,
-            images: v.images || v.existingImages,
+            images: (v as any).images || v.existingImages,
             discount: {
               ...v.discount,
               discountValue: v.discount.discountValue
@@ -453,6 +472,7 @@ export function useSaveDraftMutation() {
             },
           })),
         }),
+        ...(draftData.productAttributes && { productAttributes: draftData.productAttributes }),
       };
 
       // If id is present, update existing product as draft

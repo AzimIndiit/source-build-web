@@ -132,8 +132,7 @@ const editProductSchema = z
     subCategory: z
       .string()
       .trim()
-      .min(1, 'Sub category is required')
-      .max(50, 'Sub category must not exceed 50 characters').optional(),
+      .max(50, 'Sub category must not exceed 50 characters').optional().or(z.literal('')),
 
     quantity: z
       .string()
@@ -356,7 +355,8 @@ const editProductSchema = z
         }
       }
     }
-  });
+  })
+  .passthrough(); // Allow dynamic attribute fields
 
 type EditProductForm = z.infer<typeof editProductSchema>;
 
@@ -377,6 +377,16 @@ const tagOptions = [
 
 const MAX_IMAGES = 5;
 
+interface Attribute {
+  _id?: string;
+  name: string;
+  inputType: 'text' | 'number' | 'dropdown' | 'multiselect' | 'boolean' | 'radio';
+  required?: boolean;
+  values?: Array<{ value: string; order?: number }>;
+  order?: number;
+  isActive?: boolean;
+}
+
 function EditProductPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
@@ -395,6 +405,7 @@ function EditProductPage() {
   const [showAddAddressModal, setShowAddAddressModal] = useState(false);
   const [showSaveDraftModal, setShowSaveDraftModal] = useState(false);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
+  const [currentAttributes, setCurrentAttributes] = useState<Attribute[]>([]);
 
   const { data: productData, isLoading: isLoadingProduct } = useProductByIdQuery(id || '');
   const { data: addressesData, refetch: refetchAddresses } = useSavedAddresssQuery();
@@ -544,6 +555,86 @@ function EditProductPage() {
       setValue('subCategory', '');
     }
   }, [formValues.category, setValue, isInitialDataLoaded, subcategoriesData]);
+
+  // Update current attributes when category or subcategory changes
+  useEffect(() => {
+    // Skip this effect during initial data load
+    if (!isInitialDataLoaded) return;
+
+    // Clear previous attribute values when category or subcategory changes
+    if (currentAttributes.length > 0) {
+      currentAttributes.forEach(attr => {
+        const fieldName = `attribute_${attr.name.replace(/\s+/g, '_')}`;
+        methods.unregister(fieldName as any);
+      });
+    }
+
+    if (formValues.subCategory && subcategoriesData) {
+      const selectedSubcategory = subcategoriesData.find(
+        sub => sub._id === formValues.subCategory
+      );
+      if (selectedSubcategory?.attributes && selectedSubcategory.attributes.length > 0) {
+        setCurrentAttributes(selectedSubcategory.attributes as Attribute[]);
+      } else if (formValues.category && categoriesData) {
+        const selectedCategory = categoriesData.find(
+          cat => cat._id === formValues.category
+        );
+        if (selectedCategory?.attributes) {
+          setCurrentAttributes(selectedCategory.attributes as Attribute[]);
+        } else {
+          setCurrentAttributes([]);
+        }
+      } else {
+        setCurrentAttributes([]);
+      }
+    } else if (formValues.category && categoriesData) {
+      const selectedCategory = categoriesData.find(
+        cat => cat._id === formValues.category
+      );
+      if (selectedCategory?.attributes) {
+        setCurrentAttributes(selectedCategory.attributes as Attribute[]);
+      } else {
+        setCurrentAttributes([]);
+      }
+    } else {
+      setCurrentAttributes([]);
+    }
+  }, [formValues.category, formValues.subCategory, categoriesData, subcategoriesData, isInitialDataLoaded, currentAttributes, methods]);
+
+  // Store attribute values from product data
+  const [pendingAttributeValues, setPendingAttributeValues] = useState<Record<string, any>>({});
+
+  // Register attribute fields when attributes change
+  useEffect(() => {
+    if (currentAttributes.length > 0 && isInitialDataLoaded) {
+      currentAttributes.forEach(attr => {
+        const fieldName = `attribute_${attr.name.replace(/\s+/g, '_')}`;
+        const currentValue = (methods.getValues() as any)[fieldName];
+        
+        // Only register if not already registered
+        if (currentValue === undefined) {
+          (methods.register as any)(fieldName);
+          
+          // Check if we have a pending value for this attribute
+          if (pendingAttributeValues[fieldName] !== undefined) {
+            console.log('Setting pending attribute value:', fieldName, pendingAttributeValues[fieldName]);
+            methods.setValue(fieldName as any, pendingAttributeValues[fieldName]);
+          } else {
+            // Set default value based on input type if needed
+            if (attr.inputType === 'boolean') {
+              methods.setValue(fieldName as any, false);
+            } else if (attr.inputType === 'multiselect') {
+              methods.setValue(fieldName as any, []);
+            } else if (attr.inputType === 'number') {
+              methods.setValue(fieldName as any, '');
+            } else {
+              methods.setValue(fieldName as any, '');
+            }
+          }
+        }
+      });
+    }
+  }, [currentAttributes, methods, isInitialDataLoaded, pendingAttributeValues]);
   useEffect(() => {
     if (productData?.data) {
       const product = productData.data;
@@ -669,6 +760,17 @@ function EditProductPage() {
 
       // Use reset to set all form values at once
       reset(formData);
+
+      // Store attribute values to be set when attributes are loaded
+      if (product.productAttributes && product.productAttributes.length > 0) {
+        const attributeValues: Record<string, any> = {};
+        product.productAttributes.forEach((attr: any) => {
+          const fieldName = `attribute_${attr.attributeName.replace(/\s+/g, '_')}`;
+          attributeValues[fieldName] = attr.value;
+        });
+        console.log('Storing pending attribute values:', attributeValues);
+        setPendingAttributeValues(attributeValues);
+      }
 
       // Immediately check what was set
       const valuesAfterReset = methods.getValues();
@@ -830,13 +932,31 @@ function EditProductPage() {
     //   readyByDate = new Date(`${data.readyByDate}T${time}:00`).toISOString();
     // }
 
+    // Collect attribute values
+    const productAttributes: any[] = [];
+    if (currentAttributes.length > 0) {
+      currentAttributes.forEach(attr => {
+        const fieldName = `attribute_${attr.name.replace(/\s+/g, '_')}`;
+        const value = (data as any)[fieldName];
+        
+        if (value !== undefined && value !== '' && value !== null) {
+          productAttributes.push({
+            attributeName: attr.name,
+            inputType: attr.inputType,
+            value: value,
+            required: attr.required || false
+          });
+        }
+      });
+    }
+
     const mutationData: any = {
       title: data.title,
       price: parseFloat(data.price),
       priceType: data.priceType,
       description: data.description,
       category: data.category,
-      subCategory: data.subCategory,
+      subCategory: data.subCategory || '',
       quantity: parseInt(data.quantity),
       outOfStock: data.outOfStock,
       brand: data.brand,
@@ -851,6 +971,7 @@ function EditProductPage() {
       // readyByDate,
       // readyByTime: data.readyByTime,
       readyByDays: data.readyByDays ? parseInt(data.readyByDays) : undefined,
+      productAttributes: productAttributes.length > 0 ? productAttributes : undefined,
       dimensions:
         data.dimensions &&
         (data.dimensions.width || data.dimensions.length || data.dimensions.height)
@@ -957,6 +1078,24 @@ function EditProductPage() {
     //   readyByDate = new Date(`${formData.readyByDate}T${time}:00`).toISOString();
     // }
 
+    // Collect attribute values for draft
+    const productAttributes: any[] = [];
+    if (currentAttributes.length > 0) {
+      currentAttributes.forEach(attr => {
+        const fieldName = `attribute_${attr.name.replace(/\s+/g, '_')}`;
+        const value = (formData as any)[fieldName];
+        
+        if (value !== undefined && value !== '' && value !== null) {
+          productAttributes.push({
+            attributeName: attr.name,
+            inputType: attr.inputType,
+            value: value,
+            required: attr.required || false
+          });
+        }
+      });
+    }
+
     // For editing existing product, use different approach for draft
     // First prepare basic draft data
     const draftData: any = {
@@ -965,6 +1104,11 @@ function EditProductPage() {
       imageFiles: uploadedPhotos.length > 0 ? uploadedPhotos : undefined,
       existingImages: existingImages,
     };
+
+    // Add product attributes if any
+    if (productAttributes.length > 0) {
+      draftData.productAttributes = productAttributes;
+    }
 
     // Add optional fields only if they have values
     if (formData.price && formData.price.trim()) {
@@ -1102,6 +1246,7 @@ function EditProductPage() {
           quantity: draftData.quantity ? parseInt(draftData.quantity) : undefined,
           outOfStock: draftData.outOfStock,
           shippingPrice: draftData.shippingPrice ? parseFloat(draftData.shippingPrice) : undefined,
+          productAttributes: draftData.productAttributes || undefined,
           dimensions: draftData.dimensions
             ? {
                 width: draftData.dimensions.width
@@ -1479,6 +1624,7 @@ function EditProductPage() {
               subCategoryOptions={subCategoryOptions}
               tagOptions={tagOptions}
               isLoading={updateProductMutation.isPending}
+              currentAttributes={currentAttributes}
             />
           </div>
 
