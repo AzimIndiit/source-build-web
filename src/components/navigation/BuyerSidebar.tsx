@@ -102,10 +102,14 @@ export const BuyerSidebar: React.FC<BuyerSidebarProps> = ({
 
         // Extract categories and subcategories separately for the API
         const categories = newCategories.filter((cat) => !cat.includes(':')).join(',');
-        const subcategories = newCategories
-          .filter((cat) => cat.includes(':'))
-          .map((cat) => cat.split(':')[1])
-          .join(',');
+        
+        // Extract unique subcategories (prevent duplicates)
+        const uniqueSubcategories = [...new Set(
+          newCategories
+            .filter((cat) => cat.includes(':'))
+            .map((cat) => cat.split(':')[1])
+        )];
+        const subcategories = uniqueSubcategories.join(',');
 
         // Set or delete category parameter
         if (categories.split(',').length > 1) {

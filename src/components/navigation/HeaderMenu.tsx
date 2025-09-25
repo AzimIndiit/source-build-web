@@ -19,8 +19,8 @@ export function HeaderMenu() {
   const categoryParam = searchParams.get('category');
   
   // Determine if "All" should be active
-  const isAllActive = typeParam === 'all' || !categoryParam || categoryParam === '';
-  
+  const isAllActive =( typeParam === 'all' || !categoryParam || categoryParam === '' )&& location.pathname === '/marketplace';
+  console.log('isAllActive', isAllActive)
   return (
     <nav
       className="border-b border-gray-200"
@@ -53,7 +53,7 @@ export function HeaderMenu() {
               return (
                 <button
                   key={category._id}
-                  onClick={() => navigate(`/marketplace/${category.slug}`)}
+                  onClick={() => navigate(`/marketplace?category=${category.slug}`)}
                   className={cn(
                     'flex-shrink-0 px-4 py-2 text-sm font-medium transition-colors rounded-md cursor-pointer',
                     isCategoryActive

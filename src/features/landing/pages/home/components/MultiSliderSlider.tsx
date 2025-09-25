@@ -1,18 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import { motion } from 'framer-motion';
 import { ChevronsLeft, ChevronsRight, Heart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import LazyImage from '@/components/common/LazyImage';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/helpers';
+import { useAddToWishlist, useRemoveFromWishlist } from '@/features/wishlist/hooks/useWishlist';
+import toast from 'react-hot-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 interface Slide {
   image: string;
   delivery: string;
   price: string;
+  priceType?: 'sqft' | 'linear' | 'pallet';
   description: string;
   location: string;
   seller: string;
+  readyByDate?: string;
+  inStock?: boolean;
+  // Product information for wishlist functionality
+  id?: string;
+  _id?: string;
+  slug?: string;
+  isInWishlist?: boolean;
+  readyByDays?: number;
 }
 
 interface CustomArrowProps {
@@ -22,6 +37,25 @@ interface CustomArrowProps {
 interface MultiSliderSliderProps {
   slides: Slide[];
 }
+
+export const getReadyByDate = (slide: Slide) => {
+  switch (Number(slide?.readyByDays)) {
+    case 0:
+      return (
+        <Badge className="absolute bottom-2 left-2 bg-primary/80 text-white rounded px-2 py-1 text-[11px]">
+          Same Day Delivery
+        </Badge>
+      );
+    case 1:
+      return (
+        <Badge className="absolute bottom-2 left-2 bg-gray-200 text-gray-800 rounded px-2 py-1 text-[11px]">
+          Next Day Delivery
+        </Badge>
+      );
+    default:
+      return null;
+  }
+};
 
 const CustomPrevArrow: React.FC<CustomArrowProps> = ({ onClick }) => (
   <div
@@ -43,13 +77,75 @@ const CustomNextArrow: React.FC<CustomArrowProps> = ({ onClick }) => (
 
 const MultiSliderSlider: React.FC<MultiSliderSliderProps> = ({ slides }) => {
   const navigate = useNavigate();
-  const [likedSlides, setLikedSlides] = useState<Record<number, boolean>>({});
+  const { isAuthenticated } = useAuth();
+  const addToWishlist = useAddToWishlist();
+  const removeFromWishlist = useRemoveFromWishlist();
+  
+  // Use local state for optimistic UI updates
+  const [optimisticWishlist, setOptimisticWishlist] = useState<Record<number, boolean>>({});
+  const isLoading = addToWishlist.isPending || removeFromWishlist.isPending;
 
-  const toggleLike = (index: number) => {
-    setLikedSlides((prev) => ({
-      ...prev,
-      [index]: !prev[index],
-    }));
+  // Initialize optimistic wishlist state from slides
+  useEffect(() => {
+    const initialWishlist: Record<number, boolean> = {};
+    slides.forEach((slide, index) => {
+      initialWishlist[index] = slide.isInWishlist || false;
+    });
+    setOptimisticWishlist(initialWishlist);
+  }, [slides]);
+
+  const handleWishlistClick = (e: React.MouseEvent, index: number) => {
+    e.stopPropagation();
+    if (!isAuthenticated) {
+      toast.error('Please login to add to wishlist');
+      return;
+    }
+    
+    const slide = slides[index];
+    const productId = slide.id || slide._id || '';
+    
+    if (!productId) {
+      toast.error('Product ID not found');
+      return;
+    }
+
+    if (!isLoading) {
+      // Optimistically update the UI immediately
+      const newWishlistState = !optimisticWishlist[index];
+      setOptimisticWishlist(prev => ({
+        ...prev,
+        [index]: newWishlistState
+      }));
+
+      // Then perform the actual mutation
+      if (newWishlistState) {
+        addToWishlist.mutate(
+          { productId },
+          {
+            onError: () => {
+              // Revert on error
+              setOptimisticWishlist(prev => ({
+                ...prev,
+                [index]: false
+              }));
+            },
+          }
+        );
+      } else {
+        removeFromWishlist.mutate(
+          { productId },
+          {
+            onError: () => {
+              // Revert on error
+              setOptimisticWishlist(prev => ({
+                ...prev,
+                [index]: true
+              }));
+            },
+          }
+        );
+      }
+    }
   };
 
   const customSettings = {
@@ -113,41 +209,54 @@ const MultiSliderSlider: React.FC<MultiSliderSliderProps> = ({ slides }) => {
 
   return (
     <section
-      className={`relative w-full overflow-hidden ${slides.length === 1 ? 'max-w-md mx-auto' : ''}`}
+      className={`relative w-full overflow-hidden ${slides.length === 1 ? 'max-w-md ' : ''}`}
     >
-      <Slider {...customSettings} className="px-2 sm:px-0">
+      <Slider {...customSettings} className="">
         {slides.map((slide, index) => (
           <div className="pr-1.5 sm:pr-2 md:pr-3 lg:pr-4" key={index}>
             <div className="rounded-sm sm:rounded-lg overflow-hidden duration-300 bg-white">
               <div className="relative">
                 <div
                   onClick={() => navigate('/#')}
-                  className="relative h-28 sm:h-36 md:h-44 lg:h-48 bg-cover bg-center cursor-pointer group"
-                  style={{ backgroundImage: `url(${slide.image})` }}
+                  className="relative h-28 sm:h-36 md:h-44 lg:h-48 cursor-pointer group overflow-hidden"
                 >
-                  <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors duration-200" />
-                  <h3 className="absolute bottom-1 sm:bottom-2 md:bottom-3 left-1 sm:left-2 md:left-3 text-white font-semibold text-[10px] sm:text-xs md:text-sm bg-black/50 px-1 sm:px-1.5 md:px-2 py-0.5 sm:py-1 rounded text-nowrap overflow-hidden text-ellipsis max-w-[90%]">
-                    {slide.delivery}
-                  </h3>
-                </div>
-                <div
-                  className="absolute top-2 sm:top-3 right-2 sm:right-3 z-10"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    toggleLike(index);
-                  }}
-                >
-                  <motion.div
-                    animate={{ scale: likedSlides[index] ? [1, 1.4, 1] : 1 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <Heart
-                      className={`h-5 w-5 sm:h-6 sm:w-6 md:h-7 md:w-7 ${
-                        likedSlides[index] ? 'fill-red-500 text-red-500' : 'fill-white text-white'
-                      } drop-shadow-lg`}
-                    />
-                  </motion.div>
+                  <LazyImage
+                    src={slide.image}
+                    alt={slide.description || 'Product image'}
+                    className="w-full h-full object-cover"
+                    aspectRatio="auto"
+                    objectFit="cover"
+                    showSkeleton={true}
+                    fadeInDuration={0.3}
+                    wrapperClassName="w-full h-full"
+                  />
+                   <motion.button
+            className="absolute top-2 right-2 rounded-full bg-black/20 backdrop-blur-sm p-2 transition-all duration-200 hover:bg-black/30"
+            onClick={(e) => handleWishlistClick(e, index)}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.2 }}
+          >
+            <motion.div
+              animate={{
+                scale: optimisticWishlist[index] ? [1, 1.2, 1] : 1,
+              }}
+              transition={{ duration: 0.3 }}
+            >
+              <Heart
+                className={cn(
+                  'h-5 w-5 transition-colors duration-200 cursor-pointer',
+                  optimisticWishlist[index]
+                    ? 'text-red-500 fill-red-500'
+                    : 'text-white hover:text-red-400',
+                  isLoading && 'opacity-50'
+                )}
+              />
+            </motion.div>
+          </motion.button>
+          {getReadyByDate(slide)}
                 </div>
               </div>
 
@@ -157,13 +266,30 @@ const MultiSliderSlider: React.FC<MultiSliderSliderProps> = ({ slides }) => {
                   className="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-gray-900 cursor-pointer hover:text-primary transition-colors duration-200 mb-1"
                 >
                   ${slide.price}
+                  {slide.priceType && (
+                    <span className="text-[10px] sm:text-xs md:text-sm font-normal text-gray-600">
+                      /{' '}
+                      {slide.priceType === 'sqft'
+                        ? 'sq ft'
+                        : slide.priceType === 'linear'
+                          ? 'linear ft'
+                          : 'pallet'}
+                    </span>
+                  )}
                 </h2>
-                <p className="text-[11px] sm:text-xs md:text-sm text-gray-600 mb-1.5 sm:mb-2 md:mb-3 line-clamp-2">
+                <p className="text-[11px] sm:text-xs md:text-sm text-gray-600 mb-1 line-clamp-2">
                   {slide.description}
                 </p>
+                {slide.readyByDate && (
+                  <p className="text-[10px] sm:text-[11px] md:text-xs text-blue-600 font-medium mb-1.5 sm:mb-2">
+                    Ready by: {slide.readyByDate}
+                  </p>
+                )}
                 <div className="flex items-center justify-between text-[9px] sm:text-[10px] md:text-xs text-gray-500">
                   <span className="flex items-center gap-0.5 truncate max-w-[60%]">
-                    <span className="w-1 h-1 sm:w-1.5 sm:h-1.5 md:w-2 md:h-2 bg-green-500 rounded-full flex-shrink-0"></span>
+                    {slide.inStock !== undefined && (
+                      <span className={`w-1 h-1 sm:w-1.5 sm:h-1.5 md:w-2 md:h-2 ${slide.inStock ? 'bg-green-500' : 'bg-red-500'} rounded-full flex-shrink-0`}></span>
+                    )}
                     <span className="truncate">{slide.location}</span>
                   </span>
                   <span className="truncate max-w-[40%] text-right">{slide.seller}</span>

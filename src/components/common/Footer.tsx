@@ -13,13 +13,13 @@ export const Footer: React.FC<FooterProps> = ({}) => {
       </div>
       <div className="text-center lg:text-right">
         <p className="leading-[1.3] whitespace-pre-wrap">
-          <span className="inline-block">Contact Us</span>
-          <span className="hidden md:inline"> l </span>
+          <span className="inline-block hover:text-primary">Contact Us</span>
+          <span className="hidden md:inline"> | </span>
           <span className="md:hidden"> | </span>
-          <span className="inline-block">Terms and Conditions</span>
-          <span className="hidden md:inline"> l </span>
+          <span className="inline-block hover:text-primary">Terms and Conditions</span>
+          <span className="hidden md:inline"> | </span>
           <span className="md:hidden"> | </span>
-          <span className="inline-block">Privacy Policy</span>
+          <span className="inline-block hover:text-primary">Privacy Policy</span>
         </p>
       </div>
     </div>

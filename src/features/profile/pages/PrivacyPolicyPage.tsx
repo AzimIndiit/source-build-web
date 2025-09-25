@@ -117,7 +117,7 @@ const PrivacyPolicyPage: React.FC = () => {
 
   // Fetch CMS content for sellers
   const { data, isLoading, error } = useCmsContentQuery(
-    isSeller ? ContentType.PRIVACY_POLICY : undefined
+    isSeller ? ContentType.SELLER_PRIVACY_POLICY : ContentType.PRIVACY_POLICY
   );
 
   const createOrUpdateMutation = useCreateOrUpdateCmsMutation();
@@ -189,7 +189,7 @@ const PrivacyPolicyPage: React.FC = () => {
   const handleSave = async () => {
     try {
       await createOrUpdateMutation.mutateAsync({
-        type: ContentType.PRIVACY_POLICY,
+        type: ContentType.SELLER_PRIVACY_POLICY,
         title: editTitle,
         content: editContent,
         isActive: true,

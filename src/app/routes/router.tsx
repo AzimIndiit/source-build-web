@@ -53,14 +53,14 @@ export const router = createBrowserRouter([
       {
         path: 'terms',
         lazy: () =>
-          import('@/features/profile/pages/TermsAndConditionsPage').then((module) => ({
+          import('@/features/landing/pages/PublicTermsPage').then((module) => ({
             Component: module.default,
           })),
       },
       {
         path: 'privacy',
         lazy: () =>
-          import('@/features/profile/pages/TermsAndConditionsPage').then((module) => ({
+          import('@/features/landing/pages/PublicPrivacyPage').then((module) => ({
             Component: module.default,
           })),
       },
@@ -727,6 +727,14 @@ export const router = createBrowserRouter([
                 Component: module.default,
               })),
           },
+          {
+            path: 'cms',
+            lazy: () =>
+              import('@/features/admin/cms/pages/CmsPage').then((module) => ({
+                Component: module.default,
+              })),
+          },
+        
         ],
       },
     ],

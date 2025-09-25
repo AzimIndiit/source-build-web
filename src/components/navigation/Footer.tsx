@@ -17,7 +17,7 @@ export function Footer() {
               <li>
                 <Link
                   to="/about"
-                  className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+                  className="text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-gray-100"
                 >
                   About Us
                 </Link>
@@ -25,7 +25,7 @@ export function Footer() {
               <li>
                 <Link
                   to="/contact"
-                  className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+                  className="text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-gray-100"
                 >
                   Contact
                 </Link>
@@ -38,7 +38,7 @@ export function Footer() {
               <li>
                 <Link
                   to="/privacy"
-                  className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+                  className="text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-gray-100"
                 >
                   Privacy Policy
                 </Link>
@@ -46,7 +46,7 @@ export function Footer() {
               <li>
                 <Link
                   to="/terms"
-                  className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+                  className="text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-gray-100"
                 >
                   Terms of Service
                 </Link>

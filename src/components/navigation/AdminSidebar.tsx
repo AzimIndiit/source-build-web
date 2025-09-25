@@ -51,7 +51,7 @@ const navigationItems = [
   { name: 'Categories', href: '/admin/categories', icon: FolderTree },
   { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
   { name: 'Payments', href: '/admin/payments', icon: CreditCard },
-  { name: 'Pages', href: '/admin/pages', icon: FileText },
+  { name: 'Pages', href: '/admin/cms', icon: FileText },
   { name: 'Contact Queries', href: '/admin/contact-queries', icon: Users },
   { name: 'Messages', href: '/admin/messages', icon: MessageSquare },
   { name: 'Profile Settings', href: '/admin/profile', icon: Settings },

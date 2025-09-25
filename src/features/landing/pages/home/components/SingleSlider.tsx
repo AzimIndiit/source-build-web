@@ -6,11 +6,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui';
 import { useAuth } from '@/hooks/useAuth';
+import LazyImage from '@/components/common/LazyImage';
+import { cn } from '@/lib/utils';
 
 interface Slide {
   image: string;
   title: React.ReactNode;
   description: string;
+  items?: any[];
 }
 
 interface CustomArrowProps {
@@ -74,7 +77,16 @@ const CustomSlider: React.FC<CustomSliderProps> = ({ slides }) => {
             className="relative h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px] xl:h-[750px] w-full"
             key={index}
           >
-            <img src={slide.image} alt="Slider image" className="h-full w-full object-cover" />
+            <LazyImage
+              src={slide.image}
+              alt="Slider image"
+              className="h-full w-full object-cover"
+              aspectRatio="auto"
+              objectFit="cover"
+              showSkeleton={true}
+              fadeInDuration={0.5}
+              wrapperClassName="h-full w-full"
+            />
             <div
               className="absolute inset-0"
               style={{
@@ -91,25 +103,28 @@ const CustomSlider: React.FC<CustomSliderProps> = ({ slides }) => {
                     <p className="text-sm sm:text-base md:text-lg lg:text-xl leading-relaxed max-w-2xl">
                       {slide.description}
                     </p>
-                    {(!isAuthenticated || user?.role === 'buyer') && (
-                      <div className="flex gap-4 flex-row">
-                        <Button
-                          onClick={() => navigate('/cabinets-collection')}
-                          className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base font-semibold text-white transition-all duration-300 hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2  h-10 sm:h-14"
-                        >
-                          Shop cabinets
-                        </Button>
-                        <Button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleGetDesignClick();
-                          }}
-                          className="bg-white text-gray-800 px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base font-semibold transition-all duration-300 hover:bg-white hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2   h-10 sm:h-14"
-                        >
-                          Get a design
-                        </Button>
-                      </div>
-                    )}
+                    {(!isAuthenticated || user?.role === 'buyer') &&
+                      slide.items &&
+                      slide.items?.length > 0 && (
+                        <div className="flex gap-4 flex-row">
+                          {slide.items.map((item: any, index: number) => (
+                            <Button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(item.link);
+                              }}
+                              className={cn(
+                                index == 0
+                                  ? ' bg-primary text-white hover:bg-primary/90 '
+                                  : 'bg-white text-gray-800 hover:bg-gray-200',
+                                'inline-flex items-center justify-center rounded-lg px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base font-semibold  transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2  h-10 sm:h-14'
+                              )}
+                            >
+                              {item.title}
+                            </Button>
+                          ))}
+                        </div>
+                      )}
                   </div>
                 </div>
               </div>

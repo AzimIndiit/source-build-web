@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Plus, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
@@ -23,28 +23,6 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
 
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
 
-  // Check if any subcategories are selected for a category and auto-select parent (only on initial load)
-  useEffect(() => {
-    if (categories.length > 0 && selectedCategories.length > 0) {
-      // Only run this once when categories are loaded
-      const timer = setTimeout(() => {
-        categories.forEach((category: any) => {
-          // Check if any subcategories for this category are selected
-          const hasSelectedSubcategories = selectedCategories.some((cat) =>
-            cat.startsWith(`${category.slug}:`)
-          );
-
-          // If subcategories are selected but parent isn't, select the parent
-          if (hasSelectedSubcategories && !selectedCategories.includes(category.slug)) {
-            onCategorySelect?.(category.slug);
-          }
-        });
-      }, 100);
-
-      return () => clearTimeout(timer);
-    }
-  }, [categories.length]); // Only depend on categories length to run once when loaded
-
   const toggleCategory = (categoryId: string) => {
     setExpandedCategories((prev) => {
       const isExpanded = prev.includes(categoryId);
@@ -58,8 +36,30 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
 
   const handleCategoryCheck = (category: any, subcategorySlug?: string) => {
     if (subcategorySlug) {
-      // Handle subcategory selection - just toggle the single subcategory
-      onCategorySelect?.(category.slug, subcategorySlug);
+      // Handle subcategory selection
+      const isSubcategoryCurrentlyChecked = isSubcategoryChecked(category.slug, subcategorySlug);
+      
+      if (!isSubcategoryCurrentlyChecked) {
+        // When selecting a subcategory, also select the parent category if not already selected
+        if (!isCategoryChecked(category.slug)) {
+          onCategorySelect?.(category.slug); // Select parent category first
+        }
+        onCategorySelect?.(category.slug, subcategorySlug); // Then select subcategory
+      } else {
+        // When deselecting a subcategory
+        onCategorySelect?.(category.slug, subcategorySlug); // Deselect subcategory
+        
+        // Check if all subcategories are now unchecked
+        const categorySubcategories = category.subcategories || [];
+        const anySubcategoryStillChecked = categorySubcategories.some((sub: any) => 
+          sub.slug !== subcategorySlug && isSubcategoryChecked(category.slug, sub.slug)
+        );
+        
+        // If no subcategories are selected, deselect the parent category
+        if (!anySubcategoryStillChecked && isCategoryChecked(category.slug)) {
+          onCategorySelect?.(category.slug); // Deselect parent category
+        }
+      }
     } else {
       const categorySlug = category.slug;
       const isCategorySelected = isCategoryChecked(categorySlug);

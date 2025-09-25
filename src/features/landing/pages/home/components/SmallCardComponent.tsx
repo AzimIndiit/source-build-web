@@ -1,10 +1,12 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/Card';
 import IMAGES from '@/config/constants';
+import LazyImage from '@/components/common/LazyImage';
 
 interface DealItem {
   img: string;
   name: string;
+  link?: string;
 }
 
 interface DealData {
@@ -42,14 +44,59 @@ const dealsData: DealData[] = [
   },
 ];
 
-const SmallCardComponent: React.FC = () => {
+interface SmallCardComponentProps {
+  categoriesData?: Array<{
+    id: string;
+    type: string;
+    title?: string;
+    subtitle?: string;
+    backgroundImage?: string;
+    items?: Array<{
+      title: string;
+      image?: string;
+      link?: string;
+      description?: string;
+    }>;
+    categories?: Array<{
+      id: string;
+      name: string;
+      title: string;
+      image: string;
+      imageUrl: string;
+      link: string;
+    }>;
+    expandAllButton?: {
+      title: string;
+      link: string;
+    };
+    order?: number;
+  }>;
+}
+
+const SmallCardComponent: React.FC<SmallCardComponentProps> = ({ categoriesData }) => {
   const navigate = useNavigate();
+
+  // Use API data if available, otherwise fallback to default data
+  const displayData = categoriesData && categoriesData.length > 0 
+    ? categoriesData.map(section => {
+        // Use populated categories data or items as fallback
+        const categoriesItems = section.categories || section.items || [];
+        return {
+          title: section.title || 'Categories',
+          items: categoriesItems.slice(0, 4).map(item => ({
+            img: (item as any).imageUrl || (item as any).image || IMAGES.Deal_1,
+            name: (item as any).name || (item as any).title || 'Category',
+            link: (item as any).link || '/marketplace'
+          }))
+        };
+      })
+    : dealsData;
 
   return (
     <section className="py-8 sm:py-12 md:py-16 px-4 sm:px-6 lg:px-8">
       <div className="w-full  mx-auto">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-          {dealsData.map((deal, index) => (
+          {displayData.map((deal, index) => (
             <Card
               key={index}
               className="shadow-sm sm:shadow-lg hover:shadow-xl transition-shadow duration-300 border-gray-100 p-0"
@@ -62,7 +109,7 @@ const SmallCardComponent: React.FC = () => {
                   {deal.items.map((item, idx) => (
                     <div key={idx} className=" ">
                       <div
-                        onClick={() => navigate('/marketplace')}
+                        onClick={() => navigate(item.link || '/marketplace')}
                         className="cursor-pointer rounded-lg relative  transition-colors duration-200"
                       >
                         <div
@@ -73,10 +120,15 @@ const SmallCardComponent: React.FC = () => {
                           }}
                         />
                         <div className="aspect-square mb-2 sm:mb-3 overflow-hidden rounded-md">
-                          <img
+                          <LazyImage
                             src={item.img}
                             alt={item.name}
                             className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
+                            aspectRatio="square"
+                            objectFit="cover"
+                            showSkeleton={true}
+                            fadeInDuration={0.3}
+                            wrapperClassName="w-full h-full"
                           />
                         </div>
                         <h3 className="text-xs sm:text-sm font-medium text-center transition-colors duration-200 absolute bottom-2 sm:bottom-3 md:bottom-4 left-2 sm:left-3 md:left-4 text-white">

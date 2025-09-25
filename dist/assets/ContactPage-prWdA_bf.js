@@ -1,0 +1,1 @@
+import{j as t}from"./index-CUSVstqU.js";import a from"./ContactForm-Ck27HCzv.js";function m(){return t.jsx("div",{className:"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12",children:t.jsx(a,{})})}export{m as default};
