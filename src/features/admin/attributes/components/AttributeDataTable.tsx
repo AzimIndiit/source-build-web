@@ -21,18 +21,14 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Edit,
   Trash2,
   MoreVertical,
   ArrowUpDown,
   ChevronRight,
-  Image as ImageIcon,
   Power,
-  Tag,
-  ArrowLeft,
-  FileInput,
+  Plus,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -40,32 +36,23 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { formatDate } from '@/lib/date-utils';
-import { Subcategory, Category } from '../types';
+  import { formatDate } from '@/lib/date-utils';
+import { Attribute } from '../types';
 import { EmptyState } from '@/components/common/EmptyState';
 import { DeleteConfirmationModal } from '@/components/common/DeleteConfirmationModal';
+import { useNavigate } from 'react-router-dom';
+// import { FilterConfig } from '@/features/admin/user-management/components';
 import { SearchInput } from '@/features/admin/user-management/components/SearchInput';
 import { SortDropdown } from '@/components/common/SortDropdown';
 import { UserTableSkeleton } from '../../user-management/components/UserTableSkeleton';
 import BuyingEmptyIcon from '@/assets/svg/buyingEmptyState.svg';
-import { Plus } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
-import axiosInstance from '@/lib/axios';
-import { useNavigate } from 'react-router-dom';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 
-interface SubcategoryDataTableProps {
-  subcategories: Subcategory[];
+interface AttributeDataTableProps {
+  attributes: Attribute[];
   title?: string;
-  onEdit?: (subcategory: Subcategory) => void;
-  onDelete?: (subcategoryId: string) => void;
-  onToggleStatus?: (subcategoryId: string) => void;
+  onEdit?: (attribute: Attribute) => void;
+  onDelete?: (categoryId: string) => void;
+  onToggleStatus?: (categoryId: string) => void;
   isLoading?: boolean;
   actionLoading?: boolean;
   searchValue?: string;
@@ -75,13 +62,13 @@ interface SubcategoryDataTableProps {
   showFilter?: boolean;
   selectedSort?: string;
   onSortChange?: (value: string) => void;
-  selectedCategory?: string;
-  onCategoryFilterChange?: (value: string) => void;
-  onAddSubcategory?: () => void;
+  onAddAttribute?: () => void;
+  // filters?: FilterConfig;
+  // onFilterChange?: (newFilters: FilterConfig) => void;
 }
 
-export const SubcategoryDataTable: React.FC<SubcategoryDataTableProps> = ({
-  subcategories,
+export const AttributeDataTable: React.FC<AttributeDataTableProps> = ({
+  attributes,
   title,
   onEdit,
   onDelete,
@@ -95,16 +82,16 @@ export const SubcategoryDataTable: React.FC<SubcategoryDataTableProps> = ({
   showFilter = true,
   selectedSort,
   onSortChange,
-  selectedCategory,
-  onCategoryFilterChange,
-  onAddSubcategory,
+  onAddAttribute,
+  // filters,
+  // onFilterChange,
 }) => {
   const [confirmModalState, setConfirmModalState] = useState<{
     isOpen: boolean;
     type: 'delete' | 'toggle' | null;
-    subcategoryId: string | null;
-    subcategoryName: string | null;
-  }>({ isOpen: false, type: null, subcategoryId: null, subcategoryName: null });
+    attributeId: string | null;
+    attributeName: string | null;
+  }>({ isOpen: false, type: null, attributeId: null, attributeName: null });
 
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
@@ -112,16 +99,6 @@ export const SubcategoryDataTable: React.FC<SubcategoryDataTableProps> = ({
   const [rowSelection, setRowSelection] = React.useState({});
   const [globalFilter, setGlobalFilter] = React.useState('');
   const navigate = useNavigate();
-
-  // Fetch categories for filter dropdown
-  const { data: categoriesData } = useQuery({
-    queryKey: ['categories-filter'],
-    queryFn: async () => {
-      const response = await axiosInstance.get('/categories?limit=100&isActive=true');
-      return response.data.data.categories as Category[];
-    },
-    enabled: showFilter,
-  });
 
   React.useEffect(() => {
     if (searchValue !== undefined) {
@@ -134,45 +111,49 @@ export const SubcategoryDataTable: React.FC<SubcategoryDataTableProps> = ({
     setGlobalFilter(value);
     onSearchChange?.(value);
   };
-
   const handleConfirmAction = () => {
-    if (!confirmModalState.subcategoryId) return;
+    if (!confirmModalState.attributeId) return;
 
     switch (confirmModalState.type) {
       case 'delete':
-        onDelete?.(confirmModalState.subcategoryId);
+        onDelete?.(confirmModalState.attributeId);
         break;
       case 'toggle':
-        onToggleStatus?.(confirmModalState.subcategoryId);
+        onToggleStatus?.(confirmModalState.attributeId);
         break;
     }
 
-    setConfirmModalState({ isOpen: false, type: null, subcategoryId: null, subcategoryName: null });
+    setConfirmModalState({ isOpen: false, type: null, attributeId: null, attributeName: null });
   };
 
   const openConfirmModal = (
     type: 'delete' | 'toggle',
-    subcategoryId: string,
-    subcategoryName: string
+    attributeId: string,
+    attributeName: string
   ) => {
-    setConfirmModalState({ isOpen: true, type, subcategoryId, subcategoryName });
+    setConfirmModalState({ isOpen: true, type, attributeId, attributeName });
   };
 
-  const columns: ColumnDef<Subcategory>[] = React.useMemo(
+    const columns: ColumnDef<Attribute>[] = React.useMemo(
     () => [
       {
         id: 'serialNumber',
         header: () => <div className="text-center">Sr.No.</div>,
-        cell: (info) => (
-          <div className="text-center">
-            <span className="text-primary font-medium text-xs lg:text-sm">
-              {info.row.index + 1}
-            </span>
-          </div>
-        ),
+        cell: (info) => {
+          // Simply use the row's display index which is always sequential
+          return (
+            <div className="text-center">
+              <span className="text-primary font-medium text-xs lg:text-sm">
+                {info.row.index + 1}
+              </span>
+            </div>
+          );
+        },
         enableSorting: false,
         enableColumnFilter: false,
       },
+
+
       {
         accessorKey: 'name',
         header: ({ column }) => (
@@ -181,84 +162,25 @@ export const SubcategoryDataTable: React.FC<SubcategoryDataTableProps> = ({
             className="p-0 hover:bg-transparent font-semibold text-gray-700 text-xs lg:text-sm"
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
           >
-            Subcategory
+            Attribute
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         ),
         cell: ({ row }) => {
-          const subcategory = row.original;
+          const attribute = row.original;
           return (
             <div className="flex items-center gap-2 lg:gap-3 py-1">
-              <Avatar className="w-10 h-10 lg:w-12 lg:h-12 border-2 border-white shadow-sm">
-                {subcategory.image ? (
-                  <AvatarImage
-                    src={subcategory.image}
-                    alt={subcategory.name}
-                    className="object-cover"
-                  />
-                ) : (
-                  <AvatarFallback className="bg-gray-200">
-                    <ImageIcon className="w-5 h-5 text-gray-500" />
-                  </AvatarFallback>
-                )}
-              </Avatar>
               <div className="text-left">
-                <div className="font-medium text-xs lg:text-sm text-gray-900">
-                  {subcategory.name}
-                </div>
-                <div className="text-xs text-gray-500">{subcategory.slug}</div>
+                <div className="font-medium text-xs lg:text-sm text-gray-900">{attribute.name}</div>
               </div>
             </div>
           );
         },
-      },
-      {
-        accessorKey: 'category',
-        header: ({ column }) => (
-          <Button
-            variant="ghost"
-            className="p-0 hover:bg-transparent font-semibold text-gray-700 text-xs lg:text-sm"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            Category
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        ),
-        cell: ({ row }) => {
-          const category = row.getValue('category') as Category | string;
-          const categoryName = typeof category === 'object' ? category.name : 'Unknown';
-          return (
-            <div className="flex items-center gap-2">
-              <Tag className="w-4 h-4 text-gray-400" />
-              <span className="text-xs lg:text-sm text-gray-700">{categoryName}</span>
-            </div>
-          );
+        filterFn: (row, id, value) => {
+          return value === undefined || value === ''
+            ? true
+            : (row.getValue(id) as string)?.toLowerCase().includes(value.toLowerCase());
         },
-      },
-      {
-        accessorKey: 'description',
-        header: 'Description',
-        cell: ({ row }) => (
-          <div className="max-w-xs truncate text-xs lg:text-sm text-gray-600">
-            {row.getValue('description') || 'No description'}
-          </div>
-        ),
-      },
-      {
-        accessorKey: 'order',
-        header: ({ column }) => (
-          <Button
-            variant="ghost"
-            className="p-0 hover:bg-transparent font-semibold text-gray-700 text-xs lg:text-sm"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            Order
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        ),
-        cell: ({ row }) => (
-          <span className="text-gray-900 text-xs lg:text-sm">{row.getValue('order') || 0}</span>
-        ),
       },
       {
         accessorKey: 'createdAt',
@@ -279,6 +201,7 @@ export const SubcategoryDataTable: React.FC<SubcategoryDataTableProps> = ({
         ),
         sortingFn: 'datetime',
       },
+
       {
         accessorKey: 'isActive',
         header: 'Status',
@@ -297,11 +220,12 @@ export const SubcategoryDataTable: React.FC<SubcategoryDataTableProps> = ({
           );
         },
       },
+
       {
         id: 'actions',
         header: () => <div className="text-center">Actions</div>,
         cell: ({ row }) => {
-          const subcategory = row.original;
+          const attribute = row.original;
           return (
             <div className="text-center">
               <DropdownMenu>
@@ -312,33 +236,27 @@ export const SubcategoryDataTable: React.FC<SubcategoryDataTableProps> = ({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
+                 
                   <DropdownMenuItem
-                    onClick={() => onEdit?.(subcategory)}
-                    className="cursor-pointer"
+                    onClick={() => onEdit?.(attribute)}
+                    className="cursor-pointer text-primary"
                   >
                     <Edit className="mr-2 h-4 w-4" />
-                    Edit Subcategory
+                    Edit Attribute
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    onClick={() => navigate(`/admin/attributes?subcategory=${subcategory._id}`)}
-                    className="cursor-pointer"
-                  >
-                    <FileInput className="mr-2 h-4 w-4" />
-                    Manage Attributes
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => openConfirmModal('toggle', subcategory._id, subcategory.name)}
+                    onClick={() => openConfirmModal('toggle', attribute._id, attribute.name)}
                     className="cursor-pointer"
                   >
                     <Power className="mr-2 h-4 w-4" />
-                    {subcategory.isActive ? 'Deactivate' : 'Activate'}
+                    {attribute.isActive? 'Deactivate': 'Activate'}
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    onClick={() => openConfirmModal('delete', subcategory._id, subcategory.name)}
+                    onClick={() => openConfirmModal('delete', attribute._id, attribute.name)}
                     className="cursor-pointer text-red-600 hover:text-red-700"
                   >
                     <Trash2 className="mr-2 h-4 w-4" />
-                    Delete Subcategory
+                      Delete Attribute
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -353,7 +271,7 @@ export const SubcategoryDataTable: React.FC<SubcategoryDataTableProps> = ({
   );
 
   const table = useReactTable({
-    data: subcategories,
+    data: attributes,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -376,28 +294,19 @@ export const SubcategoryDataTable: React.FC<SubcategoryDataTableProps> = ({
   return (
     <div className="w-full">
       {/* Header with title and filters - Always visible */}
-      <div className="flex flex-col justify-between items-end flex-end gap-4 mb-4">
+      <div className="flex  flex-col justify-between items-end flex-end gap-4 mb-4">
         <div className="justify-between items-centre flex w-full border-b border-gray-200 pb-4">
-          <div className="flex items-center gap-4">
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900">{title}</h1>
+          <div className="flex gap-2">
             <Button
-              onClick={() => navigate('/categories')}
-              variant="ghost"
-              size="sm"
-              className="h-10"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Categories
-            </Button>
-            <h1 className="text-xl md:text-2xl font-bold text-gray-900">{title}</h1>
-          </div>
-          <div>
-            <Button
-              onClick={() => onAddSubcategory?.()}
+                onClick={() => onAddAttribute?.()}
               className="bg-primary text-white hover:bg-primary/90 h-10"
             >
               <Plus className="w-4 h-4 mr-2" />
-              Add Subcategory
+              Add Attribute
             </Button>
+
+           
           </div>
         </div>
 
@@ -406,29 +315,17 @@ export const SubcategoryDataTable: React.FC<SubcategoryDataTableProps> = ({
             <SearchInput
               value={globalFilter ?? ''}
               onChange={handleSearchChange}
-              placeholder="Search subcategories..."
+              placeholder={`Search Attributes...`}
               className="w-64"
             />
           )}
-          {showFilter && (
-            <Select
-              value={selectedCategory || 'all'}
-              onValueChange={(value) => onCategoryFilterChange?.(value === 'all' ? '' : value)}
-            >
-              <SelectTrigger className="w-full sm:w-[200px]">
-                <SelectValue placeholder="Filter by category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                {categoriesData?.map((category) => (
-                  <SelectItem key={category._id} value={category._id}>
-                    {category.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-          {showSort && <SortDropdown selectedSort={selectedSort} onSortChange={onSortChange} />}
+
+          {/* {showFilter && (
+            <UserFilterDropdown
+              filters={filters}
+              onFilterChange={onFilterChange}
+            />
+          )} */}
         </div>
       </div>
 
@@ -438,72 +335,48 @@ export const SubcategoryDataTable: React.FC<SubcategoryDataTableProps> = ({
       {/* Empty State */}
       {!isLoading && table.getFilteredRowModel().rows.length === 0 && (
         <EmptyState
-          title={`No ${title || 'Subcategories'} found`}
+          title={`No Attributes found`}
           description={
             globalFilter
               ? `No results found for "${globalFilter}". Try adjusting your search.`
-              : `You don't have any ${title?.toLowerCase() || 'subcategories'} yet.`
+              : `You don't have any Attributes yet.`
           }
-          icon={<img src={BuyingEmptyIcon} className="w-64 h-56" alt="No subcategories" />}
+          icon={<img src={BuyingEmptyIcon} className="w-64 h-56" alt="No categories" />}
           className="min-h-[400px]"
         />
       )}
 
-      {/* Subcategories List */}
+      {/* Categories List */}
       {!isLoading && table.getFilteredRowModel().rows.length > 0 && (
         <>
           {/* Mobile View - Cards */}
           <div className="block md:hidden space-y-3">
             {table.getFilteredRowModel().rows.map((row, index) => {
-              const subcategory = row.original;
-              const category = subcategory.category as Category | string;
-              const categoryName = typeof category === 'object' ? category.name : 'Unknown';
-
+              const attribute = row.original;
               return (
-                <Card key={subcategory._id} className="bg-white shadow-sm border-gray-200">
+                <Card key={attribute._id} className="bg-white shadow-sm border-gray-200">
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        <Avatar className="w-10 h-10 border-2 border-white shadow-sm">
-                          {subcategory.image ? (
-                            <AvatarImage
-                              src={subcategory.image}
-                              alt={subcategory.name}
-                              className="object-cover"
-                            />
-                          ) : (
-                            <AvatarFallback className="bg-gray-200">
-                              <ImageIcon className="w-5 h-5 text-gray-500" />
-                            </AvatarFallback>
-                          )}
-                        </Avatar>
+                   
                         <div>
-                          <p className="text-sm font-medium text-gray-900">{subcategory.name}</p>
+                          <p className="text-sm font-medium text-gray-900">{attribute.name}</p>
                           <p className="text-xs text-gray-500">#{index + 1}</p>
                         </div>
                       </div>
                       <Badge
                         className={`px-2 py-1 rounded-full font-medium text-xs capitalize ${
-                          subcategory.isActive
+                          attribute.isActive
                             ? 'bg-green-100 text-green-800'
                             : 'bg-gray-100 text-gray-800'
                         }`}
                       >
-                        {subcategory.isActive ? 'Active' : 'Inactive'}
+                        {attribute.isActive ? 'Active' : 'Inactive'}
                       </Badge>
-                    </div>
 
                     <div className="space-y-2 mb-3">
-                      <div className="flex items-center gap-2 text-xs text-gray-600">
-                        <Tag className="w-3 h-3" />
-                        <span>Category: {categoryName}</span>
-                      </div>
-                      <p className="text-xs text-gray-600 line-clamp-2">
-                        {subcategory.description || 'No description'}
-                      </p>
+                      
                       <div className="flex justify-between text-xs text-gray-500">
-                        <span>Order: {subcategory.order || 0}</span>
-                        <span>{formatDate(subcategory.createdAt)}</span>
+                        <span>{formatDate(attribute.createdAt as string)}</span>
                       </div>
                     </div>
 
@@ -512,7 +385,7 @@ export const SubcategoryDataTable: React.FC<SubcategoryDataTableProps> = ({
                         variant="ghost"
                         size="sm"
                         className="text-primary font-semibold text-xs"
-                        onClick={() => onEdit?.(subcategory)}
+                        onClick={() => onEdit?.(attribute)}
                       >
                         Edit
                         <ChevronRight className="w-4 h-4 ml-1" />
@@ -526,18 +399,14 @@ export const SubcategoryDataTable: React.FC<SubcategoryDataTableProps> = ({
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem
-                            onClick={() =>
-                              openConfirmModal('toggle', subcategory._id, subcategory.name)
-                            }
+                            onClick={() => openConfirmModal('toggle', attribute._id, attribute.name)}
                             className="cursor-pointer"
                           >
                             <Power className="mr-2 h-4 w-4" />
-                            {subcategory.isActive ? 'Deactivate' : 'Activate'}
+                            {attribute.isActive ? 'Deactivate' : 'Activate'}
                           </DropdownMenuItem>
                           <DropdownMenuItem
-                            onClick={() =>
-                              openConfirmModal('delete', subcategory._id, subcategory.name)
-                            }
+                            onClick={() => openConfirmModal('delete', attribute._id, attribute.name)}
                             className="cursor-pointer text-red-600"
                           >
                             <Trash2 className="mr-2 h-4 w-4" />
@@ -602,29 +471,24 @@ export const SubcategoryDataTable: React.FC<SubcategoryDataTableProps> = ({
       <DeleteConfirmationModal
         isOpen={confirmModalState.isOpen}
         onClose={() =>
-          setConfirmModalState({
-            isOpen: false,
-            type: null,
-            subcategoryId: null,
-            subcategoryName: null,
-          })
+              setConfirmModalState({ isOpen: false, type: null, attributeId: null, attributeName: null })
         }
         onConfirm={handleConfirmAction}
         title={
           confirmModalState.type === 'delete'
-            ? 'Delete Subcategory?'
+            ? 'Delete Attribute?'
             : confirmModalState.type === 'toggle'
-              ? `${subcategories.find((s) => s._id === confirmModalState.subcategoryId)?.isActive ? 'Deactivate' : 'Activate'} Subcategory?`
+              ? `${attributes.find((c) => c._id === confirmModalState.attributeId)?.isActive ? 'Deactivate' : 'Activate'} Attribute?`
               : ''
         }
         description={
           <div className="space-y-2">
-            <div className="font-medium text-gray-900">{confirmModalState.subcategoryName}</div>
+            <div className="font-medium text-gray-900">{confirmModalState.attributeName}</div>
             <div className="text-sm text-gray-700 mt-3">
               {confirmModalState.type === 'delete'
-                ? 'This action cannot be undone. The subcategory will be permanently removed.'
+                  ? 'This action cannot be undone. All attributes under this subcategory will also be affected.'
                 : confirmModalState.type === 'toggle'
-                  ? `This will ${subcategories.find((s) => s._id === confirmModalState.subcategoryId)?.isActive ? 'deactivate' : 'activate'} the subcategory and affect its visibility.`
+                  ? `This will ${attributes.find((c) => c._id === confirmModalState.attributeId)?.isActive ? 'deactivate' : 'activate'} the attribute and affect its visibility.`
                   : ''}
             </div>
           </div>
@@ -632,9 +496,9 @@ export const SubcategoryDataTable: React.FC<SubcategoryDataTableProps> = ({
         isLoading={actionLoading}
         confirmText={
           confirmModalState.type === 'delete'
-            ? 'Yes, Delete Subcategory'
+            ? 'Yes, Delete'
             : confirmModalState.type === 'toggle'
-              ? `Yes, ${subcategories.find((s) => s._id === confirmModalState.subcategoryId)?.isActive ? 'Deactivate' : 'Activate'} Subcategory`
+                ? `Yes, ${attributes.find((c) => c._id === confirmModalState.attributeId)?.isActive ? 'Deactivate' : 'Activate'} `
               : ''
         }
       />

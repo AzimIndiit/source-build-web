@@ -675,6 +675,13 @@ export const router = createBrowserRouter([
                 Component: module.default,
               })),
           },
+          // {
+          //   path: 'attributes',
+          //   lazy: () =>
+          //     import('@/features/admin/attributes/pages/AttributePage').then((module) => ({
+          //       Component: module.default,
+          //     })),
+          // },
 
           {
             path: 'quote',

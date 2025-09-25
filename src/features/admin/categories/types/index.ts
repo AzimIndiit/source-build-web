@@ -10,6 +10,20 @@ export interface Category {
   updatedAt: string;
 }
 
+export interface AttributeValue {
+  value: string;
+  order?: number;
+}
+
+export interface Attribute {
+  name: string;
+  inputType: 'text' | 'number' | 'dropdown' | 'multiselect' | 'boolean' | 'radio';
+  required?: boolean;
+  values?: AttributeValue[];
+  order?: number;
+  isActive?: boolean;
+}
+
 export interface Subcategory {
   _id: string;
   name: string;
@@ -19,6 +33,8 @@ export interface Subcategory {
   image?: string;
   order?: number;
   isActive: boolean;
+  hasAttributes?: boolean;
+  attributes?: Attribute[];
   createdAt: string;
   updatedAt: string;
 }
@@ -46,6 +62,8 @@ export interface CreateSubcategoryDto {
   image?: string;
   order?: number;
   isActive?: boolean;
+  hasAttributes?: boolean;
+  attributes?: Attribute[];
 }
 
 export interface UpdateSubcategoryDto {
@@ -55,6 +73,8 @@ export interface UpdateSubcategoryDto {
   image?: string;
   order?: number;
   isActive?: boolean;
+  hasAttributes?: boolean;
+  attributes?: Attribute[];
 }
 
 export interface CategoryFilters {
