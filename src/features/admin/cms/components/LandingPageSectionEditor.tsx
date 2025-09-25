@@ -46,6 +46,7 @@ interface LandingPageSectionEditorProps {
   disabled?: boolean;
   uploadedImages?: Record<string, File>;
   onUploadedImagesChange?: (images: Record<string, File>) => void;
+  sectionErrors?: Record<string, string>;
 }
 
 // Collection Section Form Component
@@ -55,6 +56,7 @@ interface CollectionSectionFormProps {
   onUpdate: (updates: Partial<CollectionSection>) => void;
   onUpdateCategories: (ids: string[]) => void;
   disabled?: boolean;
+  error?: string;
 }
 
 // Product Section Form Component
@@ -64,6 +66,7 @@ interface ProductSectionFormProps {
   onUpdate: (updates: Partial<ProductSection>) => void;
   onUpdateProducts: (ids: string[]) => void;
   disabled?: boolean;
+  error?: string;
 }
 
 const CollectionSectionForm: React.FC<CollectionSectionFormProps> = memo(({
@@ -72,7 +75,11 @@ const CollectionSectionForm: React.FC<CollectionSectionFormProps> = memo(({
   onUpdate,
   onUpdateCategories,
   disabled = false,
+  error,
 }) => {
+  // Split errors into title and category errors
+  const titleError = error?.includes('Title is required') ? 'Title is required' : '';
+  const categoryError = error?.includes('At least one category must be selected') ? 'At least one category must be selected' : '';
   // Use ref to store the latest callback to prevent infinite loops
   const onUpdateCategoriesRef = React.useRef(onUpdateCategories);
   React.useEffect(() => {
@@ -81,13 +88,12 @@ const CollectionSectionForm: React.FC<CollectionSectionFormProps> = memo(({
 
   // Process category values - use categoryIds which are MongoDB ObjectIds
   const getCategoryValues = () => {
- 
     // Use categoryIds if available (these are MongoDB ObjectIds)
-    if (section.categoryIds && section.categoryIds.length > 0) {
+    if (section.categoryIds && Array.isArray(section.categoryIds)) {
       const validIds = section.categoryIds.filter(id => {
         // Only return valid MongoDB ObjectIds (24 char hex strings)
-        const isValid = /^[a-f\d]{24}$/i.test(id);
-        if (!isValid) {
+        const isValid = id && /^[a-f\d]{24}$/i.test(id);
+        if (id && !isValid) {
           console.warn(`⚠️ [CATEGORY INIT] Invalid categoryId found: ${id}`);
         }
         return isValid;
@@ -98,8 +104,8 @@ const CollectionSectionForm: React.FC<CollectionSectionFormProps> = memo(({
     if (section.categories) {
       const ids = section.categories.map(cat => cat.id).filter(id => {
         // Only return valid MongoDB ObjectIds
-        const isValid = /^[a-f\d]{24}$/i.test(id);
-        if (!isValid) {
+        const isValid = id && /^[a-f\d]{24}$/i.test(id);
+        if (id && !isValid) {
           console.warn(`⚠️ [CATEGORY INIT] Invalid category.id found: ${id}`);
         }
         return isValid;
@@ -110,40 +116,47 @@ const CollectionSectionForm: React.FC<CollectionSectionFormProps> = memo(({
   };
 
   // Create a unique form instance for each section
-  const { methods, watch } = useSectionForm(
+  const { methods, watch, reset } = useSectionForm(
     `categories-${section.id}`,
     getCategoryValues
   );
+  
+  // Reset form when section categoryIds change from outside
+  React.useEffect(() => {
+    const currentFormValue = methods.getValues(`categories-${section.id}`);
+    const sectionValue = getCategoryValues();
+    
+    // Check if they're different
+    const formSet = new Set(currentFormValue || []);
+    const sectionSet = new Set(sectionValue);
+    
+    const isDifferent = formSet.size !== sectionSet.size || 
+                       [...formSet].some(id => id && !sectionSet.has(id));
+    
+    if (isDifferent) {
+      reset({ [`categories-${section.id}`]: sectionValue });
+    }
+  }, [section.categoryIds, section.id, reset, methods]);
   
   // Watch the specific field for this section and update categories when it changes
   const selectedCategoryIds = watch(`categories-${section.id}`);
   
   // Update categories when form field changes - only update local state
   React.useEffect(() => {
-  
-
-    if (selectedCategoryIds && Array.isArray(selectedCategoryIds)) {
-      // Only update if the values are different from current section categories
-      const currentIds = section.categories?.map(cat => cat.id) || [];
+    if (selectedCategoryIds !== undefined) {
+      // Always update with the current selection, even if it's empty
+      const categoryIds = (selectedCategoryIds || []).filter(Boolean) as string[];
       
-      // Sort arrays to ensure consistent comparison
-      const sortedSelectedIds = [...selectedCategoryIds].sort();
-      const sortedCurrentIds = [...currentIds].sort();
+      console.log('Form field changed, updating categories:', {
+        sectionId: section.id,
+        selectedCategoryIds,
+        filteredIds: categoryIds
+      });
       
-      const hasChanges = sortedSelectedIds.length !== sortedCurrentIds.length || 
-                         sortedSelectedIds.some((id, idx) => id !== sortedCurrentIds[idx]);
-    
-      
-      if (hasChanges) {
-        const categoryIds = selectedCategoryIds.filter(Boolean) as string[];
-        
-      
-        
-        onUpdateCategoriesRef.current(categoryIds);
-      }
-    } 
-  }, [selectedCategoryIds]); // Remove onUpdateCategories from dependencies to prevent infinite loops
-
+      onUpdateCategoriesRef.current(categoryIds);
+    }
+  }, [selectedCategoryIds, section.id]); // Remove onUpdateCategories from dependencies to prevent infinite loops
+console.log('selectedCategoryIds', selectedCategoryIds)
   return (
     <FormProvider {...methods}>
       <Card className="p-4 space-y-4">
@@ -159,6 +172,9 @@ const CollectionSectionForm: React.FC<CollectionSectionFormProps> = memo(({
             disabled={disabled}
             className="w-full"
           />
+          {titleError && (
+            <p className="text-sm text-red-600 mt-1">{titleError}</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -176,9 +192,12 @@ const CollectionSectionForm: React.FC<CollectionSectionFormProps> = memo(({
             searchable
             searchPlaceholder='Search category'
           />
-        
-        </div>
+          {categoryError && (
+            <p className="text-sm text-red-600 ">{categoryError}</p>
+          )}
 
+        </div>
+      
         {/* <div className="space-y-4 pt-4 border-t border-gray-200">
           <div className="space-y-2">
             <Label htmlFor={`button-title-${section.id}`} className="text-sm font-medium text-gray-700">
@@ -226,7 +245,11 @@ const ProductSectionForm: React.FC<ProductSectionFormProps> = memo(({
   onUpdate,
   onUpdateProducts,
   disabled = false,
+  error,
 }) => {
+  // Split errors into title and product errors
+  const titleError = error?.includes('Title is required') ? 'Title is required' : '';
+  const productError = error?.includes('At least one product must be selected') ? 'At least one product must be selected' : '';
   // Use ref to store the latest callback to prevent infinite loops
   const onUpdateProductsRef = React.useRef(onUpdateProducts);
   React.useEffect(() => {
@@ -275,30 +298,19 @@ const ProductSectionForm: React.FC<ProductSectionFormProps> = memo(({
   
   // Update products when form field changes - only update local state
   React.useEffect(() => {
-   
-    if (selectedProductIds && Array.isArray(selectedProductIds)) {
-      // Only update if the values are different from current section products
-      const currentIds = section.products?.map(item => item.id) || [];
+    if (selectedProductIds !== undefined) {
+      // Always update with the current selection, even if it's empty
+      const productIds = (selectedProductIds || []).filter(Boolean) as string[];
       
-      // Sort arrays to ensure consistent comparison
-      const sortedSelectedIds = [...selectedProductIds].sort();
-      const sortedCurrentIds = [...currentIds].sort();
+      console.log('Form field changed, updating products:', {
+        sectionId: section.id,
+        selectedProductIds,
+        filteredIds: productIds
+      });
       
-      const hasChanges = sortedSelectedIds.length !== sortedCurrentIds.length || 
-                         sortedSelectedIds.some((id, idx) => id !== sortedCurrentIds[idx]);
-      
-     
-      
-      if (hasChanges) {
-        const productIds = selectedProductIds.filter(Boolean) as string[];
-        
-       
-        // Only update local state for immediate UI feedback
-        // Section-specific mutations will be handled by the Update button in AddCmsModal
-        onUpdateProductsRef.current(productIds);
-      } 
-    } 
-  }, [selectedProductIds]); // Remove onUpdateProducts from dependencies to prevent infinite loops
+      onUpdateProductsRef.current(productIds);
+    }
+  }, [selectedProductIds, section.id]); // Remove onUpdateProducts from dependencies to prevent infinite loops
 
   return (
     <FormProvider {...methods}>
@@ -315,6 +327,9 @@ const ProductSectionForm: React.FC<ProductSectionFormProps> = memo(({
             disabled={disabled}
             className="w-full"
           />
+          {titleError && (
+            <p className="text-sm text-red-600 mt-1">{titleError}</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -332,6 +347,9 @@ const ProductSectionForm: React.FC<ProductSectionFormProps> = memo(({
             searchable
             searchPlaceholder='Search product'
           />
+          {productError && (
+            <p className="text-sm text-red-600 mt-1">{productError}</p>
+          )}
         </div>
 {/* 
         <Input
@@ -359,6 +377,7 @@ export const LandingPageSectionEditor: React.FC<LandingPageSectionEditorProps> =
   disabled = false,
   uploadedImages = {},
   onUploadedImagesChange,
+  sectionErrors = {},
 }) => {
   // Use passed uploadedImages or fallback to local state
   const [localUploadedImages, setLocalUploadedImages] = React.useState<Record<string, File>>({});
@@ -540,12 +559,19 @@ export const LandingPageSectionEditor: React.FC<LandingPageSectionEditorProps> =
   }, [sections, onChange]);
 
   const updateSection = useCallback((sectionId: string, updates: Partial<LandingPageSection>) => {
-
+    console.log('updateSection called:', { sectionId, updates });
     
-    const newSections = sections.map((section) =>
-      section.id === sectionId ? { ...section, ...updates } : section
-    );
+    const newSections = sections.map((section) => {
+      if (section.id === sectionId) {
+        const updatedSection = { ...section, ...updates };
+        console.log('Section before update:', section);
+        console.log('Section after update:', updatedSection);
+        return updatedSection;
+      }
+      return section;
+    });
     
+    console.log('Calling onChange with new sections');
     onChange(newSections);
   }, [sections, onChange]);
 
@@ -622,47 +648,68 @@ export const LandingPageSectionEditor: React.FC<LandingPageSectionEditorProps> =
   }, [sections, updateSection]);
 
   const updateSectionCategories = useCallback((sectionId: string, selectedCategoryIds: string[]) => {
-
+    console.log('updateSectionCategories called:', { sectionId, selectedCategoryIds });
+    
+    // If selectedCategoryIds is explicitly empty, ensure we pass empty array
+    if (!selectedCategoryIds || selectedCategoryIds.length === 0) {
+      const updatePayload = { 
+        categoryIds: [],
+        categories: []
+      };
+      console.log('Clearing categories for section:', sectionId);
+      updateSection(sectionId, updatePayload);
+      return;
+    }
     
     // Filter to only include valid MongoDB ObjectIds
     const validIds = selectedCategoryIds.filter(id => {
-      const isValid = /^[a-f\d]{24}$/i.test(id);
-      if (!isValid) {
+      const isValid = id && /^[a-f\d]{24}$/i.test(id);
+      if (id && !isValid) {
         console.warn(`⚠️ [CATEGORY UPDATE] Invalid ID filtered out: ${id}`);
       }
       return isValid;
     });
     
-
     // Store the categoryIds directly - backend will populate the data
     const updatePayload = { 
       categoryIds: validIds,
-      // Clear categories to avoid confusion
       categories: []
     };
     
+    console.log('Updating categories for section:', sectionId, updatePayload);
     updateSection(sectionId, updatePayload);
   }, [updateSection]);
 
   const updateSectionProducts = useCallback((sectionId: string, selectedProductIds: string[]) => {
+    console.log('updateSectionProducts called:', { sectionId, selectedProductIds });
+    
+    // If selectedProductIds is explicitly empty, ensure we pass empty array
+    if (!selectedProductIds || selectedProductIds.length === 0) {
+      const updatePayload = { 
+        productIds: [],
+        products: []
+      };
+      console.log('Clearing products for section:', sectionId);
+      updateSection(sectionId, updatePayload);
+      return;
+    }
     
     // Filter to only include valid MongoDB ObjectIds
     const validIds = selectedProductIds.filter(id => {
-      const isValid = /^[a-f\d]{24}$/i.test(id);
-      if (!isValid) {
+      const isValid = id && /^[a-f\d]{24}$/i.test(id);
+      if (id && !isValid) {
         console.warn(`⚠️ [PRODUCT UPDATE] Invalid ID filtered out: ${id}`);
       }
       return isValid;
     });
     
-    
     // Store the productIds directly - backend will populate the data
     const updatePayload = { 
       productIds: validIds,
-      // Clear products to avoid confusion
       products: []
     };
     
+    console.log('Updating products for section:', sectionId, updatePayload);
     updateSection(sectionId, updatePayload);
   }, [updateSection]);
 
@@ -710,7 +757,14 @@ export const LandingPageSectionEditor: React.FC<LandingPageSectionEditorProps> =
           </Button>
         </div>
 
-        {bannerSections.map((section) => (
+        {bannerSections.map((section,index) => {
+          // Parse errors for this section
+          const sectionError = sectionErrors[section.id] || '';
+          const titleError = sectionError.includes('Title is required') ? 'Title is required' : '';
+          const subtitleError = sectionError.includes('Subtitle is required') ? 'Subtitle is required' : '';
+          const imageError = sectionError.includes('Image is required') ? 'Image is required' : '';
+          
+          return (
           <Card key={section.id} className="p-4 space-y-4 transition-all duration-200 ease-in-out hover:shadow-md">
             <div className="flex items-center justify-between">
              <div className='flex-1'>
@@ -725,8 +779,11 @@ export const LandingPageSectionEditor: React.FC<LandingPageSectionEditorProps> =
                 disabled={disabled}
                 className="w-full"
               />
+              {titleError && (
+                <p className="text-sm text-red-600 mt-1">{titleError}</p>
+              )}
              </div>
-              <Button
+            {index!==0 &&  <Button
                 type="button"
                 size="icon"
                 variant="ghost"
@@ -735,7 +792,7 @@ export const LandingPageSectionEditor: React.FC<LandingPageSectionEditorProps> =
                 className="text-red-600 hover:text-red-700 ml-4 transition-all duration-200 ease-in-out transform hover:scale-110 active:scale-95 hover:bg-red-50"
               >
                 <Trash2 className="w-4 h-4 transition-transform duration-200" />
-              </Button>
+              </Button>}
             </div>
             <div className="space-y-2">
               <Label htmlFor={`banner-description-${section.id}`} className="text-sm font-medium text-gray-700">
@@ -749,6 +806,9 @@ export const LandingPageSectionEditor: React.FC<LandingPageSectionEditorProps> =
                 disabled={disabled}
                 className="w-full resize-none rounded-sm h-20 border-gray-200 focus:border-gray-500 transition-all duration-200 ease-in-out focus:ring-2 focus:ring-gray-200"
               />
+              {subtitleError && (
+                <p className="text-sm text-red-600 mt-1">{subtitleError}</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label className="text-sm font-medium text-gray-700">
@@ -840,9 +900,12 @@ export const LandingPageSectionEditor: React.FC<LandingPageSectionEditorProps> =
                         </button>
                       </div>
                     )}
-
-                   
                   </div>
+                  
+                  {/* Image error display */}
+                  {imageError && (
+                    <p className="text-sm text-red-600 mt-1">{imageError}</p>
+                  )}
                 </div>
               )}
             </div>
@@ -917,8 +980,15 @@ export const LandingPageSectionEditor: React.FC<LandingPageSectionEditorProps> =
                 </div>
               ))}
             </div>
+            
+            {/* Display validation errors */}
+            {sectionErrors[section.id] && (
+              <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded-md">
+                <p className="text-sm text-red-600">{sectionErrors[section.id]}</p>
+              </div>
+            )}
           </Card>
-        ))}
+        )})}
       </TabsContent>
 
       {/* Collection Sections Tab */}
@@ -946,6 +1016,7 @@ export const LandingPageSectionEditor: React.FC<LandingPageSectionEditorProps> =
             onUpdate={(updates) => updateSection(section.id, updates)}
             onUpdateCategories={(ids) => updateSectionCategories(section.id, ids)}
             disabled={disabled}
+            error={sectionErrors[section.id]}
           />
         ))}
       </TabsContent>
@@ -975,6 +1046,7 @@ export const LandingPageSectionEditor: React.FC<LandingPageSectionEditorProps> =
             onUpdate={(updates) => updateSection(section.id, updates)}
             onUpdateProducts={(ids) => updateSectionProducts(section.id, ids)}
             disabled={disabled}
+            error={sectionErrors[section.id]}
           />
         ))}
       </TabsContent>

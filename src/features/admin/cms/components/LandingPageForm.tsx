@@ -147,6 +147,13 @@ const transformFrontendToBackend = async (
 
     // Transform collection to categories section
     else if (section.type === 'collection') {
+      console.log('Transforming collection section:', {
+        sectionId: section.id,
+        title: section.title,
+        categoryIds: section.categoryIds,
+        categoriesLength: section.categories?.length
+      });
+      
       transformedSection = {
         ...transformedSection,
         type: 'categories',
@@ -156,9 +163,13 @@ const transformFrontendToBackend = async (
             image: category.imageUrl || '',
             link: category.link || '',
           })) || [],
-        // Preserve categoryIds for backend processing
-        categoryIds: section.categoryIds || [],
+        // Preserve categoryIds for backend processing - ensure it's always an array
+        categoryIds: Array.isArray(section.categoryIds) ? section.categoryIds : [],
       };
+      
+      console.log('Transformed to:', {
+        categoryIds: transformedSection.categoryIds
+      });
     }
 
     // Transform products section
@@ -211,6 +222,7 @@ export const LandingPageForm: React.FC<LandingPageFormProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [sections, setSections] = useState<LandingPageSection[]>([]);
   const [uploadedImages, setUploadedImages] = useState<Record<string, File>>({});
+  const [sectionErrors, setSectionErrors] = useState<Record<string, string>>({});
 
   // Track if there are pending images to upload
   const hasPendingImages = Object.keys(uploadedImages).length > 0;
@@ -244,9 +256,97 @@ export const LandingPageForm: React.FC<LandingPageFormProps> = ({
     }
   }, [cms, reset]);
 
+  // Validate sections before submission
+  const validateSections = (sections: LandingPageSection[]): { 
+    isValid: boolean; 
+    errors: string[]; 
+    sectionErrors: Record<string, string> 
+  } => {
+    const errors: string[] = [];
+    const sectionErrorMap: Record<string, string> = {};
+    
+    // Check for at least one banner section
+    const bannerSections = sections.filter(s => s.type === 'banner');
+    if (bannerSections.length === 0) {
+      errors.push('At least one banner section is required');
+    }
+    
+    // Validate each section
+    sections.forEach((section) => {
+      const sectionErrorMessages: string[] = [];
+      
+      if (section.type === 'banner') {
+        // Banner validation
+        if (!section.title || section.title.trim().length === 0) {
+          sectionErrorMessages.push('Title is required');
+        }
+        if (!section.subtitle || section.subtitle.trim().length === 0) {
+          sectionErrorMessages.push('Subtitle is required');
+        }
+        if (!section.imageUrl && !uploadedImages[section.id]) {
+          sectionErrorMessages.push('Image is required');
+        }
+      } else if (section.type === 'collection') {
+        // Collection/Categories validation
+        if (!section.title || section.title.trim().length === 0) {
+          sectionErrorMessages.push('Title is required');
+        }
+        const categoryIds = (section as any).categoryIds || [];
+        if (categoryIds.length === 0) {
+          sectionErrorMessages.push('At least one category must be selected');
+        }
+      } else if (section.type === 'products') {
+        // Products validation
+        if (!section.title || section.title.trim().length === 0) {
+          sectionErrorMessages.push('Title is required');
+        }
+        const productIds = (section as any).productIds || [];
+        if (productIds.length === 0) {
+          sectionErrorMessages.push('At least one product must be selected');
+        }
+      }
+      
+      if (sectionErrorMessages.length > 0) {
+        sectionErrorMap[section.id] = sectionErrorMessages.join(', ');
+        errors.push(...sectionErrorMessages.map(msg => `${section.title || 'Section'}: ${msg}`));
+      }
+    });
+    
+    return {
+      isValid: errors.length === 0 && bannerSections.length > 0,
+      errors,
+      sectionErrors: sectionErrorMap
+    };
+  };
+
   const onSubmitForm = async (values: LandingPageFormData) => {
     try {
       setIsSubmitting(true);
+
+      // Log current sections state
+      console.log('Current sections before validation:', sections.map(s => ({
+        id: s.id,
+        type: s.type,
+        title: s.title,
+        categoryIds: (s as any).categoryIds,
+        productIds: (s as any).productIds
+      })));
+      
+      // Validate sections first
+      const validation = validateSections(sections);
+      if (!validation.isValid) {
+        // Set section errors for inline display
+        setSectionErrors(validation.sectionErrors);
+        
+        // Show a general error message
+        toast.error('Please fix the errors in the sections below');
+        
+        setIsSubmitting(false);
+        return;
+      }
+      
+      // Clear any previous errors
+      setSectionErrors({});
 
       // Check if there are pending images that need to be uploaded
       const hasPendingImages = Object.keys(uploadedImages).length > 0;
@@ -322,10 +422,25 @@ export const LandingPageForm: React.FC<LandingPageFormProps> = ({
           <div className="mt-4">
             <LandingPageSectionEditor
               sections={sections as any}
-              onChange={setSections as any}
+              onChange={(newSections) => {
+                console.log('LandingPageForm: Sections updated:', newSections.map((s: any) => ({
+                  id: s.id,
+                  type: s.type,
+                  title: s.title,
+                  categoryIds: s.categoryIds,
+                  productIds: s.productIds
+                })));
+                setSections(newSections as any);
+                
+                // Clear errors when sections change
+                if (Object.keys(sectionErrors).length > 0) {
+                  setSectionErrors({});
+                }
+              }}
               disabled={isSubmitting || isLoading}
               uploadedImages={uploadedImages}
               onUploadedImagesChange={setUploadedImages}
+              sectionErrors={sectionErrors}
             />
           </div>
         </div>
