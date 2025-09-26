@@ -50,7 +50,6 @@ export const FormSelect: React.FC<FormSelectProps> = ({
 }) => {
   const formContext = useFormContext();
   if (!formContext) {
-    console.error('FormSelect must be used within a FormProvider');
   }
   const {
     control,
@@ -58,8 +57,6 @@ export const FormSelect: React.FC<FormSelectProps> = ({
     formState: { errors },
   } = formContext || { control: undefined, watch: () => undefined, formState: { errors: {} } };
   const fieldValue = watch(name);
-  console.log('fieldValue', fieldValue, name);
-  console.log('form context exists:', !!formContext);
   const [searchTerm, setSearchTerm] = useState('');
   const [visibleCount, setVisibleCount] = useState(optionsPerPage);
   const [isOpen, setIsOpen] = useState(false);
@@ -69,7 +66,6 @@ export const FormSelect: React.FC<FormSelectProps> = ({
 
   // Update localOptions when options prop changes
   useEffect(() => {
-    console.log(`FormSelect ${name} - options updated:`, options.length, 'options');
     setLocalOptions(options);
   }, [options, name]);
 
@@ -542,9 +538,6 @@ export const FormSelect: React.FC<FormSelectProps> = ({
               );
             }
 
-            console.log('field.value ', field.value, name);
-            console.log('available options:', localOptions);
-
             // Single select mode (original behavior)
             // Force the value to be a string and ensure it exists in options
             const selectValue = field.value ? String(field.value) : '';
@@ -565,15 +558,6 @@ export const FormSelect: React.FC<FormSelectProps> = ({
                 finalValue = valueExistsInOptions ? selectValue : '';
               }
             }
-
-            console.log(
-              'Select value:',
-              selectValue,
-              'final value:',
-              finalValue,
-              'creatable:',
-              creatable
-            );
 
             return (
               <Select

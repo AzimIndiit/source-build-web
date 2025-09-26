@@ -169,7 +169,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
     }
     return 'https://placehold.co/300x200.png';
   };
-console.log('product.priceType', product.priceType)
+  console.log('product.priceType', product.priceType);
   return (
     <>
       <Card

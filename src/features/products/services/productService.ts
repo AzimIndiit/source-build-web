@@ -36,6 +36,8 @@ export interface CreateProductPayload {
   shippingPrice?: number;
   readyByDate?: string;
   readyByTime?: string;
+  readyByDays?: number;
+  localDeliveryFree?: boolean;
   discount?: {
     discountType: 'none' | 'flat' | 'percentage';
     discountValue?: number;
@@ -46,6 +48,12 @@ export interface CreateProductPayload {
     height?: number;
   };
   images: string[];
+  productAttributes?: Array<{
+    attributeName: string;
+    inputType: string;
+    value: any;
+    required?: boolean;
+  }>;
 }
 
 export interface SaveDraftPayload {
@@ -96,13 +104,19 @@ export interface SaveDraftPayload {
     height?: number;
   };
   isDraft: boolean;
+  productAttributes?: Array<{
+    attributeName: string;
+    inputType: string;
+    value: any;
+    required?: boolean;
+  }>;
 }
 
 export interface UpdateProductPayload extends Partial<CreateProductPayload> {
   id: string;
 }
 
-export interface  Product {
+export interface Product {
   id: string;
   slug: string;
   title: string;
@@ -221,9 +235,21 @@ class ProductService {
     page?: number;
     limit?: number;
     category?: string;
+    subCategory?: string;
     search?: string;
+    attributes?: Record<string, string[]>;
+    [key: string]: any;
   }): Promise<ProductsListResponse> {
-    const response = await axiosInstance.get<ProductsListResponse>('/products', { params });
+    // Process attributes to send as query params
+    const processedParams = { ...params };
+    
+    if (params?.attributes && Object.keys(params.attributes).length > 0) {
+      // Convert attributes object to query string format
+      // Backend might expect attributes in a specific format
+      processedParams.attributes = JSON.stringify(params.attributes);
+    }
+    
+    const response = await axiosInstance.get<ProductsListResponse>('/products', { params: processedParams });
     return response.data;
   }
 

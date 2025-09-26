@@ -114,7 +114,10 @@ class SubcategoryService {
     if (categoryId) {
       params.append('categoryId', categoryId);
     }
-    const response = await axiosInstance.get<SubcategoriesListResponse>('/subcategories/available', { params });
+    const response = await axiosInstance.get<SubcategoriesListResponse>(
+      '/subcategories/available',
+      { params }
+    );
     return response.data;
   }
 }

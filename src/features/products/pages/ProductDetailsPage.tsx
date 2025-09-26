@@ -686,8 +686,10 @@ const ProductDetailsPage: React.FC = () => {
                         <Truck className="text-purple-600 w-5 h-5" />
                       </div>
                       <p className="text-sm font-semibold text-gray-800 mb-2">Local Delivery</p>
-                      
-                      {product.localDeliveryFree ? "Free" : product.deliveryDistance ? (
+
+                      {product.localDeliveryFree ? (
+                        'Free'
+                      ) : product.deliveryDistance ? (
                         <div>
                           <p className="text-xs text-gray-500">Within</p>
                           <p className="text-base font-bold text-purple-600">

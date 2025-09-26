@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Upload, Plus, Trash2, Calendar, Clock, ChevronLeft } from 'lucide-react';
+import { X, Upload, Plus, Trash2 } from 'lucide-react';
 import { Button, Card, Checkbox, Switch, Label } from '@/components/ui';
 import { FormInput } from '@/components/forms/FormInput';
 import { FormTextarea } from '@/components/forms/FormTextarea';
@@ -9,6 +9,20 @@ import { UseFormReturn } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import { DeleteConfirmationModal } from '@/components/common/DeleteConfirmationModal';
 import { getColorName } from '@/utils/colorUtils';
+
+interface AttributeValue {
+  value: string;
+  order?: number;
+}
+
+interface Attribute {
+  name: string;
+  inputType: 'text' | 'number' | 'dropdown' | 'multiselect' | 'boolean' | 'radio';
+  required?: boolean;
+  values?: AttributeValue[];
+  order?: number;
+  isActive?: boolean;
+}
 
 interface ProductFormProps {
   methods: UseFormReturn<any>;
@@ -45,6 +59,7 @@ interface ProductFormProps {
   isLoading?: boolean;
   categoriesLoading?: boolean;
   subcategoriesLoading?: boolean;
+  currentAttributes?: Attribute[];
 }
 
 export const ProductForm: React.FC<ProductFormProps> = ({
@@ -77,6 +92,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   subCategoryOptions,
   tagOptions,
   isLoading = false,
+  currentAttributes = [],
 }) => {
   const {
     watch,
@@ -86,6 +102,13 @@ export const ProductForm: React.FC<ProductFormProps> = ({
     trigger,
   } = methods;
   const formValues = watch();
+
+  // Debug logging for attributes
+  React.useEffect(() => {
+    if (currentAttributes.length > 0) {
+      console.log('Current attributes in ProductForm:', currentAttributes);
+    }
+  }, [currentAttributes]);
   const [currentStep, setCurrentStep] = useState(1);
   const [variantToDelete, setVariantToDelete] = useState<string | null>(null);
 
@@ -497,7 +520,142 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                   <p className="text-xs text-gray-500 mt-1">Please select a category first</p>
                 )}
               </div>
+              {/* Product Attributes Section */}
+              {currentAttributes.length > 0 && (
+                <div className="space-y-4 pt-4 border-t border-gray-200">
+                  <h3 className="text-base font-medium text-gray-900">Product Attributes</h3>
+                  <div className="space-y-3">
+                    {currentAttributes
+                      .filter((attr) => attr.isActive !== false)
+                      .sort((a, b) => (a.order || 0) - (b.order || 0))
+                      .map((attribute) => {
+                        const fieldName = `attribute_${attribute.name.replace(/\s+/g, '_')}`;
 
+                        switch (attribute.inputType) {
+                          case 'text':
+                            return (
+                              <FormInput
+                                key={attribute.name}
+                                name={fieldName}
+                                label={attribute.name + (attribute.required ? ' *' : '')}
+                                placeholder={`Enter ${attribute.name.toLowerCase()}`}
+                                className="border-gray-300 h-[53px]"
+                              />
+                            );
+
+                          case 'number':
+                            return (
+                              <FormInput
+                                key={attribute.name}
+                                name={fieldName}
+                                label={attribute.name + (attribute.required ? ' *' : '')}
+                                type="number"
+                                placeholder={`Enter ${attribute.name.toLowerCase()}`}
+                                className="border-gray-300 h-[53px]"
+                              />
+                            );
+
+                          case 'dropdown':
+                            return (
+                              <FormSelect
+                                key={attribute.name}
+                                name={fieldName}
+                                label={attribute.name + (attribute.required ? ' *' : '')}
+                                placeholder={`Select ${attribute.name.toLowerCase()}`}
+                                options={
+                                  attribute.values
+                                    ?.sort((a, b) => (a.order || 0) - (b.order || 0))
+                                    .map((v) => ({
+                                      value: v.value,
+                                      label: v.value,
+                                    })) || []
+                                }
+                                className="h-[53px]"
+                                searchable={true}
+                              />
+                            );
+
+                          case 'multiselect':
+                            return (
+                              <FormSelect
+                                key={attribute.name}
+                                name={fieldName}
+                                label={attribute.name + (attribute.required ? ' *' : '')}
+                                placeholder={`Select ${attribute.name.toLowerCase()}`}
+                                options={
+                                  attribute.values
+                                    ?.sort((a, b) => (a.order || 0) - (b.order || 0))
+                                    .map((v) => ({
+                                      value: v.value,
+                                      label: v.value,
+                                    })) || []
+                                }
+                                multiple={true}
+                                className="h-[53px]"
+                                searchable={true}
+                              />
+                            );
+
+                          case 'boolean':
+                            return (
+                              <div
+                                key={attribute.name}
+                                className="flex items-center justify-between"
+                              >
+                                <Label className="text-sm font-medium">
+                                  {attribute.name}
+                                  {attribute.required && (
+                                    <span className="text-red-500 ml-1">*</span>
+                                  )}
+                                </Label>
+                                <Switch
+                                  id={fieldName}
+                                  className="h-6 w-12"
+                                  checked={formValues[fieldName] || false}
+                                  onCheckedChange={(checked) => setValue(fieldName, checked)}
+                                />
+                              </div>
+                            );
+
+                          case 'radio':
+                            return (
+                              <div key={attribute.name} className="space-y-2">
+                                <Label className="text-sm font-medium">
+                                  {attribute.name}
+                                  {attribute.required && (
+                                    <span className="text-red-500 ml-1">*</span>
+                                  )}
+                                </Label>
+                                <div className="space-y-2">
+                                  {attribute.values
+                                    ?.sort((a, b) => (a.order || 0) - (b.order || 0))
+                                    .map((v) => (
+                                      <label
+                                        key={v.value}
+                                        className="flex items-center space-x-3 p-2 rounded-md cursor-pointer hover:bg-gray-50"
+                                      >
+                                        <input
+                                          type="radio"
+                                          name={fieldName}
+                                          value={v.value}
+                                          checked={formValues[fieldName] === v.value}
+                                          onChange={(e) => setValue(fieldName, e.target.value)}
+                                          className="h-4 w-4 border-gray-300"
+                                        />
+                                        <span className="text-sm">{v.value}</span>
+                                      </label>
+                                    ))}
+                                </div>
+                              </div>
+                            );
+
+                          default:
+                            return null;
+                        }
+                      })}
+                  </div>
+                </div>
+              )}
               <div id="quantity">
                 <div className="flex items-center justify-between mb-2">
                   <Label className="text-sm font-medium">Quantity</Label>
@@ -716,6 +874,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                   maxSelections={10}
                 />
               </div>
+
               {/* 
               <div className="space-y-4">
                 <FormSelect
@@ -776,8 +935,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({
               </div> */}
 
               {/* Product Variants Section */}
-              <div className="border-t border-gray-200 pt-4 mt-4">
-                <div className="flex items-center justify-between mb-3">
+              <div className="pt-4 mt-4">
+                {/* <div className="flex items-center justify-between mb-3">
                   <h3 className="text-base font-medium text-gray-900">
                     Product Variants
                     <span className="text-sm text-gray-500 ml-2">({variants.length}/5)</span>
@@ -792,7 +951,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                     <Plus className="h-4 w-4" />
                     Add Variant
                   </Button>
-                </div>
+                </div> */}
 
                 {showVariants && variants.length > 0 && (
                   <div className="space-y-4">
@@ -932,7 +1091,6 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                               </div>
 
                               <div className="grid grid-cols-3 lg:grid-cols-5 gap-2">
-                                {/* Display existing variant images */}
                                 {variant.existingImages?.map((url, imgIndex) => (
                                   <div
                                     key={`existing-${imgIndex}`}
@@ -956,7 +1114,6 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                                     )}
                                   </div>
                                 ))}
-                                {/* Display new variant images */}
                                 {variant.images.map((image, imgIndex) => (
                                   <div
                                     key={imgIndex}
@@ -1198,12 +1355,12 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                   </div>
                 )}
 
-                {!showVariants && (
+                {/* {!showVariants && (
                   <p className="text-sm text-gray-500 text-center py-4">
                     Add variants to offer different options like colors, sizes, or styles for your
                     product.
                   </p>
-                )}
+                )} */}
               </div>
             </div>
           )}
@@ -1281,7 +1438,6 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                 {/* Delivery Distance Field - Shows when delivery is selected */}
                 {formValues.marketplaceOptions?.delivery && (
                   <div className="mt-4 pl-8">
-                   
                     <FormInput
                       disabled={formValues.localDeliveryFree}
                       name="deliveryDistance"
@@ -1311,7 +1467,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                       className="h-[53px]"
                       hint="Maximum delivery distance in miles"
                     />
-                     <div className="flex items-center mt-2 justify-end gap-1">
+                    <div className="flex items-center mt-2 justify-end gap-1">
                       <Label htmlFor={`delivery-for-free`} className="text-xs text-gray-600">
                         Local Delivery Free
                       </Label>

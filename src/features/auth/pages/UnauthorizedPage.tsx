@@ -12,7 +12,11 @@ function UnauthorizedPage() {
           You don't have permission to access this page.
         </p>
         <Button asChild className="text-white hover:text-white">
-          {user?.role=='buyer'?<Link to={`/`}>Go to Home</Link>:<Link to={`/${user?.role}/dashboard`}>Go to Dashboard</Link>}
+          {user?.role == 'buyer' ? (
+            <Link to={`/`}>Go to Home</Link>
+          ) : (
+            <Link to={`/${user?.role}/dashboard`}>Go to Dashboard</Link>
+          )}
         </Button>
       </div>
     </div>

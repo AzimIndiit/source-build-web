@@ -6,21 +6,25 @@ import { useCategoriesQuery } from '@/features/admin/categories/hooks/useCategor
 export function HeaderMenu() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { data: response } = useCategoriesQuery({ limit: 100,isActive:true });
-  
+  const { data: response } = useCategoriesQuery({ limit: 100, isActive: true });
+
   // Response structure: response (CategoriesListResponse) -> data (CategoriesResponse) -> data (Category[])
   // Filter only active categories
   const allCategories = response?.data || [];
-  const categories = Array.isArray(allCategories) ? allCategories.filter((cat: any) => cat.isActive) : [];
-  
+  const categories = Array.isArray(allCategories)
+    ? allCategories.filter((cat: any) => cat.isActive)
+    : [];
+
   // Parse URL params
   const searchParams = new URLSearchParams(location.search);
   const typeParam = searchParams.get('type');
   const categoryParam = searchParams.get('category');
-  
+
   // Determine if "All" should be active
-  const isAllActive = typeParam === 'all' || !categoryParam || categoryParam === '';
-  
+  const isAllActive =
+    (typeParam === 'all' || !categoryParam || categoryParam === '') &&
+    location.pathname === '/marketplace';
+  console.log('isAllActive', isAllActive);
   return (
     <nav
       className="border-b border-gray-200"
@@ -48,12 +52,13 @@ export function HeaderMenu() {
             </button>
             {categories.map((category: any) => {
               // Check if this specific category is active (only when type !== 'all')
-              const isCategoryActive = typeParam !== 'all' && location.search.includes(`category=${category.slug}`);
-              
+              const isCategoryActive =
+                typeParam !== 'all' && location.search.includes(`category=${category.slug}`);
+
               return (
                 <button
                   key={category._id}
-                  onClick={() => navigate(`/marketplace/${category.slug}`)}
+                  onClick={() => navigate(`/marketplace?category=${category.slug}`)}
                   className={cn(
                     'flex-shrink-0 px-4 py-2 text-sm font-medium transition-colors rounded-md cursor-pointer',
                     isCategoryActive

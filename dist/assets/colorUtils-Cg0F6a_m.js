@@ -1,1 +1,0 @@
-import{N as a}from"./index-BiCr9dd_.js";function c(t){try{const e=t.startsWith("#")?t:`#${t}`;if(!/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(e))return{hex:t,name:"Invalid Color",exactMatch:!1};const r=a(e);return{hex:e,name:r.name,exactMatch:r.exactMatch}}catch(e){return console.error("Error getting color name:",e),{hex:t,name:"Unknown Color",exactMatch:!1}}}export{c as g};

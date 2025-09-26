@@ -83,16 +83,27 @@ const MarketPlacePage: React.FC = () => {
   });
   const itemsPerPage = 10;
 
-  // Read category filters from URL
+  // Read category and attribute filters from URL
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const categoryParam = searchParams.get('category');
     const subCategoryParam = searchParams.get('subCategory');
+    const attributesParam = searchParams.get('attributes');
+    
+    let parsedAttributes = {};
+    if (attributesParam) {
+      try {
+        parsedAttributes = JSON.parse(attributesParam);
+      } catch (e) {
+        console.error('Failed to parse attributes from URL', e);
+      }
+    }
 
     setActiveFilters((prev: any) => ({
       ...prev,
-      category: categoryParam!=='All' ? categoryParam : undefined,
+      category: categoryParam !== 'All' ? categoryParam : undefined,
       subCategory: subCategoryParam || undefined,
+      attributes: parsedAttributes,
     }));
   }, [location.search]);
 
@@ -117,7 +128,7 @@ const MarketPlacePage: React.FC = () => {
     const searchParams = new URLSearchParams(location.search);
     const categoryParam = searchParams.get('category');
     const subCategoryParam = searchParams.get('subCategory');
-    
+
     if (categoryParam && categoryParam !== 'All') {
       transformedFilters.category = categoryParam;
     }
@@ -180,7 +191,7 @@ const MarketPlacePage: React.FC = () => {
     const searchParams = new URLSearchParams(location.search);
     const categoryParam = searchParams.get('category');
     const subCategoryParam = searchParams.get('subCategory');
-    
+
     const clearedFilters: any = {};
     if (categoryParam && categoryParam !== 'All') {
       clearedFilters.category = categoryParam;
@@ -188,7 +199,7 @@ const MarketPlacePage: React.FC = () => {
     if (subCategoryParam) {
       clearedFilters.subCategory = subCategoryParam;
     }
-    
+
     setActiveFilters(clearedFilters);
     setCurrentPage(1);
     // Reset filter state to default
@@ -253,8 +264,10 @@ const MarketPlacePage: React.FC = () => {
   const cancelDelete = () => {
     setDeleteModal({ isOpen: false, productId: '', productTitle: '' });
   };
-const formattedCategory = activeFilters.category && !location.search.includes('type=all') ? `${activeFilters.category.split('-').join(' ')}` : 'Marketplace';
-
+  const formattedCategory =
+    activeFilters.category && !location.search.includes('type=all')
+      ? `${activeFilters.category.split('-').join(' ')}`
+      : 'Marketplace';
 
   // Loading state
   if (isLoading) {
@@ -266,7 +279,9 @@ const formattedCategory = activeFilters.category && !location.search.includes('t
     return (
       <div className="py-4 md:p-4 space-y-4 md:space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-xl md:text-2xl font-bold text-gray-900 capitalize max-w-80 sm:max-w-full truncate">{ formattedCategory }</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900 capitalize max-w-80 sm:max-w-full truncate">
+            {formattedCategory}
+          </h1>
           <FilterDropdown
             onApply={handleApplyFilters}
             onClear={handleClearFilters}
@@ -299,7 +314,9 @@ const formattedCategory = activeFilters.category && !location.search.includes('t
     return (
       <div className="py-4 md:p-4 space-y-4 md:space-y-6">
         <div className="flex items-center justify-between">
-            <h1 className="text-xl md:text-2xl font-bold text-gray-900 capitalize max-w-80 sm:max-w-full truncate">{ formattedCategory }</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900 capitalize max-w-80 sm:max-w-full truncate">
+            {formattedCategory}
+          </h1>
           <div className="flex items-center gap-2">
             {/* Location Selector - Visible on tablet and desktop */}
             <DropdownMenu>
@@ -355,14 +372,14 @@ const formattedCategory = activeFilters.category && !location.search.includes('t
             />
           </div>
         </div>
-       <div>
-       <EmptyState
-          title="No products found"
-          description="Check back later for new products"
-          icon={<img src={ProductEmptyIcon} alt="Product empty" className="h-64 w-auto" />}
-          className="h-100"
-        />
-       </div>
+        <div>
+          <EmptyState
+            title="No products found"
+            description="Check back later for new products"
+            icon={<img src={ProductEmptyIcon} alt="Product empty" className="h-64 w-auto" />}
+            className="h-100"
+          />
+        </div>
       </div>
     );
   }
@@ -370,7 +387,9 @@ const formattedCategory = activeFilters.category && !location.search.includes('t
   return (
     <div className="py-4 md:p-4 space-y-4 md:space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl md:text-2xl font-bold text-gray-900 capitalize max-w-80 sm:max-w-full truncate">{ formattedCategory }</h1>
+        <h1 className="text-xl md:text-2xl font-bold text-gray-900 capitalize max-w-80 sm:max-w-full truncate">
+          {formattedCategory}
+        </h1>
         <div className="flex items-center gap-2">
           {/* Location Selector - Visible on tablet and desktop */}
           <DropdownMenu>

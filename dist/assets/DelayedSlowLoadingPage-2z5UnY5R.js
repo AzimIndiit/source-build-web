@@ -1,0 +1,2 @@
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/SlowLoadingPage-DXlFzidg.js","assets/index-CUSVstqU.js","assets/index-D_SXTyu0.css"])))=>i.map(i=>d[i]);
+import{r as a,aU as o}from"./index-CUSVstqU.js";function i(e,t=2e3){return a.lazy(()=>new Promise(r=>{setTimeout(()=>{e().then(r)},t)}))}const l=i(()=>o(()=>import("./SlowLoadingPage-DXlFzidg.js"),__vite__mapDeps([0,1,2])),3e3);export{l as default};

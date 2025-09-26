@@ -75,15 +75,20 @@ For questions, contact us at:
 📞 Phone: +91-XXXXXXXXXX`;
 
 const TermsAndConditionsPage: React.FC = () => {
-  const { user } = useAuth();
   const location = useLocation();
+
+  // Check if we're on public routes
+  const isPublicRoute = location.pathname === '/terms' || location.pathname === '/privacy';
+
+  // Only use auth hook if not on public route
+  const { user } = isPublicRoute ? { user: null } : useAuth();
   const isSeller = user?.role === 'seller';
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState('');
 
-  // Fetch CMS content for sellers
+  // Fetch CMS content for sellers (skip for public routes)
   const { data, isLoading, error } = useCmsContentQuery(
-    isSeller ? ContentType.TERMS_CONDITIONS : undefined
+    isSeller && !isPublicRoute ? ContentType.SELLER_TERMS_CONDITIONS : ContentType.TERMS_CONDITIONS
   );
 
   const createOrUpdateMutation = useCreateOrUpdateCmsMutation();
@@ -151,7 +156,7 @@ const TermsAndConditionsPage: React.FC = () => {
   const handleSave = async () => {
     try {
       await createOrUpdateMutation.mutateAsync({
-        type: ContentType.TERMS_CONDITIONS,
+        type: ContentType.SELLER_TERMS_CONDITIONS,
         title: 'Terms & Conditions',
         content: editContent,
         isActive: true,

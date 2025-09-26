@@ -171,7 +171,7 @@ export const Navbar: React.FC = () => {
   const handleSwitchBuyerMode = async (checked: boolean) => {
     // Prevent multiple simultaneous switches
     if (isRoleSwitching) return;
-    
+
     // Determine the target role based on the switch state
     const targetRole = checked ? 'buyer' : 'seller';
 
@@ -203,7 +203,7 @@ export const Navbar: React.FC = () => {
         } else {
           updateUser({ role: targetRole });
         }
-        
+
         // Navigate based on role
         if (targetRole === 'buyer') {
           // Buyers go to home page

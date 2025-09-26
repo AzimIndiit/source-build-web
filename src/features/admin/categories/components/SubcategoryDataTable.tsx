@@ -32,6 +32,7 @@ import {
   Power,
   Tag,
   ArrowLeft,
+  FileInput,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -317,6 +318,13 @@ export const SubcategoryDataTable: React.FC<SubcategoryDataTableProps> = ({
                   >
                     <Edit className="mr-2 h-4 w-4" />
                     Edit Subcategory
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => navigate(`/admin/attributes?subcategory=${subcategory._id}`)}
+                    className="cursor-pointer"
+                  >
+                    <FileInput className="mr-2 h-4 w-4" />
+                    Manage Attributes
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => openConfirmModal('toggle', subcategory._id, subcategory.name)}

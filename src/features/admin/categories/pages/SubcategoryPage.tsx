@@ -1,8 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 
-import { SubcategoryDataTable } from '../components/SubcategoryDataTable';
-import { SubcategoryModal } from '../components/SubcategoryModal';
 import {
   useCreateSubcategory,
   useUpdateSubcategory,
@@ -117,7 +115,7 @@ const SubcategoryPage: React.FC = () => {
       {/* Sub Categories Table */}
       <CategoryDataTable
         title="Subcategories"
-        categories={subcategories}
+        categories={subcategories as Category[]}
         onEdit={handleOpenModal}
         onDelete={handleDelete}
         onToggleStatus={handleToggleStatus}

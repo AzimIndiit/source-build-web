@@ -10,13 +10,25 @@ import { queryClient } from '@/lib/queryClient';
 
 const CMS_QUERY_KEY = ['cms'];
 
-// Query hooks for sellers
+// Query hooks for sellers - for single content type
 export function useCmsContentQuery(type?: ContentType) {
+  console.log('type', type);
+  // Use public landing page endpoint to get populated data
+  if (type === ContentType.LANDING_PAGE) {
+    return useQuery({
+      queryKey: [...CMS_QUERY_KEY, 'public', 'landing-page'],
+      queryFn: () => cmsService.getPublicLandingPage(),
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes
+      enabled: true,
+    });
+  }
   return useQuery({
-    queryKey: type ? [...CMS_QUERY_KEY, type] : CMS_QUERY_KEY,
-    queryFn: () => (type ? cmsService.getContent(type) : cmsService.getAllContent()),
+    queryKey: type ? [...CMS_QUERY_KEY, type] : [...CMS_QUERY_KEY, 'disabled'],
+    queryFn: () => (type ? cmsService.getContent(type) : Promise.resolve({} as any)),
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
+    enabled: !!type,
   });
 }
 

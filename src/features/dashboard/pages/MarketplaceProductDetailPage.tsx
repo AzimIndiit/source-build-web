@@ -1,6 +1,18 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Minus, Plus, ShoppingCart, Heart, Edit2, MapPin, Package, Truck, Clock } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  Minus,
+  Plus,
+  ShoppingCart,
+  Heart,
+  Edit2,
+  MapPin,
+  Package,
+  Truck,
+  Clock,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import ReadMore from '@/components/ui/ReadMore';
@@ -625,40 +637,46 @@ const MarketplaceProductDetailPage: React.FC = () => {
           </div>
 
           {/* Variants if available */}
-       {(product.color ||
-            (product.variants && product.variants.some((v: any) => !!v.color))) &&   <div className=" flex flex-col sm:hidden border-t border-gray-200 text-xs sm:text-sm text-gray-600 pt-4 sm:pt-6 space-y-2">
-            <span className="font-medium">Colors: </span>
-            <div className="flex flex-wrap gap-3 mt-2">
-              {/* Main Product Option */}
+          {(product.color ||
+            (product.variants && product.variants.some((v: any) => !!v.color))) && (
+            <div className=" flex flex-col sm:hidden border-t border-gray-200 text-xs sm:text-sm text-gray-600 pt-4 sm:pt-6 space-y-2">
+              <span className="font-medium">Colors: </span>
+              <div className="flex flex-wrap gap-3 mt-2">
+                {/* Main Product Option */}
 
-              {product.color && <div
-                onClick={() => setSelectedVariant(null)}
-                className={`w-12 h-12 rounded-full border-2transition-all cursor-pointer ${
-                  selectedVariant === null
-                    ? 'border-black bg-primary/5 border-3'
-                    : 'border-gray-300 hover:border-gray-400'
-                }`}
-                style={{ backgroundColor: product.color }}
-                title={product.color ? getColorName(product.color).name : ''}
-              />}
-
-              {product.variants &&
-                product.variants.length > 0 &&
-                product.variants .filter((variant: any) => !!variant.color).map((variant: any, index: number) => (
+                {product.color && (
                   <div
-                    key={index}
-                    onClick={() => setSelectedVariant(variant)}
-                    className={`w-12 h-12 rounded-full cursor-pointer transition-all ${
-                      selectedVariant === variant
-                        ? 'ring-2 ring-black ring-offset-2'
-                        : 'ring-1 ring-gray-300 ring-offset-2 hover:ring-gray-400'
+                    onClick={() => setSelectedVariant(null)}
+                    className={`w-12 h-12 rounded-full border-2transition-all cursor-pointer ${
+                      selectedVariant === null
+                        ? 'border-black bg-primary/5 border-3'
+                        : 'border-gray-300 hover:border-gray-400'
                     }`}
-                    style={{ backgroundColor: variant.color }}
-                    title={variant.color ? getColorName(variant.color).name : ''}
+                    style={{ backgroundColor: product.color }}
+                    title={product.color ? getColorName(product.color).name : ''}
                   />
-                ))}
+                )}
+
+                {product.variants &&
+                  product.variants.length > 0 &&
+                  product.variants
+                    .filter((variant: any) => !!variant.color)
+                    .map((variant: any, index: number) => (
+                      <div
+                        key={index}
+                        onClick={() => setSelectedVariant(variant)}
+                        className={`w-12 h-12 rounded-full cursor-pointer transition-all ${
+                          selectedVariant === variant
+                            ? 'ring-2 ring-black ring-offset-2'
+                            : 'ring-1 ring-gray-300 ring-offset-2 hover:ring-gray-400'
+                        }`}
+                        style={{ backgroundColor: variant.color }}
+                        title={variant.color ? getColorName(variant.color).name : ''}
+                      />
+                    ))}
+              </div>
             </div>
-          </div>}
+          )}
 
           {/* Description */}
           <div className="border-t border-gray-200 pt-4 sm:pt-6">
@@ -689,13 +707,11 @@ const MarketplaceProductDetailPage: React.FC = () => {
             </div>
           </div>
 
-             {/* Marketplace Options */}
-             {product.marketplaceOptions && (
+          {/* Marketplace Options */}
+          {product.marketplaceOptions && (
             <div className="border-t border-gray-200 pt-4">
-                 <div className="text-xs sm:text-sm text-gray-600 mb-2">
-           <span className="font-medium">
-                Delivery Options
-              </span>
+              <div className="text-xs sm:text-sm text-gray-600 mb-2">
+                <span className="font-medium">Delivery Options</span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {product.marketplaceOptions.pickup && (
@@ -749,8 +765,10 @@ const MarketplaceProductDetailPage: React.FC = () => {
                         <Truck className="text-purple-600 w-5 h-5" />
                       </div>
                       <p className="text-sm font-semibold text-gray-800 mb-2">Local Delivery</p>
-                      
-                      {product.localDeliveryFree ? "Free" : product.deliveryDistance ? (
+
+                      {product.localDeliveryFree ? (
+                        'Free'
+                      ) : product.deliveryDistance ? (
                         <div>
                           <p className="text-xs text-gray-500">Within</p>
                           <p className="text-base font-bold text-purple-600">
@@ -764,10 +782,8 @@ const MarketplaceProductDetailPage: React.FC = () => {
                   </div>
                 )}
               </div>
-
             </div>
           )}
-
 
           {/* Product Information Grid */}
           <div className="border-t border-gray-200 pt-4 sm:pt-6 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs sm:text-sm">
@@ -801,49 +817,50 @@ const MarketplaceProductDetailPage: React.FC = () => {
           )}
 
           {/* Variants if available */}
-   {(product.color ||
-            (product.variants && product.variants.some((v: any) => !!v.color))) &&       <div className="border-t hidden sm:flex flex-col border-gray-200 text-xs sm:text-sm text-gray-600 pt-4 sm:pt-6 space-y-2 ">
-            <span className="font-medium">Colors: </span>
-            <div className="flex flex-wrap gap-3 mt-2">
-              {/* Main Product Option */}
+          {(product.color ||
+            (product.variants && product.variants.some((v: any) => !!v.color))) && (
+            <div className="border-t hidden sm:flex flex-col border-gray-200 text-xs sm:text-sm text-gray-600 pt-4 sm:pt-6 space-y-2 ">
+              <span className="font-medium">Colors: </span>
+              <div className="flex flex-wrap gap-3 mt-2">
+                {/* Main Product Option */}
 
-           {product.color &&   <div
-                onClick={() => setSelectedVariant(null)}
-                className={`w-12 h-12 rounded-full cursor-pointer transition-all ${
-                  selectedVariant === null
-                    ? 'ring-2 ring-black ring-offset-2 '
-                    : 'ring-1 ring-gray-300 ring-offset-2 hover:ring-gray-400 '
-                }`}
-                style={{ backgroundColor: product.color }}
-                title={product.color ? getColorName(product.color).name : ''}
-              />}
-
-              {product.variants &&
-                product.variants.length > 0 &&
-                product.variants
-                .filter((variant: any) => !!variant.color).map((variant: any, index: number) => (
+                {product.color && (
                   <div
-                    key={index}
-                    onClick={() => setSelectedVariant(variant)}
+                    onClick={() => setSelectedVariant(null)}
                     className={`w-12 h-12 rounded-full cursor-pointer transition-all ${
-                      selectedVariant === variant
-                        ? 'ring-2 ring-black ring-offset-2'
-                        : 'ring-1 ring-gray-300 ring-offset-2 hover:ring-gray-400'
+                      selectedVariant === null
+                        ? 'ring-2 ring-black ring-offset-2 '
+                        : 'ring-1 ring-gray-300 ring-offset-2 hover:ring-gray-400 '
                     }`}
-                    style={{ backgroundColor: variant.color }}
-                    title={variant.color ? getColorName(variant.color).name : ''}
+                    style={{ backgroundColor: product.color }}
+                    title={product.color ? getColorName(product.color).name : ''}
                   />
-                ))}
-            </div>
-          </div>}
+                )}
 
-          { product.seller && 
-            <CustomerDetailsSection
-              customerDetails={product.seller}
-              title=""
-              reviewTitle=""
-            />
-          }
+                {product.variants &&
+                  product.variants.length > 0 &&
+                  product.variants
+                    .filter((variant: any) => !!variant.color)
+                    .map((variant: any, index: number) => (
+                      <div
+                        key={index}
+                        onClick={() => setSelectedVariant(variant)}
+                        className={`w-12 h-12 rounded-full cursor-pointer transition-all ${
+                          selectedVariant === variant
+                            ? 'ring-2 ring-black ring-offset-2'
+                            : 'ring-1 ring-gray-300 ring-offset-2 hover:ring-gray-400'
+                        }`}
+                        style={{ backgroundColor: variant.color }}
+                        title={variant.color ? getColorName(variant.color).name : ''}
+                      />
+                    ))}
+              </div>
+            </div>
+          )}
+
+          {product.seller && (
+            <CustomerDetailsSection customerDetails={product.seller} title="" reviewTitle="" />
+          )}
           {/* Add to Cart Section */}
           <div className="flex items-center gap-4 pt-6">
             {/* Quantity Selector */}

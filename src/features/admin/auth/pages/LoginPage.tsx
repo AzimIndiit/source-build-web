@@ -20,7 +20,7 @@ function LoginPage() {
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: 'admin@yopmail.com',
-      password: 'Password@1',  // Default password for testing
+      password: 'Password@1', // Default password for testing
       role: 'admin',
     },
   });
