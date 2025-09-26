@@ -422,7 +422,7 @@ function HomePage() {
                     {section.subtitle}
                   </p>
                 )}
-                <div className="">
+                <div className="px-4">
                   <MultiSliderSlider slides={transformedSlides} />
                 </div>
               </Card>

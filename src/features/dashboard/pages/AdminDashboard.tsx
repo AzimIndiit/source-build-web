@@ -11,7 +11,6 @@ import { OrdersTableSkeleton } from '../components/OrdersTableSkeleton';
 import { weekSalesData, revenueData, metricsAdminData } from '../data/mockData';
 import { useNavigate } from 'react-router-dom';
 import { transformOrders } from '@/features/orders/utils/orderTransformers';
-import { useProductsQuery } from '@/features/products/hooks/useProductMutations';
 import { useOrdersQuery } from '@/features/orders/hooks/useOrderMutations';
 
 export const AdminDashboard: React.FC = () => {

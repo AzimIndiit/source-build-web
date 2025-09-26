@@ -1590,6 +1590,7 @@ function EditProductPage() {
                 categoryOptions={categoryOptions}
                 subCategoryOptions={subCategoryOptions}
                 tagOptions={tagOptions}
+                currentAttributes={currentAttributes}
               />
             </div>
           </div>
@@ -1649,6 +1650,7 @@ function EditProductPage() {
               categoryOptions={categoryOptions}
               subCategoryOptions={subCategoryOptions}
               tagOptions={tagOptions}
+              currentAttributes={currentAttributes}
             />
           </div>
         </form>

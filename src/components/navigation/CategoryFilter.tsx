@@ -3,6 +3,7 @@ import { Plus, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAvailableCategoriesQuery } from '@/features/admin/categories/hooks/useCategoryMutations';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface CategoryFilterProps {
   isCollapsed?: boolean;
@@ -20,7 +21,7 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
   selectedAttributes = {},
 }) => {
   // Fetch available categories with their subcategories (single API call)
-  const { data: categoriesResponse } = useAvailableCategoriesQuery();
+  const { data: categoriesResponse, isLoading } = useAvailableCategoriesQuery();
   const categories = categoriesResponse?.data || [];
 
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
@@ -136,7 +137,30 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
       </div>
 
       <div className="flex flex-col">
-        {categories?.map((category: any) => {
+        {/* Show skeleton loaders when loading */}
+        {isLoading ? (
+          <div className="px-3 space-y-3">
+            {[...Array(5)].map((_, index) => (
+              <div key={index} className="space-y-2">
+                <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-gray-100/60">
+                  <div className="flex items-center gap-3 flex-1">
+                    <Skeleton className="w-5 h-5 rounded" />
+                    <Skeleton className="h-4 w-24" />
+                  </div>
+                  <Skeleton className="w-8 h-8 rounded-full" />
+                </div>
+                {index % 2 === 0 && (
+                  <div className="ml-10 space-y-2">
+                    <Skeleton className="h-3 w-20 ml-4" />
+                    <Skeleton className="h-3 w-16 ml-4" />
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <>
+            {categories?.map((category: any) => {
           const isExpanded = expandedCategories.includes(category._id);
           const categoryChecked = isCategoryChecked(category.slug);
           const categoryPartiallyChecked = isCategoryPartiallyChecked(category);
@@ -337,11 +361,13 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
           );
         })}
 
-        {/* Show message if no categories found */}
-        {categories.length === 0 && (
-          <div className="px-3">
-            <p className="text-sm text-gray-500 px-4 py-2">No categories with products available</p>
-          </div>
+            {/* Show message if no categories found */}
+            {categories.length === 0 && (
+              <div className="px-3">
+                <p className="text-sm text-gray-500 px-4 py-2">No categories with products available</p>
+              </div>
+            )}
+          </>
         )}
       </div>
 

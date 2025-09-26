@@ -42,13 +42,13 @@ export const getReadyByDate = (slide: Slide) => {
   switch (Number(slide?.readyByDays)) {
     case 0:
       return (
-        <Badge className="absolute bottom-2 left-2 bg-primary/80 text-white rounded px-2 py-1 text-[11px]">
+        <Badge className="absolute bottom-2 left-2 bg-primary/80 text-white  px-2 py-1 text-[11px]">
           Same Day Delivery
         </Badge>
       );
     case 1:
       return (
-        <Badge className="absolute bottom-2 left-2 bg-gray-200 text-gray-800 rounded px-2 py-1 text-[11px]">
+        <Badge className="absolute bottom-2 left-2 bg-gray-200 text-gray-800  px-2 py-1 text-[11px]">
           Next Day Delivery
         </Badge>
       );
@@ -77,7 +77,7 @@ const CustomNextArrow: React.FC<CustomArrowProps> = ({ onClick }) => (
 
 const MultiSliderSlider: React.FC<MultiSliderSliderProps> = ({ slides }) => {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated ,user} = useAuth();
   const addToWishlist = useAddToWishlist();
   const removeFromWishlist = useRemoveFromWishlist();
 
@@ -217,7 +217,7 @@ const MultiSliderSlider: React.FC<MultiSliderSliderProps> = ({ slides }) => {
             <div className="rounded-sm sm:rounded-lg overflow-hidden duration-300 bg-white">
               <div className="relative">
                 <div
-                  onClick={() => navigate('/#')}
+                  onClick={() => navigate( `/products/${slide.slug}` || '')}
                   className="relative h-28 sm:h-36 md:h-44 lg:h-48 cursor-pointer group overflow-hidden"
                 >
                   <LazyImage
@@ -230,7 +230,7 @@ const MultiSliderSlider: React.FC<MultiSliderSliderProps> = ({ slides }) => {
                     fadeInDuration={0.3}
                     wrapperClassName="w-full h-full"
                   />
-                  <motion.button
+         {(!isAuthenticated || user?.role==='buyer') &&         <motion.button
                     className="absolute top-2 right-2 rounded-full bg-black/20 backdrop-blur-sm p-2 transition-all duration-200 hover:bg-black/30"
                     onClick={(e) => handleWishlistClick(e, index)}
                     whileHover={{ scale: 1.1 }}
@@ -255,14 +255,14 @@ const MultiSliderSlider: React.FC<MultiSliderSliderProps> = ({ slides }) => {
                         )}
                       />
                     </motion.div>
-                  </motion.button>
+                  </motion.button>}
                   {getReadyByDate(slide)}
                 </div>
               </div>
 
               <div className="p-1.5 sm:p-2 md:p-3 lg:p-4">
                 <h2
-                  onClick={() => navigate('/#')}
+                  onClick={() => navigate( `/products/${slide.slug}` || '')}
                   className="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-gray-900 cursor-pointer hover:text-primary transition-colors duration-200 mb-1"
                 >
                   ${slide.price}
