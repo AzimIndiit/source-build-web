@@ -46,7 +46,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
     });
 
     quillRef.current = quill;
-    
+
     // Remove any duplicate toolbars
     const toolbars = containerRef.current.querySelectorAll('.ql-toolbar');
     if (toolbars.length > 1) {
@@ -79,10 +79,10 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   // Update content when value changes externally
   useEffect(() => {
     if (!quillRef.current || !value) return;
-    
+
     const quill = quillRef.current;
     const currentHtml = quill.root.innerHTML;
-    
+
     if (value !== currentHtml && value !== '<p><br></p>') {
       isChangingRef.current = true;
       quill.root.innerHTML = value;
@@ -131,10 +131,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           }
         `}
       </style>
-      <div 
-        ref={editorRef}
-        className="bg-white"
-      />
+      <div ref={editorRef} className="bg-white" />
     </div>
   );
 };

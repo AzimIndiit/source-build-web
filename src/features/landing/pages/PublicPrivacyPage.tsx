@@ -75,7 +75,7 @@ const PublicPrivacyPage: React.FC = () => {
     return <Skeleton className="h-8 w-48 mb-4" />;
   }
   if (error) {
-    return <div className="text-red-500" >Error loading content</div>;
+    return <div className="text-red-500">Error loading content</div>;
   }
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">

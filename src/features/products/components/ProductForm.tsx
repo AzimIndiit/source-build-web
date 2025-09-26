@@ -102,7 +102,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
     trigger,
   } = methods;
   const formValues = watch();
-  
+
   // Debug logging for attributes
   React.useEffect(() => {
     if (currentAttributes.length > 0) {
@@ -520,17 +520,17 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                   <p className="text-xs text-gray-500 mt-1">Please select a category first</p>
                 )}
               </div>
-    {/* Product Attributes Section */}
-    {currentAttributes.length > 0 && (
+              {/* Product Attributes Section */}
+              {currentAttributes.length > 0 && (
                 <div className="space-y-4 pt-4 border-t border-gray-200">
                   <h3 className="text-base font-medium text-gray-900">Product Attributes</h3>
                   <div className="space-y-3">
                     {currentAttributes
-                      .filter(attr => attr.isActive !== false)
+                      .filter((attr) => attr.isActive !== false)
                       .sort((a, b) => (a.order || 0) - (b.order || 0))
                       .map((attribute) => {
                         const fieldName = `attribute_${attribute.name.replace(/\s+/g, '_')}`;
-                        
+
                         switch (attribute.inputType) {
                           case 'text':
                             return (
@@ -542,7 +542,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                                 className="border-gray-300 h-[53px]"
                               />
                             );
-                          
+
                           case 'number':
                             return (
                               <FormInput
@@ -554,7 +554,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                                 className="border-gray-300 h-[53px]"
                               />
                             );
-                          
+
                           case 'dropdown':
                             return (
                               <FormSelect
@@ -562,15 +562,19 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                                 name={fieldName}
                                 label={attribute.name + (attribute.required ? ' *' : '')}
                                 placeholder={`Select ${attribute.name.toLowerCase()}`}
-                                options={attribute.values?.sort((a, b) => (a.order || 0) - (b.order || 0)).map(v => ({ 
-                                  value: v.value, 
-                                  label: v.value 
-                                })) || []}
+                                options={
+                                  attribute.values
+                                    ?.sort((a, b) => (a.order || 0) - (b.order || 0))
+                                    .map((v) => ({
+                                      value: v.value,
+                                      label: v.value,
+                                    })) || []
+                                }
                                 className="h-[53px]"
                                 searchable={true}
                               />
                             );
-                          
+
                           case 'multiselect':
                             return (
                               <FormSelect
@@ -578,21 +582,31 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                                 name={fieldName}
                                 label={attribute.name + (attribute.required ? ' *' : '')}
                                 placeholder={`Select ${attribute.name.toLowerCase()}`}
-                                options={attribute.values?.sort((a, b) => (a.order || 0) - (b.order || 0)).map(v => ({ 
-                                  value: v.value, 
-                                  label: v.value 
-                                })) || []}
+                                options={
+                                  attribute.values
+                                    ?.sort((a, b) => (a.order || 0) - (b.order || 0))
+                                    .map((v) => ({
+                                      value: v.value,
+                                      label: v.value,
+                                    })) || []
+                                }
                                 multiple={true}
                                 className="h-[53px]"
                                 searchable={true}
                               />
                             );
-                          
+
                           case 'boolean':
                             return (
-                              <div key={attribute.name} className="flex items-center justify-between">
+                              <div
+                                key={attribute.name}
+                                className="flex items-center justify-between"
+                              >
                                 <Label className="text-sm font-medium">
-                                  {attribute.name}{attribute.required && <span className="text-red-500 ml-1">*</span>}
+                                  {attribute.name}
+                                  {attribute.required && (
+                                    <span className="text-red-500 ml-1">*</span>
+                                  )}
                                 </Label>
                                 <Switch
                                   id={fieldName}
@@ -602,34 +616,39 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                                 />
                               </div>
                             );
-                          
+
                           case 'radio':
                             return (
                               <div key={attribute.name} className="space-y-2">
                                 <Label className="text-sm font-medium">
-                                  {attribute.name}{attribute.required && <span className="text-red-500 ml-1">*</span>}
+                                  {attribute.name}
+                                  {attribute.required && (
+                                    <span className="text-red-500 ml-1">*</span>
+                                  )}
                                 </Label>
                                 <div className="space-y-2">
-                                  {attribute.values?.sort((a, b) => (a.order || 0) - (b.order || 0)).map(v => (
-                                    <label
-                                      key={v.value}
-                                      className="flex items-center space-x-3 p-2 rounded-md cursor-pointer hover:bg-gray-50"
-                                    >
-                                      <input
-                                        type="radio"
-                                        name={fieldName}
-                                        value={v.value}
-                                        checked={formValues[fieldName] === v.value}
-                                        onChange={(e) => setValue(fieldName, e.target.value)}
-                                        className="h-4 w-4 border-gray-300"
-                                      />
-                                      <span className="text-sm">{v.value}</span>
-                                    </label>
-                                  ))}
+                                  {attribute.values
+                                    ?.sort((a, b) => (a.order || 0) - (b.order || 0))
+                                    .map((v) => (
+                                      <label
+                                        key={v.value}
+                                        className="flex items-center space-x-3 p-2 rounded-md cursor-pointer hover:bg-gray-50"
+                                      >
+                                        <input
+                                          type="radio"
+                                          name={fieldName}
+                                          value={v.value}
+                                          checked={formValues[fieldName] === v.value}
+                                          onChange={(e) => setValue(fieldName, e.target.value)}
+                                          className="h-4 w-4 border-gray-300"
+                                        />
+                                        <span className="text-sm">{v.value}</span>
+                                      </label>
+                                    ))}
                                 </div>
                               </div>
                             );
-                          
+
                           default:
                             return null;
                         }
@@ -856,7 +875,6 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                 />
               </div>
 
-          
               {/* 
               <div className="space-y-4">
                 <FormSelect
@@ -1420,7 +1438,6 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                 {/* Delivery Distance Field - Shows when delivery is selected */}
                 {formValues.marketplaceOptions?.delivery && (
                   <div className="mt-4 pl-8">
-                   
                     <FormInput
                       disabled={formValues.localDeliveryFree}
                       name="deliveryDistance"
@@ -1450,7 +1467,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                       className="h-[53px]"
                       hint="Maximum delivery distance in miles"
                     />
-                     <div className="flex items-center mt-2 justify-end gap-1">
+                    <div className="flex items-center mt-2 justify-end gap-1">
                       <Label htmlFor={`delivery-for-free`} className="text-xs text-gray-600">
                         Local Delivery Free
                       </Label>

@@ -538,7 +538,6 @@ export const FormSelect: React.FC<FormSelectProps> = ({
               );
             }
 
-
             // Single select mode (original behavior)
             // Force the value to be a string and ensure it exists in options
             const selectValue = field.value ? String(field.value) : '';
@@ -559,8 +558,6 @@ export const FormSelect: React.FC<FormSelectProps> = ({
                 finalValue = valueExistsInOptions ? selectValue : '';
               }
             }
-
-          
 
             return (
               <Select

@@ -112,10 +112,7 @@ export const RegularPageForm: React.FC<RegularPageFormProps> = ({
 
   return (
     <FormProvider {...methods}>
-      <form
-        onSubmit={handleSubmit(onSubmitForm)}
-        className="flex flex-col flex-1 overflow-hidden"
-      >
+      <form onSubmit={handleSubmit(onSubmitForm)} className="flex flex-col flex-1 overflow-hidden">
         <div className="flex-1 overflow-y-auto px-6 py-4">
           {/* Page Title */}
           <div className="space-y-4">
@@ -184,9 +181,7 @@ export const RegularPageForm: React.FC<RegularPageFormProps> = ({
                 </div>
               )}
             />
-            {errors.content && (
-              <p className="text-sm text-red-600">{errors.content.message}</p>
-            )}
+            {errors.content && <p className="text-sm text-red-600">{errors.content.message}</p>}
           </div>
         </div>
 

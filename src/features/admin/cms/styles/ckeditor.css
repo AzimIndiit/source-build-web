@@ -37,33 +37,33 @@
   .ckeditor-wrapper .ck-editor__main {
     min-height: 250px;
   }
-  
+
   .ckeditor-wrapper .ck-content {
     min-height: 250px;
     max-height: 400px;
     padding: 12px;
     font-size: 14px;
   }
-  
+
   .ckeditor-wrapper .ck-toolbar {
     padding: 6px 8px !important;
   }
-  
+
   .ckeditor-wrapper .ck-toolbar__items {
     gap: 2px;
   }
-  
+
   .ckeditor-wrapper .ck-button {
     min-width: 30px;
     min-height: 30px;
   }
-  
+
   /* Hide less important buttons on mobile */
-  .ckeditor-wrapper.mobile-toolbar .ck-button[data-cke-tooltip-text="Insert table"],
-  .ckeditor-wrapper.mobile-toolbar .ck-button[data-cke-tooltip-text="Block quote"] {
+  .ckeditor-wrapper.mobile-toolbar .ck-button[data-cke-tooltip-text='Insert table'],
+  .ckeditor-wrapper.mobile-toolbar .ck-button[data-cke-tooltip-text='Block quote'] {
     display: none !important;
   }
-  
+
   /* Make dropdown wider on mobile */
   .ckeditor-wrapper .ck-dropdown__panel {
     min-width: 200px;
@@ -76,11 +76,11 @@
     min-height: 280px;
     max-height: 450px;
   }
-  
+
   .ckeditor-wrapper .ck-toolbar {
     padding: 8px 10px !important;
   }
-  
+
   .ckeditor-wrapper .ck-button {
     min-width: 32px;
     min-height: 32px;

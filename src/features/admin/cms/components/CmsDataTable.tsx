@@ -20,7 +20,17 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Eye, Trash2, MoreVertical, MessageSquare, ArrowUpDown, Plus, Edit, Edit2, Edit2Icon } from 'lucide-react';
+import {
+  Eye,
+  Trash2,
+  MoreVertical,
+  MessageSquare,
+  ArrowUpDown,
+  Plus,
+  Edit,
+  Edit2,
+  Edit2Icon,
+} from 'lucide-react';
 import { CmsPage } from '../types';
 import { SearchInput } from '@/features/admin/user-management/components/SearchInput';
 import { EmptyState } from '@/components/common/EmptyState';
@@ -144,7 +154,10 @@ export const CmsDataTable: React.FC<CmsDataTableProps> = ({
           const data = row.original;
           return (
             <div className="text-center flex justify-center items-center">
-              <button  onClick={() => onEdit?.(data)} className="cursor-pointer text-white flex gap-2 items-center p-2 rounded-md bg-green-500">
+              <button
+                onClick={() => onEdit?.(data)}
+                className="cursor-pointer text-white flex gap-2 items-center p-2 rounded-md bg-green-500"
+              >
                 <Edit2Icon className="h-5 w-5 text-white" />
               </button>
             </div>

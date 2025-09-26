@@ -87,7 +87,14 @@ export interface FeaturesSection {
   order?: number;
 }
 
-export type LandingPageSection = HeroSection | CategoriesSection | ProductSection | DealsSection | FeaturesSection | BannerSection | CollectionSection;
+export type LandingPageSection =
+  | HeroSection
+  | CategoriesSection
+  | ProductSection
+  | DealsSection
+  | FeaturesSection
+  | BannerSection
+  | CollectionSection;
 
 // Legacy types for compatibility
 export interface BannerButton {

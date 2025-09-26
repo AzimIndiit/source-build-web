@@ -44,7 +44,7 @@ export const BuyerSidebar: React.FC<BuyerSidebarProps> = ({
   const navigate = useNavigate();
   const [localCollapsed, setLocalCollapsed] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  
+  const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string[]>>({});
 
   // Use controlled state if provided, otherwise use local state
   const isCollapsed = controlledCollapsed !== undefined ? controlledCollapsed : localCollapsed;
@@ -74,7 +74,7 @@ export const BuyerSidebar: React.FC<BuyerSidebarProps> = ({
       if (subCategoryParam && categoryParam) {
         const categorySlugList = categoryParam.split(',');
         const subCategorySlugs = subCategoryParam.split(',');
-        
+
         // For each subcategory, we need to pair it with its parent category
         // This assumes subcategories are passed in the same order as their parent categories
         subCategorySlugs.forEach((subCatSlug) => {
@@ -86,10 +86,58 @@ export const BuyerSidebar: React.FC<BuyerSidebarProps> = ({
       }
 
       setSelectedCategories(initialCategories);
+
+      // Parse attributes from URL
+      const attributesParam = searchParams.get('attributes');
+      if (attributesParam) {
+        try {
+          const parsedAttributes = JSON.parse(attributesParam);
+          setSelectedAttributes(parsedAttributes);
+        } catch (e) {
+          console.error('Failed to parse attributes from URL', e);
+        }
+      } else {
+        setSelectedAttributes({});
+      }
     }
   }, [isMarketplacePage, location.search]);
 
   // Handle category selection
+  const handleAttributeSelect = (attributeId: string, value: string) => {
+    setSelectedAttributes((prev) => {
+      const newAttributes = { ...prev };
+
+      if (!newAttributes[attributeId]) {
+        newAttributes[attributeId] = [];
+      }
+
+      const valueIndex = newAttributes[attributeId].indexOf(value);
+      if (valueIndex > -1) {
+        // Remove value if already selected
+        newAttributes[attributeId] = newAttributes[attributeId].filter((v) => v !== value);
+        if (newAttributes[attributeId].length === 0) {
+          delete newAttributes[attributeId];
+        }
+      } else {
+        // Add value if not selected
+        newAttributes[attributeId] = [...newAttributes[attributeId], value];
+      }
+
+      // Update URL with attribute filters
+      const searchParams = new URLSearchParams(location.search);
+
+      if (Object.keys(newAttributes).length > 0) {
+        searchParams.set('attributes', JSON.stringify(newAttributes));
+      } else {
+        searchParams.delete('attributes');
+      }
+
+      navigate(`${location.pathname}?${searchParams.toString()}`, { replace: true });
+
+      return newAttributes;
+    });
+  };
+
   const handleCategorySelect = (category: string, subcategory?: string) => {
     const key = subcategory ? `${category}:${subcategory}` : category;
 
@@ -102,21 +150,20 @@ export const BuyerSidebar: React.FC<BuyerSidebarProps> = ({
 
         // Extract categories and subcategories separately for the API
         const categories = newCategories.filter((cat) => !cat.includes(':')).join(',');
-        
+
         // Extract unique subcategories (prevent duplicates)
-        const uniqueSubcategories = [...new Set(
-          newCategories
-            .filter((cat) => cat.includes(':'))
-            .map((cat) => cat.split(':')[1])
-        )];
+        const uniqueSubcategories = [
+          ...new Set(
+            newCategories.filter((cat) => cat.includes(':')).map((cat) => cat.split(':')[1])
+          ),
+        ];
         const subcategories = uniqueSubcategories.join(',');
 
         // Set or delete category parameter
         if (categories.split(',').length > 1) {
           searchParams.set('type', 'all');
           searchParams.set('category', categories);
-        } else
-         if(categories.split(',').length === 1) {
+        } else if (categories.split(',').length === 1) {
           searchParams.set('category', categories);
           searchParams.delete('type');
         } else {
@@ -130,7 +177,7 @@ export const BuyerSidebar: React.FC<BuyerSidebarProps> = ({
         } else {
           searchParams.delete('subCategory');
         }
- console.log('categories.length', categories, 'subcategories.length', subcategories.length)
+        console.log('categories.length', categories, 'subcategories.length', subcategories.length);
         navigate(`${location.pathname}?${searchParams.toString()}`, { replace: true });
       }
 
@@ -249,6 +296,8 @@ export const BuyerSidebar: React.FC<BuyerSidebarProps> = ({
                 isCollapsed={isCollapsed}
                 onCategorySelect={handleCategorySelect}
                 selectedCategories={selectedCategories}
+                onAttributeSelect={handleAttributeSelect}
+                selectedAttributes={selectedAttributes}
               />
             </div>
           )}

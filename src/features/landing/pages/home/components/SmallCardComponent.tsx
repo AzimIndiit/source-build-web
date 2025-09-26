@@ -77,20 +77,21 @@ const SmallCardComponent: React.FC<SmallCardComponentProps> = ({ categoriesData 
   const navigate = useNavigate();
 
   // Use API data if available, otherwise fallback to default data
-  const displayData = categoriesData && categoriesData.length > 0 
-    ? categoriesData.map(section => {
-        // Use populated categories data or items as fallback
-        const categoriesItems = section.categories || section.items || [];
-        return {
-          title: section.title || 'Categories',
-          items: categoriesItems.slice(0, 4).map(item => ({
-            img: (item as any).imageUrl || (item as any).image || IMAGES.Deal_1,
-            name: (item as any).name || (item as any).title || 'Category',
-            link: (item as any).link || '/marketplace'
-          }))
-        };
-      })
-    : dealsData;
+  const displayData =
+    categoriesData && categoriesData.length > 0
+      ? categoriesData.map((section) => {
+          // Use populated categories data or items as fallback
+          const categoriesItems = section.categories || section.items || [];
+          return {
+            title: section.title || 'Categories',
+            items: categoriesItems.slice(0, 4).map((item) => ({
+              img: (item as any).imageUrl || (item as any).image || IMAGES.Deal_1,
+              name: (item as any).name || (item as any).title || 'Category',
+              link: (item as any).link || '/marketplace',
+            })),
+          };
+        })
+      : dealsData;
 
   return (
     <section className="py-8 sm:py-12 md:py-16 px-4 sm:px-6 lg:px-8">

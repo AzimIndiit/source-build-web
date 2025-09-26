@@ -206,7 +206,7 @@ const createProductSchema = z
             'At least one marketplace option (Pickup, Shipping, or Delivery) must be selected',
         }
       ),
-    deliveryDistance:z.string().trim().optional(),
+    deliveryDistance: z.string().trim().optional(),
 
     pickupHours: z
       .string()
@@ -351,7 +351,8 @@ const createProductSchema = z
         }
       }
     }
-  }).passthrough(); // Allow additional fields for dynamic attributes
+  })
+  .passthrough(); // Allow additional fields for dynamic attributes
 
 type CreateProductForm = z.infer<typeof createProductSchema> & Record<string, any>;
 
@@ -545,7 +546,7 @@ function CreateProductPage() {
     if (formValues.category !== selectedCategoryId) {
       // Clear previous attribute values when category changes
       if (currentAttributes.length > 0) {
-        currentAttributes.forEach(attr => {
+        currentAttributes.forEach((attr) => {
           const fieldName = `attribute_${attr.name.replace(/\s+/g, '_')}`;
           methods.unregister(fieldName as any);
         });
@@ -554,16 +555,18 @@ function CreateProductPage() {
       setSelectedCategoryId(formValues.category);
       // Reset subcategory when category changes
       methods.setValue('subCategory', '');
-      
+
       // Update attributes from category
-      const selectedCategory = categoriesData?.find(cat => cat._id === formValues.category);
+      const selectedCategory = categoriesData?.find((cat) => cat._id === formValues.category);
       console.log('Category changed:', formValues.category);
       console.log('Selected category data:', selectedCategory);
       console.log('Category has attributes?', selectedCategory?.hasAttributes);
       console.log('Category attributes:', selectedCategory?.attributes);
-      
+
       if (selectedCategory?.hasAttributes && selectedCategory.attributes) {
-        const filteredAttributes = selectedCategory.attributes.filter(attr => attr.isActive !== false);
+        const filteredAttributes = selectedCategory.attributes.filter(
+          (attr) => attr.isActive !== false
+        );
         console.log('Setting category attributes:', filteredAttributes);
         setCurrentAttributes(filteredAttributes);
       } else {
@@ -577,30 +580,36 @@ function CreateProductPage() {
   useEffect(() => {
     // Clear previous attribute values when subcategory changes
     if (currentAttributes.length > 0) {
-      currentAttributes.forEach(attr => {
+      currentAttributes.forEach((attr) => {
         const fieldName = `attribute_${attr.name.replace(/\s+/g, '_')}`;
         methods.unregister(fieldName as any);
       });
     }
 
     if (formValues.subCategory) {
-      const selectedSubcategory = subcategoriesData?.find(sub => sub._id === formValues.subCategory);
+      const selectedSubcategory = subcategoriesData?.find(
+        (sub) => sub._id === formValues.subCategory
+      );
       console.log('Subcategory changed:', formValues.subCategory);
       console.log('Selected subcategory data:', selectedSubcategory);
       console.log('Subcategory has attributes?', selectedSubcategory?.hasAttributes);
       console.log('Subcategory attributes:', selectedSubcategory?.attributes);
-      
+
       if (selectedSubcategory?.hasAttributes && selectedSubcategory.attributes) {
         // Subcategory attributes override category attributes
-        const filteredAttributes = selectedSubcategory.attributes.filter(attr => attr.isActive !== false);
+        const filteredAttributes = selectedSubcategory.attributes.filter(
+          (attr) => attr.isActive !== false
+        );
         console.log('Setting subcategory attributes:', filteredAttributes);
         setCurrentAttributes(filteredAttributes);
       } else if (!selectedSubcategory?.hasAttributes) {
         // If subcategory doesn't have attributes, use category attributes
-        const selectedCategory = categoriesData?.find(cat => cat._id === formValues.category);
+        const selectedCategory = categoriesData?.find((cat) => cat._id === formValues.category);
         console.log('Subcategory has no attributes, checking category:', selectedCategory);
         if (selectedCategory?.hasAttributes && selectedCategory.attributes) {
-          const filteredAttributes = selectedCategory.attributes.filter(attr => attr.isActive !== false);
+          const filteredAttributes = selectedCategory.attributes.filter(
+            (attr) => attr.isActive !== false
+          );
           console.log('Using category attributes instead:', filteredAttributes);
           setCurrentAttributes(filteredAttributes);
         } else {
@@ -609,26 +618,33 @@ function CreateProductPage() {
         }
       }
     }
-  }, [formValues.subCategory, subcategoriesData, formValues.category, categoriesData, currentAttributes, methods]);
-  
+  }, [
+    formValues.subCategory,
+    subcategoriesData,
+    formValues.category,
+    categoriesData,
+    currentAttributes,
+    methods,
+  ]);
+
   // Register attribute fields when attributes change
   useEffect(() => {
     if (currentAttributes.length > 0) {
       console.log('Registering attribute fields:', currentAttributes);
-      currentAttributes.forEach(attr => {
+      currentAttributes.forEach((attr) => {
         const fieldName = `attribute_${attr.name.replace(/\s+/g, '_')}`;
         console.log(`Registering field: ${fieldName}`);
-        
+
         // Unregister the field first if it exists to ensure clean state
         try {
           methods.unregister(fieldName as any);
         } catch (e) {
           // Field might not exist, that's ok
         }
-        
+
         // Register the field with react-hook-form
         methods.register(fieldName as any);
-        
+
         // Set default value based on input type
         const currentValue = (methods.getValues() as any)[fieldName];
         if (currentValue === undefined || currentValue === null) {
@@ -640,10 +656,13 @@ function CreateProductPage() {
             methods.setValue(fieldName as any, '');
           }
         }
-        
-        console.log(`Field ${fieldName} registered with value:`, (methods.getValues() as any)[fieldName]);
+
+        console.log(
+          `Field ${fieldName} registered with value:`,
+          (methods.getValues() as any)[fieldName]
+        );
       });
-      
+
       // Force a re-render to ensure fields are registered
       methods.trigger();
     }
@@ -755,19 +774,21 @@ function CreateProductPage() {
     console.log('Current attributes:', currentAttributes);
     console.log('Form data:', data);
     console.log('All form values:', methods.getValues());
-    
-    const productAttributes = currentAttributes.map(attr => {
-      const fieldName = `attribute_${attr.name.replace(/\s+/g, '_')}`;
-      const value = (data as any)[fieldName] || (methods.getValues() as any)[fieldName];
-      console.log(`Attribute ${attr.name} (${fieldName}):`, value);
-      return {
-        attributeName: attr.name,
-        inputType: attr.inputType,
-        value: value,
-        required: attr.required
-      };
-    }).filter(attr => attr.value !== undefined && attr.value !== '' && attr.value !== null);
-    
+
+    const productAttributes = currentAttributes
+      .map((attr) => {
+        const fieldName = `attribute_${attr.name.replace(/\s+/g, '_')}`;
+        const value = (data as any)[fieldName] || (methods.getValues() as any)[fieldName];
+        console.log(`Attribute ${attr.name} (${fieldName}):`, value);
+        return {
+          attributeName: attr.name,
+          inputType: attr.inputType,
+          value: value,
+          required: attr.required,
+        };
+      })
+      .filter((attr) => attr.value !== undefined && attr.value !== '' && attr.value !== null);
+
     console.log('Collected productAttributes:', productAttributes);
 
     // Prepare the mutation data
@@ -833,7 +854,7 @@ function CreateProductPage() {
 
     console.log('Final mutation data with attributes:', mutationData);
     console.log('ProductAttributes in mutation:', mutationData.productAttributes);
-    
+
     try {
       await createProductMutation.mutateAsync(mutationData);
       // Navigate to products page or wherever appropriate
@@ -900,16 +921,16 @@ function CreateProductPage() {
     // Collect attribute values for draft
     const productAttributes: any[] = [];
     if (currentAttributes.length > 0) {
-      currentAttributes.forEach(attr => {
+      currentAttributes.forEach((attr) => {
         const fieldName = `attribute_${attr.name.replace(/\s+/g, '_')}`;
         const value = (formData as any)[fieldName] || (methods.getValues() as any)[fieldName];
-        
+
         if (value !== undefined && value !== '' && value !== null) {
           productAttributes.push({
             attributeName: attr.name,
             inputType: attr.inputType,
             value: value,
-            required: attr.required || false
+            required: attr.required || false,
           });
         }
       });

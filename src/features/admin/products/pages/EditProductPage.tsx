@@ -127,7 +127,9 @@ const editProductSchema = z
     subCategory: z
       .string()
       .trim()
-      .max(50, 'Sub category must not exceed 50 characters').optional().or(z.literal(null)),
+      .max(50, 'Sub category must not exceed 50 characters')
+      .optional()
+      .or(z.literal(null)),
 
     quantity: z
       .string()

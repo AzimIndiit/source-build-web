@@ -7,17 +7,12 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui';
 import { FormSelect } from '@/components/forms/FormSelect';
 import { Upload, X, Trash2, Plus } from 'lucide-react';
-import { 
-  useUpdateBannerSection, 
-  useUpdateCollectionSection, 
-  useUpdateProductSection 
-} from '../hooks/useCmsMutations';
 import {
-  BannerSection,
-  CollectionSection,
-  ProductSection,
-  BannerButton,
-} from '../types/landing';
+  useUpdateBannerSection,
+  useUpdateCollectionSection,
+  useUpdateProductSection,
+} from '../hooks/useCmsMutations';
+import { BannerSection, CollectionSection, ProductSection, BannerButton } from '../types/landing';
 import { fileService } from '@/features/profile/services/fileService';
 import toast from 'react-hot-toast';
 
@@ -64,7 +59,7 @@ export const BannerSectionForm: React.FC<BannerSectionFormProps> = ({
   }, [section]);
 
   const handleFieldChange = (field: string, value: any) => {
-    setLocalSection(prev => ({ ...prev, [field]: value }));
+    setLocalSection((prev) => ({ ...prev, [field]: value }));
     setHasChanges(true);
   };
 
@@ -89,25 +84,28 @@ export const BannerSectionForm: React.FC<BannerSectionFormProps> = ({
     }
 
     // Update the section
-    updateBannerMutation.mutate({
-      pageId,
-      sectionId: section.id,
-      data: {
-        title: localSection.title,
-        subtitle: localSection.subtitle,
-        imageUrl: localSection.imageUrl,
-        buttons: localSection.buttons,
+    updateBannerMutation.mutate(
+      {
+        pageId,
+        sectionId: section.id,
+        data: {
+          title: localSection.title,
+          subtitle: localSection.subtitle,
+          imageUrl: localSection.imageUrl,
+          buttons: localSection.buttons,
+        },
       },
-    }, {
-      onSuccess: () => {
-        onUpdate(localSection);
-        setHasChanges(false);
-        toast.success('Banner section updated successfully');
-      },
-      onError: () => {
-        toast.error('Failed to update banner section');
-      },
-    });
+      {
+        onSuccess: () => {
+          onUpdate(localSection);
+          setHasChanges(false);
+          toast.success('Banner section updated successfully');
+        },
+        onError: () => {
+          toast.error('Failed to update banner section');
+        },
+      }
+    );
   };
 
   const handleCancel = () => {
@@ -127,12 +125,12 @@ export const BannerSectionForm: React.FC<BannerSectionFormProps> = ({
   };
 
   const removeButton = (buttonId: string) => {
-    const updatedButtons = localSection.buttons?.filter(btn => btn.id !== buttonId);
+    const updatedButtons = localSection.buttons?.filter((btn) => btn.id !== buttonId);
     handleFieldChange('buttons', updatedButtons);
   };
 
   const updateButton = (buttonId: string, updates: Partial<BannerButton>) => {
-    const updatedButtons = localSection.buttons?.map(btn =>
+    const updatedButtons = localSection.buttons?.map((btn) =>
       btn.id === buttonId ? { ...btn, ...updates } : btn
     );
     handleFieldChange('buttons', updatedButtons);
@@ -207,14 +205,9 @@ export const BannerSectionForm: React.FC<BannerSectionFormProps> = ({
                   }}
                   disabled={disabled}
                 />
-                <label
-                  htmlFor={`banner-upload-${section.id}`}
-                  className="cursor-pointer"
-                >
+                <label htmlFor={`banner-upload-${section.id}`} className="cursor-pointer">
                   <Upload className="mx-auto h-12 w-12 text-gray-400" />
-                  <p className="mt-2 text-sm text-gray-600">
-                    Click to upload or drag and drop
-                  </p>
+                  <p className="mt-2 text-sm text-gray-600">Click to upload or drag and drop</p>
                 </label>
               </div>
             )}
@@ -276,7 +269,9 @@ export const BannerSectionForm: React.FC<BannerSectionFormProps> = ({
           </Button>
           <Button
             onClick={handleUpdate}
-            disabled={disabled || updateBannerMutation.isPending || isUploading || !hasChanges || !pageId}
+            disabled={
+              disabled || updateBannerMutation.isPending || isUploading || !hasChanges || !pageId
+            }
             className="bg-primary hover:bg-primary/90"
           >
             {updateBannerMutation.isPending ? 'Updating...' : 'Update'}
@@ -297,7 +292,7 @@ export const CollectionSectionForm: React.FC<CollectionSectionFormProps> = ({
   const [localSection, setLocalSection] = useState(section);
   const [hasChanges, setHasChanges] = useState(false);
   const updateCollectionMutation = useUpdateCollectionSection();
-  
+
   const methods = useForm({
     defaultValues: {
       [`categories-${section.id}`]: section.categoryIds || [],
@@ -313,7 +308,7 @@ export const CollectionSectionForm: React.FC<CollectionSectionFormProps> = ({
   }, [section]);
 
   const handleFieldChange = (field: string, value: any) => {
-    setLocalSection(prev => ({ ...prev, [field]: value }));
+    setLocalSection((prev) => ({ ...prev, [field]: value }));
     setHasChanges(true);
   };
 
@@ -321,23 +316,26 @@ export const CollectionSectionForm: React.FC<CollectionSectionFormProps> = ({
     const formValues = methods.getValues();
     const categoryIds = formValues[`categories-${section.id}`] || [];
 
-    updateCollectionMutation.mutate({
-      pageId,
-      sectionId: section.id,
-      data: {
-        title: localSection.title,
-        categoryIds,
+    updateCollectionMutation.mutate(
+      {
+        pageId,
+        sectionId: section.id,
+        data: {
+          title: localSection.title,
+          categoryIds,
+        },
       },
-    }, {
-      onSuccess: () => {
-        onUpdate({ ...localSection, categoryIds });
-        setHasChanges(false);
-        toast.success('Collection section updated successfully');
-      },
-      onError: () => {
-        toast.error('Failed to update collection section');
-      },
-    });
+      {
+        onSuccess: () => {
+          onUpdate({ ...localSection, categoryIds });
+          setHasChanges(false);
+          toast.success('Collection section updated successfully');
+        },
+        onError: () => {
+          toast.error('Failed to update collection section');
+        },
+      }
+    );
   };
 
   const handleCancel = () => {
@@ -421,7 +419,7 @@ export const ProductSectionForm: React.FC<ProductSectionFormProps> = ({
   const [localSection, setLocalSection] = useState(section);
   const [hasChanges, setHasChanges] = useState(false);
   const updateProductMutation = useUpdateProductSection();
-  
+
   const methods = useForm({
     defaultValues: {
       [`products-${section.id}`]: section.productIds || [],
@@ -437,7 +435,7 @@ export const ProductSectionForm: React.FC<ProductSectionFormProps> = ({
   }, [section]);
 
   const handleFieldChange = (field: string, value: any) => {
-    setLocalSection(prev => ({ ...prev, [field]: value }));
+    setLocalSection((prev) => ({ ...prev, [field]: value }));
     setHasChanges(true);
   };
 
@@ -445,23 +443,26 @@ export const ProductSectionForm: React.FC<ProductSectionFormProps> = ({
     const formValues = methods.getValues();
     const productIds = formValues[`products-${section.id}`] || [];
 
-    updateProductMutation.mutate({
-      pageId,
-      sectionId: section.id,
-      data: {
-        title: localSection.title,
-        productIds,
+    updateProductMutation.mutate(
+      {
+        pageId,
+        sectionId: section.id,
+        data: {
+          title: localSection.title,
+          productIds,
+        },
       },
-    }, {
-      onSuccess: () => {
-        onUpdate({ ...localSection, productIds });
-        setHasChanges(false);
-        toast.success('Product section updated successfully');
-      },
-      onError: () => {
-        toast.error('Failed to update product section');
-      },
-    });
+      {
+        onSuccess: () => {
+          onUpdate({ ...localSection, productIds });
+          setHasChanges(false);
+          toast.success('Product section updated successfully');
+        },
+        onError: () => {
+          toast.error('Failed to update product section');
+        },
+      }
+    );
   };
 
   const handleCancel = () => {

@@ -21,22 +21,14 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import {
-  Edit,
-  Trash2,
-  MoreVertical,
-  ArrowUpDown,
-  ChevronRight,
-  Power,
-  Plus,
-} from 'lucide-react';
+import { Edit, Trash2, MoreVertical, ArrowUpDown, ChevronRight, Power, Plus } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-  import { formatDate } from '@/lib/date-utils';
+import { formatDate } from '@/lib/date-utils';
 import { Attribute } from '../types';
 import { EmptyState } from '@/components/common/EmptyState';
 import { DeleteConfirmationModal } from '@/components/common/DeleteConfirmationModal';
@@ -134,7 +126,7 @@ export const AttributeDataTable: React.FC<AttributeDataTableProps> = ({
     setConfirmModalState({ isOpen: true, type, attributeId, attributeName });
   };
 
-    const columns: ColumnDef<Attribute>[] = React.useMemo(
+  const columns: ColumnDef<Attribute>[] = React.useMemo(
     () => [
       {
         id: 'serialNumber',
@@ -152,7 +144,6 @@ export const AttributeDataTable: React.FC<AttributeDataTableProps> = ({
         enableSorting: false,
         enableColumnFilter: false,
       },
-
 
       {
         accessorKey: 'name',
@@ -236,7 +227,6 @@ export const AttributeDataTable: React.FC<AttributeDataTableProps> = ({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                 
                   <DropdownMenuItem
                     onClick={() => onEdit?.(attribute)}
                     className="cursor-pointer text-primary"
@@ -249,14 +239,14 @@ export const AttributeDataTable: React.FC<AttributeDataTableProps> = ({
                     className="cursor-pointer"
                   >
                     <Power className="mr-2 h-4 w-4" />
-                    {attribute.isActive? 'Deactivate': 'Activate'}
+                    {attribute.isActive ? 'Deactivate' : 'Activate'}
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => openConfirmModal('delete', attribute._id, attribute.name)}
                     className="cursor-pointer text-red-600 hover:text-red-700"
                   >
                     <Trash2 className="mr-2 h-4 w-4" />
-                      Delete Attribute
+                    Delete Attribute
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -299,14 +289,12 @@ export const AttributeDataTable: React.FC<AttributeDataTableProps> = ({
           <h1 className="text-xl md:text-2xl font-bold text-gray-900">{title}</h1>
           <div className="flex gap-2">
             <Button
-                onClick={() => onAddAttribute?.()}
+              onClick={() => onAddAttribute?.()}
               className="bg-primary text-white hover:bg-primary/90 h-10"
             >
               <Plus className="w-4 h-4 mr-2" />
               Add Attribute
             </Button>
-
-           
           </div>
         </div>
 
@@ -357,24 +345,22 @@ export const AttributeDataTable: React.FC<AttributeDataTableProps> = ({
                 <Card key={attribute._id} className="bg-white shadow-sm border-gray-200">
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between mb-3">
-                   
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">{attribute.name}</p>
-                          <p className="text-xs text-gray-500">#{index + 1}</p>
-                        </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">{attribute.name}</p>
+                        <p className="text-xs text-gray-500">#{index + 1}</p>
                       </div>
-                      <Badge
-                        className={`px-2 py-1 rounded-full font-medium text-xs capitalize ${
-                          attribute.isActive
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-gray-100 text-gray-800'
-                        }`}
-                      >
-                        {attribute.isActive ? 'Active' : 'Inactive'}
-                      </Badge>
+                    </div>
+                    <Badge
+                      className={`px-2 py-1 rounded-full font-medium text-xs capitalize ${
+                        attribute.isActive
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-gray-100 text-gray-800'
+                      }`}
+                    >
+                      {attribute.isActive ? 'Active' : 'Inactive'}
+                    </Badge>
 
                     <div className="space-y-2 mb-3">
-                      
                       <div className="flex justify-between text-xs text-gray-500">
                         <span>{formatDate(attribute.createdAt as string)}</span>
                       </div>
@@ -399,14 +385,18 @@ export const AttributeDataTable: React.FC<AttributeDataTableProps> = ({
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem
-                            onClick={() => openConfirmModal('toggle', attribute._id, attribute.name)}
+                            onClick={() =>
+                              openConfirmModal('toggle', attribute._id, attribute.name)
+                            }
                             className="cursor-pointer"
                           >
                             <Power className="mr-2 h-4 w-4" />
                             {attribute.isActive ? 'Deactivate' : 'Activate'}
                           </DropdownMenuItem>
                           <DropdownMenuItem
-                            onClick={() => openConfirmModal('delete', attribute._id, attribute.name)}
+                            onClick={() =>
+                              openConfirmModal('delete', attribute._id, attribute.name)
+                            }
                             className="cursor-pointer text-red-600"
                           >
                             <Trash2 className="mr-2 h-4 w-4" />
@@ -471,7 +461,12 @@ export const AttributeDataTable: React.FC<AttributeDataTableProps> = ({
       <DeleteConfirmationModal
         isOpen={confirmModalState.isOpen}
         onClose={() =>
-              setConfirmModalState({ isOpen: false, type: null, attributeId: null, attributeName: null })
+          setConfirmModalState({
+            isOpen: false,
+            type: null,
+            attributeId: null,
+            attributeName: null,
+          })
         }
         onConfirm={handleConfirmAction}
         title={
@@ -486,7 +481,7 @@ export const AttributeDataTable: React.FC<AttributeDataTableProps> = ({
             <div className="font-medium text-gray-900">{confirmModalState.attributeName}</div>
             <div className="text-sm text-gray-700 mt-3">
               {confirmModalState.type === 'delete'
-                  ? 'This action cannot be undone. All attributes under this subcategory will also be affected.'
+                ? 'This action cannot be undone. All attributes under this subcategory will also be affected.'
                 : confirmModalState.type === 'toggle'
                   ? `This will ${attributes.find((c) => c._id === confirmModalState.attributeId)?.isActive ? 'deactivate' : 'activate'} the attribute and affect its visibility.`
                   : ''}
@@ -498,7 +493,7 @@ export const AttributeDataTable: React.FC<AttributeDataTableProps> = ({
           confirmModalState.type === 'delete'
             ? 'Yes, Delete'
             : confirmModalState.type === 'toggle'
-                ? `Yes, ${attributes.find((c) => c._id === confirmModalState.attributeId)?.isActive ? 'Deactivate' : 'Activate'} `
+              ? `Yes, ${attributes.find((c) => c._id === confirmModalState.attributeId)?.isActive ? 'Deactivate' : 'Activate'} `
               : ''
         }
       />

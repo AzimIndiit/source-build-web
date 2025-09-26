@@ -132,7 +132,9 @@ const editProductSchema = z
     subCategory: z
       .string()
       .trim()
-      .max(50, 'Sub category must not exceed 50 characters').optional().or(z.literal('')),
+      .max(50, 'Sub category must not exceed 50 characters')
+      .optional()
+      .or(z.literal('')),
 
     quantity: z
       .string()
@@ -217,7 +219,7 @@ const editProductSchema = z
     deliveryDistance: z.string().trim().optional(),
 
     shippingPrice: z.string().trim().optional(),
-    localDeliveryFree : z.boolean().optional(),
+    localDeliveryFree: z.boolean().optional(),
     // readyByDate: z.string().min(1, 'Date is required'),
 
     // readyByTime: z.string().min(1, 'Time is required'),
@@ -495,7 +497,7 @@ function EditProductPage() {
       pickupHours: '',
       shippingPrice: '200',
       deliveryDistance: undefined,
-      localDeliveryFree:false,
+      localDeliveryFree: false,
       // readyByDate: '',
       // readyByTime: '',
       readyByDays: '0',
@@ -563,7 +565,7 @@ function EditProductPage() {
 
     // Clear previous attribute values when category or subcategory changes
     if (currentAttributes.length > 0) {
-      currentAttributes.forEach(attr => {
+      currentAttributes.forEach((attr) => {
         const fieldName = `attribute_${attr.name.replace(/\s+/g, '_')}`;
         methods.unregister(fieldName as any);
       });
@@ -571,14 +573,12 @@ function EditProductPage() {
 
     if (formValues.subCategory && subcategoriesData) {
       const selectedSubcategory = subcategoriesData.find(
-        sub => sub._id === formValues.subCategory
+        (sub) => sub._id === formValues.subCategory
       );
       if (selectedSubcategory?.attributes && selectedSubcategory.attributes.length > 0) {
         setCurrentAttributes(selectedSubcategory.attributes as Attribute[]);
       } else if (formValues.category && categoriesData) {
-        const selectedCategory = categoriesData.find(
-          cat => cat._id === formValues.category
-        );
+        const selectedCategory = categoriesData.find((cat) => cat._id === formValues.category);
         if (selectedCategory?.attributes) {
           setCurrentAttributes(selectedCategory.attributes as Attribute[]);
         } else {
@@ -588,9 +588,7 @@ function EditProductPage() {
         setCurrentAttributes([]);
       }
     } else if (formValues.category && categoriesData) {
-      const selectedCategory = categoriesData.find(
-        cat => cat._id === formValues.category
-      );
+      const selectedCategory = categoriesData.find((cat) => cat._id === formValues.category);
       if (selectedCategory?.attributes) {
         setCurrentAttributes(selectedCategory.attributes as Attribute[]);
       } else {
@@ -599,7 +597,15 @@ function EditProductPage() {
     } else {
       setCurrentAttributes([]);
     }
-  }, [formValues.category, formValues.subCategory, categoriesData, subcategoriesData, isInitialDataLoaded, currentAttributes, methods]);
+  }, [
+    formValues.category,
+    formValues.subCategory,
+    categoriesData,
+    subcategoriesData,
+    isInitialDataLoaded,
+    currentAttributes,
+    methods,
+  ]);
 
   // Store attribute values from product data
   const [pendingAttributeValues, setPendingAttributeValues] = useState<Record<string, any>>({});
@@ -607,17 +613,21 @@ function EditProductPage() {
   // Register attribute fields when attributes change
   useEffect(() => {
     if (currentAttributes.length > 0 && isInitialDataLoaded) {
-      currentAttributes.forEach(attr => {
+      currentAttributes.forEach((attr) => {
         const fieldName = `attribute_${attr.name.replace(/\s+/g, '_')}`;
         const currentValue = (methods.getValues() as any)[fieldName];
-        
+
         // Only register if not already registered
         if (currentValue === undefined) {
           (methods.register as any)(fieldName);
-          
+
           // Check if we have a pending value for this attribute
           if (pendingAttributeValues[fieldName] !== undefined) {
-            console.log('Setting pending attribute value:', fieldName, pendingAttributeValues[fieldName]);
+            console.log(
+              'Setting pending attribute value:',
+              fieldName,
+              pendingAttributeValues[fieldName]
+            );
             methods.setValue(fieldName as any, pendingAttributeValues[fieldName]);
           } else {
             // Set default value based on input type if needed
@@ -935,16 +945,16 @@ function EditProductPage() {
     // Collect attribute values
     const productAttributes: any[] = [];
     if (currentAttributes.length > 0) {
-      currentAttributes.forEach(attr => {
+      currentAttributes.forEach((attr) => {
         const fieldName = `attribute_${attr.name.replace(/\s+/g, '_')}`;
         const value = (data as any)[fieldName];
-        
+
         if (value !== undefined && value !== '' && value !== null) {
           productAttributes.push({
             attributeName: attr.name,
             inputType: attr.inputType,
             value: value,
-            required: attr.required || false
+            required: attr.required || false,
           });
         }
       });
@@ -1015,7 +1025,7 @@ function EditProductPage() {
     };
 
     try {
-      console.log('mutationData', mutationData)
+      console.log('mutationData', mutationData);
       await updateProductMutation.mutateAsync({ id: id!, data: mutationData });
       navigate('/seller/products');
     } catch (error) {
@@ -1081,16 +1091,16 @@ function EditProductPage() {
     // Collect attribute values for draft
     const productAttributes: any[] = [];
     if (currentAttributes.length > 0) {
-      currentAttributes.forEach(attr => {
+      currentAttributes.forEach((attr) => {
         const fieldName = `attribute_${attr.name.replace(/\s+/g, '_')}`;
         const value = (formData as any)[fieldName];
-        
+
         if (value !== undefined && value !== '' && value !== null) {
           productAttributes.push({
             attributeName: attr.name,
             inputType: attr.inputType,
             value: value,
-            required: attr.required || false
+            required: attr.required || false,
           });
         }
       });

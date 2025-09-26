@@ -101,7 +101,7 @@ interface SaveDraftWithFiles {
     delivery?: boolean;
   };
   deliveryDistance?: number;
-  localDeliveryFree?: boolean;  
+  localDeliveryFree?: boolean;
   pickupHours?: string;
   shippingPrice?: number;
   readyByDate?: string;
@@ -306,7 +306,10 @@ export function useUpdateProductMutation() {
         price: productData.price !== undefined ? Number(productData.price) : undefined,
         quantity: productData.quantity !== undefined ? Number(productData.quantity) : undefined,
         outOfStock: productData.outOfStock,
-        deliveryDistance: productData.deliveryDistance!==undefined ? Number(productData.deliveryDistance) : undefined,
+        deliveryDistance:
+          productData.deliveryDistance !== undefined
+            ? Number(productData.deliveryDistance)
+            : undefined,
         shippingPrice: productData.shippingPrice ? Number(productData.shippingPrice) : undefined,
         discount: productData.discount
           ? {

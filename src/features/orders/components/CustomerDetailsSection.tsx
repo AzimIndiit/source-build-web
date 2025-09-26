@@ -22,7 +22,7 @@ export const CustomerDetailsSection: React.FC<CustomerDetailsSectionProps> = ({
   title = 'Customer Details',
   reviewTitle = 'Reviews & Rating From Customer',
 }) => {
-  const { mutate: getOrCreateChat ,isPending} = useGetOrCreateChatMutation();
+  const { mutate: getOrCreateChat, isPending } = useGetOrCreateChatMutation();
 
   const handleMessageClick = () => {
     if (customerDetails?.id) {
@@ -59,11 +59,15 @@ export const CustomerDetailsSection: React.FC<CustomerDetailsSectionProps> = ({
               </div>
             </div>
             <button
-             disabled={isPending}
+              disabled={isPending}
               className="p-3 bg-primary/10 hover:bg-primary/20 rounded-full transition-colors cursor-pointer"
               onClick={handleMessageClick}
             >
-             {isPending? <Loader2 className='animate-spin h-5 w-5 text-primary'/> : <MessageSquareMore className="w-5 h-5 text-primary " />}
+              {isPending ? (
+                <Loader2 className="animate-spin h-5 w-5 text-primary" />
+              ) : (
+                <MessageSquareMore className="w-5 h-5 text-primary " />
+              )}
             </button>
           </div>
         </Card>

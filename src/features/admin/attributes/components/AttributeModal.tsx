@@ -141,9 +141,10 @@ export const AttributeModal: React.FC<AttributeModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent 
+      <DialogContent
         className="sm:max-w-[600px] bg-white max-h-[90vh] overflow-y-auto"
-        onOpenAutoFocus={(e) => e.preventDefault()}>
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle>{attribute ? 'Edit Attribute' : 'Create New Attribute'}</DialogTitle>
         </DialogHeader>
@@ -248,10 +249,19 @@ export const AttributeModal: React.FC<AttributeModalProps> = ({
 
             {/* Actions */}
             <div className="flex justify-end gap-3 pt-4">
-              <Button variant="outline" onClick={onClose} disabled={isLoading} className='w-[220px] border-gray-200 text-gray-500'>
+              <Button
+                variant="outline"
+                onClick={onClose}
+                disabled={isLoading}
+                className="w-[220px] border-gray-200 text-gray-500"
+              >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isLoading} className="bg-primary text-white w-[220px]">
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="bg-primary text-white w-[220px]"
+              >
                 Done
               </Button>
             </div>

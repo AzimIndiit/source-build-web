@@ -36,26 +36,26 @@ const CmsPage: React.FC = () => {
   };
 
   const handleModalSubmit = async (data: any) => {
-    console.log('selectedPage', selectedPage, data)
+    console.log('selectedPage', selectedPage, data);
     if (selectedPage) {
       // Build update data based on what's provided
       const updateData: any = {
         title: data.title,
         content: data.content || '',
       };
-      
+
       // Include type if provided (from the form data)
       if (data.type) {
         updateData.type = data.type;
       }
-      
+
       // Include sections if provided (for landing pages)
       if (data.sections) {
         updateData.sections = data.sections;
       }
-      
+
       console.log('Updating page with data:', updateData);
-      
+
       await updatePageMutation.mutateAsync({
         id: selectedPage._id,
         data: updateData,

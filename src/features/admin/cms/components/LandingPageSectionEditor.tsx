@@ -69,136 +69,132 @@ interface ProductSectionFormProps {
   error?: string;
 }
 
-const CollectionSectionForm: React.FC<CollectionSectionFormProps> = memo(({
-  section,
-  categoryOptions,
-  onUpdate,
-  onUpdateCategories,
-  disabled = false,
-  error,
-}) => {
-  // Split errors into title and category errors
-  const titleError = error?.includes('Title is required') ? 'Title is required' : '';
-  const categoryError = error?.includes('At least one category must be selected') ? 'At least one category must be selected' : '';
-  // Use ref to store the latest callback to prevent infinite loops
-  const onUpdateCategoriesRef = React.useRef(onUpdateCategories);
-  React.useEffect(() => {
-    onUpdateCategoriesRef.current = onUpdateCategories;
-  }, [onUpdateCategories]);
+const CollectionSectionForm: React.FC<CollectionSectionFormProps> = memo(
+  ({ section, categoryOptions, onUpdate, onUpdateCategories, disabled = false, error }) => {
+    // Split errors into title and category errors
+    const titleError = error?.includes('Title is required') ? 'Title is required' : '';
+    const categoryError = error?.includes('At least one category must be selected')
+      ? 'At least one category must be selected'
+      : '';
+    // Use ref to store the latest callback to prevent infinite loops
+    const onUpdateCategoriesRef = React.useRef(onUpdateCategories);
+    React.useEffect(() => {
+      onUpdateCategoriesRef.current = onUpdateCategories;
+    }, [onUpdateCategories]);
 
-  // Process category values - use categoryIds which are MongoDB ObjectIds
-  const getCategoryValues = () => {
-    // Use categoryIds if available (these are MongoDB ObjectIds)
-    if (section.categoryIds && Array.isArray(section.categoryIds)) {
-      const validIds = section.categoryIds.filter(id => {
-        // Only return valid MongoDB ObjectIds (24 char hex strings)
-        const isValid = id && /^[a-f\d]{24}$/i.test(id);
-        if (id && !isValid) {
-          console.warn(`⚠️ [CATEGORY INIT] Invalid categoryId found: ${id}`);
-        }
-        return isValid;
-      });
-      return validIds;
-    }
-    // Fallback to categories for backward compatibility
-    if (section.categories) {
-      const ids = section.categories.map(cat => cat.id).filter(id => {
-        // Only return valid MongoDB ObjectIds
-        const isValid = id && /^[a-f\d]{24}$/i.test(id);
-        if (id && !isValid) {
-          console.warn(`⚠️ [CATEGORY INIT] Invalid category.id found: ${id}`);
-        }
-        return isValid;
-      });
-      return ids;
-    }
-    return [];
-  };
+    // Process category values - use categoryIds which are MongoDB ObjectIds
+    const getCategoryValues = () => {
+      // Use categoryIds if available (these are MongoDB ObjectIds)
+      if (section.categoryIds && Array.isArray(section.categoryIds)) {
+        const validIds = section.categoryIds.filter((id) => {
+          // Only return valid MongoDB ObjectIds (24 char hex strings)
+          const isValid = id && /^[a-f\d]{24}$/i.test(id);
+          if (id && !isValid) {
+            console.warn(`⚠️ [CATEGORY INIT] Invalid categoryId found: ${id}`);
+          }
+          return isValid;
+        });
+        return validIds;
+      }
+      // Fallback to categories for backward compatibility
+      if (section.categories) {
+        const ids = section.categories
+          .map((cat) => cat.id)
+          .filter((id) => {
+            // Only return valid MongoDB ObjectIds
+            const isValid = id && /^[a-f\d]{24}$/i.test(id);
+            if (id && !isValid) {
+              console.warn(`⚠️ [CATEGORY INIT] Invalid category.id found: ${id}`);
+            }
+            return isValid;
+          });
+        return ids;
+      }
+      return [];
+    };
 
-  // Create a unique form instance for each section
-  const { methods, watch, reset } = useSectionForm(
-    `categories-${section.id}`,
-    getCategoryValues
-  );
-  
-  // Reset form when section categoryIds change from outside
-  React.useEffect(() => {
-    const currentFormValue = methods.getValues(`categories-${section.id}`);
-    const sectionValue = getCategoryValues();
-    
-    // Check if they're different
-    const formSet = new Set(currentFormValue || []);
-    const sectionSet = new Set(sectionValue);
-    
-    const isDifferent = formSet.size !== sectionSet.size || 
-                       [...formSet].some(id => id && !sectionSet.has(id));
-    
-    if (isDifferent) {
-      reset({ [`categories-${section.id}`]: sectionValue });
-    }
-  }, [section.categoryIds, section.id, reset, methods]);
-  
-  // Watch the specific field for this section and update categories when it changes
-  const selectedCategoryIds = watch(`categories-${section.id}`);
-  
-  // Update categories when form field changes - only update local state
-  React.useEffect(() => {
-    if (selectedCategoryIds !== undefined) {
-      // Always update with the current selection, even if it's empty
-      const categoryIds = (selectedCategoryIds || []).filter(Boolean) as string[];
-      
-      console.log('Form field changed, updating categories:', {
-        sectionId: section.id,
-        selectedCategoryIds,
-        filteredIds: categoryIds
-      });
-      
-      onUpdateCategoriesRef.current(categoryIds);
-    }
-  }, [selectedCategoryIds, section.id]); // Remove onUpdateCategories from dependencies to prevent infinite loops
-console.log('selectedCategoryIds', selectedCategoryIds)
-  return (
-    <FormProvider {...methods}>
-      <Card className="p-4 space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor={`collection-title-${section.id}`} className="text-sm font-medium text-gray-700">
-            Section Title
-          </Label>
-          <Input
-            id={`collection-title-${section.id}`}
-            value={section.title}
-            onChange={(e) => onUpdate({ title: e.target.value })}
-            placeholder="Enter section title"
-            disabled={disabled}
-            className="w-full"
-          />
-          {titleError && (
-            <p className="text-sm text-red-600 mt-1">{titleError}</p>
-          )}
-        </div>
+    // Create a unique form instance for each section
+    const { methods, watch, reset } = useSectionForm(`categories-${section.id}`, getCategoryValues);
 
-        <div className="space-y-2">
-          <Label htmlFor={`categories-${section.id}`} className="text-sm font-medium text-gray-700">
-            Categories
-          </Label>
-          <FormSelect
-            name={`categories-${section.id}`}
-            label=""
-            placeholder="Select categories"
-            className="border-gray-300 h-[53px]"
-            options={categoryOptions}
-            maxSelections={MAX_CATEGORY_SELECTIONS}
-            multiple
-            searchable
-            searchPlaceholder='Search category'
-          />
-          {categoryError && (
-            <p className="text-sm text-red-600 ">{categoryError}</p>
-          )}
+    // Reset form when section categoryIds change from outside
+    React.useEffect(() => {
+      const currentFormValue = methods.getValues(`categories-${section.id}`);
+      const sectionValue = getCategoryValues();
 
-        </div>
-      
-        {/* <div className="space-y-4 pt-4 border-t border-gray-200">
+      // Check if they're different
+      const formSet = new Set(currentFormValue || []);
+      const sectionSet = new Set(sectionValue);
+
+      const isDifferent =
+        formSet.size !== sectionSet.size || [...formSet].some((id) => id && !sectionSet.has(id));
+
+      if (isDifferent) {
+        reset({ [`categories-${section.id}`]: sectionValue });
+      }
+    }, [section.categoryIds, section.id, reset, methods]);
+
+    // Watch the specific field for this section and update categories when it changes
+    const selectedCategoryIds = watch(`categories-${section.id}`);
+
+    // Update categories when form field changes - only update local state
+    React.useEffect(() => {
+      if (selectedCategoryIds !== undefined) {
+        // Always update with the current selection, even if it's empty
+        const categoryIds = (selectedCategoryIds || []).filter(Boolean) as string[];
+
+        console.log('Form field changed, updating categories:', {
+          sectionId: section.id,
+          selectedCategoryIds,
+          filteredIds: categoryIds,
+        });
+
+        onUpdateCategoriesRef.current(categoryIds);
+      }
+    }, [selectedCategoryIds, section.id]); // Remove onUpdateCategories from dependencies to prevent infinite loops
+    console.log('selectedCategoryIds', selectedCategoryIds);
+    return (
+      <FormProvider {...methods}>
+        <Card className="p-4 space-y-4">
+          <div className="space-y-2">
+            <Label
+              htmlFor={`collection-title-${section.id}`}
+              className="text-sm font-medium text-gray-700"
+            >
+              Section Title
+            </Label>
+            <Input
+              id={`collection-title-${section.id}`}
+              value={section.title}
+              onChange={(e) => onUpdate({ title: e.target.value })}
+              placeholder="Enter section title"
+              disabled={disabled}
+              className="w-full"
+            />
+            {titleError && <p className="text-sm text-red-600 mt-1">{titleError}</p>}
+          </div>
+
+          <div className="space-y-2">
+            <Label
+              htmlFor={`categories-${section.id}`}
+              className="text-sm font-medium text-gray-700"
+            >
+              Categories
+            </Label>
+            <FormSelect
+              name={`categories-${section.id}`}
+              label=""
+              placeholder="Select categories"
+              className="border-gray-300 h-[53px]"
+              options={categoryOptions}
+              maxSelections={MAX_CATEGORY_SELECTIONS}
+              multiple
+              searchable
+              searchPlaceholder="Search category"
+            />
+            {categoryError && <p className="text-sm text-red-600 ">{categoryError}</p>}
+          </div>
+
+          {/* <div className="space-y-4 pt-4 border-t border-gray-200">
           <div className="space-y-2">
             <Label htmlFor={`button-title-${section.id}`} className="text-sm font-medium text-gray-700">
               Expand All Button Text
@@ -234,134 +230,128 @@ console.log('selectedCategoryIds', selectedCategoryIds)
             />
           </div>
         </div> */}
-      </Card>
-    </FormProvider>
-  );
-});
+        </Card>
+      </FormProvider>
+    );
+  }
+);
 
-const ProductSectionForm: React.FC<ProductSectionFormProps> = memo(({
-  section,
-  productOptions,
-  onUpdate,
-  onUpdateProducts,
-  disabled = false,
-  error,
-}) => {
-  // Split errors into title and product errors
-  const titleError = error?.includes('Title is required') ? 'Title is required' : '';
-  const productError = error?.includes('At least one product must be selected') ? 'At least one product must be selected' : '';
-  // Use ref to store the latest callback to prevent infinite loops
-  const onUpdateProductsRef = React.useRef(onUpdateProducts);
-  React.useEffect(() => {
-    onUpdateProductsRef.current = onUpdateProducts;
-  }, [onUpdateProducts]);
+const ProductSectionForm: React.FC<ProductSectionFormProps> = memo(
+  ({ section, productOptions, onUpdate, onUpdateProducts, disabled = false, error }) => {
+    // Split errors into title and product errors
+    const titleError = error?.includes('Title is required') ? 'Title is required' : '';
+    const productError = error?.includes('At least one product must be selected')
+      ? 'At least one product must be selected'
+      : '';
+    // Use ref to store the latest callback to prevent infinite loops
+    const onUpdateProductsRef = React.useRef(onUpdateProducts);
+    React.useEffect(() => {
+      onUpdateProductsRef.current = onUpdateProducts;
+    }, [onUpdateProducts]);
 
-  // Process product values - use productIds which are MongoDB ObjectIds
-  const getProductValues = () => {
+    // Process product values - use productIds which are MongoDB ObjectIds
+    const getProductValues = () => {
+      // Use productIds if available (these are MongoDB ObjectIds)
+      if (section.productIds && section.productIds.length > 0) {
+        const validIds = section.productIds.filter((id) => {
+          // Only return valid MongoDB ObjectIds (24 char hex strings)
+          const isValid = /^[a-f\d]{24}$/i.test(id);
+          if (!isValid) {
+            console.warn(`⚠️ [PRODUCT INIT] Invalid productId found: ${id}`);
+          }
+          return isValid;
+        });
+        return validIds;
+      }
+      // Fallback to products for backward compatibility
+      if (section.products) {
+        const ids = section.products
+          .map((item) => item.id)
+          .filter((id): id is string => {
+            // Only return valid MongoDB ObjectIds
+            const isValid = id ? /^[a-f\d]{24}$/i.test(id) : false;
+            if (id && !isValid) {
+              console.warn(`⚠️ [PRODUCT INIT] Invalid product.id found: ${id}`);
+            }
+            return isValid;
+          });
+        return ids;
+      }
+      return [];
+    };
 
-    
-    // Use productIds if available (these are MongoDB ObjectIds)
-    if (section.productIds && section.productIds.length > 0) {
-      const validIds = section.productIds.filter(id => {
-        // Only return valid MongoDB ObjectIds (24 char hex strings)
-        const isValid = /^[a-f\d]{24}$/i.test(id);
-        if (!isValid) {
-          console.warn(`⚠️ [PRODUCT INIT] Invalid productId found: ${id}`);
-        }
-        return isValid;
-      });
-      return validIds;
-    }
-    // Fallback to products for backward compatibility
-    if (section.products) {
-      const ids = section.products.map(item => item.id).filter((id): id is string => {
-        // Only return valid MongoDB ObjectIds
-        const isValid = id ? /^[a-f\d]{24}$/i.test(id) : false;
-        if (id && !isValid) {
-          console.warn(`⚠️ [PRODUCT INIT] Invalid product.id found: ${id}`);
-        }
-        return isValid;
-      });
-      return ids;
-    }
-    return [];
-  };
+    // Create a unique form instance for each section
+    const { methods, watch } = useSectionForm(`products-${section.id}`, getProductValues);
 
-  // Create a unique form instance for each section
-  const { methods, watch } = useSectionForm(
-    `products-${section.id}`,
-    getProductValues
-  );
-  
-  // Watch the specific field for this section and update products when it changes
-  const selectedProductIds = watch(`products-${section.id}`);
-  
-  // Update products when form field changes - only update local state
-  React.useEffect(() => {
-    if (selectedProductIds !== undefined) {
-      // Always update with the current selection, even if it's empty
-      const productIds = (selectedProductIds || []).filter(Boolean) as string[];
-      
-      console.log('Form field changed, updating products:', {
-        sectionId: section.id,
-        selectedProductIds,
-        filteredIds: productIds
-      });
-      
-      onUpdateProductsRef.current(productIds);
-    }
-  }, [selectedProductIds, section.id]); // Remove onUpdateProducts from dependencies to prevent infinite loops
+    // Watch the specific field for this section and update products when it changes
+    const selectedProductIds = watch(`products-${section.id}`);
 
-  return (
-    <FormProvider {...methods}>
-      <Card className="p-4 space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor={`product-title-${section.id}`} className="text-sm font-medium text-gray-700">
-            Section Title
-          </Label>
-          <Input
-            id={`product-title-${section.id}`}
-            value={section.title}
-            onChange={(e) => onUpdate({ title: e.target.value })}
-            placeholder="Enter section title"
-            disabled={disabled}
-            className="w-full"
-          />
-          {titleError && (
-            <p className="text-sm text-red-600 mt-1">{titleError}</p>
-          )}
-        </div>
+    // Update products when form field changes - only update local state
+    React.useEffect(() => {
+      if (selectedProductIds !== undefined) {
+        // Always update with the current selection, even if it's empty
+        const productIds = (selectedProductIds || []).filter(Boolean) as string[];
 
-        <div className="space-y-2">
-          <Label htmlFor={`products-${section.id}`} className="text-sm font-medium text-gray-700">
-            Products
-          </Label>
-          <FormSelect
-            name={`products-${section.id}`}
-            label=""
-            placeholder="Select products"
-            className="border-gray-300 h-[53px]"
-            options={productOptions}
-            maxSelections={MAX_PRODUCT_SELECTIONS}
-            multiple
-            searchable
-            searchPlaceholder='Search product'
-          />
-          {productError && (
-            <p className="text-sm text-red-600 mt-1">{productError}</p>
-          )}
-        </div>
-{/* 
+        console.log('Form field changed, updating products:', {
+          sectionId: section.id,
+          selectedProductIds,
+          filteredIds: productIds,
+        });
+
+        onUpdateProductsRef.current(productIds);
+      }
+    }, [selectedProductIds, section.id]); // Remove onUpdateProducts from dependencies to prevent infinite loops
+
+    return (
+      <FormProvider {...methods}>
+        <Card className="p-4 space-y-4">
+          <div className="space-y-2">
+            <Label
+              htmlFor={`product-title-${section.id}`}
+              className="text-sm font-medium text-gray-700"
+            >
+              Section Title
+            </Label>
+            <Input
+              id={`product-title-${section.id}`}
+              value={section.title}
+              onChange={(e) => onUpdate({ title: e.target.value })}
+              placeholder="Enter section title"
+              disabled={disabled}
+              className="w-full"
+            />
+            {titleError && <p className="text-sm text-red-600 mt-1">{titleError}</p>}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor={`products-${section.id}`} className="text-sm font-medium text-gray-700">
+              Products
+            </Label>
+            <FormSelect
+              name={`products-${section.id}`}
+              label=""
+              placeholder="Select products"
+              className="border-gray-300 h-[53px]"
+              options={productOptions}
+              maxSelections={MAX_PRODUCT_SELECTIONS}
+              multiple
+              searchable
+              searchPlaceholder="Search product"
+            />
+            {productError && <p className="text-sm text-red-600 mt-1">{productError}</p>}
+          </div>
+          {/* 
         <Input
           value={section.subtitle || ''}
           onChange={(e) => onUpdate({ subtitle: e.target.value })}
           placeholder="Section subtitle (optional)"
           disabled={disabled}
         /> */}
-      </Card>
-    </FormProvider>
-  );
-});
+        </Card>
+      </FormProvider>
+    );
+  }
+);
 
 // Constants for better maintainability
 const DEFAULT_LIMIT = 100;
@@ -385,7 +375,9 @@ export const LandingPageSectionEditor: React.FC<LandingPageSectionEditorProps> =
 
   // Use external uploadedImages if provided, otherwise use local state
   const currentUploadedImages = onUploadedImagesChange ? uploadedImages : localUploadedImages;
-  const setCurrentUploadedImages = onUploadedImagesChange ? onUploadedImagesChange : setLocalUploadedImages;
+  const setCurrentUploadedImages = onUploadedImagesChange
+    ? onUploadedImagesChange
+    : setLocalUploadedImages;
 
   // File upload helper functions
   const uploadImageToServer = async (file: File): Promise<string> => {
@@ -408,16 +400,16 @@ export const LandingPageSectionEditor: React.FC<LandingPageSectionEditorProps> =
     e.preventDefault();
     e.stopPropagation();
     if (e.type === 'dragenter' || e.type === 'dragover') {
-      setDragActive(prev => ({ ...prev, [sectionId]: true }));
+      setDragActive((prev) => ({ ...prev, [sectionId]: true }));
     } else if (e.type === 'dragleave') {
-      setDragActive(prev => ({ ...prev, [sectionId]: false }));
+      setDragActive((prev) => ({ ...prev, [sectionId]: false }));
     }
   };
 
   const handleDrop = (sectionId: string, e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setDragActive(prev => ({ ...prev, [sectionId]: false }));
+    setDragActive((prev) => ({ ...prev, [sectionId]: false }));
 
     const files = e.dataTransfer.files;
     if (files && files[0]) {
@@ -454,7 +446,7 @@ export const LandingPageSectionEditor: React.FC<LandingPageSectionEditorProps> =
       try {
         const imageUrl = await uploadImageToServer(file);
         // Update the section with the uploaded image URL
-        const section = sections.find(s => s.id === sectionId);
+        const section = sections.find((s) => s.id === sectionId);
         if (section?.type === 'banner') {
           updateSection(sectionId, { imageUrl });
         }
@@ -466,10 +458,10 @@ export const LandingPageSectionEditor: React.FC<LandingPageSectionEditorProps> =
     });
 
     const results = await Promise.all(uploadPromises);
-    
+
     // Clear successfully uploaded images
     const newImages = { ...currentUploadedImages };
-    results.forEach(result => {
+    results.forEach((result) => {
       if (result.success) {
         delete newImages[result.sectionId];
       }
@@ -477,9 +469,9 @@ export const LandingPageSectionEditor: React.FC<LandingPageSectionEditorProps> =
     setCurrentUploadedImages(newImages);
 
     // Show results
-    const successCount = results.filter(r => r.success).length;
-    const failureCount = results.filter(r => !r.success).length;
-    
+    const successCount = results.filter((r) => r.success).length;
+    const failureCount = results.filter((r) => !r.success).length;
+
     if (successCount > 0) {
       toast.success(`${successCount} image(s) uploaded successfully`);
     }
@@ -490,11 +482,14 @@ export const LandingPageSectionEditor: React.FC<LandingPageSectionEditorProps> =
 
   const hasPendingImages = Object.keys(uploadedImages).length > 0;
   // Memoize filtered sections to prevent unnecessary re-computations
-  const { bannerSections, collectionSections, productSections } = useMemo(() => ({
-    bannerSections: sections.filter((s) => s.type === 'banner') as BannerSection[],
-    collectionSections: sections.filter((s) => s.type === 'collection') as CollectionSection[],
-    productSections: sections.filter((s) => s.type === 'products') as ProductSection[],
-  }), [sections]);
+  const { bannerSections, collectionSections, productSections } = useMemo(
+    () => ({
+      bannerSections: sections.filter((s) => s.type === 'banner') as BannerSection[],
+      collectionSections: sections.filter((s) => s.type === 'collection') as CollectionSection[],
+      productSections: sections.filter((s) => s.type === 'products') as ProductSection[],
+    }),
+    [sections]
+  );
 
   // Fetch categories for the multi-select
   const { data: categoriesData } = useQuery({
@@ -510,13 +505,14 @@ export const LandingPageSectionEditor: React.FC<LandingPageSectionEditorProps> =
 
   // Fetch products for the multi-select
   const { data: productsResponse } = useProductsQuery({ limit: DEFAULT_LIMIT });
-  
+
   // Memoize data processing to prevent unnecessary re-computations
   const { categoryOptions, productOptions } = useMemo(() => {
-    const categories = categoriesData?.map((category) => ({
-      value: category._id,
-      label: category.name,
-    })) || [];
+    const categories =
+      categoriesData?.map((category) => ({
+        value: category._id,
+        label: category.name,
+      })) || [];
 
     const products = Array.isArray(productsResponse?.data)
       ? productsResponse.data
@@ -534,468 +530,529 @@ export const LandingPageSectionEditor: React.FC<LandingPageSectionEditorProps> =
   }, [categoriesData, productsResponse]);
 
   // Memoize callback functions to prevent unnecessary re-renders
-  const addSection = useCallback((type: 'banner' | 'collection' | 'products') => {
-    const sectionTitles = {
-      banner: 'Hero Section',
-      collection: 'Categories Overview',
-      products: 'Products Section',
-    };
+  const addSection = useCallback(
+    (type: 'banner' | 'collection' | 'products') => {
+      const sectionTitles = {
+        banner: 'Hero Section',
+        collection: 'Categories Overview',
+        products: 'Products Section',
+      };
 
-    const sectionDefaults = {
-      banner: { imageUrl: '', buttons: [] },
-      collection: { categories: [], expandAllButton: { title: '', link: '' } },
-      products: { products: [] },
-    };
+      const sectionDefaults = {
+        banner: { imageUrl: '', buttons: [] },
+        collection: { categories: [], expandAllButton: { title: '', link: '' } },
+        products: { products: [] },
+      };
 
-    const newSection: LandingPageSection = {
-      id: Date.now().toString(),
-      type,
-      title: sectionTitles[type],
-      
-      ...sectionDefaults[type],
-    };
-    
-    onChange([...sections, newSection]);
-  }, [sections, onChange]);
+      const newSection: LandingPageSection = {
+        id: Date.now().toString(),
+        type,
+        title: sectionTitles[type],
 
-  const updateSection = useCallback((sectionId: string, updates: Partial<LandingPageSection>) => {
-    console.log('updateSection called:', { sectionId, updates });
-    
-    const newSections = sections.map((section) => {
-      if (section.id === sectionId) {
-        const updatedSection = { ...section, ...updates };
-        console.log('Section before update:', section);
-        console.log('Section after update:', updatedSection);
-        return updatedSection;
-      }
-      return section;
-    });
-    
-    console.log('Calling onChange with new sections');
-    onChange(newSections);
-  }, [sections, onChange]);
+        ...sectionDefaults[type],
+      };
 
-  const updateSectionWithImage = useCallback(async (sectionId: string, updates: Partial<LandingPageSection>) => {
-    let finalUpdates = { ...updates };
-    
-    // If there's an uploaded image for this section, upload it first
-    if (currentUploadedImages[sectionId]) {
-      try {
-        const imageUrl = await uploadImageToServer(currentUploadedImages[sectionId]);
-        // For banner sections, use imageUrl property
-        const section = sections.find(s => s.id === sectionId);
-        if (section?.type === 'banner') {
-          (finalUpdates as any).imageUrl = imageUrl;
+      onChange([...sections, newSection]);
+    },
+    [sections, onChange]
+  );
+
+  const updateSection = useCallback(
+    (sectionId: string, updates: Partial<LandingPageSection>) => {
+      console.log('updateSection called:', { sectionId, updates });
+
+      const newSections = sections.map((section) => {
+        if (section.id === sectionId) {
+          const updatedSection = { ...section, ...updates };
+          console.log('Section before update:', section);
+          console.log('Section after update:', updatedSection);
+          return updatedSection;
         }
-        // Clear the uploaded file from state after successful upload
-        const newImages = { ...currentUploadedImages };
-        delete newImages[sectionId];
-        setCurrentUploadedImages(newImages);
-        toast.success('Image uploaded successfully');
-      } catch (error) {
-        console.error('Failed to upload image:', error);
-        toast.error('Failed to upload image');
-        return; // Don't update the section if image upload fails
+        return section;
+      });
+
+      console.log('Calling onChange with new sections');
+      onChange(newSections);
+    },
+    [sections, onChange]
+  );
+
+  const updateSectionWithImage = useCallback(
+    async (sectionId: string, updates: Partial<LandingPageSection>) => {
+      let finalUpdates = { ...updates };
+
+      // If there's an uploaded image for this section, upload it first
+      if (currentUploadedImages[sectionId]) {
+        try {
+          const imageUrl = await uploadImageToServer(currentUploadedImages[sectionId]);
+          // For banner sections, use imageUrl property
+          const section = sections.find((s) => s.id === sectionId);
+          if (section?.type === 'banner') {
+            (finalUpdates as any).imageUrl = imageUrl;
+          }
+          // Clear the uploaded file from state after successful upload
+          const newImages = { ...currentUploadedImages };
+          delete newImages[sectionId];
+          setCurrentUploadedImages(newImages);
+          toast.success('Image uploaded successfully');
+        } catch (error) {
+          console.error('Failed to upload image:', error);
+          toast.error('Failed to upload image');
+          return; // Don't update the section if image upload fails
+        }
       }
-    }
-    
-    // Update local state for immediate UI feedback
-    const newSections = sections.map((section) =>
-      section.id === sectionId ? { ...section, ...finalUpdates } : section
-    );
-    onChange(newSections);
-  }, [sections, onChange, currentUploadedImages]);
 
-  const removeSection = useCallback((sectionId: string) => {
-    onChange(sections.filter((s) => s.id !== sectionId));
-  }, [sections, onChange]);
+      // Update local state for immediate UI feedback
+      const newSections = sections.map((section) =>
+        section.id === sectionId ? { ...section, ...finalUpdates } : section
+      );
+      onChange(newSections);
+    },
+    [sections, onChange, currentUploadedImages]
+  );
 
-  const addBannerButton = useCallback((sectionId: string) => {
-    const section = sections.find((s) => s.id === sectionId) as BannerSection;
-    if (!section) return;
+  const removeSection = useCallback(
+    (sectionId: string) => {
+      onChange(sections.filter((s) => s.id !== sectionId));
+    },
+    [sections, onChange]
+  );
 
-    const newButton: BannerButton = {
-      id: Date.now().toString(),
-      title: 'Button Text',
-      link: '#',
-    };
-    updateSection(sectionId, {
-      buttons: [...(section.buttons || []), newButton],
-    });
-  }, [sections, updateSection]);
+  const addBannerButton = useCallback(
+    (sectionId: string) => {
+      const section = sections.find((s) => s.id === sectionId) as BannerSection;
+      if (!section) return;
 
-  const updateBannerButton = useCallback((
-    sectionId: string,
-    buttonId: string,
-    updates: Partial<BannerButton>
-  ) => {
-    const section = sections.find((s) => s.id === sectionId) as BannerSection;
-    if (!section) return;
-
-    const newButtons = section.buttons?.map((btn) =>
-      btn.id === buttonId ? { ...btn, ...updates } : btn
-    );
-    updateSection(sectionId, { buttons: newButtons });
-  }, [sections, updateSection]);
-
-  const removeBannerButton = useCallback((sectionId: string, buttonId: string) => {
-    const section = sections.find((s) => s.id === sectionId) as BannerSection;
-    if (!section) return;
-
-    updateSection(sectionId, {
-      buttons: section.buttons?.filter((btn) => btn.id !== buttonId),
-    });
-  }, [sections, updateSection]);
-
-  const updateSectionCategories = useCallback((sectionId: string, selectedCategoryIds: string[]) => {
-    console.log('updateSectionCategories called:', { sectionId, selectedCategoryIds });
-    
-    // If selectedCategoryIds is explicitly empty, ensure we pass empty array
-    if (!selectedCategoryIds || selectedCategoryIds.length === 0) {
-      const updatePayload = { 
-        categoryIds: [],
-        categories: []
+      const newButton: BannerButton = {
+        id: Date.now().toString(),
+        title: 'Button Text',
+        link: '#',
       };
-      console.log('Clearing categories for section:', sectionId);
-      updateSection(sectionId, updatePayload);
-      return;
-    }
-    
-    // Filter to only include valid MongoDB ObjectIds
-    const validIds = selectedCategoryIds.filter(id => {
-      const isValid = id && /^[a-f\d]{24}$/i.test(id);
-      if (id && !isValid) {
-        console.warn(`⚠️ [CATEGORY UPDATE] Invalid ID filtered out: ${id}`);
-      }
-      return isValid;
-    });
-    
-    // Store the categoryIds directly - backend will populate the data
-    const updatePayload = { 
-      categoryIds: validIds,
-      categories: []
-    };
-    
-    console.log('Updating categories for section:', sectionId, updatePayload);
-    updateSection(sectionId, updatePayload);
-  }, [updateSection]);
+      updateSection(sectionId, {
+        buttons: [...(section.buttons || []), newButton],
+      });
+    },
+    [sections, updateSection]
+  );
 
-  const updateSectionProducts = useCallback((sectionId: string, selectedProductIds: string[]) => {
-    console.log('updateSectionProducts called:', { sectionId, selectedProductIds });
-    
-    // If selectedProductIds is explicitly empty, ensure we pass empty array
-    if (!selectedProductIds || selectedProductIds.length === 0) {
-      const updatePayload = { 
-        productIds: [],
-        products: []
+  const updateBannerButton = useCallback(
+    (sectionId: string, buttonId: string, updates: Partial<BannerButton>) => {
+      const section = sections.find((s) => s.id === sectionId) as BannerSection;
+      if (!section) return;
+
+      const newButtons = section.buttons?.map((btn) =>
+        btn.id === buttonId ? { ...btn, ...updates } : btn
+      );
+      updateSection(sectionId, { buttons: newButtons });
+    },
+    [sections, updateSection]
+  );
+
+  const removeBannerButton = useCallback(
+    (sectionId: string, buttonId: string) => {
+      const section = sections.find((s) => s.id === sectionId) as BannerSection;
+      if (!section) return;
+
+      updateSection(sectionId, {
+        buttons: section.buttons?.filter((btn) => btn.id !== buttonId),
+      });
+    },
+    [sections, updateSection]
+  );
+
+  const updateSectionCategories = useCallback(
+    (sectionId: string, selectedCategoryIds: string[]) => {
+      console.log('updateSectionCategories called:', { sectionId, selectedCategoryIds });
+
+      // If selectedCategoryIds is explicitly empty, ensure we pass empty array
+      if (!selectedCategoryIds || selectedCategoryIds.length === 0) {
+        const updatePayload = {
+          categoryIds: [],
+          categories: [],
+        };
+        console.log('Clearing categories for section:', sectionId);
+        updateSection(sectionId, updatePayload);
+        return;
+      }
+
+      // Filter to only include valid MongoDB ObjectIds
+      const validIds = selectedCategoryIds.filter((id) => {
+        const isValid = id && /^[a-f\d]{24}$/i.test(id);
+        if (id && !isValid) {
+          console.warn(`⚠️ [CATEGORY UPDATE] Invalid ID filtered out: ${id}`);
+        }
+        return isValid;
+      });
+
+      // Store the categoryIds directly - backend will populate the data
+      const updatePayload = {
+        categoryIds: validIds,
+        categories: [],
       };
-      console.log('Clearing products for section:', sectionId);
-      updateSection(sectionId, updatePayload);
-      return;
-    }
-    
-    // Filter to only include valid MongoDB ObjectIds
-    const validIds = selectedProductIds.filter(id => {
-      const isValid = id && /^[a-f\d]{24}$/i.test(id);
-      if (id && !isValid) {
-        console.warn(`⚠️ [PRODUCT UPDATE] Invalid ID filtered out: ${id}`);
-      }
-      return isValid;
-    });
-    
-    // Store the productIds directly - backend will populate the data
-    const updatePayload = { 
-      productIds: validIds,
-      products: []
-    };
-    
-    console.log('Updating products for section:', sectionId, updatePayload);
-    updateSection(sectionId, updatePayload);
-  }, [updateSection]);
 
+      console.log('Updating categories for section:', sectionId, updatePayload);
+      updateSection(sectionId, updatePayload);
+    },
+    [updateSection]
+  );
+
+  const updateSectionProducts = useCallback(
+    (sectionId: string, selectedProductIds: string[]) => {
+      console.log('updateSectionProducts called:', { sectionId, selectedProductIds });
+
+      // If selectedProductIds is explicitly empty, ensure we pass empty array
+      if (!selectedProductIds || selectedProductIds.length === 0) {
+        const updatePayload = {
+          productIds: [],
+          products: [],
+        };
+        console.log('Clearing products for section:', sectionId);
+        updateSection(sectionId, updatePayload);
+        return;
+      }
+
+      // Filter to only include valid MongoDB ObjectIds
+      const validIds = selectedProductIds.filter((id) => {
+        const isValid = id && /^[a-f\d]{24}$/i.test(id);
+        if (id && !isValid) {
+          console.warn(`⚠️ [PRODUCT UPDATE] Invalid ID filtered out: ${id}`);
+        }
+        return isValid;
+      });
+
+      // Store the productIds directly - backend will populate the data
+      const updatePayload = {
+        productIds: validIds,
+        products: [],
+      };
+
+      console.log('Updating products for section:', sectionId, updatePayload);
+      updateSection(sectionId, updatePayload);
+    },
+    [updateSection]
+  );
 
   return (
     <div className="w-full space-y-4">
-  
-      
       <Tabs defaultValue="banner" className="w-full ">
         <TabsList className="grid w-full grid-cols-3 rounded-sm p-1 h-full">
-         <TabsTrigger 
-           className='h-10 cursor-pointer hover:bg-gray-200 transition-all duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]' 
-           value="banner"
-         >
-           Banner Sections
-         </TabsTrigger>
-         <TabsTrigger  
-           className='h-10 cursor-pointer hover:bg-gray-200 transition-all duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]' 
-           value="collection"
-         >
-           Collection Sections
-         </TabsTrigger>
-         <TabsTrigger  
-           className='h-10 cursor-pointer hover:bg-gray-200 transition-all duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]' 
-           value="products"
-         >
-           Product Sections
-         </TabsTrigger>
-       </TabsList>
-
-      {/* Banner Sections Tab */}
-      <TabsContent value="banner" className="space-y-4 max-h-[600px] overflow-y-auto p-4 transition-all duration-300 ease-in-out">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold">Banner Sections</h3>
-          <Button
-            type="button"
-            size="sm"
-            onClick={() => addSection('banner')}
-            disabled={disabled || bannerSections.length >= MAX_BANNER_SECTIONS}
-            className="bg-primary hover:bg-primary/90 text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 ease-in-out transform hover:scale-105 active:scale-95 disabled:hover:scale-100"
-            title={bannerSections.length >= MAX_BANNER_SECTIONS ? `Maximum ${MAX_BANNER_SECTIONS} banner sections allowed` : 'Add a new banner section'}
+          <TabsTrigger
+            className="h-10 cursor-pointer hover:bg-gray-200 transition-all duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
+            value="banner"
           >
-            <Plus className="w-4 h-4 mr-1 transition-transform duration-200" />
-            Add Banner ({bannerSections.length}/{MAX_BANNER_SECTIONS})
-          </Button>
-        </div>
+            Banner Sections
+          </TabsTrigger>
+          <TabsTrigger
+            className="h-10 cursor-pointer hover:bg-gray-200 transition-all duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
+            value="collection"
+          >
+            Collection Sections
+          </TabsTrigger>
+          <TabsTrigger
+            className="h-10 cursor-pointer hover:bg-gray-200 transition-all duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
+            value="products"
+          >
+            Product Sections
+          </TabsTrigger>
+        </TabsList>
 
-        {bannerSections.map((section,index) => {
-          // Parse errors for this section
-          const sectionError = sectionErrors[section.id] || '';
-          const titleError = sectionError.includes('Title is required') ? 'Title is required' : '';
-          const subtitleError = sectionError.includes('Subtitle is required') ? 'Subtitle is required' : '';
-          const imageError = sectionError.includes('Image is required') ? 'Image is required' : '';
-          
-          return (
-          <Card key={section.id} className="p-4 space-y-4 transition-all duration-200 ease-in-out hover:shadow-md">
-            <div className="flex items-center justify-between">
-             <div className='flex-1'>
-             <Label htmlFor={`banner-title-${section.id}`} className="text-sm font-medium text-gray-700 mb-2 block">
-               Section Title
-             </Label>
-              <Input
-                id={`banner-title-${section.id}`}
-                value={section.title}
-                onChange={(e) => updateSection(section.id, { title: e.target.value })}
-                placeholder="Enter section title"
-                disabled={disabled}
-                className="w-full"
-              />
-              {titleError && (
-                <p className="text-sm text-red-600 mt-1">{titleError}</p>
-              )}
-             </div>
-            {index!==0 &&  <Button
-                type="button"
-                size="icon"
-                variant="ghost"
-                onClick={() => removeSection(section.id)}
-                disabled={disabled}
-                className="text-red-600 hover:text-red-700 ml-4 transition-all duration-200 ease-in-out transform hover:scale-110 active:scale-95 hover:bg-red-50"
+        {/* Banner Sections Tab */}
+        <TabsContent
+          value="banner"
+          className="space-y-4 max-h-[600px] overflow-y-auto p-4 transition-all duration-300 ease-in-out"
+        >
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold">Banner Sections</h3>
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => addSection('banner')}
+              disabled={disabled || bannerSections.length >= MAX_BANNER_SECTIONS}
+              className="bg-primary hover:bg-primary/90 text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 ease-in-out transform hover:scale-105 active:scale-95 disabled:hover:scale-100"
+              title={
+                bannerSections.length >= MAX_BANNER_SECTIONS
+                  ? `Maximum ${MAX_BANNER_SECTIONS} banner sections allowed`
+                  : 'Add a new banner section'
+              }
+            >
+              <Plus className="w-4 h-4 mr-1 transition-transform duration-200" />
+              Add Banner ({bannerSections.length}/{MAX_BANNER_SECTIONS})
+            </Button>
+          </div>
+
+          {bannerSections.map((section, index) => {
+            // Parse errors for this section
+            const sectionError = sectionErrors[section.id] || '';
+            const titleError = sectionError.includes('Title is required')
+              ? 'Title is required'
+              : '';
+            const subtitleError = sectionError.includes('Subtitle is required')
+              ? 'Subtitle is required'
+              : '';
+            const imageError = sectionError.includes('Image is required')
+              ? 'Image is required'
+              : '';
+
+            return (
+              <Card
+                key={section.id}
+                className="p-4 space-y-4 transition-all duration-200 ease-in-out hover:shadow-md"
               >
-                <Trash2 className="w-4 h-4 transition-transform duration-200" />
-              </Button>}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor={`banner-description-${section.id}`} className="text-sm font-medium text-gray-700">
-                Description
-              </Label>
-              <Textarea
-                id={`banner-description-${section.id}`}
-                value={section.subtitle || ''}
-                onChange={(e) => updateSection(section.id, { subtitle: e.target.value })}
-                placeholder="Enter section description"
-                disabled={disabled}
-                className="w-full resize-none rounded-sm h-20 border-gray-200 focus:border-gray-500 transition-all duration-200 ease-in-out focus:ring-2 focus:ring-gray-200"
-              />
-              {subtitleError && (
-                <p className="text-sm text-red-600 mt-1">{subtitleError}</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label className="text-sm font-medium text-gray-700">
-                Background Image
-              </Label>
-              {/* Image Upload Area */}
-              {!section.imageUrl && !currentUploadedImages[section.id] ? (
-                <div
-                  className={`border-2 border-dashed rounded-xl p-6 text-center transition-all duration-200 ${
-                    dragActive[section.id]
-                      ? 'border-primary bg-blue-50'
-                      : 'border-gray-300 bg-gray-50 hover:border-gray-400'
-                  }`}
-                  onDragEnter={(e) => handleDrag(section.id, e)}
-                  onDragLeave={(e) => handleDrag(section.id, e)}
-                  onDragOver={(e) => handleDrag(section.id, e)}
-                  onDrop={(e) => handleDrop(section.id, e)}
-                >
-                  <input
-                    type="file"
-                    id={`banner-image-upload-${section.id}`}
-                    className="hidden"
-                    accept="image/*"
-                    onChange={(e) => handleInputChange(section.id, e)}
-                    disabled={disabled}
-                  />
-                  <label
-                    htmlFor={`banner-image-upload-${section.id}`}
-                    className="cursor-pointer inline-flex flex-col items-center"
-                  >
-                    <Upload className="h-10 w-10 text-gray-400 mb-3" />
-                    <span className="text-sm text-gray-400 font-medium">
-                      Drag & drop image or{' '}
-                      <span className="text-primary underline">click here</span>
-                    </span>
-                    <span className="text-xs text-red-600 mt-1">Max file size is 5MB</span>
-                  </label>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {/* Upload more area */}
-                  <div
-                    className={`border-2 border-dashed rounded-xl p-4 text-center bg-gray-50 transition-all duration-200 ${
-                      dragActive[section.id] ? 'border-primary bg-blue-50' : 'border-gray-300 hover:border-gray-400'
-                    }`}
-                    onDragEnter={(e) => handleDrag(section.id, e)}
-                    onDragLeave={(e) => handleDrag(section.id, e)}
-                    onDragOver={(e) => handleDrag(section.id, e)}
-                    onDrop={(e) => handleDrop(section.id, e)}
-                  >
-                    <input
-                      type="file"
-                      id={`banner-image-upload-more-${section.id}`}
-                      className="hidden"
-                      accept="image/*"
-                      onChange={(e) => handleInputChange(section.id, e)}
-                      disabled={disabled}
-                    />
-                    <label
-                      htmlFor={`banner-image-upload-more-${section.id}`}
-                      className="cursor-pointer inline-flex items-center gap-2"
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <Label
+                      htmlFor={`banner-title-${section.id}`}
+                      className="text-sm font-medium text-gray-700 mb-2 block"
                     >
-                      <Upload className="h-5 w-5 text-gray-400" />
-                      <span className="text-sm text-gray-600">
-                        Drag & drop image or{' '}
-                        <span className="text-primary underline">click here</span>
-                      </span>
-                    </label>
-                    <div className="text-xs text-red-600">Max file size is 5MB</div>
+                      Section Title
+                    </Label>
+                    <Input
+                      id={`banner-title-${section.id}`}
+                      value={section.title}
+                      onChange={(e) => updateSection(section.id, { title: e.target.value })}
+                      placeholder="Enter section title"
+                      disabled={disabled}
+                      className="w-full"
+                    />
+                    {titleError && <p className="text-sm text-red-600 mt-1">{titleError}</p>}
                   </div>
-
-                  {/* Image Preview */}
-                  <div className="grid grid-cols-1 gap-2">
-                    {/* Display existing image */}
-                    {( currentUploadedImages[section.id] || section.imageUrl) && (
-                      <div className="relative group border border-gray-200 rounded-sm shadow-sm">
-                        <img
-                          src={currentUploadedImages[section.id] ? URL.createObjectURL(currentUploadedImages[section.id]) : section.imageUrl}
-                          alt="Banner background"
-                          className="w-full h-32 object-cover rounded-sm"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => updateSectionWithImage(section.id, { imageUrl: '' })}
-                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5 cursor-pointer transition-all duration-200 hover:bg-red-600 hover:scale-110"
-                          disabled={disabled}
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                  
-                  {/* Image error display */}
-                  {imageError && (
-                    <p className="text-sm text-red-600 mt-1">{imageError}</p>
+                  {index !== 0 && (
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => removeSection(section.id)}
+                      disabled={disabled}
+                      className="text-red-600 hover:text-red-700 ml-4 transition-all duration-200 ease-in-out transform hover:scale-110 active:scale-95 hover:bg-red-50"
+                    >
+                      <Trash2 className="w-4 h-4 transition-transform duration-200" />
+                    </Button>
                   )}
                 </div>
-              )}
-            </div>
+                <div className="space-y-2">
+                  <Label
+                    htmlFor={`banner-description-${section.id}`}
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    Description
+                  </Label>
+                  <Textarea
+                    id={`banner-description-${section.id}`}
+                    value={section.subtitle || ''}
+                    onChange={(e) => updateSection(section.id, { subtitle: e.target.value })}
+                    placeholder="Enter section description"
+                    disabled={disabled}
+                    className="w-full resize-none rounded-sm h-20 border-gray-200 focus:border-gray-500 transition-all duration-200 ease-in-out focus:ring-2 focus:ring-gray-200"
+                  />
+                  {subtitleError && <p className="text-sm text-red-600 mt-1">{subtitleError}</p>}
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-700">Background Image</Label>
+                  {/* Image Upload Area */}
+                  {!section.imageUrl && !currentUploadedImages[section.id] ? (
+                    <div
+                      className={`border-2 border-dashed rounded-xl p-6 text-center transition-all duration-200 ${
+                        dragActive[section.id]
+                          ? 'border-primary bg-blue-50'
+                          : 'border-gray-300 bg-gray-50 hover:border-gray-400'
+                      }`}
+                      onDragEnter={(e) => handleDrag(section.id, e)}
+                      onDragLeave={(e) => handleDrag(section.id, e)}
+                      onDragOver={(e) => handleDrag(section.id, e)}
+                      onDrop={(e) => handleDrop(section.id, e)}
+                    >
+                      <input
+                        type="file"
+                        id={`banner-image-upload-${section.id}`}
+                        className="hidden"
+                        accept="image/*"
+                        onChange={(e) => handleInputChange(section.id, e)}
+                        disabled={disabled}
+                      />
+                      <label
+                        htmlFor={`banner-image-upload-${section.id}`}
+                        className="cursor-pointer inline-flex flex-col items-center"
+                      >
+                        <Upload className="h-10 w-10 text-gray-400 mb-3" />
+                        <span className="text-sm text-gray-400 font-medium">
+                          Drag & drop image or{' '}
+                          <span className="text-primary underline">click here</span>
+                        </span>
+                        <span className="text-xs text-red-600 mt-1">Max file size is 5MB</span>
+                      </label>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {/* Upload more area */}
+                      <div
+                        className={`border-2 border-dashed rounded-xl p-4 text-center bg-gray-50 transition-all duration-200 ${
+                          dragActive[section.id]
+                            ? 'border-primary bg-blue-50'
+                            : 'border-gray-300 hover:border-gray-400'
+                        }`}
+                        onDragEnter={(e) => handleDrag(section.id, e)}
+                        onDragLeave={(e) => handleDrag(section.id, e)}
+                        onDragOver={(e) => handleDrag(section.id, e)}
+                        onDrop={(e) => handleDrop(section.id, e)}
+                      >
+                        <input
+                          type="file"
+                          id={`banner-image-upload-more-${section.id}`}
+                          className="hidden"
+                          accept="image/*"
+                          onChange={(e) => handleInputChange(section.id, e)}
+                          disabled={disabled}
+                        />
+                        <label
+                          htmlFor={`banner-image-upload-more-${section.id}`}
+                          className="cursor-pointer inline-flex items-center gap-2"
+                        >
+                          <Upload className="h-5 w-5 text-gray-400" />
+                          <span className="text-sm text-gray-600">
+                            Drag & drop image or{' '}
+                            <span className="text-primary underline">click here</span>
+                          </span>
+                        </label>
+                        <div className="text-xs text-red-600">Max file size is 5MB</div>
+                      </div>
 
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <Label className="text-sm font-medium text-gray-700">
-                  Call-to-Action Buttons
-                </Label>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={() => addBannerButton(section.id)}
-                  disabled={disabled || (section.buttons?.length || 0) >= MAX_BUTTONS_PER_BANNER}
-                  className="disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 ease-in-out transform hover:scale-105 active:scale-95 disabled:hover:scale-100 hover:border-primary hover:text-primary"
-                  title={(section.buttons?.length || 0) >= MAX_BUTTONS_PER_BANNER ? `Maximum ${MAX_BUTTONS_PER_BANNER} buttons per banner allowed` : 'Add a new button to this banner'}
-                >
-                  <Plus className="w-3 h-3 mr-1 transition-transform duration-200" />
-                  Add Button ({(section.buttons?.length || 0)}/{MAX_BUTTONS_PER_BANNER})
-                </Button>
-              </div>
-              {section.buttons?.map((button, buttonIndex) => (
-                <div key={button.id} className="space-y-2 p-3 border border-gray-200 rounded-lg bg-gray-50 transition-all duration-200 ease-in-out hover:bg-gray-100 hover:border-gray-300">
+                      {/* Image Preview */}
+                      <div className="grid grid-cols-1 gap-2">
+                        {/* Display existing image */}
+                        {(currentUploadedImages[section.id] || section.imageUrl) && (
+                          <div className="relative group border border-gray-200 rounded-sm shadow-sm">
+                            <img
+                              src={
+                                currentUploadedImages[section.id]
+                                  ? URL.createObjectURL(currentUploadedImages[section.id])
+                                  : section.imageUrl
+                              }
+                              alt="Banner background"
+                              className="w-full h-32 object-cover rounded-sm"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => updateSectionWithImage(section.id, { imageUrl: '' })}
+                              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5 cursor-pointer transition-all duration-200 hover:bg-red-600 hover:scale-110"
+                              disabled={disabled}
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Image error display */}
+                      {imageError && <p className="text-sm text-red-600 mt-1">{imageError}</p>}
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <Label className="text-xs font-medium text-gray-600">
-                      Button {buttonIndex + 1}
+                    <Label className="text-sm font-medium text-gray-700">
+                      Call-to-Action Buttons
                     </Label>
                     <Button
                       type="button"
                       size="sm"
-                      variant="ghost"
-                      onClick={() => removeBannerButton(section.id, button.id)}
-                      disabled={disabled}
-                      className="text-red-600 hover:text-red-700 h-6 w-6 p-0 transition-all duration-200 ease-in-out transform hover:scale-110 active:scale-95 hover:bg-red-50"
+                      variant="outline"
+                      onClick={() => addBannerButton(section.id)}
+                      disabled={
+                        disabled || (section.buttons?.length || 0) >= MAX_BUTTONS_PER_BANNER
+                      }
+                      className="disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 ease-in-out transform hover:scale-105 active:scale-95 disabled:hover:scale-100 hover:border-primary hover:text-primary"
+                      title={
+                        (section.buttons?.length || 0) >= MAX_BUTTONS_PER_BANNER
+                          ? `Maximum ${MAX_BUTTONS_PER_BANNER} buttons per banner allowed`
+                          : 'Add a new button to this banner'
+                      }
                     >
-                      <Trash2 className="w-3 h-3 transition-transform duration-200" />
+                      <Plus className="w-3 h-3 mr-1 transition-transform duration-200" />
+                      Add Button ({section.buttons?.length || 0}/{MAX_BUTTONS_PER_BANNER})
                     </Button>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    <div className="space-y-1">
-                      <Label htmlFor={`button-title-${button.id}`} className="text-xs font-medium text-gray-600">
-                        Button Text
-                      </Label>
-                      <Input
-                        id={`button-title-${button.id}`}
-                        value={button.title}
-                        onChange={(e) =>
-                          updateBannerButton(section.id, button.id, { title: e.target.value })
-                        }
-                        placeholder="e.g., Shop Now"
-                        disabled={disabled}
-                        className="w-full"
-                      />
+                  {section.buttons?.map((button, buttonIndex) => (
+                    <div
+                      key={button.id}
+                      className="space-y-2 p-3 border border-gray-200 rounded-lg bg-gray-50 transition-all duration-200 ease-in-out hover:bg-gray-100 hover:border-gray-300"
+                    >
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs font-medium text-gray-600">
+                          Button {buttonIndex + 1}
+                        </Label>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => removeBannerButton(section.id, button.id)}
+                          disabled={disabled}
+                          className="text-red-600 hover:text-red-700 h-6 w-6 p-0 transition-all duration-200 ease-in-out transform hover:scale-110 active:scale-95 hover:bg-red-50"
+                        >
+                          <Trash2 className="w-3 h-3 transition-transform duration-200" />
+                        </Button>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        <div className="space-y-1">
+                          <Label
+                            htmlFor={`button-title-${button.id}`}
+                            className="text-xs font-medium text-gray-600"
+                          >
+                            Button Text
+                          </Label>
+                          <Input
+                            id={`button-title-${button.id}`}
+                            value={button.title}
+                            onChange={(e) =>
+                              updateBannerButton(section.id, button.id, { title: e.target.value })
+                            }
+                            placeholder="e.g., Shop Now"
+                            disabled={disabled}
+                            className="w-full"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label
+                            htmlFor={`button-link-${button.id}`}
+                            className="text-xs font-medium text-gray-600"
+                          >
+                            Button URL
+                          </Label>
+                          <Input
+                            id={`button-link-${button.id}`}
+                            value={button.link}
+                            onChange={(e) =>
+                              updateBannerButton(section.id, button.id, { link: e.target.value })
+                            }
+                            placeholder="e.g., /shop"
+                            disabled={disabled}
+                            className="w-full"
+                          />
+                        </div>
+                      </div>
                     </div>
-                    <div className="space-y-1">
-                      <Label htmlFor={`button-link-${button.id}`} className="text-xs font-medium text-gray-600">
-                        Button URL
-                      </Label>
-                      <Input
-                        id={`button-link-${button.id}`}
-                        value={button.link}
-                        onChange={(e) =>
-                          updateBannerButton(section.id, button.id, { link: e.target.value })
-                        }
-                        placeholder="e.g., /shop"
-                        disabled={disabled}
-                        className="w-full"
-                      />
-                    </div>
-                  </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-            
-            {/* Display validation errors */}
-            {sectionErrors[section.id] && (
-              <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded-md">
-                <p className="text-sm text-red-600">{sectionErrors[section.id]}</p>
-              </div>
-            )}
-          </Card>
-        )})}
-      </TabsContent>
 
-      {/* Collection Sections Tab */}
-      <TabsContent value="collection" className="space-y-4 max-h-[600px] overflow-y-auto p-4 transition-all duration-300 ease-in-out">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold">Collection Sections</h3>
-          {/* <Button
+                {/* Display validation errors */}
+                {sectionErrors[section.id] && (
+                  <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded-md">
+                    <p className="text-sm text-red-600">{sectionErrors[section.id]}</p>
+                  </div>
+                )}
+              </Card>
+            );
+          })}
+        </TabsContent>
+
+        {/* Collection Sections Tab */}
+        <TabsContent
+          value="collection"
+          className="space-y-4 max-h-[600px] overflow-y-auto p-4 transition-all duration-300 ease-in-out"
+        >
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold">Collection Sections</h3>
+            {/* <Button
             type="button"
             size="sm"
             onClick={() => addSection('collection')}
@@ -1006,26 +1063,29 @@ export const LandingPageSectionEditor: React.FC<LandingPageSectionEditorProps> =
             <Plus className="w-4 h-4 mr-1 transition-transform duration-200" />
             Add Collection ({collectionSections.length}/{MAX_COLLECTION_SECTIONS})
           </Button> */}
-        </div>
+          </div>
 
-        {collectionSections.map((section) => (
-          <CollectionSectionForm
-            key={section.id}
-            section={section}
-            categoryOptions={categoryOptions}
-            onUpdate={(updates) => updateSection(section.id, updates)}
-            onUpdateCategories={(ids) => updateSectionCategories(section.id, ids)}
-            disabled={disabled}
-            error={sectionErrors[section.id]}
-          />
-        ))}
-      </TabsContent>
+          {collectionSections.map((section) => (
+            <CollectionSectionForm
+              key={section.id}
+              section={section}
+              categoryOptions={categoryOptions}
+              onUpdate={(updates) => updateSection(section.id, updates)}
+              onUpdateCategories={(ids) => updateSectionCategories(section.id, ids)}
+              disabled={disabled}
+              error={sectionErrors[section.id]}
+            />
+          ))}
+        </TabsContent>
 
-      {/* Product Sections Tab */}
-      <TabsContent value="products" className="space-y-4 max-h-[600px] overflow-y-auto p-4 transition-all duration-300 ease-in-out">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold">Product Sections</h3>
-          {/* <Button
+        {/* Product Sections Tab */}
+        <TabsContent
+          value="products"
+          className="space-y-4 max-h-[600px] overflow-y-auto p-4 transition-all duration-300 ease-in-out"
+        >
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold">Product Sections</h3>
+            {/* <Button
             type="button"
             size="sm"
             onClick={() => addSection('products')}
@@ -1036,20 +1096,20 @@ export const LandingPageSectionEditor: React.FC<LandingPageSectionEditorProps> =
             <Plus className="w-4 h-4 mr-1 transition-transform duration-200" />
             Add Products ({productSections.length}/{MAX_PRODUCT_SECTIONS})
           </Button> */}
-        </div>
+          </div>
 
-        {productSections.map((section) => (
-          <ProductSectionForm
-            key={section.id}
-            section={section}
-            productOptions={productOptions}
-            onUpdate={(updates) => updateSection(section.id, updates)}
-            onUpdateProducts={(ids) => updateSectionProducts(section.id, ids)}
-            disabled={disabled}
-            error={sectionErrors[section.id]}
-          />
-        ))}
-      </TabsContent>
+          {productSections.map((section) => (
+            <ProductSectionForm
+              key={section.id}
+              section={section}
+              productOptions={productOptions}
+              onUpdate={(updates) => updateSection(section.id, updates)}
+              onUpdateProducts={(ids) => updateSectionProducts(section.id, ids)}
+              disabled={disabled}
+              error={sectionErrors[section.id]}
+            />
+          ))}
+        </TabsContent>
       </Tabs>
     </div>
   );

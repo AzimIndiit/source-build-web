@@ -95,11 +95,11 @@ class CmsService {
   // Get pages with optional population
   async getPages(populate = false): Promise<CmsContentResponse> {
     const response = await axiosInstance.get<CmsContentListResponse>('/cms/pages', {
-      params: { populate: populate ? 'true' : 'false' }
+      params: { populate: populate ? 'true' : 'false' },
     });
     // If array is returned, find landing page
     if (Array.isArray(response.data.data)) {
-      const landingPage = response.data.data.find(page => page.type === ContentType.LANDING_PAGE);
+      const landingPage = response.data.data.find((page) => page.type === ContentType.LANDING_PAGE);
       if (landingPage) {
         return { ...response.data, data: landingPage };
       }

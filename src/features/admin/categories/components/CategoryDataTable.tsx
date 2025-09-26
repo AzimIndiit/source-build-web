@@ -335,8 +335,6 @@ export const CategoryDataTable: React.FC<CategoryDataTableProps> = ({
               <Plus className="w-4 h-4 mr-2" />
               Add {title === 'Categories' ? 'Category' : 'Subcategory'}
             </Button>
-
-            
           </div>
         </div>
 

@@ -123,7 +123,9 @@ const createProductSchema = z
       .string()
       .trim()
       .min(1, 'Sub category is required')
-      .max(50, 'Sub category must not exceed 50 characters').optional().or(z.literal(null)),
+      .max(50, 'Sub category must not exceed 50 characters')
+      .optional()
+      .or(z.literal(null)),
 
     quantity: z
       .string()

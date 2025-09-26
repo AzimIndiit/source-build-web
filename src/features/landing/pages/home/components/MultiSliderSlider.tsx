@@ -80,7 +80,7 @@ const MultiSliderSlider: React.FC<MultiSliderSliderProps> = ({ slides }) => {
   const { isAuthenticated } = useAuth();
   const addToWishlist = useAddToWishlist();
   const removeFromWishlist = useRemoveFromWishlist();
-  
+
   // Use local state for optimistic UI updates
   const [optimisticWishlist, setOptimisticWishlist] = useState<Record<number, boolean>>({});
   const isLoading = addToWishlist.isPending || removeFromWishlist.isPending;
@@ -100,10 +100,10 @@ const MultiSliderSlider: React.FC<MultiSliderSliderProps> = ({ slides }) => {
       toast.error('Please login to add to wishlist');
       return;
     }
-    
+
     const slide = slides[index];
     const productId = slide.id || slide._id || '';
-    
+
     if (!productId) {
       toast.error('Product ID not found');
       return;
@@ -112,9 +112,9 @@ const MultiSliderSlider: React.FC<MultiSliderSliderProps> = ({ slides }) => {
     if (!isLoading) {
       // Optimistically update the UI immediately
       const newWishlistState = !optimisticWishlist[index];
-      setOptimisticWishlist(prev => ({
+      setOptimisticWishlist((prev) => ({
         ...prev,
-        [index]: newWishlistState
+        [index]: newWishlistState,
       }));
 
       // Then perform the actual mutation
@@ -124,9 +124,9 @@ const MultiSliderSlider: React.FC<MultiSliderSliderProps> = ({ slides }) => {
           {
             onError: () => {
               // Revert on error
-              setOptimisticWishlist(prev => ({
+              setOptimisticWishlist((prev) => ({
                 ...prev,
-                [index]: false
+                [index]: false,
               }));
             },
           }
@@ -137,9 +137,9 @@ const MultiSliderSlider: React.FC<MultiSliderSliderProps> = ({ slides }) => {
           {
             onError: () => {
               // Revert on error
-              setOptimisticWishlist(prev => ({
+              setOptimisticWishlist((prev) => ({
                 ...prev,
-                [index]: true
+                [index]: true,
               }));
             },
           }
@@ -230,33 +230,33 @@ const MultiSliderSlider: React.FC<MultiSliderSliderProps> = ({ slides }) => {
                     fadeInDuration={0.3}
                     wrapperClassName="w-full h-full"
                   />
-                   <motion.button
-            className="absolute top-2 right-2 rounded-full bg-black/20 backdrop-blur-sm p-2 transition-all duration-200 hover:bg-black/30"
-            onClick={(e) => handleWishlistClick(e, index)}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.2 }}
-          >
-            <motion.div
-              animate={{
-                scale: optimisticWishlist[index] ? [1, 1.2, 1] : 1,
-              }}
-              transition={{ duration: 0.3 }}
-            >
-              <Heart
-                className={cn(
-                  'h-5 w-5 transition-colors duration-200 cursor-pointer',
-                  optimisticWishlist[index]
-                    ? 'text-red-500 fill-red-500'
-                    : 'text-white hover:text-red-400',
-                  isLoading && 'opacity-50'
-                )}
-              />
-            </motion.div>
-          </motion.button>
-          {getReadyByDate(slide)}
+                  <motion.button
+                    className="absolute top-2 right-2 rounded-full bg-black/20 backdrop-blur-sm p-2 transition-all duration-200 hover:bg-black/30"
+                    onClick={(e) => handleWishlistClick(e, index)}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <motion.div
+                      animate={{
+                        scale: optimisticWishlist[index] ? [1, 1.2, 1] : 1,
+                      }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <Heart
+                        className={cn(
+                          'h-5 w-5 transition-colors duration-200 cursor-pointer',
+                          optimisticWishlist[index]
+                            ? 'text-red-500 fill-red-500'
+                            : 'text-white hover:text-red-400',
+                          isLoading && 'opacity-50'
+                        )}
+                      />
+                    </motion.div>
+                  </motion.button>
+                  {getReadyByDate(slide)}
                 </div>
               </div>
 
@@ -288,7 +288,9 @@ const MultiSliderSlider: React.FC<MultiSliderSliderProps> = ({ slides }) => {
                 <div className="flex items-center justify-between text-[9px] sm:text-[10px] md:text-xs text-gray-500">
                   <span className="flex items-center gap-0.5 truncate max-w-[60%]">
                     {slide.inStock !== undefined && (
-                      <span className={`w-1 h-1 sm:w-1.5 sm:h-1.5 md:w-2 md:h-2 ${slide.inStock ? 'bg-green-500' : 'bg-red-500'} rounded-full flex-shrink-0`}></span>
+                      <span
+                        className={`w-1 h-1 sm:w-1.5 sm:h-1.5 md:w-2 md:h-2 ${slide.inStock ? 'bg-green-500' : 'bg-red-500'} rounded-full flex-shrink-0`}
+                      ></span>
                     )}
                     <span className="truncate">{slide.location}</span>
                   </span>

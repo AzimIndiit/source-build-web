@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Edit, Plus, Trash2, Upload, X } from 'lucide-react';
 import { FormInput } from '@/components/forms/FormInput';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';    
+import { Switch } from '@/components/ui/switch';
 import {
   Category,
   CreateCategoryDto,
@@ -21,9 +21,6 @@ import { fileService } from '@/features/profile/services/fileService';
 import { validateImageFile } from '@/utils/imageValidation';
 import toast from 'react-hot-toast';
 import { AttributeModal } from '../../attributes/components/AttributeModal';
-
-
-
 
 const attributeValueSchema = z.object({
   value: z.string().trim().min(1, 'Value is required'),
@@ -239,7 +236,11 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
         imageUrl = existingImage;
       }
 
-      const submitData: CreateCategoryDto | UpdateCategoryDto | CreateSubcategoryDto | UpdateSubcategoryDto = {
+      const submitData:
+        | CreateCategoryDto
+        | UpdateCategoryDto
+        | CreateSubcategoryDto
+        | UpdateSubcategoryDto = {
         ...values,
         image: imageUrl,
       };
@@ -265,18 +266,19 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent 
+      <DialogContent
         className="sm:max-w-[600px] bg-white max-h-[90vh] overflow-y-auto"
-        onOpenAutoFocus={(e) => e.preventDefault()}>
-        <DialogHeader className='border-b border-gray-200 pb-4'>
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
+        <DialogHeader className="border-b border-gray-200 pb-4">
           <DialogTitle>
             {category
               ? isSubcategory
                 ? 'Edit Subcategory'
                 : 'Edit Category'
               : isSubcategory
-              ? 'Create New Subcategory'
-              : 'Create New Category'}
+                ? 'Create New Subcategory'
+                : 'Create New Category'}
           </DialogTitle>
         </DialogHeader>
 
@@ -284,7 +286,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
           <form onSubmit={handleSubmit(onSubmitForm)} className="space-y-4">
             <FormInput
               name="name"
-              label={isSubcategory ? "Subcategory Name" : "Category Name"}
+              label={isSubcategory ? 'Subcategory Name' : 'Category Name'}
               placeholder={`Enter ${isSubcategory ? 'subcategory' : 'category'} name`}
               disabled={isSubmitting}
               type="text"
@@ -312,8 +314,8 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
                     dragActive
                       ? 'border-primary bg-blue-50'
                       : errors.image
-                      ? 'border-red-300 bg-red-50'
-                      : 'border-gray-300 bg-gray-50'
+                        ? 'border-red-300 bg-red-50'
+                        : 'border-gray-300 bg-gray-50'
                   }`}
                   onDragEnter={handleDrag}
                   onDragLeave={handleDrag}
@@ -417,77 +419,75 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
 
             {/* Attributes Section - For both Categories and Subcategories */}
             <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="hasAttributes" className="text-base font-medium">
-                   Attributes
-                  </Label>
-                 
-                   <Button
-                        type="button"
-                        className='border-gray-200'
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          setEditingAttributeIndex(null);
-                          setAttributeModalOpen(true);
-                          setValue('hasAttributes', true)
-                        }}
-                      >
-                        <Plus className="h-4 w-4 " />
-                        Add Attribute
-                      </Button>
-                </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="hasAttributes" className="text-base font-medium">
+                  Attributes
+                </Label>
 
-                {watchedHasAttributes && (
-                  <div className="space-y-4  rounded-lg  border-gray-200 ">
-                 
+                <Button
+                  type="button"
+                  className="border-gray-200"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setEditingAttributeIndex(null);
+                    setAttributeModalOpen(true);
+                    setValue('hasAttributes', true);
+                  }}
+                >
+                  <Plus className="h-4 w-4 " />
+                  Add Attribute
+                </Button>
+              </div>
 
-                    {fields.length > 0 ? (
-                      <div className="space-y-2 border-t border-gray-200 pt-4">
-                        {fields.map((field, index) => (
-                          <div
-                            key={field.id}
-                            className="flex items-center justify-between p-3 border rounded-lg  border-gray-200"
-                          >
-                            <div className="flex-1">
-                              <div className="font-medium">{field.name}</div>
-                              {/* <div className="text-sm text-gray-500">
+              {watchedHasAttributes && (
+                <div className="space-y-4  rounded-lg  border-gray-200 ">
+                  {fields.length > 0 ? (
+                    <div className="space-y-2 border-t border-gray-200 pt-4">
+                      {fields.map((field, index) => (
+                        <div
+                          key={field.id}
+                          className="flex items-center justify-between p-3 border rounded-lg  border-gray-200"
+                        >
+                          <div className="flex-1">
+                            <div className="font-medium">{field.name}</div>
+                            {/* <div className="text-sm text-gray-500">
                                 Type: {field.inputType}
                                 {field.required && ' • Required'}
                                 {field.values && field.values.length > 0 && 
                                   ` • ${field.values.length} options`}
                               </div> */}
-                            </div>
-                            <div className="flex gap-2">
-                              <Button
-                                type="button"
-                                size="sm"
-                                variant="ghost"
-                                className=' border-gray-200'
-                                onClick={() => handleEditAttribute(index)}
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                type="button"
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => handleRemoveAttribute(index)}
-                                className="text-red-600 hover:text-red-700"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
                           </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-sm text-gray-500 text-center py-4">
-                        No attributes added yet
-                      </p>
-                    )}
-                  </div>
-                )}
+                          <div className="flex gap-2">
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="ghost"
+                              className=" border-gray-200"
+                              onClick={() => handleEditAttribute(index)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleRemoveAttribute(index)}
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500 text-center py-4">
+                      No attributes added yet
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Active Status */}
@@ -542,7 +542,9 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
               handleAddAttribute(data as Attribute);
               return Promise.resolve();
             }}
-            attribute={editingAttributeIndex !== null ? fields[editingAttributeIndex] as any : null}
+            attribute={
+              editingAttributeIndex !== null ? (fields[editingAttributeIndex] as any) : null
+            }
             edit={editingAttributeIndex !== null}
             isLoading={isSubmitting}
           />

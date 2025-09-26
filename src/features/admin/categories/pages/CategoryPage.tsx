@@ -119,7 +119,7 @@ const CategoryPage: React.FC = () => {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className='mt-2'>
+        <div className="mt-2">
           <PaginationWrapper
             currentPage={currentPage}
             totalPages={totalPages}

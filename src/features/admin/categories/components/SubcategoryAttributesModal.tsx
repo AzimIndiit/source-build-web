@@ -28,12 +28,14 @@ const attributeSchema = z.object({
   name: z.string().trim().min(1, 'Attribute name is required').max(100),
   inputType: z.enum(['text', 'number', 'dropdown', 'multiselect', 'boolean', 'radio']),
   required: z.boolean().optional(),
-  values: z.array(
-    z.object({
-      value: z.string().trim().min(1, 'Value is required'),
-      order: z.number().optional(),
-    })
-  ).optional(),
+  values: z
+    .array(
+      z.object({
+        value: z.string().trim().min(1, 'Value is required'),
+        order: z.number().optional(),
+      })
+    )
+    .optional(),
   order: z.number().optional(),
   isActive: z.boolean().optional(),
 });
@@ -143,9 +145,7 @@ export const SubcategoryAttributesModal: React.FC<SubcategoryAttributesModalProp
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px] bg-white max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
-            {isEditing ? 'Edit Attribute' : 'Add Attribute'}
-          </DialogTitle>
+          <DialogTitle>{isEditing ? 'Edit Attribute' : 'Add Attribute'}</DialogTitle>
         </DialogHeader>
 
         <FormProvider {...methods}>
@@ -246,9 +246,7 @@ export const SubcategoryAttributesModal: React.FC<SubcategoryAttributesModalProp
                 <Label htmlFor="required" className="text-base font-medium">
                   Required Field
                 </Label>
-                <p className="text-sm text-gray-500">
-                  Make this attribute mandatory for products
-                </p>
+                <p className="text-sm text-gray-500">Make this attribute mandatory for products</p>
               </div>
               <Checkbox
                 id="required"
@@ -272,9 +270,7 @@ export const SubcategoryAttributesModal: React.FC<SubcategoryAttributesModalProp
                 min={0}
                 placeholder="0"
               />
-              {errors.order && (
-                <p className="text-sm text-red-600">{errors.order.message}</p>
-              )}
+              {errors.order && <p className="text-sm text-red-600">{errors.order.message}</p>}
               <p className="text-sm text-gray-500">Lower numbers appear first</p>
             </div>
 
@@ -284,9 +280,7 @@ export const SubcategoryAttributesModal: React.FC<SubcategoryAttributesModalProp
                 <Label htmlFor="isActive" className="text-base font-medium">
                   Active
                 </Label>
-                <p className="text-sm text-gray-500">
-                  Enable or disable this attribute
-                </p>
+                <p className="text-sm text-gray-500">Enable or disable this attribute</p>
               </div>
               <Switch
                 id="isActive"
@@ -297,11 +291,7 @@ export const SubcategoryAttributesModal: React.FC<SubcategoryAttributesModalProp
 
             {/* Form Actions */}
             <div className="flex justify-end gap-3 pt-4">
-              <Button
-                variant="outline"
-                onClick={onClose}
-                className="px-6 w-[120px]"
-              >
+              <Button variant="outline" onClick={onClose} className="px-6 w-[120px]">
                 Cancel
               </Button>
               <Button

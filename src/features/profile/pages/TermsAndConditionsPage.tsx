@@ -76,10 +76,10 @@ For questions, contact us at:
 
 const TermsAndConditionsPage: React.FC = () => {
   const location = useLocation();
-  
+
   // Check if we're on public routes
   const isPublicRoute = location.pathname === '/terms' || location.pathname === '/privacy';
-  
+
   // Only use auth hook if not on public route
   const { user } = isPublicRoute ? { user: null } : useAuth();
   const isSeller = user?.role === 'seller';

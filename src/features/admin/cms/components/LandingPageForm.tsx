@@ -151,9 +151,9 @@ const transformFrontendToBackend = async (
         sectionId: section.id,
         title: section.title,
         categoryIds: section.categoryIds,
-        categoriesLength: section.categories?.length
+        categoriesLength: section.categories?.length,
       });
-      
+
       transformedSection = {
         ...transformedSection,
         type: 'categories',
@@ -166,9 +166,9 @@ const transformFrontendToBackend = async (
         // Preserve categoryIds for backend processing - ensure it's always an array
         categoryIds: Array.isArray(section.categoryIds) ? section.categoryIds : [],
       };
-      
+
       console.log('Transformed to:', {
-        categoryIds: transformedSection.categoryIds
+        categoryIds: transformedSection.categoryIds,
       });
     }
 
@@ -257,24 +257,26 @@ export const LandingPageForm: React.FC<LandingPageFormProps> = ({
   }, [cms, reset]);
 
   // Validate sections before submission
-  const validateSections = (sections: LandingPageSection[]): { 
-    isValid: boolean; 
-    errors: string[]; 
-    sectionErrors: Record<string, string> 
+  const validateSections = (
+    sections: LandingPageSection[]
+  ): {
+    isValid: boolean;
+    errors: string[];
+    sectionErrors: Record<string, string>;
   } => {
     const errors: string[] = [];
     const sectionErrorMap: Record<string, string> = {};
-    
+
     // Check for at least one banner section
-    const bannerSections = sections.filter(s => s.type === 'banner');
+    const bannerSections = sections.filter((s) => s.type === 'banner');
     if (bannerSections.length === 0) {
       errors.push('At least one banner section is required');
     }
-    
+
     // Validate each section
     sections.forEach((section) => {
       const sectionErrorMessages: string[] = [];
-      
+
       if (section.type === 'banner') {
         // Banner validation
         if (!section.title || section.title.trim().length === 0) {
@@ -305,17 +307,17 @@ export const LandingPageForm: React.FC<LandingPageFormProps> = ({
           sectionErrorMessages.push('At least one product must be selected');
         }
       }
-      
+
       if (sectionErrorMessages.length > 0) {
         sectionErrorMap[section.id] = sectionErrorMessages.join(', ');
-        errors.push(...sectionErrorMessages.map(msg => `${section.title || 'Section'}: ${msg}`));
+        errors.push(...sectionErrorMessages.map((msg) => `${section.title || 'Section'}: ${msg}`));
       }
     });
-    
+
     return {
       isValid: errors.length === 0 && bannerSections.length > 0,
       errors,
-      sectionErrors: sectionErrorMap
+      sectionErrors: sectionErrorMap,
     };
   };
 
@@ -324,27 +326,30 @@ export const LandingPageForm: React.FC<LandingPageFormProps> = ({
       setIsSubmitting(true);
 
       // Log current sections state
-      console.log('Current sections before validation:', sections.map(s => ({
-        id: s.id,
-        type: s.type,
-        title: s.title,
-        categoryIds: (s as any).categoryIds,
-        productIds: (s as any).productIds
-      })));
-      
+      console.log(
+        'Current sections before validation:',
+        sections.map((s) => ({
+          id: s.id,
+          type: s.type,
+          title: s.title,
+          categoryIds: (s as any).categoryIds,
+          productIds: (s as any).productIds,
+        }))
+      );
+
       // Validate sections first
       const validation = validateSections(sections);
       if (!validation.isValid) {
         // Set section errors for inline display
         setSectionErrors(validation.sectionErrors);
-        
+
         // Show a general error message
         toast.error('Please fix the errors in the sections below');
-        
+
         setIsSubmitting(false);
         return;
       }
-      
+
       // Clear any previous errors
       setSectionErrors({});
 
@@ -423,15 +428,18 @@ export const LandingPageForm: React.FC<LandingPageFormProps> = ({
             <LandingPageSectionEditor
               sections={sections as any}
               onChange={(newSections) => {
-                console.log('LandingPageForm: Sections updated:', newSections.map((s: any) => ({
-                  id: s.id,
-                  type: s.type,
-                  title: s.title,
-                  categoryIds: s.categoryIds,
-                  productIds: s.productIds
-                })));
+                console.log(
+                  'LandingPageForm: Sections updated:',
+                  newSections.map((s: any) => ({
+                    id: s.id,
+                    type: s.type,
+                    title: s.title,
+                    categoryIds: s.categoryIds,
+                    productIds: s.productIds,
+                  }))
+                );
                 setSections(newSections as any);
-                
+
                 // Clear errors when sections change
                 if (Object.keys(sectionErrors).length > 0) {
                   setSectionErrors({});

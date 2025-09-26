@@ -1,16 +1,12 @@
 import axiosInstance from '@/lib/axios';
-import { 
-  CmsPageResponse, 
-  CreateCmsPagePayload, 
-  UpdateCmsPagePayload 
-} from '../types';
+import { CmsPageResponse, CreateCmsPagePayload, UpdateCmsPagePayload } from '../types';
 
 class CmsService {
   // Get all CMS pages
   async getPages(): Promise<CmsPageResponse> {
     // Don't populate for admin editing - we need raw categoryIds and productIds
     const response = await axiosInstance.get<CmsPageResponse>('/cms/pages', {
-      params: { populate: 'false' }
+      params: { populate: 'false' },
     });
     return response.data;
   }
@@ -19,7 +15,7 @@ class CmsService {
   async getPageBySlug(slug: string): Promise<CmsPageResponse> {
     // Don't populate for admin editing - we need raw categoryIds and productIds
     const response = await axiosInstance.get<CmsPageResponse>(`/cms/pages/${slug}`, {
-      params: { populate: 'false' }
+      params: { populate: 'false' },
     });
     return response.data;
   }
@@ -37,27 +33,39 @@ class CmsService {
   }
 
   // Update banner section
-  async updateBannerSection(pageId: string, sectionId: string, data: any): Promise<CmsPageResponse> {
+  async updateBannerSection(
+    pageId: string,
+    sectionId: string,
+    data: any
+  ): Promise<CmsPageResponse> {
     const response = await axiosInstance.patch<CmsPageResponse>(
-      `/cms/pages/${pageId}/sections/hero/${sectionId}`, 
+      `/cms/pages/${pageId}/sections/hero/${sectionId}`,
       data
     );
     return response.data;
   }
 
   // Update collection section
-  async updateCollectionSection(pageId: string, sectionId: string, data: any): Promise<CmsPageResponse> {
+  async updateCollectionSection(
+    pageId: string,
+    sectionId: string,
+    data: any
+  ): Promise<CmsPageResponse> {
     const response = await axiosInstance.patch<CmsPageResponse>(
-      `/cms/pages/${pageId}/sections/categories/${sectionId}`, 
+      `/cms/pages/${pageId}/sections/categories/${sectionId}`,
       data
     );
     return response.data;
   }
 
   // Update product section
-  async updateProductSection(pageId: string, sectionId: string, data: any): Promise<CmsPageResponse> {
+  async updateProductSection(
+    pageId: string,
+    sectionId: string,
+    data: any
+  ): Promise<CmsPageResponse> {
     const response = await axiosInstance.patch<CmsPageResponse>(
-      `/cms/pages/${pageId}/sections/products/${sectionId}`, 
+      `/cms/pages/${pageId}/sections/products/${sectionId}`,
       data
     );
     return response.data;
