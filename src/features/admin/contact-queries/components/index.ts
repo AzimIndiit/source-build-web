@@ -1,0 +1,1 @@
+export { ContactQueriesDataTable } from './ContactQueriesDataTable';

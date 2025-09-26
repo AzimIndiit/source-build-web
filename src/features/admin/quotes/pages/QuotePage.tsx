@@ -12,6 +12,7 @@ const QuotePage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [searchValue, setSearchValue] = useState('');
+  const [replyingToQuoteId, setReplyingToQuoteId] = useState<string | null>(null);
 
   // Fetch quotes from API
   const { data, isLoading } = useQuotesQuery({
@@ -29,6 +30,7 @@ const QuotePage: React.FC = () => {
 
   const handleReplyQuote = (quote: Quote) => {
     if (quote.user?.id) {
+      setReplyingToQuoteId(quote.id || quote._id || null);
       getOrCreateChat({ participantId: quote.user?.id });
     }
   };
@@ -69,6 +71,8 @@ const QuotePage: React.FC = () => {
         searchValue={searchValue}
         onSearchChange={handleSearchChange}
         isLoading={isLoading}
+        replyingToQuoteId={replyingToQuoteId}
+        isReplying={isPending}
       />
 
       {/* Pagination */}

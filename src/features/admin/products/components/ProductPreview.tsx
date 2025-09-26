@@ -1,665 +1,591 @@
-import React, { useState, useEffect } from 'react';
-import { Card, Badge } from '@/components/ui';
+import React, { useState, useEffect, useRef } from 'react';
+import { Badge } from '@/components/ui';
 import { getColorName } from '@/utils/colorUtils';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from '@/components/ui/carousel';
-import { X } from 'lucide-react';
+
+import { ChevronLeft, ChevronRight, Info, CircleCheck } from 'lucide-react';
+import { formatCurrency } from '@/lib/helpers';
+import LazyImage from '@/components/common/LazyImage';
+import { CustomerDetailsSection } from '@/features/orders/components';
 
 interface ProductPreviewProps {
-  formValues: any;
-  uploadedPhotos: File[];
-  existingImages?: string[];
-  addressOptions?: Array<{ value: string; label: string }>;
-  savedAddresses?: any[];
-  variants: Array<{ id: string; images: File[] }>;
-  categoryOptions: Array<{ value: string; label: string }>;
-  subCategoryOptions: Array<{ value: string; label: string }>;
-  tagOptions: Array<{ value: string; label: string }>;
-  handleBackClick?: () => void;
+  product: any;
 }
 
-export const ProductPreview: React.FC<ProductPreviewProps> = ({
-  formValues,
-  uploadedPhotos,
-  existingImages = [],
-  addressOptions = [],
-  savedAddresses = [],
-  variants,
-  categoryOptions,
-  subCategoryOptions,
-  tagOptions,
-  handleBackClick,
-}) => {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [api, setApi] = useState<any>();
+export const ProductPreview: React.FC<ProductPreviewProps> = ({ product }) => {
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const thumbnailContainerRef = useRef<HTMLDivElement>(null);
+  const thumbnailRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
+  // Auto-scroll selected thumbnail into view
   useEffect(() => {
-    if (!api) {
-      return;
+    const selectedThumbnail = thumbnailRefs.current[selectedImageIndex];
+    const container = thumbnailContainerRef.current;
+
+    if (selectedThumbnail && container) {
+      const containerRect = container.getBoundingClientRect();
+      const thumbnailRect = selectedThumbnail.getBoundingClientRect();
+
+      // Check if thumbnail is not fully visible
+      if (thumbnailRect.left < containerRect.left || thumbnailRect.right > containerRect.right) {
+        selectedThumbnail.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+          inline: 'center',
+        });
+      }
     }
+  }, [selectedImageIndex]);
+  // Get current images based on selected variant
+  const currentImages = product?.images?.length > 0 ? product.images : product?.images || [];
 
-    api.on('select', () => {
-      setCurrentImageIndex(api.selectedScrollSnap());
-    });
-  }, [api]);
+  const handlePreviousImage = () => {
+    if (!currentImages.length) return;
+    setSelectedImageIndex((prev) => (prev > 0 ? prev - 1 : currentImages.length - 1));
+  };
 
-  const finalPrice =
-    formValues.discount?.discountType === 'percentage' && formValues.discount?.discountValue
-      ? (
-          parseFloat(formValues.price) *
-          (1 - parseFloat(formValues.discount.discountValue) / 100)
-        ).toFixed(2)
-      : formValues.discount?.discountType === 'flat' && formValues.discount?.discountValue
-        ? (parseFloat(formValues.price) - parseFloat(formValues.discount.discountValue)).toFixed(2)
-        : formValues.price;
+  const handleNextImage = () => {
+    if (!currentImages.length) return;
+    setSelectedImageIndex((prev) => (prev < currentImages.length - 1 ? prev + 1 : 0));
+  };
 
+  const handleThumbnailClick = (index: number) => {
+    setSelectedImageIndex(index);
+  };
+
+  const getReadyByDate = (product: any) => {
+    switch (Number(product?.readyByDays)) {
+      case 0:
+        return (
+          <Badge className=" bg-primary/80 text-white  px-2 py-1 text-[11px]">
+            Same Day Delivery
+          </Badge>
+        );
+      case 1:
+        return (
+          <Badge className=" bg-gray-200 text-gray-800  px-2 py-1 text-[11px]">
+            Next Day Delivery
+          </Badge>
+        );
+      default:
+        return null;
+    }
+  };
   return (
-    <div className="w-full lg:flex-1 h-full ">
-      <Card className="p-4 sm:p-6 border-gray-200 h-full flex flex-col rounded-none border-none lg:border lg:rounded-sm ">
-        <div className="flex  justify-between items-center gap-2 border-b border-gray-200 pb-4 ">
-          <div className="">
-            <h2 className="text-lg font-semibold text-gray-700">Preview</h2>
-            <p className="text-sm text-gray-500">See how your listing will appear</p>
-          </div>
+    <div className="flex-1 flex flex-col gap-4 lg:gap-0 lg:flex-row rounded-lg overflow-hidden min-h-0">
+      {/* Image Carousel */}
+      <div className="w-full  lg:w-2/5  lg:h-full rounded-sm overflow-hidden  lg:rounded-e-none">
+        <LazyImage
+          src={
+            currentImages[selectedImageIndex] ||
+            'https://placehold.co/600x600/e5e7eb/6b7280?text=No+Image'
+          }
+          alt={product?.title || 'Product image'}
+          className="rounded-sm bg-white border-gray-200 shadow-md border"
+          wrapperClassName="w-full h-[250px] sm:h-[350px] md:h-[450px] bg-gray-100 rounded-sm"
+          fallbackSrc="https://placehold.co/600x600/e5e7eb/6b7280?text=No+Image"
+          objectFit="cover"
+          showSkeleton={true}
+          fadeInDuration={0.3}
+          rootMargin="100px"
+        />
 
-          {handleBackClick && (
+        {/* Thumbnail Carousel */}
+        <div className="relative mt-4">
+          <div className="flex items-center">
+            {/* Previous Button */}
             <button
-              type="button"
-              onClick={handleBackClick}
-              className="p-1 hover:bg-gray-100 rounded"
+              onClick={handlePreviousImage}
+              className="absolute left-0 z-10 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-white rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors shadow-sm cursor-pointer"
+              aria-label="Previous image"
             >
-              <X className="h-5 w-5" />
+              <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />
             </button>
-          )}
+
+            {/* Thumbnails Container */}
+            <div
+              ref={thumbnailContainerRef}
+              className="flex gap-2 sm:gap-3 overflow-x-auto mx-10 sm:mx-12 md:mx-14 px-1 sm:px-2 scroll-smooth [&::-webkit-scrollbar]:hidden"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              {currentImages.map((image: string, index: number) => (
+                <button
+                  key={index}
+                  ref={(el) => {
+                    thumbnailRefs.current[index] = el;
+                  }}
+                  onClick={() => handleThumbnailClick(index)}
+                  className={`flex-shrink-0 w-[80px] h-[60px cursor-pointer bg-white sm:w-[120px] sm:h-[80px] md:w-[150px] md:h-[100px] lg:w-[180px] lg:h-[120px] rounded-lg overflow-hidden border-2 transition-all ${
+                    selectedImageIndex === index
+                      ? 'border-primary shadow-md'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <LazyImage
+                    src={image}
+                    alt={`${product?.title} ${index + 1}`}
+                    className="rounded-lg  border-gray-200 shadow-md border"
+                    wrapperClassName="w-full h-full"
+                    fallbackSrc="https://placehold.co/180x120/e5e7eb/6b7280?text=No+Image"
+                    objectFit="cover"
+                    showSkeleton={true}
+                    fadeInDuration={0.2}
+                    rootMargin="50px"
+                  />
+                </button>
+              ))}
+            </div>
+
+            {/* Next Button */}
+            <button
+              onClick={handleNextImage}
+              className="absolute right-0 z-10 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-white rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors shadow-sm cursor-pointer"
+              aria-label="Next image"
+            >
+              <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />
+            </button>
+          </div>
         </div>
-        <div className="flex-1 flex flex-col gap-4 lg:gap-0 lg:flex-row rounded-lg overflow-hidden min-h-0">
-          {/* Image Carousel */}
-          <div className="w-full  lg:w-3/5  lg:h-full rounded-sm overflow-hidden  lg:rounded-e-none">
-            {existingImages.length + uploadedPhotos.length >= 2 ? (
-              <Carousel
-                setApi={setApi}
-                className=" min-h-[300px] min-w-[300px] rounded-sm w-full  flex-col lg:flex-row  lg:rounded-e-none lg:h-full bg-[#A9A9A9]   lg:rounded-l-lg  lg:py-20 lg:px-12 relative flex items-center "
-              >
-                <CarouselContent>
-                  {/* Show existing images first */}
-                  {existingImages.map((url, index) => (
-                    <CarouselItem key={`existing-${index}`}>
-                      <div className="aspect-square relative  overflow-hidden border rounded-sm border-gray-400 shadow-2xl">
-                        <img
-                          src={url}
-                          alt={`Product ${index + 1}`}
-                          className="w-full h-full object-cover "
-                        />
-                      </div>
-                    </CarouselItem>
-                  ))}
-                  {/* Then show newly uploaded photos */}
-                  {uploadedPhotos.map((photo, index) => (
-                    <CarouselItem key={`upload-${index}`}>
-                      <div className="aspect-square relative  overflow-hidden border rounded-sm border-gray-400 shadow-2xl">
-                        <img
-                          src={URL.createObjectURL(photo)}
-                          alt={`Product ${existingImages.length + index + 1}`}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-                {existingImages.length + uploadedPhotos.length > 1 && (
-                  <>
-                    <CarouselPrevious className="left-0 lg:left-[49px] bg-white shadow-md border-none hover:bg-gray-50 h-12 sm:h-16 md:h-20 rounded-l-sm" />
-                    <CarouselNext className="right-0 lg:right-[49px] bg-white border-none shadow-md hover:bg-gray-50 h-12 sm:h-16 md:h-20 rounded-r-sm" />
-                  </>
-                )}
+      </div>
 
-                <div className="hidden sm:flex absolute   bottom-10 md:bottom-20 justify-center items-center text-white z-10 left-0 flex gap-2 w-full px-2">
-                  <div className="flex gap-1 sm:gap-2 m-0 overflow-x-auto max-w-full">
-                    {/* Show existing images thumbnails */}
-                    {existingImages.map((url, index) => (
-                      <div
-                        key={`existing-thumb-${index}`}
-                        className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 flex-shrink-0 cursor-pointer"
-                        onClick={() => api?.scrollTo(index)}
-                      >
-                        <img
-                          src={url}
-                          alt={`Product ${index + 1}`}
-                          className={`${
-                            index === currentImageIndex
-                              ? 'border-2 border-primary shadow-2xl'
-                              : 'border-2 border-transparent'
-                          } w-full h-full object-cover rounded-sm transition-all duration-200 hover:border-primary/50`}
-                        />
-                      </div>
-                    ))}
-                    {/* Show uploaded photos thumbnails */}
-                    {uploadedPhotos.map((photo, index) => (
-                      <div
-                        key={`upload-thumb-${index}`}
-                        className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 flex-shrink-0 cursor-pointer"
-                        onClick={() => api?.scrollTo(existingImages.length + index)}
-                      >
-                        <img
-                          src={URL.createObjectURL(photo)}
-                          alt={`Product ${existingImages.length + index + 1}`}
-                          className={`${
-                            existingImages.length + index === currentImageIndex
-                              ? 'border-2 border-primary shadow-2xl'
-                              : 'border-2 border-transparent'
-                          } w-full h-full object-cover rounded-sm transition-all duration-200 hover:border-primary/50`}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </Carousel>
-            ) : (
-              <div className="h-full bg-gray-100 rounded-t-lg sm:rounded-t-none sm:rounded-l-lg flex items-center justify-center p-4">
-                <div className="text-center">
-                  <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-600">
-                    Your listing Preview
-                  </h2>
-                  <p className="text-sm sm:text-base mt-4 text-red-500 font-medium">
-                    Minimum 2 images required for preview
-                  </p>
-                  {existingImages.length + uploadedPhotos.length === 1 && (
-                    <p className="text-xs sm:text-sm mt-2 text-gray-500">
-                      Please add {2 - (existingImages.length + uploadedPhotos.length)} more image(s)
-                      to see the preview
-                    </p>
-                  )}
-                  {existingImages.length + uploadedPhotos.length === 0 && (
-                    <p className="text-xs sm:text-sm mt-2 text-gray-500">
-                      Please add at least 2 images to see how your listing will appear
-                    </p>
-                  )}
-                </div>
+      {/* Product Details */}
+      <div className="w-full lg:w-3/5 p-3 sm:p-4 md:p-6 rounded-sm lg:rounded-l-none lg:rounded-r-lg lg:overflow-y-auto min-h-0">
+        {/* Title and Price */}
+        <div className="pb-4 border-b border-gray-200">
+          <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-2 capitalize">
+            {product.title || 'Product Title'}
+          </h2>
+          <div className="flex  items-baseline gap-2">
+            <div className="text-xl font-medium text-gray-900 max-content">
+              <div className="text-sm font-bold text-primary">
+                {formatCurrency(product.price || 0)}
+                {product.priceType && ` per ${product.priceType}`}
+              </div>
+            </div>
+            {product.category && (
+              <div className="text-gray-600">
+                / {typeof product.category === 'object' ? product.category.name : product.category}
               </div>
             )}
           </div>
-          <div className=" sm:hidden justify-center items-center  flex gap-2 w-full px-2">
-            <div className="flex gap-1 sm:gap-2 m-0 overflow-x-auto max-w-full">
-              {/* Show existing images thumbnails */}
-              {existingImages.map((url, index) => (
-                <div
-                  key={`existing-thumb-${index}`}
-                  className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 flex-shrink-0 cursor-pointer"
-                  onClick={() => api?.scrollTo(index)}
-                >
-                  <img
-                    src={url}
-                    alt={`Product ${index + 1}`}
-                    className={`${
-                      index === currentImageIndex
-                        ? 'border-2 border-primary shadow-2xl'
-                        : 'border-2 border-transparent'
-                    } w-full h-full object-cover rounded-sm transition-all duration-200 hover:border-primary/50`}
-                  />
-                </div>
-              ))}
-              {/* Show uploaded photos thumbnails */}
-              {uploadedPhotos.map((photo, index) => (
-                <div
-                  key={`upload-thumb-${index}`}
-                  className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 flex-shrink-0 cursor-pointer"
-                  onClick={() => api?.scrollTo(existingImages.length + index)}
-                >
-                  <img
-                    src={URL.createObjectURL(photo)}
-                    alt={`Product ${existingImages.length + index + 1}`}
-                    className={`${
-                      existingImages.length + index === currentImageIndex
-                        ? 'border-2 border-primary shadow-2xl'
-                        : 'border-2 border-transparent'
-                    } w-full h-full object-cover rounded-sm transition-all duration-200 hover:border-primary/50`}
-                  />
-                </div>
-              ))}
-            </div>
+        </div>
+
+        {/* Sub Category */}
+        {product?.subCategory && (
+          <div className="py-4 border-b border-gray-200">
+            <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">
+              Sub Category
+            </h3>
+            <p className="text-xs sm:text-sm md:text-base text-gray-600">
+              {product?.subCategory?.name}
+            </p>
           </div>
+        )}
 
-          {/* Product Details */}
-          <div className="w-full lg:w-2/5 p-3 sm:p-4 md:p-6 border border-gray-200 rounded-sm lg:rounded-l-none lg:rounded-r-lg lg:overflow-y-auto min-h-0">
-            {/* Title and Price */}
-            <div className="pb-4 border-b border-gray-200">
-              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-2">
-                {formValues.title || 'Product Title'}
-              </h2>
-              <div className="flex  items-baseline gap-2">
-                <div className="text-xl font-medium text-gray-900 max-content">
-                  {/* ${formValues.price || '0.00'} */}
-                  {formValues.discount?.discountType !== 'none' &&
-                  formValues.discount?.discountValue ? (
-                    <div className="flex gap-2 items-center ">
-                      <div className="text-xs text-gray-500 line-through">${formValues.price}</div>
-                      <div className="text-sm font-bold text-primary">${finalPrice || '0.00'}</div>
-                      <Badge variant="destructive" className="text-xs bg-primary text-white">
-                        {formValues.discount.discountType === 'percentage'
-                          ? `${formValues.discount.discountValue}% OFF`
-                          : `$${formValues.discount.discountValue} OFF`}
-                      </Badge>
-                    </div>
-                  ) : (
-                    <div className="text-sm font-bold text-primary">
-                      ${formValues.price || '0.00'}
-                    </div>
-                  )}
+        {/* Quantity */}
+        {(product.quantity || product.outOfStock) && (
+          <div className="py-4 border-b border-gray-200">
+            <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">
+              Quantity
+            </h3>
+            <p className="text-xs sm:text-sm md:text-base text-gray-600">
+              {product.outOfStock ? (
+                <Badge variant="destructive" className="bg-red-500 text-white">
+                  Out of Stock
+                </Badge>
+              ) : (
+                product.quantity
+              )}
+            </p>
+          </div>
+        )}
+
+        {/* Brand */}
+        {product.brand && (
+          <div className="py-4 border-b border-gray-200">
+            <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">
+              Brand
+            </h3>
+            <p className="text-xs sm:text-sm md:text-base text-gray-600">{product.brand}</p>
+          </div>
+        )}
+
+        {/* Color */}
+        {(product.color ||
+          (product.variants.length > 0 &&
+            product.variants &&
+            product.variants.some((v: any) => v.color))) && (
+          <div className="py-4 border-b border-gray-200">
+            <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">
+              Color
+              {product.variants.length > 0 &&
+              product.variants &&
+              product.variants.filter((v: any) => v.color).length > 0
+                ? 's'
+                : ''}
+            </h3>
+            <div className="flex items-center gap-2 flex-wrap">
+              {product.color && (
+                <div className="flex items-center gap-2">
+                  <div
+                    className="w-6 h-6 rounded-full border border-gray-300 shadow-sm"
+                    style={{ backgroundColor: product.color }}
+                  />
+                  <span className="text-xs sm:text-sm md:text-base text-gray-600 capitalize">
+                    {getColorName(product.color).name}
+                  </span>
                 </div>
-                {formValues.category && (
-                  <div className="text-gray-600">
-                    /{' '}
-                    {categoryOptions.find((opt) => opt.value === formValues.category)?.label ||
-                      formValues.category}
-                  </div>
-                )}
-                {formValues.discount?.discountType !== 'none' &&
-                  formValues.discount?.discountValue && (
-                    <Badge variant="destructive" className="text-xs ml-2">
-                      {formValues.discount.discountType === 'percentage'
-                        ? `${formValues.discount.discountValue}% OFF`
-                        : `$${formValues.discount.discountValue} OFF`}
-                    </Badge>
-                  )}
-              </div>
-            </div>
-
-            {/* Sub Category */}
-            {formValues.subCategory && (
-              <div className="py-4 border-b border-gray-200">
-                <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">
-                  Sub Category
-                </h3>
-                <p className="text-xs sm:text-sm md:text-base text-gray-600">
-                  {subCategoryOptions.find((opt) => opt.value === formValues.subCategory)?.label ||
-                    formValues.subCategory}
-                </p>
-              </div>
-            )}
-
-            {/* Quantity */}
-            {(formValues.quantity || formValues.outOfStock) && (
-              <div className="py-4 border-b border-gray-200">
-                <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">
-                  Quantity
-                </h3>
-                <p className="text-xs sm:text-sm md:text-base text-gray-600">
-                  {formValues.outOfStock ? (
-                    <Badge variant="destructive" className="bg-red-500 text-white">
-                      Out of Stock
-                    </Badge>
-                  ) : (
-                    formValues.quantity
-                  )}
-                </p>
-              </div>
-            )}
-
-            {/* Brand */}
-            {formValues.brand && (
-              <div className="py-4 border-b border-gray-200">
-                <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">
-                  Brand
-                </h3>
-                <p className="text-xs sm:text-sm md:text-base text-gray-600">{formValues.brand}</p>
-              </div>
-            )}
-
-            {/* Color */}
-            {(formValues.color ||
-              (variants.length > 0 &&
-                formValues.variants &&
-                formValues.variants.some((v: any) => v.color))) && (
-              <div className="py-4 border-b border-gray-200">
-                <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">
-                  Color
-                  {variants.length > 0 &&
-                  formValues.variants &&
-                  formValues.variants.filter((v: any) => v.color).length > 0
-                    ? 's'
-                    : ''}
-                </h3>
-                <div className="flex items-center gap-2 flex-wrap">
-                  {formValues.color && (
-                    <div className="flex items-center gap-2">
+              )}
+              {product.variants.length > 0 &&
+                product.variants &&
+                product.variants
+                  .filter((v: any) => v.color)
+                  .map((v: any, i: number) => (
+                    <div key={i} className="flex items-center gap-2">
+                      {/* {(i === 0 && product.color) && <span className="text-gray-400">•</span>} */}
                       <div
                         className="w-6 h-6 rounded-full border border-gray-300 shadow-sm"
-                        style={{ backgroundColor: formValues.color }}
+                        style={{ backgroundColor: v.color }}
                       />
                       <span className="text-xs sm:text-sm md:text-base text-gray-600 capitalize">
-                        {getColorName(formValues.color).name}
+                        {getColorName(v.color).name}
                       </span>
                     </div>
-                  )}
-                  {variants.length > 0 &&
-                    formValues.variants &&
-                    formValues.variants
-                      .filter((v: any) => v.color)
-                      .map((v: any, i: number) => (
-                        <div key={i} className="flex items-center gap-2">
-                          {/* {(i === 0 && formValues.color) && <span className="text-gray-400">•</span>} */}
-                          <div
-                            className="w-6 h-6 rounded-full border border-gray-300 shadow-sm"
-                            style={{ backgroundColor: v.color }}
-                          />
-                          <span className="text-xs sm:text-sm md:text-base text-gray-600 capitalize">
-                            {getColorName(v.color).name}
-                          </span>
-                        </div>
-                      ))}
-                </div>
-              </div>
-            )}
-
-            {/* Product Tags */}
-            <div className="py-4 border-b border-gray-200">
-              <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">
-                Product Tag
-              </h3>
-              {formValues.productTag && formValues.productTag.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {formValues.productTag.map((tag: any, index: number) => (
-                    <Badge
-                      key={index}
-                      variant="secondary"
-                      className="bg-blue-50 text-primary border border-blue-200 hover:bg-blue-100"
-                    >
-                      {typeof tag === 'string'
-                        ? tag
-                        : tagOptions.find((opt) => opt.value === tag)?.label || tag}
-                    </Badge>
                   ))}
-                </div>
-              ) : (
-                'Tags will appear here'
-              )}
             </div>
+          </div>
+        )}
 
-            {/* Product Dimensions */}
+        {/* Product Tags */}
+        {product.productTag && product.productTag.length > 0 && (
+          <div className="py-4 border-b border-gray-200">
+            <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">
+              Product Tag
+            </h3>
+            {product.productTag && product.productTag.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {product.productTag.map((tag: any, index: number) => (
+                  <Badge
+                    key={index}
+                    variant="secondary"
+                    className="bg-blue-50 text-primary border border-blue-200 hover:bg-blue-100"
+                  >
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+            ) : (
+              ''
+            )}
+          </div>
+        )}
+        {/* Product Dimensions */}
 
+        {product.dimensions?.width ||
+          product.dimensions?.length ||
+          (product.dimensions?.height && (
             <div className="py-4 border-b border-gray-200">
               <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">
                 Dimensions
               </h3>
-              {formValues.dimensions?.width ||
-              formValues.dimensions?.length ||
-              formValues.dimensions?.height ? (
+              {product.dimensions?.width ||
+              product.dimensions?.length ||
+              product.dimensions?.height ? (
                 <p className="text-xs sm:text-sm md:text-base text-gray-600">
-                  {formValues.dimensions.width && `W: ${formValues.dimensions.width}"`}
-                  {formValues.dimensions.width && formValues.dimensions.length && ' × '}
-                  {formValues.dimensions.length && `L: ${formValues.dimensions.length}"`}
-                  {formValues.dimensions.length && formValues.dimensions.height && ' × '}
-                  {formValues.dimensions.height && `H: ${formValues.dimensions.height}"`}
+                  {product.dimensions.width && `W: ${product.dimensions.width}"`}
+                  {product.dimensions.width && product.dimensions.length && ' × '}
+                  {product.dimensions.length && `L: ${product.dimensions.length}"`}
+                  {product.dimensions.length && product.dimensions.height && ' × '}
+                  {product.dimensions.height && `H: ${product.dimensions.height}"`}
                 </p>
               ) : (
-                'Dimensions will appear here'
+                ''
               )}
             </div>
-
-            {/* Locations */}
-            <div className="py-4 border-b border-gray-200">
-              <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">
-                {formValues.locationIds.length > 1 ? 'Locations' : 'Location'}
-              </h3>
-              {formValues.locationIds && formValues.locationIds.length > 0 ? (
-                <div className="space-y-3">
-                  {formValues.locationIds.map((locationId: string) => {
-                    const address = savedAddresses.find(
-                      (addr: any) => (addr.id || addr._id) === locationId
-                    );
-                    if (!address) {
-                      const option = addressOptions.find((opt) => opt.value === locationId);
-                      return (
-                        <div
-                          key={locationId}
-                          className="text-xs sm:text-sm md:text-base text-gray-600"
-                        >
-                          <p className="font-medium">{option?.label || locationId}</p>
-                        </div>
-                      );
-                    }
-                    return (
-                      <div
-                        key={locationId}
-                        className="text-xs sm:text-sm md:text-base text-gray-600"
-                      >
-                        <p className="font-medium">{address.name}</p>
-                        <p className="text-gray-500 mt-1">{address.formattedAddress}</p>
-                        {formValues.availabilityRadius && (
-                          <p className="text-gray-500 mt-1">
-                            Delivery within {formValues.availabilityRadius} km
-                          </p>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                'Locations will appear here'
-              )}
-            </div>
-
-            {/* Marketplace Options */}
-
-            <div className="py-4 border-b border-gray-200">
-              <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">
-                Delivery Options
-              </h3>
-              {formValues.marketplaceOptions?.pickup ||
-              formValues.marketplaceOptions?.shipping ||
-              formValues.marketplaceOptions?.delivery ? (
-                <div className="space-y-2">
-                  {formValues.marketplaceOptions?.pickup && (
-                    <div className="text-xs sm:text-sm md:text-base text-gray-600">
-                      <span className="font-medium">Pickup</span>
-                      {formValues.pickupHours && <span>: {formValues.pickupHours}</span>}
+          ))}
+        {/* Locations */}
+        <div className="py-4 border-b border-gray-200">
+          <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">
+            {product.locationIds && product.locationIds.length > 1 ? 'Locations' : 'Location'}
+          </h3>
+          {product.locationIds && product.locationIds.length > 0 ? (
+            <div className="space-y-3">
+              {product.locationIds.map((location: any, index: number) => {
+                // Handle both string IDs and location objects
+                if (typeof location === 'string') {
+                  return (
+                    <div key={location} className="text-xs sm:text-sm md:text-base text-gray-600">
+                      <p className="font-medium">Location ID: {location}</p>
                     </div>
-                  )}
-                  {formValues.marketplaceOptions?.shipping && (
-                    <div className="text-xs sm:text-sm md:text-base text-gray-600">
-                      <span className="font-medium">Shipping</span>
-                      {formValues.shippingPrice && <span>: ${formValues.shippingPrice}</span>}
-                    </div>
-                  )}
-                  {formValues.marketplaceOptions?.delivery && (
-                    <div className="text-xs sm:text-sm md:text-base text-gray-600">
-                      <span className="font-medium">Delivery Available</span>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                'Delivery Options will appear here'
-              )}
-            </div>
-
-            {/* Ready By */}
-
-            <div className="py-4 border-b border-gray-200">
-              <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">
-                Ready By
-              </h3>
-              {formValues.readyByDays !== undefined ||
-              formValues.readyByDate ||
-              formValues.readyByTime ? (
-                <p className="text-xs sm:text-sm md:text-base text-gray-600">
-                  {formValues.readyByDays !== undefined && formValues.readyByDays !== '0' && (
-                    <span className="font-medium">
-                      {formValues.readyByDays === '1' ? '1 Day' : `${formValues.readyByDays} Days`}
-                      {/* {(formValues.readyByDate || formValues.readyByTime) } */}
-                    </span>
-                  )}
-                  {formValues.readyByDays === '0' && (
-                    <span className="font-medium">
-                      Ready Today
-                      {formValues.readyByDate || formValues.readyByTime}
-                    </span>
-                  )}
-                  {/* {formValues.readyByDate && new Date(formValues.readyByDate).toLocaleDateString()}
-                  {formValues.readyByTime && ` at ${formValues.readyByTime}`} */}
-                </p>
-              ) : (
-                'Ready By will appear here'
-              )}
-            </div>
-
-            {/* Description */}
-
-            <div className="py-4">
-              <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">
-                Description
-              </h3>
-              {formValues.description ? (
-                <p className="text-xs sm:text-sm md:text-base text-gray-600 leading-relaxed whitespace-pre-line">
-                  {formValues.description}
-                </p>
-              ) : (
-                'Description will appear here'
-              )}
-            </div>
-
-            {/* Variants */}
-            {variants.length > 0 ? (
-              <div className="border-t border-gray-200 pt-3">
-                <h4 className="text-sm font-semibold text-gray-700 mb-3">
-                  Available Variants (
-                  {
-                    variants.filter(
-                      (_v, i) =>
-                        formValues.variants?.[i]?.color &&
-                        formValues.variants?.[i]?.price &&
-                        (formValues.variants?.[i]?.quantity || formValues.variants?.[i]?.outOfStock)
-                    ).length
-                  }
-                  )
-                </h4>
-                <div className="grid grid-cols-1 gap-4">
-                  {variants.map((variant, index) => {
-                    const variantData = formValues.variants?.[index];
-                    if (
-                      !variantData?.color ||
-                      !variantData?.price ||
-                      (!variantData?.quantity && !variantData?.outOfStock)
-                    ) {
-                      return null;
-                    }
-
-                    const finalPrice =
-                      variantData.discount?.discountType === 'percentage' &&
-                      variantData.discount?.discountValue
-                        ? (
-                            parseFloat(variantData.price) *
-                            (1 - parseFloat(variantData.discount.discountValue) / 100)
-                          ).toFixed(2)
-                        : variantData.discount?.discountType === 'flat' &&
-                            variantData.discount?.discountValue
-                          ? (
-                              parseFloat(variantData.price) -
-                              parseFloat(variantData.discount.discountValue)
-                            ).toFixed(2)
-                          : variantData.price;
-
-                    return (
-                      <div
-                        key={index}
-                        className="border border-gray-200 rounded-lg p-3 bg-white h-full"
-                      >
-                        <div className="flex gap-3">
-                          {/* Variant Images */}
-                          {variant.images.length > 0 && (
-                            <div className="relative w-16 h-16 rounded overflow-hidden bg-gray-100 flex-shrink-0">
-                              <img
-                                src={URL.createObjectURL(variant.images[0])}
-                                alt={`Variant ${index + 1}`}
-                                className="w-full h-full object-cover"
-                              />
-                              {variant.images.length > 1 && (
-                                <div className="absolute bottom-0 right-0 bg-black/50 text-white text-xs px-1 rounded-tl">
-                                  +{variant.images.length - 1}
-                                </div>
-                              )}
-                            </div>
-                          )}
-
-                          {/* Variant Details */}
-                          <div className="flex-1">
-                            <div className="flex items-start justify-between">
-                              <div>
-                                <div className="flex items-center gap-2 mb-1">
-                                  <div
-                                    className="w-6 h-6 rounded-full border-2 border-gray-300 capitalize"
-                                    style={{ backgroundColor: variantData.color }}
-                                    title={getColorName(variantData.color).name}
-                                  />
-                                  <span className="text-sm font-medium">Variant {index + 1}</span>
-                                </div>
-                                <div className="text-xs text-gray-500">
-                                  {variantData.outOfStock ? (
-                                    <Badge
-                                      variant="destructive"
-                                      className="text-xs bg-red-500 text-white"
-                                    >
-                                      Out of Stock
-                                    </Badge>
-                                  ) : (
-                                    `Stock: ${variantData.quantity} units`
-                                  )}
-                                </div>
-                              </div>
-
-                              <div className="text-right">
-                                {variantData.discount?.discountType !== 'none' &&
-                                variantData.discount?.discountValue ? (
-                                  <>
-                                    <div className="text-xs text-gray-500 line-through">
-                                      ${variantData.price}
-                                    </div>
-                                    <div className="text-sm font-bold text-primary">
-                                      ${finalPrice}
-                                    </div>
-                                    <Badge variant="destructive" className="text-xs mt-1">
-                                      {variantData.discount.discountType === 'percentage'
-                                        ? `${variantData.discount.discountValue}% OFF`
-                                        : `$${variantData.discount.discountValue} OFF`}
-                                    </Badge>
-                                  </>
-                                ) : (
-                                  <div className="text-sm font-bold text-primary">
-                                    ${variantData.price}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-
-                  {/* Show placeholder if variants exist but are incomplete */}
-                  {variants.length > 0 &&
-                    !variants.some(
-                      (_v, i) =>
-                        formValues.variants?.[i]?.color &&
-                        formValues.variants?.[i]?.price &&
-                        (formValues.variants?.[i]?.quantity || formValues.variants?.[i]?.outOfStock)
-                    ) && (
-                      <div className="text-sm text-gray-500 text-center py-2">
-                        Complete variant details to see them here
-                      </div>
+                  );
+                }
+                // Handle location objects
+                return (
+                  <div
+                    key={location._id || location.id || index}
+                    className="text-xs sm:text-sm md:text-base text-gray-600"
+                  >
+                    <p className="font-medium">{location.name || `Location ${index + 1}`}</p>
+                    {location.city && <p className="text-gray-500 mt-0.5">City: {location.city}</p>}
+                    {location.state && <p className="text-gray-500">State: {location.state}</p>}
+                    {location.country && (
+                      <p className="text-gray-500">Country: {location.country}</p>
                     )}
-                </div>
+                    {location.formattedAddress && (
+                      <p className="text-gray-500 mt-1">{location.formattedAddress}</p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ) : product.location ? (
+            <div className="text-xs sm:text-sm md:text-base text-gray-600">
+              <p className="font-medium">
+                {typeof product.location === 'object'
+                  ? product.location.name || product.location.city || 'Location'
+                  : product.location}
+              </p>
+              {typeof product.location === 'object' && (
+                <>
+                  {product.location.city && (
+                    <p className="text-gray-500 mt-0.5">City: {product.location.city}</p>
+                  )}
+                  {product.location.state && (
+                    <p className="text-gray-500">State: {product.location.state}</p>
+                  )}
+                  {product.location.country && (
+                    <p className="text-gray-500">Country: {product.location.country}</p>
+                  )}
+                  {product.location.formattedAddress && (
+                    <p className="text-gray-500 mt-1">{product.location.formattedAddress}</p>
+                  )}
+                </>
+              )}
+            </div>
+          ) : (
+            'Location will appear here'
+          )}
+        </div>
+
+        {/* Delivery Information */}
+        <div className="py-4 border-b border-gray-200">
+          <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">
+            Marketplace Options
+          </h3>
+          <div className="space-y-2">
+            {product.marketplaceOptions?.delivery && (
+              <div className="text-xs sm:text-sm md:text-base text-gray-600">
+                <span className="font-medium flex items-center gap-2">
+                  Local Delivery <CircleCheck className="w-4 h-4 text-green-500" />{' '}
+                  {product.deliveryDistance ? `${product.deliveryDistance} miles` : 'Free'}
+                </span>
               </div>
-            ) : (
-              'Variants will appear here'
+            )}
+
+            {product.marketplaceOptions?.pickup && (
+              <div className="text-xs sm:text-sm md:text-base text-gray-600">
+                <span className="font-medium flex items-center gap-2">
+                  Pickup Available <CircleCheck className="w-4 h-4 text-green-500" />
+                </span>
+                {product.pickupHours && <span>: {product.pickupHours}</span>}
+              </div>
+            )}
+            {product.marketplaceOptions?.shipping && (
+              <div className="text-xs sm:text-sm md:text-base text-gray-600">
+                <span className="font-medium flex items-center gap-2">
+                  Shipping Available <CircleCheck className="w-4 h-4 text-green-500" />
+                </span>
+                {product.shippingPrice && <span>: {formatCurrency(product.shippingPrice)}</span>}
+              </div>
             )}
           </div>
         </div>
-      </Card>
+
+        {/* Ready By */}
+
+        <div className="py-4 border-b border-gray-200">
+          <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">
+            Ready By
+          </h3>
+          <div className="relative">{getReadyByDate(product)}</div>
+        </div>
+
+        {/* Product Attributes */}
+        {product.productAttributes && product.productAttributes.length > 0 && (
+          <div className="py-4 border-b border-gray-200">
+            <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 mb-3">
+              Product Attributes
+            </h3>
+            <div className="space-y-2">
+              {product.productAttributes.map((attr: any, index: number) => (
+                <div key={index} className="flex items-start gap-2">
+                  <Info className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                  <div className="text-xs sm:text-sm md:text-base text-gray-600">
+                    <span className="font-medium">{attr.attributeName}:</span> {attr.value}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Description */}
+        <div className="py-4">
+          <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">
+            Description
+          </h3>
+          {product.description ? (
+            <p className="text-xs sm:text-sm md:text-base text-gray-600 leading-relaxed whitespace-pre-line">
+              {product.description}
+            </p>
+          ) : (
+            'Description will appear here'
+          )}
+        </div>
+
+        {/* Variants */}
+        {product?.variants.length > 0 ? (
+          <div className="border-t border-gray-200 pt-3">
+            <h4 className="text-sm font-semibold text-gray-700 mb-3">
+              Available Variants (
+              {
+                product?.variants.filter(
+                  (_v: any, i: number) =>
+                    product.variants?.[i]?.color &&
+                    product.variants?.[i]?.price &&
+                    (product.variants?.[i]?.quantity || product.variants?.[i]?.outOfStock)
+                ).length
+              }
+              )
+            </h4>
+            <div className="grid grid-cols-1 gap-4">
+              {product?.variants.map((variant: any, index: number) => {
+                const variantData = product.variants?.[index];
+                if (
+                  !variantData?.color ||
+                  !variantData?.price ||
+                  (!variantData?.quantity && !variantData?.outOfStock)
+                ) {
+                  return null;
+                }
+
+                const finalPrice =
+                  variantData.discount?.discountType === 'percentage' &&
+                  variantData.discount?.discountValue
+                    ? (
+                        parseFloat(variantData.price) *
+                        (1 - parseFloat(variantData.discount.discountValue) / 100)
+                      ).toFixed(2)
+                    : variantData.discount?.discountType === 'flat' &&
+                        variantData.discount?.discountValue
+                      ? (
+                          parseFloat(variantData.price) -
+                          parseFloat(variantData.discount.discountValue)
+                        ).toFixed(2)
+                      : variantData.price;
+
+                return (
+                  <div
+                    key={index}
+                    className="border border-gray-200 rounded-lg p-3 bg-white h-full"
+                  >
+                    <div className="flex gap-3">
+                      {/* Variant Images */}
+                      {variant.images && variant.images.length > 0 && (
+                        <div className="relative w-16 h-16 rounded overflow-hidden bg-gray-100 flex-shrink-0">
+                          <img
+                            src={variant.images[0]}
+                            alt={`Variant ${index + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                          {variant.images.length > 1 && (
+                            <div className="absolute bottom-0 right-0 bg-black/50 text-white text-xs px-1 rounded-tl">
+                              +{variant.images.length - 1}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Variant Details */}
+                      <div className="flex-1">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <div className="flex items-center gap-2 mb-1">
+                              <div
+                                className="w-6 h-6 rounded-full border-2 border-gray-300 capitalize"
+                                style={{ backgroundColor: variantData.color }}
+                                title={getColorName(variantData.color).name}
+                              />
+                              <span className="text-sm font-medium">Variant {index + 1}</span>
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {variantData.outOfStock ? (
+                                <Badge
+                                  variant="destructive"
+                                  className="text-xs bg-red-500 text-white"
+                                >
+                                  Out of Stock
+                                </Badge>
+                              ) : (
+                                `Stock: ${variantData.quantity} units`
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="text-right">
+                            {variantData.discount?.discountType !== 'none' &&
+                            variantData.discount?.discountValue ? (
+                              <>
+                                <div className="text-xs text-gray-500 line-through">
+                                  ${variantData.price}
+                                </div>
+                                <div className="text-sm font-bold text-primary">${finalPrice}</div>
+                                <Badge variant="destructive" className="text-xs mt-1">
+                                  {variantData.discount.discountType === 'percentage'
+                                    ? `${variantData.discount.discountValue}% OFF`
+                                    : `$${variantData.discount.discountValue} OFF`}
+                                </Badge>
+                              </>
+                            ) : (
+                              <div className="text-sm font-bold text-primary">
+                                ${variantData.price}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+
+              {/* Show placeholder if variants exist but are incomplete */}
+              {product?.variants.length > 0 &&
+                !product?.variants.some(
+                  (_v: any, i: number) =>
+                    product.variants?.[i]?.color &&
+                    product.variants?.[i]?.price &&
+                    (product.variants?.[i]?.quantity || product.variants?.[i]?.outOfStock)
+                ) && (
+                  <div className="text-sm text-gray-500 text-center py-2">
+                    Complete variant details to see them here
+                  </div>
+                )}
+            </div>
+          </div>
+        ) : (
+          ''
+        )}
+
+        {/* Seller */}
+        <div className="py-4">
+          <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">
+            Seller
+          </h3>
+          {product.seller && (
+            <CustomerDetailsSection customerDetails={product.seller} title="" reviewTitle="" />
+          )}
+        </div>
+      </div>
     </div>
   );
 };

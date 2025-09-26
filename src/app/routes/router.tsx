@@ -701,11 +701,17 @@ export const router = createBrowserRouter([
           {
             path: 'products',
             lazy: () =>
-              import('@/features/products/pages/ProductsPage').then((module) => ({
+              import('@/features/admin/products/pages/ProductsPage').then((module) => ({
                 Component: module.default,
               })),
           },
-
+          {
+            path: 'products/:slug',
+            lazy: () =>
+              import('@/features/admin/products/pages/ProductDetailsPage').then((module) => ({
+                Component: module.default,
+              })),
+          },
           {
             path: 'orders',
             lazy: () =>
@@ -717,6 +723,13 @@ export const router = createBrowserRouter([
             path: 'orders/:id',
             lazy: () =>
               import('@/features/orders/pages/OrderDetailsPage').then((module) => ({
+                Component: module.default,
+              })),
+          },
+          {
+            path: 'contact-queries',
+            lazy: () =>
+              import('@/features/admin/contact-queries/pages/ContactQueriesPage').then((module) => ({
                 Component: module.default,
               })),
           },

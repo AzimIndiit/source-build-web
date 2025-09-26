@@ -1,4 +1,6 @@
+import { cn } from '@/lib/utils';
 import React from 'react';
+import { Link } from 'react-router';
 
 interface FooterProps {
   sidebarWidth?: string;
@@ -12,15 +14,28 @@ export const Footer: React.FC<FooterProps> = ({}) => {
         <p className="leading-[1.3]">© Copyright 2025. Source Build. All Rights Reserved.</p>
       </div>
       <div className="text-center lg:text-right">
-        <p className="leading-[1.3] whitespace-pre-wrap">
-          <span className="inline-block hover:text-primary">Contact Us</span>
-          <span className="hidden md:inline"> | </span>
-          <span className="md:hidden"> | </span>
-          <span className="inline-block hover:text-primary">Terms and Conditions</span>
-          <span className="hidden md:inline"> | </span>
-          <span className="md:hidden"> | </span>
-          <span className="inline-block hover:text-primary">Privacy Policy</span>
-        </p>
+      <div className="flex items-center gap-2 text-sm">
+          <Link
+            to="/contact-us"
+            className={cn('hover:text-primary transition-colors duration-200')}
+          >
+            Contact Us
+          </Link>
+          <span className="text-gray-300">|</span>
+            <Link
+              to="/terms"
+              className={cn('hover:text-primary transition-colors duration-200')}
+            >
+              Terms and Conditions
+            </Link>
+            <span className="text-gray-300">|</span>
+            <Link
+              to="/privacy"
+              className={cn('hover:text-primary transition-colors duration-200')}
+            >
+              Privacy Policy
+            </Link>
+        </div>
       </div>
     </div>
   );

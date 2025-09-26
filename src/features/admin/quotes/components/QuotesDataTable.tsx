@@ -20,7 +20,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Eye, Trash2, MoreVertical, MessageSquare } from 'lucide-react';
+import { Eye, Trash2, MoreVertical, MessageSquare, Loader2 } from 'lucide-react';
 import { Quote } from '../types';
 import { SearchInput } from '@/features/admin/user-management/components/SearchInput';
 import { EmptyState } from '@/components/common/EmptyState';
@@ -42,6 +42,8 @@ interface QuotesDataTableProps {
   searchValue?: string;
   onSearchChange?: (value: string) => void;
   isLoading?: boolean;
+  replyingToQuoteId?: string | null;
+  isReplying?: boolean;
 }
 
 export const QuotesDataTable: React.FC<QuotesDataTableProps> = ({
@@ -54,6 +56,8 @@ export const QuotesDataTable: React.FC<QuotesDataTableProps> = ({
   searchValue,
   onSearchChange,
   isLoading = false,
+  replyingToQuoteId,
+  isReplying = false,
 }) => {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -173,9 +177,19 @@ export const QuotesDataTable: React.FC<QuotesDataTableProps> = ({
                   <DropdownMenuItem
                     onClick={() => onReply?.(quote)}
                     className="cursor-pointer text-green-600 hover:text-green-700"
+                    disabled={isReplying && replyingToQuoteId === (quote.id || quote._id)}
                   >
-                    <MessageSquare className="mr-2 h-4 w-4" />
-                    Reply
+                    {isReplying && replyingToQuoteId === (quote.id || quote._id) ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Replying...
+                      </>
+                    ) : (
+                      <>
+                        <MessageSquare className="mr-2 h-4 w-4" />
+                        Reply
+                      </>
+                    )}
                   </DropdownMenuItem>
 
                   <DropdownMenuItem
@@ -341,8 +355,13 @@ export const QuotesDataTable: React.FC<QuotesDataTableProps> = ({
                             size="icon"
                             className="h-8 w-8 bg-yellow-500 hover:bg-yellow-600 text-white rounded-full"
                             onClick={() => onReply?.(quote)}
+                            disabled={isReplying && replyingToQuoteId === (quote.id || quote._id)}
                           >
-                            <MessageSquare className="h-4 w-4" />
+                            {isReplying && replyingToQuoteId === (quote.id || quote._id) ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <MessageSquare className="h-4 w-4" />
+                            )}
                           </Button>
                           <Button
                             variant="ghost"

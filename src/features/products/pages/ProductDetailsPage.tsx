@@ -376,7 +376,7 @@ const ProductDetailsPage: React.FC = () => {
         <div className="space-y-4">
           {/* Product Title */}
           <div>
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-3 sm:mb-4">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-3 sm:mb-4 capitalize">
               {product.title}
             </h1>
 

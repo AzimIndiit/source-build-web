@@ -40,13 +40,13 @@ interface MultiSliderSliderProps {
 
 export const getReadyByDate = (slide: Slide) => {
   switch (Number(slide?.readyByDays)) {
-    case 1:
+    case 0:
       return (
         <Badge className="absolute bottom-2 left-2 bg-primary/80 text-white  px-2 py-1 text-[11px]">
           Same Day Delivery
         </Badge>
       );
-    case 2:
+    case 1:
       return (
         <Badge className="absolute bottom-2 left-2 bg-gray-200 text-gray-800  px-2 py-1 text-[11px]">
           Next Day Delivery

@@ -254,23 +254,27 @@ export const Navbar: React.FC = () => {
 
           <div className="flex gap-3 lg:gap-8 justify-end items-center ml-4 flex-1">
             {/* Search Bar */}
-            <div className="hidden lg:block flex-1 max-w-xl">
-              <GlobalSearch />
-            </div>
-
-            {/* Search Icon for Tablet */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="lg:hidden rounded-full w-[42px] h-[42px] bg-gray-100 hover:bg-gray-200"
-              onClick={() => setIsMobileSearchOpen(true)}
-            >
-              <Search className="w-5 h-5" />
-            </Button>
+            {(!isAuthenticated || user?.role === 'buyer') && (
+              <div className="hidden lg:block flex-1 max-w-xl">
+                <GlobalSearch />
+              </div>
+            )}
 
             {/* Right Section - User Actions */}
             {isAuthenticated ? (
               <>
+                {/* Search Icon for Tablet */}
+                {user?.role === 'buyer' && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="lg:hidden rounded-full w-[42px] h-[42px] bg-gray-100 hover:bg-gray-200"
+                    onClick={() => setIsMobileSearchOpen(true)}
+                  >
+                    <Search className="w-5 h-5" />
+                  </Button>
+                )}
+
                 {/* User Profile */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild className="cursor-pointer">
@@ -453,14 +457,16 @@ export const Navbar: React.FC = () => {
             {/* Mobile Right Section */}
             <div className="flex items-center gap-2">
               {/* Search Icon */}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="rounded-full w-10 h-10"
-                onClick={() => setIsMobileSearchOpen(true)}
-              >
-                <Search className="!w-6 !h-6" />
-              </Button>
+              {user?.role === 'buyer' && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-full w-10 h-10"
+                  onClick={() => setIsMobileSearchOpen(true)}
+                >
+                  <Search className="!w-6 !h-6" />
+                </Button>
+              )}
 
               {/* Cart */}
               {(!user || user?.role === 'buyer') && (
@@ -591,7 +597,7 @@ export const Navbar: React.FC = () => {
       </div>
 
       {/* Mobile/Tablet Search Overlay */}
-      {isMobileSearchOpen && (
+      {isMobileSearchOpen && (!isAuthenticated || user?.role === 'buyer') && (
         <div className="fixed inset-0 bg-white z-[60] lg:hidden">
           <div className="flex items-center gap-2 p-4 border-b">
             <Button variant="ghost" size="icon" onClick={() => setIsMobileSearchOpen(false)}>

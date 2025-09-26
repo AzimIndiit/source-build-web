@@ -3,12 +3,9 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, MessageSquare } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/button';
-import { FormTextarea } from '@/components/forms/FormTextarea';
-import { useForm, FormProvider } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+
 import { z } from 'zod';
-import toast from 'react-hot-toast';
-import CommonModal from '@/components/common/CommonModal';
+
 import ImagePreviewModal from '@/components/common/ImagePreviewModal';
 import { useQuoteQuery } from '../hooks/useQuoteMutations';
 import { useGetOrCreateChatMutation } from '@/features/messages/hooks/useChatQueries';
@@ -18,7 +15,6 @@ const replySchema = z.object({
   message: z.string().min(1, 'Message is required'),
 });
 
-type ReplyForm = z.infer<typeof replySchema>;
 
 const ViewQuotePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();

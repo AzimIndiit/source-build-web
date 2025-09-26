@@ -8,7 +8,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '@/components/ui/carousel';
-import { X } from 'lucide-react';
+import { Info, X } from 'lucide-react';
 
 interface ProductPreviewProps {
   formValues: any;
@@ -21,6 +21,12 @@ interface ProductPreviewProps {
   subCategoryOptions: Array<{ value: string; label: string }>;
   tagOptions: Array<{ value: string; label: string }>;
   handleBackClick?: () => void;
+  currentAttributes?: Array<{
+    name: string;
+    inputType: string;
+    required?: boolean;
+    values?: Array<{ value: string; order?: number }>;
+  }>;
 }
 
 export const ProductPreview: React.FC<ProductPreviewProps> = ({
@@ -34,6 +40,7 @@ export const ProductPreview: React.FC<ProductPreviewProps> = ({
   subCategoryOptions,
   tagOptions,
   handleBackClick,
+  currentAttributes = [],
 }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [api, setApi] = useState<any>();
@@ -228,7 +235,7 @@ export const ProductPreview: React.FC<ProductPreviewProps> = ({
           <div className="w-full lg:w-2/5 p-3 sm:p-4 md:p-6 border border-gray-200 rounded-sm lg:rounded-l-none lg:rounded-r-lg lg:overflow-y-auto min-h-0">
             {/* Title and Price */}
             <div className="pb-4 border-b border-gray-200">
-              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-2">
+              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-2 capitalize">
                 {formValues.title || 'Product Title'}
               </h2>
               <div className="flex  items-baseline gap-2">
@@ -317,7 +324,72 @@ export const ProductPreview: React.FC<ProductPreviewProps> = ({
                 </p>
               </div>
             )}
-
+            {/* Product Attributes */}
+            {(() => {
+              // Collect attribute values from dynamic fields
+              const attributeValues = currentAttributes
+                .map((attr) => {
+                  const fieldName = `attribute_${attr.name.replace(/\s+/g, '_')}`;
+                  const value = formValues[fieldName];
+                  
+                  // Only include attributes with values
+                  if (value !== undefined && value !== '' && value !== null && (!Array.isArray(value) || value.length > 0)) {
+                    // Format the value based on input type
+                    let displayValue = value;
+                    if (attr.inputType === 'boolean') {
+                      displayValue = value ? 'Yes' : 'No';
+                    } else if (Array.isArray(value)) {
+                      displayValue = value.join(', ');
+                    } else if (attr.inputType === 'dropdown' || attr.inputType === 'radio') {
+                      // If it has predefined values, try to get the label
+                      const option = attr.values?.find(v => v.value === value);
+                      displayValue = option ? option.value : value;
+                    }
+                    
+                    return {
+                      name: attr.name,
+                      value: displayValue,
+                    };
+                  }
+                  return null;
+                })
+                .filter(Boolean);
+              
+              // Also include productAttributes if they exist (for edit mode)
+              const existingAttributes = formValues.productAttributes || [];
+              const allAttributes = [...attributeValues, ...existingAttributes.map((attr: any) => ({
+                name: attr.attributeName,
+                value: attr.value,
+              }))];
+              
+              // Remove duplicates based on name
+              const uniqueAttributes = allAttributes.reduce((acc: any[], curr) => {
+                if (!acc.find(a => a.name === curr.name)) {
+                  acc.push(curr);
+                }
+                return acc;
+              }, []);
+              
+              if (uniqueAttributes.length === 0) return null;
+              
+              return (
+                <div className="py-4 border-b border-gray-200">
+                  <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 mb-3">
+                    Product Attributes
+                  </h3>
+                  <div className="space-y-2">
+                    {uniqueAttributes.map((attr: any, index: number) => (
+                      <div key={index} className="flex items-start gap-2">
+                        <Info className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                        <div className="text-xs sm:text-sm md:text-base text-gray-600">
+                          <span className="font-medium">{attr.name}:</span> {attr.value}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
             {/* Quantity */}
             {(formValues.quantity || formValues.outOfStock) && (
               <div className="py-4 border-b border-gray-200">

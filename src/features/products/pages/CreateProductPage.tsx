@@ -1329,6 +1329,7 @@ function CreateProductPage() {
                 categoryOptions={categoryOptions}
                 subCategoryOptions={subCategoryOptions}
                 tagOptions={tagOptions}
+                currentAttributes={currentAttributes}
               />
             </div>
           </div>
@@ -1385,6 +1386,7 @@ function CreateProductPage() {
               categoryOptions={categoryOptions}
               subCategoryOptions={subCategoryOptions}
               tagOptions={tagOptions}
+              currentAttributes={currentAttributes}
             />
           </div>
         </form>

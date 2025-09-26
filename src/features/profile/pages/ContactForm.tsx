@@ -12,7 +12,8 @@ import { useMutation } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { FormPhoneInput } from '@/components/forms/FormPhoneInput';
 import { phoneValidation } from '@/features/auth/schemas/authSchemas';
-
+import { FormSelect } from '@/components/forms/FormSelect';
+const topicEnum = ['product', 'support', 'billing', 'technical', 'other'];
 // Zod validation schema
 const personalDetailsSchema = z.object({
   firstName: z
@@ -29,6 +30,7 @@ const personalDetailsSchema = z.object({
     .max(50, 'Last name must not exceed 50 characters'),
   email: z.string().min(1, 'Email is required').email('Please enter valid email address'),
   phone: phoneValidation,
+  topic: z.enum(topicEnum).default('other'),
   message: z
     .string()
     .trim()
@@ -49,6 +51,7 @@ const ContactFormPage: React.FC<ContactFormPageProps> = ({
     lastName: '',
     email: '',
     phone: '',
+    topic: 'other',
     message: '',
   },
   onSave,
@@ -136,6 +139,12 @@ const ContactFormPage: React.FC<ContactFormPageProps> = ({
                     className="text-base px-4 border-gray-300"
                   />
                 </div>
+                <FormSelect
+                  name="topic"
+                  label="Topic"
+                  options={topicEnum.map((topic) => ({ label: topic.toLocaleUpperCase(), value: topic }))}
+                  placeholder="Select a topic"
+                />
 
                 {/* Message */}
                 <FormTextarea
