@@ -196,6 +196,40 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
                 )}
               </div>
 
+              {/* Category Attributes - Show automatically when category is checked and has attributes */}
+              {categoryChecked && category.attributes && category.attributes.length > 0 && (
+                <div className="ml-10 mr-3 mb-3 space-y-3">
+                  {category.attributes.map((attribute: any) => {
+                    const attributeKey = `${category._id}_${attribute.name}`;
+                    const selectedValues = selectedAttributes[attributeKey] || [];
+                    
+                    return (
+                      <div key={attribute._id} className="bg-gray-50 rounded-lg p-3">
+                        <h4 className="text-xs font-semibold text-gray-700 mb-2">{attribute.name}</h4>
+                        <div className="space-y-1">
+                          {attribute.values?.map((valueObj: any) => {
+                            const value = typeof valueObj === 'string' ? valueObj : valueObj.value;
+                            return (
+                              <label
+                                key={value}
+                                className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 p-1 rounded"
+                              >
+                                <Checkbox
+                                  checked={selectedValues.includes(value)}
+                                  onCheckedChange={() => onAttributeSelect?.(attributeKey, value)}
+                                  className="w-3.5 h-3.5"
+                                />
+                                <span className="text-xs text-gray-600">{value}</span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
               {/* Subcategories */}
               {isExpanded && categorySubcategories.length > 0 && (
                 <div className="ml-10 mr-3 mb-2 flex flex-col gap-1">
