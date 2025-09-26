@@ -124,3 +124,17 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Slick carousel alignment fix */
+.slick-slider {
+  margin: 0 !important;
+}
+
+.slick-list {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.slick-track {
+  margin-left: 0 !important;
+}
